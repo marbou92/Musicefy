@@ -92,8 +92,6 @@ namespace Musicefy.Core.Services
     }
 }
 
-
-
         public void AddToPlaylist(MusicFile musicFile)
         {
             if (musicFile != null && !currentPlaylist.Contains(musicFile))
