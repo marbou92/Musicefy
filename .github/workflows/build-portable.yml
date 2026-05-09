@@ -31,13 +31,29 @@ jobs:
           copy "Musicefy\bin\Release\NAudio.dll" "Musicefy-Portable\"
           copy "Musicefy\bin\Release\TagLibSharp.dll" "Musicefy-Portable\"
       
-- name: Create README
+      - name: Create README
   run: |
-    $content = "Musicefy Portable`r`n=================`r`n`r`nThis is a standalone version of Musicefy that requires no installation.`r`n`r`nTo run:`r`n1. Extract all files to a folder`r`n2. Double-click Musicefy.exe`r`n3. Enjoy streaming music!`r`n`r`nRequirements:`r`n- Windows 7 SP1 or later`r`n- Internet connection for streaming`r`n- No additional software required`r`n`r`nSupported Streaming Services:`r`n- Squidify (Subsonic API)`r`n- Monochrome (Hi-Fi / TIDAL)`r`n- Local Music Files"
-    Set-Content -Path "Musicefy-Portable\README.txt" -Value $content
+    echo "Musicefy Portable
+    =================
 
+    This is a standalone version of Musicefy that requires no installation.
 
-      
+    To run:
+    1. Extract all files to a folder
+    2. Double-click Musicefy.exe
+    3. Enjoy streaming music!
+
+    Requirements:
+    - Windows 7 SP1 or later
+    - Internet connection for streaming
+    - No additional software required
+
+    Supported Streaming Services:
+    - Squidify (Subsonic API)
+    - Monochrome (Hi-Fi / TIDAL)
+    - Local Music Files" > Musicefy-Portable\README.txt
+
+   
       - name: Create ZIP Archive
         run: |
           powershell -Command "Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::CreateFromDirectory('Musicefy-Portable', 'Musicefy-Portable.zip')"
