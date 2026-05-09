@@ -32,83 +32,23 @@ jobs:
           copy "Musicefy\bin\Release\TagLibSharp.dll" "Musicefy-Portable\"
 
       - name: Create README
-  shell: pwsh
-  run: |
-    "Musicefy Portable" | Out-File "Musicefy-Portable\README.txt"
-    "=================" | Out-File "Musicefy-Portable\README.txt" -Append
-    "" | Out-File "Musicefy-Portable\README.txt" -Append
-    "This is a standalone version of Musicefy that requires no installation." | Out-File "Musicefy-Portable\README.txt" -Append
-    "" | Out-File "Musicefy-Portable\README.txt" -Append
-    "To run:" | Out-File "Musicefy-Portable\README.txt" -Append
-    "1. Extract all files to a folder" | Out-File "Musicefy-Portable\README.txt" -Append
-    "2. Double-click Musicefy.exe" | Out-File "Musicefy-Portable\README.txt" -Append
-    "3. Enjoy streaming music!" | Out-File "Musicefy-Portable\README.txt" -Append
-    "" | Out-File "Musicefy-Portable\README.txt" -Append
-    "Requirements:" | Out-File "Musicefy-Portable\README.txt" -Append
-    "- Windows 7 SP1 or later" | Out-File "Musicefy-Portable\README.txt" -Append
-    "- Internet connection for streaming" | Out-File "Musicefy-Portable\README.txt" -Append
-    "- No additional software required" | Out-File "Musicefy-Portable\README.txt" -Append
-    "" | Out-File "Musicefy-Portable\README.txt" -Append
-    "Supported Streaming Services:" | Out-File "Musicefy-Portable\README.txt" -Append
-    "- Squidify (Subsonic API)" | Out-File "Musicefy-Portable\README.txt" -Append
-    "- Monochrome (Hi-Fi / TIDAL)" | Out-File "Musicefy-Portable\README.txt" -Append
-    "- Local Music Files" | Out-File "Musicefy-Portable\README.txt" -Append
-
-
-      - name: Create ZIP Archive
-        shell: pwsh
         run: |
-          Add-Type -AssemblyName System.IO.Compression.FileSystem
-          [System.IO.Compression.ZipFile]::CreateFromDirectory('Musicefy-Portable', 'Musicefy-Portable.zip')
-
-      - name: Get Version
-        id: version
-        shell: pwsh
-        run: |
-          $tag = "${{ github.ref }}" -replace "refs/tags/", ""
-          echo "TAG=$tag" >> $env:GITHUB_OUTPUT
-
-      - name: Create Release
-        uses: actions/create-release@v1
-        id: create_release
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Musicefy ${{ steps.version.outputs.TAG }}
-          body: |
-            # Musicefy ${{ steps.version.outputs.TAG }}
-
-            ✅ **Streaming Services**
-            - Squidify (Subsonic API)
-            - Monochrome (Hi-Fi / TIDAL)
-            - Local Music Files
-
-            ✅ **Features**
-            - Stream millions of songs
-            - No installation required
-            - Windows 7 compatible
-
-            📥 Downloads included
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload Portable ZIP
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./Musicefy-Portable.zip
-          asset_name: Musicefy-Portable.zip
-          asset_content_type: application/zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload EXE
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./Musicefy-Portable/Musicefy.exe
-          asset_name: Musicefy.exe
-          asset_content_type: application/octet-stream
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          echo Musicefy Portable > Musicefy-Portable\README.txt
+          echo ================= >> Musicefy-Portable\README.txt
+          echo. >> Musicefy-Portable\README.txt
+          echo This is a standalone version of Musicefy that requires no installation. >> Musicefy-Portable\README.txt
+          echo. >> Musicefy-Portable\README.txt
+          echo To run: >> Musicefy-Portable\README.txt
+          echo 1. Extract all files to a folder >> Musicefy-Portable\README.txt
+          echo 2. Double-click Musicefy.exe >> Musicefy-Portable\README.txt
+          echo 3. Enjoy streaming music! >> Musicefy-Portable\README.txt
+          echo. >> Musicefy-Portable\README.txt
+          echo Requirements: >> Musicefy-Portable\README.txt
+          echo - Windows 7 SP1 or later >> Musicefy-Portable\README.txt
+          echo - Internet connection for streaming >> Musicefy-Portable\README.txt
+          echo - No additional software required >> Musicefy-Portable\README.txt
+          echo. >> Musicefy-Portable\README.txt
+          echo Supported Streaming Services: >> Musicefy-Portable\README.txt
+          echo - Squidify (Subsonic API) >> Musicefy-Portable\README.txt
+          echo - Monochrome (Hi-Fi / TIDAL) >> Musicefy-Portable\README.txt
+          echo - Local Music Files >> Musicefy-Portable\README.txt
