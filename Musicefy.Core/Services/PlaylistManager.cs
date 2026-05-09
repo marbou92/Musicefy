@@ -85,13 +85,13 @@ namespace Musicefy.Core.Services
             Duration = file.Properties != null ? file.Properties.Duration : TimeSpan.Zero,
             Year = tag.Year > 0 ? (int)tag.Year : 0,
             TrackNumber = tag.Track > 0 ? (int)tag.Track : 0,
-            // ✅ FIXED: use Count property, no parentheses
             AlbumArt = (tag.Pictures != null && tag.Pictures.Count > 0)
                 ? tag.Pictures[0].Data.Data
                 : null
         };
     }
 }
+
 
 
         public void AddToPlaylist(MusicFile musicFile)
