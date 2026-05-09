@@ -12,48 +12,6 @@ namespace Musicefy.Core.Services
     /// </summary>
     public class PlaylistManager
     {
-        private readonly List<MusicFile> currentPlaylist = new();
-        private readonly List<MusicFile> musicLibrary = new();
-
-        // Supported audio formats
-        private static readonly HashSet<string> SupportedFormats = new(StringComparer.OrdinalIgnoreCase)
-        {
-            ".mp3", ".wav", ".flac", ".ogg", ".m4a", ".aac", ".wma"
-        };
-
-        /// <summary>
-        /// Scan a folder for music files
-        /// </summary>
-        public List<MusicFile> ScanFolder(string folderPath)
-        {
-            if (!Directory.Exists(folderPath))
-                throw new DirectoryNotFoundException($"Folder not found: {folderPath}");
-
-            var musicFiles = new List<MusicFile>();
-
-            try
-            {
-                var files = Directory.EnumerateFiles(folderPath, "*.*", SearchOption.AllDirectories)
-                                     .Where(f => SupportedFormats.Contains(Path.GetExtension(f)));
-
-                foreach (var file in files)
-                {
-                    try
-                    {
-                   using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using Musicefy.Core.Models;
-using TagLib;
-
-namespace Musicefy.Core.Services
-{
-    /// <summary>
-    /// Manages playlists and music library
-    /// </summary>
-    public class PlaylistManager
-    {
         private readonly List<MusicFile> currentPlaylist = new List<MusicFile>();
         private readonly List<MusicFile> musicLibrary = new List<MusicFile>();
 
@@ -175,3 +133,4 @@ namespace Musicefy.Core.Services
         }
     }
 }
+
