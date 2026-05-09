@@ -16,7 +16,7 @@ A lightweight music streaming desktop application for Windows 7+
 ## System Requirements
 
 - **OS:** Windows 7 or later
-- **.NET Framework:** 4.5 or higher
+- **.NET Framework:** 4.7.2 or higher
 - **RAM:** 256 MB minimum
 - **Disk Space:** 50 MB
 
