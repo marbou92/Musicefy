@@ -21,7 +21,7 @@ jobs:
         run: nuget restore Musicefy.sln
 
       - name: Build solution
-        run: msbuild Musicefy.sln /p:Configuration=Release /p:Platform=x86 /p:DebugType=none
+        run: msbuild Musicefy.sln /p:Configuration=Release /p:Platform="Any CPU" /p:DebugType=none
 
       - name: Create Portable Directory
         run: |
