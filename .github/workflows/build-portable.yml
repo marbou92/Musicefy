@@ -53,7 +53,7 @@ jobs:
           echo - Monochrome (Hi-Fi / TIDAL) >> Musicefy-Portable\README.txt
           echo - Local Music Files >> Musicefy-Portable\README.txt
 
-            - name: Create ZIP Archive
+      - name: Create ZIP Archive
         shell: pwsh
         run: |
           Add-Type -AssemblyName System.IO.Compression.FileSystem
