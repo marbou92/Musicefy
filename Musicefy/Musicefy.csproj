@@ -76,7 +76,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Musicefy.Core\Musicefy.Core.csproj">
-      <Project>{B1C2D3E4-F5G6-47H8-I9J0-K1L2M3N4O5P6}</Project>
       <Name>Musicefy.Core</Name>
     </ProjectReference>
   </ItemGroup>
