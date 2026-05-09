@@ -1,0 +1,112 @@
+name: Build Portable EXE
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1
+      
+      - name: Restore NuGet packages
+        run: nuget restore Musicefy.sln
+      
+      - name: Build solution
+        run: msbuild Musicefy.sln /p:Configuration=Release /p:Platform=x86 /p:DebugType=none
+      
+      - name: Create Portable Directory
+        run: |
+          mkdir Musicefy-Portable
+          copy "Musicefy\bin\Release\Musicefy.exe" "Musicefy-Portable\"
+          copy "Musicefy\bin\Release\Musicefy.Core.dll" "Musicefy-Portable\"
+          copy "Musicefy\bin\Release\NAudio.dll" "Musicefy-Portable\"
+          copy "Musicefy\bin\Release\TagLibSharp.dll" "Musicefy-Portable\"
+      
+      - name: Create README
+        run: |
+          $content = @"
+Musicefy Portable
+=================
+
+This is a standalone version of Musicefy that requires no installation.
+
+To run:
+1. Extract all files to a folder
+2. Double-click Musicefy.exe
+3. Enjoy streaming music!
+
+Requirements:
+- Windows 7 SP1 or later
+- Internet connection for streaming
+- No additional software required
+
+Supported Streaming Services:
+- Squidify (Subsonic API)
+- Monochrome (Hi-Fi / TIDAL)
+- Local Music Files
+"@
+          Set-Content -Path "Musicefy-Portable\README.txt" -Value $content
+      
+      - name: Create ZIP Archive
+        run: |
+          powershell -Command "Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::CreateFromDirectory('Musicefy-Portable', 'Musicefy-Portable.zip')"
+      
+      - name: Get Version
+        id: version
+        run: |
+          $tag = "${{ github.ref }}" -replace "refs/tags/", ""
+          echo "TAG=$tag" >> $env:GITHUB_OUTPUT
+      
+      - name: Create Release
+        uses: actions/create-release@v1
+        id: create_release
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Musicefy ${{ steps.version.outputs.TAG }}
+          body: |
+            # Musicefy ${{ steps.version.outputs.TAG }}
+            
+            ✅ **Streaming Services**
+            - Squidify (Subsonic API)
+            - Monochrome (Hi-Fi / TIDAL)
+            - Local Music Files
+            
+            ✅ **Features**
+            - Stream millions of songs
+            - No installation required
+            - Windows 7 compatible
+            
+            📥 Downloads included
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Upload Portable ZIP
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./Musicefy-Portable.zip
+          asset_name: Musicefy-Portable.zip
+          asset_content_type: application/zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Upload EXE
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./Musicefy-Portable/Musicefy.exe
+          asset_name: Musicefy.exe
+          asset_content_type: application/octet-stream
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
