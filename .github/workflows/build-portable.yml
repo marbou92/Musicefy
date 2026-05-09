@@ -32,8 +32,8 @@ jobs:
           copy "Musicefy\bin\Release\TagLibSharp.dll" "Musicefy-Portable\"
       
       - name: Create README
-        run: |
-          $content = @"
+  run: |
+    $content = @'
 Musicefy Portable
 =================
 
@@ -53,8 +53,9 @@ Supported Streaming Services:
 - Squidify (Subsonic API)
 - Monochrome (Hi-Fi / TIDAL)
 - Local Music Files
-"@
-          Set-Content -Path "Musicefy-Portable\README.txt" -Value $content
+'@
+    Set-Content -Path "Musicefy-Portable\README.txt" -Value $content
+
       
       - name: Create ZIP Archive
         run: |
