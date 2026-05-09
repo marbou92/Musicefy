@@ -52,3 +52,60 @@ jobs:
           echo - Squidify (Subsonic API) >> Musicefy-Portable\README.txt
           echo - Monochrome (Hi-Fi / TIDAL) >> Musicefy-Portable\README.txt
           echo - Local Music Files >> Musicefy-Portable\README.txt
+
+           - name: Create ZIP Archive
+        run: |
+          powershell -Command "Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::CreateFromDirectory('Musicefy-Portable', 'Musicefy-Portable.zip')"
+
+      - name: Get Version
+        id: version
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref }}" -replace "refs/tags/", ""
+          echo "TAG=$tag" >> $env:GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        id: create_release
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Musicefy ${{ steps.version.outputs.TAG }}
+          body: |
+            # Musicefy ${{ steps.version.outputs.TAG }}
+
+            ✅ **Streaming Services**
+            - Squidify (Subsonic API)
+            - Monochrome (Hi-Fi / TIDAL)
+            - Local Music Files
+
+            ✅ **Features**
+            - Stream millions of songs
+            - No installation required
+            - Windows 7 compatible
+
+            📥 Downloads included
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Portable ZIP
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./Musicefy-Portable.zip
+          asset_name: Musicefy-Portable.zip
+          asset_content_type: application/zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload EXE
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./Musicefy-Portable/Musicefy.exe
+          asset_name: Musicefy.exe
+          asset_content_type: application/octet-stream
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+     
