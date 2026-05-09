@@ -53,9 +53,11 @@ jobs:
           echo - Monochrome (Hi-Fi / TIDAL) >> Musicefy-Portable\README.txt
           echo - Local Music Files >> Musicefy-Portable\README.txt
 
-           - name: Create ZIP Archive
+            - name: Create ZIP Archive
+        shell: pwsh
         run: |
-          powershell -Command "Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::CreateFromDirectory('Musicefy-Portable', 'Musicefy-Portable.zip')"
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          [System.IO.Compression.ZipFile]::CreateFromDirectory('Musicefy-Portable', 'Musicefy-Portable.zip')
 
       - name: Get Version
         id: version
@@ -108,4 +110,3 @@ jobs:
           asset_content_type: application/octet-stream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-     
