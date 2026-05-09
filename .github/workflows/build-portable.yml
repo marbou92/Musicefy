@@ -32,29 +32,28 @@ jobs:
           copy "Musicefy\bin\Release\TagLibSharp.dll" "Musicefy-Portable\"
 
       - name: Create README
-        shell: pwsh
-        run: |
-          @"
-Musicefy Portable
-=================
+  shell: pwsh
+  run: |
+    "Musicefy Portable" | Out-File "Musicefy-Portable\README.txt"
+    "=================" | Out-File "Musicefy-Portable\README.txt" -Append
+    "" | Out-File "Musicefy-Portable\README.txt" -Append
+    "This is a standalone version of Musicefy that requires no installation." | Out-File "Musicefy-Portable\README.txt" -Append
+    "" | Out-File "Musicefy-Portable\README.txt" -Append
+    "To run:" | Out-File "Musicefy-Portable\README.txt" -Append
+    "1. Extract all files to a folder" | Out-File "Musicefy-Portable\README.txt" -Append
+    "2. Double-click Musicefy.exe" | Out-File "Musicefy-Portable\README.txt" -Append
+    "3. Enjoy streaming music!" | Out-File "Musicefy-Portable\README.txt" -Append
+    "" | Out-File "Musicefy-Portable\README.txt" -Append
+    "Requirements:" | Out-File "Musicefy-Portable\README.txt" -Append
+    "- Windows 7 SP1 or later" | Out-File "Musicefy-Portable\README.txt" -Append
+    "- Internet connection for streaming" | Out-File "Musicefy-Portable\README.txt" -Append
+    "- No additional software required" | Out-File "Musicefy-Portable\README.txt" -Append
+    "" | Out-File "Musicefy-Portable\README.txt" -Append
+    "Supported Streaming Services:" | Out-File "Musicefy-Portable\README.txt" -Append
+    "- Squidify (Subsonic API)" | Out-File "Musicefy-Portable\README.txt" -Append
+    "- Monochrome (Hi-Fi / TIDAL)" | Out-File "Musicefy-Portable\README.txt" -Append
+    "- Local Music Files" | Out-File "Musicefy-Portable\README.txt" -Append
 
-This is a standalone version of Musicefy that requires no installation.
-
-To run:
-1. Extract all files to a folder
-2. Double-click Musicefy.exe
-3. Enjoy streaming music!
-
-Requirements:
-- Windows 7 SP1 or later
-- Internet connection for streaming
-- No additional software required
-
-Supported Streaming Services:
-- Squidify (Subsonic API)
-- Monochrome (Hi-Fi / TIDAL)
-- Local Music Files
-"@ | Set-Content -Path "Musicefy-Portable\README.txt"
 
       - name: Create ZIP Archive
         shell: pwsh
