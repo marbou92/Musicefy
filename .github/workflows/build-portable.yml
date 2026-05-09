@@ -31,27 +31,14 @@ jobs:
           copy "Musicefy\bin\Release\NAudio.dll" "Musicefy-Portable\"
           copy "Musicefy\bin\Release\TagLibSharp.dll" "Musicefy-Portable\"
       
-      - name: Create README
+       - name: Create README
+  shell: pwsh
   run: |
-    echo "Musicefy Portable
-    =================
-
-    This is a standalone version of Musicefy that requires no installation.
-
-    To run:
-    1. Extract all files to a folder
-    2. Double-click Musicefy.exe
-    3. Enjoy streaming music!
-
-    Requirements:
-    - Windows 7 SP1 or later
-    - Internet connection for streaming
-    - No additional software required
-
-    Supported Streaming Services:
-    - Squidify (Subsonic API)
-    - Monochrome (Hi-Fi / TIDAL)
-    - Local Music Files" > Musicefy-Portable\README.txt
+    "Musicefy Portable" | Out-File Musicefy-Portable\README.txt
+    "=================" | Out-File Musicefy-Portable\README.txt -Append
+    "" | Out-File Musicefy-Portable\README.txt -Append
+    "This is a standalone version of Musicefy that requires no installation." | Out-File Musicefy-Portable\README.txt -Append
+    # …repeat for each line …
 
    
       - name: Create ZIP Archive
