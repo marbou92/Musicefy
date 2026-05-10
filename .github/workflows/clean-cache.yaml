@@ -14,20 +14,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup NuGet
-        uses: NuGet/setup-nuget@v1.2.0
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '6.0.x'
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1.3.1
 
-      - name: Restore NuGet packages
+      - name: Restore packages
         run: dotnet restore Musicefy.sln
 
-      - name: Clean bin and obj folders
-        shell: pwsh
-        run: Get-ChildItem -Path . -Include bin,obj -Recurse -Force | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
-
-      - name: Rebuild solution
-        shell: pwsh
+      - name: Build solution
         run: msbuild Musicefy.sln /t:Rebuild /p:Configuration=Release /p:Platform="Any CPU"
-
