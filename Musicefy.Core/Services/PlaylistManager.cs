@@ -62,36 +62,36 @@ namespace Musicefy.Core.Services
         /// Extract metadata from a music file
         /// </summary>
         private MusicFile ExtractMetadata(string filePath)
-        {
-            using (var file = TagLib.File.Create(filePath))
-            {
-                Tag tag = file.Tag;
+{
+    using (var file = TagLib.File.Create(filePath))
+    {
+        Tag tag = file.Tag;
 
-                return new MusicFile
-                {
-                    FilePath = filePath,
-                    Title = string.IsNullOrWhiteSpace(tag.Title)
-                        ? Path.GetFileNameWithoutExtension(filePath)
-                        : tag.Title,
-                    Artist = string.IsNullOrWhiteSpace(tag.FirstPerformer)
-                        ? "Unknown Artist"
-                        : tag.FirstPerformer,
-                    Album = string.IsNullOrWhiteSpace(tag.Album)
-                        ? "Unknown Album"
-                        : tag.Album,
-                    Genre = string.IsNullOrWhiteSpace(tag.FirstGenre)
-                        ? "Unknown Genre"
-                        : tag.FirstGenre,
-                    Duration = file.Properties != null ? file.Properties.Duration : TimeSpan.Zero,
-                    Year = tag.Year > 0 ? (int)tag.Year : 0,
-                    TrackNumber = tag.Track > 0 ? (int)tag.Track : 0,
-                    // ✅ FIXED: use Count property, no parentheses
-                    AlbumArt = (tag.Pictures != null && tag.Pictures.Count > 0)
-                        ? tag.Pictures[0].Data.Data
-                        : null
-                };
-            }
-        }
+        return new MusicFile
+        {
+            FilePath = filePath,
+            Title = string.IsNullOrWhiteSpace(tag.Title)
+                ? Path.GetFileNameWithoutExtension(filePath)
+                : tag.Title,
+            Artist = string.IsNullOrWhiteSpace(tag.FirstPerformer)
+                ? "Unknown Artist"
+                : tag.FirstPerformer,
+            Album = string.IsNullOrWhiteSpace(tag.Album)
+                ? "Unknown Album"
+                : tag.Album,
+            Genre = string.IsNullOrWhiteSpace(tag.FirstGenre)
+                ? "Unknown Genre"
+                : tag.FirstGenre,
+            Duration = file.Properties != null ? file.Properties.Duration : TimeSpan.Zero,
+            Year = tag.Year > 0 ? (int)tag.Year : 0,
+            TrackNumber = tag.Track > 0 ? (int)tag.Track : 0,
+            AlbumArt = (tag.Pictures != null && tag.Pictures.Length > 0)
+                ? tag.Pictures[0].Data.Data
+                : null
+        };
+    }
+}
+
 
         public void AddToPlaylist(MusicFile musicFile)
         {
