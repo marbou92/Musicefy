@@ -36,7 +36,7 @@ jobs:
           Get-Content msbuild.log -TotalCount 200 | ForEach-Object { Write-Host $_ }
           # List candidate Release output folders for debugging
           Get-ChildItem -Path . -Recurse -Directory -ErrorAction SilentlyContinue |
-            Where-Object { $_.FullName -match '\\bin\\Release' } |
+            Where-Object { $_.FullName -like '*\bin\Release*' } |
             ForEach-Object {
               Write-Host "Contents of $($_.FullName):"
               Get-ChildItem -Path $_.FullName -Recurse | ForEach-Object { Write-Host "  $($_.FullName)" }
@@ -53,10 +53,10 @@ jobs:
         shell: pwsh
         run: |
           $exe = Get-ChildItem -Path . -Filter Musicefy.exe -Recurse -ErrorAction SilentlyContinue |
-                 Where-Object { $_.FullName -match '\\bin\\Release' } | Select-Object -First 1
+                 Where-Object { $_.FullName -like '*\bin\Release*' } | Select-Object -First 1
           if (-not $exe) {
-            Write-Host "Musicefy.exe not found in any bin\\Release folder. Listing candidate folders for debug:"
-            Get-ChildItem -Path . -Directory -Recurse | Where-Object { $_.FullName -match '\\bin\\Release' } | ForEach-Object { Write-Host $_.FullName }
+            Write-Host "Musicefy.exe not found in any bin\Release folder. Listing candidate folders for debug:"
+            Get-ChildItem -Path . -Directory -Recurse | Where-Object { $_.FullName -like '*\bin\Release*' } | ForEach-Object { Write-Host $_.FullName }
             throw "Musicefy.exe not found"
           }
           $outDir = $exe.Directory.FullName
@@ -74,21 +74,27 @@ jobs:
           Copy-Item -Path (Join-Path $out '*') -Destination $portable -Recurse -Force
 
           # Also copy common native/nuget DLLs if they live in packages and weren't copied
-          Get-ChildItem -Path packages -Filter *.dll -Recurse -ErrorAction SilentlyContinue | ForEach-Object {
-            Copy-Item -Path $_.FullName -Destination $portable -Force
+          if (Test-Path packages) {
+            Get-ChildItem -Path packages -Filter *.dll -Recurse -ErrorAction SilentlyContinue | ForEach-Object {
+              Copy-Item -Path $_.FullName -Destination $portable -Force
+            }
           }
 
       - name: Diagnostic: list portable folder contents
         shell: pwsh
         run: |
           Write-Host "Musicefy-Portable contents:"
-          Get-ChildItem -Path Musicefy-Portable -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "  $($_.FullName)" }
+          if (Test-Path Musicefy-Portable) {
+            Get-ChildItem -Path Musicefy-Portable -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "  $($_.FullName)" }
+          } else {
+            Write-Host "Musicefy-Portable folder not found."
+          }
 
       - name: Smoke test EXE on runner
         shell: pwsh
         run: |
           $exe = Get-ChildItem -Path . -Filter Musicefy.exe -Recurse -ErrorAction SilentlyContinue |
-                 Where-Object { $_.FullName -match '\\Musicefy-Portable\\' } | Select-Object -First 1
+                 Where-Object { $_.FullName -like '*\Musicefy-Portable\*' } | Select-Object -First 1
           if (-not $exe) { throw "Musicefy.exe not found in Musicefy-Portable; smoke test cannot run." }
           Write-Host "Found EXE: $($exe.FullName)"
           Write-Host "Starting smoke test: launching EXE for 10 seconds..."
