@@ -1,3 +1,12 @@
+name: Clean and Build Musicefy
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:   # allows manual run from the Actions tab
+
 jobs:
   build:
     runs-on: windows-latest
