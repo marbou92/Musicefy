@@ -29,11 +29,10 @@
             <StackPanel Grid.Column="0"
                         Background="{StaticResource SecondaryBackgroundBrush}"
                         Padding="10">
-                <!-- Buttons and textblocks here are fine with Padding -->
+                <!-- Sidebar content -->
             </StackPanel>
             
             <!-- Music List Area -->
-            <!-- FIX: Grid cannot have Padding, use Margin -->
             <Grid Grid.Column="1" Margin="20">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -85,7 +84,6 @@
                      Value="35"/>
         
         <!-- Player Controls -->
-        <!-- FIX: Grid cannot have Padding, use Margin -->
         <Grid Grid.Row="2"
               Background="{StaticResource SecondaryBackgroundBrush}"
               Margin="15">
@@ -116,7 +114,7 @@
                         Orientation="Horizontal"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center">
-                <!-- Use Margin on each Button instead of Spacing -->
+                <!-- Use Margin on each Button -->
                 <Button Content="⏮" Margin="5"/>
                 <Button Content="▶" Margin="5"/>
                 <Button Content="⏭" Margin="5"/>
@@ -126,7 +124,6 @@
             <StackPanel Grid.Column="2"
                         Orientation="Horizontal"
                         VerticalAlignment="Center">
-                <!-- Use Margin on children instead of Spacing -->
                 <TextBlock Text="🔊"
                            FontSize="16"
                            VerticalAlignment="Center"
