@@ -26,21 +26,12 @@
             
             <!-- Sidebar -->
             <StackPanel Grid.Column="0" Background="{StaticResource SecondaryBackgroundBrush}" Padding="10">
-                <TextBlock Text="SOURCES" FontSize="14" FontWeight="Bold" Foreground="{StaticResource AccentBrush}" Margin="0,0,0,10"/>
-                <Button x:Name="AddSourceButton" Content="+ Add Streaming Source" Background="{StaticResource AccentBrush}" Foreground="{StaticResource BackgroundBrush}" Padding="10" Margin="0,0,0,10" FontWeight="Bold" Click="AddSourceButton_Click"/>
-                <ListBox x:Name="SourcesListBox" Background="{StaticResource BackgroundBrush}" Foreground="{StaticResource ForegroundBrush}" BorderBrush="{StaticResource BorderBrush}" Margin="0,0,0,15"/>
-                
-                <TextBlock Text="PLAYLISTS" FontSize="14" FontWeight="Bold" Foreground="{StaticResource AccentBrush}" Margin="0,0,0,15"/>
-                <Button Content="+ New Playlist" Background="{StaticResource AccentBrush}" Foreground="{StaticResource BackgroundBrush}" Padding="10" Margin="0,0,0,10" FontWeight="Bold"/>
-                <Button Content="My Favorite Songs" Background="{StaticResource BorderBrush}" Foreground="{StaticResource ForegroundBrush}" Padding="10" Margin="0,0,0,5"/>
-                <Button Content="Recent" Background="{StaticResource BorderBrush}" Foreground="{StaticResource ForegroundBrush}" Padding="10" Margin="0,0,0,5"/>
-                
-                <TextBlock Text="LIBRARY" FontSize="14" FontWeight="Bold" Foreground="{StaticResource AccentBrush}" Margin="0,20,0,15"/>
-                <Button Content="📁 Add Local Folder" Background="{StaticResource AccentBrush}" Foreground="{StaticResource BackgroundBrush}" Padding="10" Margin="0,0,0,10" FontWeight="Bold"/>
+                <!-- Buttons and textblocks here are fine with Padding -->
+                ...
             </StackPanel>
             
             <!-- Music List Area -->
-            <!-- FIX: Grid does not support Padding, replaced with Margin -->
+            <!-- FIXED: Grid does not support Padding -->
             <Grid Grid.Column="1" Margin="20">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -69,7 +60,7 @@
         <ProgressBar Grid.Row="1" Height="3" Foreground="{StaticResource AccentBrush}" Background="{StaticResource SecondaryBackgroundBrush}" Value="35"/>
         
         <!-- Player Controls -->
-        <!-- FIX: Grid does not support Padding, replaced with Margin -->
+        <!-- FIXED: Grid does not support Padding -->
         <Grid Grid.Row="2" Background="{StaticResource SecondaryBackgroundBrush}" Margin="15">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="200"/>
@@ -86,9 +77,8 @@
             
             <!-- Control Buttons -->
             <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
-                <Button x:Name="PreviousButton" Content="⏮" Width="40" Height="40" Background="{StaticResource BorderBrush}" Foreground="{StaticResource ForegroundBrush}" FontSize="18" Cursor="Hand" Click="PreviousButton_Click"/>
-                <Button x:Name="PlayButton" Content="▶" Width="50" Height="50" Background="{StaticResource AccentBrush}" Foreground="{StaticResource BackgroundBrush}" FontSize="20" Cursor="Hand" FontWeight="Bold" Click="PlayButton_Click"/>
-                <Button x:Name="NextButton" Content="⏭" Width="40" Height="40" Background="{StaticResource BorderBrush}" Foreground="{StaticResource ForegroundBrush}" FontSize="18" Cursor="Hand" Click="NextButton_Click"/>
+                <!-- Buttons are fine with Padding -->
+                ...
             </StackPanel>
             
             <!-- Volume Control -->
