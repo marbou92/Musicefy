@@ -1,7 +1,6 @@
-[<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 
-  <!-- Core project metadata -->
   <PropertyGroup>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <AssemblyName>Musicefy.Core</AssemblyName>
@@ -59,4 +58,3 @@
     <Deterministic>true</Deterministic>
   </PropertyGroup>
 </Project>
-]

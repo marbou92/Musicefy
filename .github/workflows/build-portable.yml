@@ -30,7 +30,7 @@ jobs:
       - name: Build solution (Release, Any CPU)
         shell: pwsh
         run: |
-          msbuild Musicefy.sln /t:Rebuild /p:Configuration=Release /p:Platform="Any CPU" /p:DebugType=none
+          msbuild Musicefy.sln /t:Rebuild /p:Configuration=Release /p:DebugType=none
 
       - name: Locate build output folder
         id: locate
