@@ -5,6 +5,9 @@
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <AssemblyName>Musicefy.Core</AssemblyName>
     <RootNamespace>Musicefy.Core</RootNamespace>
+    <!-- Explicit output paths -->
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <BaseOutputPath>bin\</BaseOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
