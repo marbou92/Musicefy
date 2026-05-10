@@ -28,9 +28,9 @@ jobs:
       - name: Clear NuGet cache
         run: nuget locals all -clear
 
-      - name: NuGet restore (packages folder)
+      - name: NuGet restore
         run: nuget restore Musicefy.sln -PackagesDirectory packages
-
+        
       - name: Dotnet restore
         run: dotnet restore Musicefy.sln
 
