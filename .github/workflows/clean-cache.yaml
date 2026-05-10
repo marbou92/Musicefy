@@ -22,11 +22,13 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1.3.1
 
-      # Explicit NuGet restore
+      - name: Install NuGet CLI
+        uses: nuget/setup-nuget@v1
+
       - name: NuGet restore
         run: nuget restore Musicefy.sln
 
-      - name: Restore packages
+      - name: Dotnet restore
         run: dotnet restore Musicefy.sln
 
       - name: Clean build artifacts
