@@ -18,7 +18,8 @@ jobs:
         uses: NuGet/setup-nuget@v1.2.0
 
       - name: Restore NuGet packages
-        run: nuget restore Musicefy.sln
+        shell: pwsh
+        run: msbuild Musicefy.sln /t:Restore
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1.3.1
@@ -31,5 +32,4 @@ jobs:
 
       - name: Rebuild solution
         shell: pwsh
-        run: |
-          msbuild Musicefy.sln /t:Rebuild /p:Configuration=Release /p:Platform="Any CPU"
+        run: msbuild Musicefy.sln /t:Rebuild /p:Configuration=Release /p:Platform="Any CPU"
