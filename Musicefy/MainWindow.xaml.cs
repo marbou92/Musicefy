@@ -17,6 +17,7 @@ namespace Musicefy
             InitializeComponent();
             InitializeApp();
             RefreshSources();
+            RefreshTracks();
         }
 
         private void InitializeApp()
@@ -24,6 +25,9 @@ namespace Musicefy
             audioPlayer = new AudioPlayer();
             playlistManager = new PlaylistManager();
             sourceManager = new StreamingSourceManager();
+
+            TracksList.SelectionChanged += TracksList_SelectionChanged;
+            VolumeSlider.ValueChanged += (s, e) => audioPlayer.SetVolume((float)(VolumeSlider.Value / 100.0));
         }
 
         private void RefreshSources()
@@ -35,14 +39,17 @@ namespace Musicefy
             {
                 var item = new ListBoxItem
                 {
-                    Content = source.ToString(),
-                    Background = Application.Current.Resources["SecondaryBackgroundBrush"] as System.Windows.Media.Brush,
-                    Foreground = Application.Current.Resources["ForegroundBrush"] as System.Windows.Media.Brush,
+                    Content = source,
                     Padding = new Thickness(10),
                     Margin = new Thickness(0, 5, 0, 0)
                 };
                 SourcesListBox.Items.Add(item);
             }
+        }
+
+        private void RefreshTracks()
+        {
+            TracksList.ItemsSource = playlistManager.GetSampleTracks();
         }
 
         private void AddSourceButton_Click(object sender, RoutedEventArgs e)
@@ -61,17 +68,47 @@ namespace Musicefy
 
         private void PlayButton_Click(object sender, RoutedEventArgs e)
         {
-            // Implement play functionality
+            if (TracksList.SelectedItem is Track t)
+            {
+                if (!string.IsNullOrEmpty(t.SourceUri))
+                {
+                    try
+                    {
+                        audioPlayer.Play(t.SourceUri);
+                        NowPlayingTitle.Text = t.Title;
+                        NowPlayingArtist.Text = t.Artist;
+                        NowPlayingMeta.Text = $"{t.Album} • {t.Year}";
+                    }
+                    catch (System.Exception ex)
+                    {
+                        MessageBox.Show($"Playback error: {ex.Message}", "Playback Error");
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Selected track has no source URI.", "Cannot Play");
+                }
+            }
         }
 
         private void PreviousButton_Click(object sender, RoutedEventArgs e)
         {
-            // Implement previous functionality
+            // placeholder: implement playlist navigation
         }
 
         private void NextButton_Click(object sender, RoutedEventArgs e)
         {
-            // Implement next functionality
+            // placeholder: implement playlist navigation
+        }
+
+        private void TracksList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (TracksList.SelectedItem is Track t)
+            {
+                NowPlayingTitle.Text = t.Title;
+                NowPlayingArtist.Text = t.Artist;
+                NowPlayingMeta.Text = $"{t.Album} • {t.Year}";
+            }
         }
     }
 }
