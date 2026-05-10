@@ -25,5 +25,10 @@ jobs:
       - name: Restore packages
         run: dotnet restore Musicefy.sln
 
+      - name: Clean build artifacts
+        run: |
+          git clean -xfd
+          Remove-Item -Recurse -Force Musicefy/bin,Musicefy/obj,Musicefy.Core/bin,Musicefy.Core/obj
+
       - name: Build solution
         run: msbuild Musicefy.sln /t:Rebuild /p:Configuration=Release /p:Platform="Any CPU"
