@@ -30,7 +30,7 @@
             </StackPanel>
             
             <!-- Music List Area -->
-            <!-- FIXED: Grid does not support Padding -->
+            <!-- FIXED: Grid now uses Margin instead of Padding -->
             <Grid Grid.Column="1" Margin="20">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -59,7 +59,7 @@
         <ProgressBar Grid.Row="1" Height="3" Foreground="{StaticResource AccentBrush}" Background="{StaticResource SecondaryBackgroundBrush}" Value="35"/>
         
         <!-- Player Controls -->
-        <!-- FIXED: Grid does not support Padding -->
+        <!-- FIXED: Grid now uses Margin instead of Padding -->
         <Grid Grid.Row="2" Background="{StaticResource SecondaryBackgroundBrush}" Margin="15">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="200"/>
