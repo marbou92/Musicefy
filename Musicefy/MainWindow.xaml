@@ -9,6 +9,7 @@
         Foreground="{StaticResource ForegroundBrush}"
         WindowStartupLocation="CenterScreen"
         Icon="/Musicefy;component/Resources/music_icon.ico">
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
@@ -39,7 +40,8 @@
             </StackPanel>
             
             <!-- Music List Area -->
-            <Grid Grid.Column="1" Padding="20">
+            <!-- FIX: Grid does not support Padding, replaced with Margin -->
+            <Grid Grid.Column="1" Margin="20">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
@@ -67,7 +69,8 @@
         <ProgressBar Grid.Row="1" Height="3" Foreground="{StaticResource AccentBrush}" Background="{StaticResource SecondaryBackgroundBrush}" Value="35"/>
         
         <!-- Player Controls -->
-        <Grid Grid.Row="2" Background="{StaticResource SecondaryBackgroundBrush}" Padding="15">
+        <!-- FIX: Grid does not support Padding, replaced with Margin -->
+        <Grid Grid.Row="2" Background="{StaticResource SecondaryBackgroundBrush}" Margin="15">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="200"/>
                 <ColumnDefinition Width="*"/>
