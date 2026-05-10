@@ -1,5 +1,0 @@
-- name: Clean and Rebuild solution
-  shell: pwsh
-  run: |
-    msbuild Musicefy.sln /t:Clean
-    msbuild Musicefy.sln /t:Rebuild /p:Configuration=Release /p:Platform="Any CPU"
