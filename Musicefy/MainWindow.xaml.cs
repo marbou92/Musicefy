@@ -68,7 +68,7 @@ namespace Musicefy
 
         private void PlayButton_Click(object sender, RoutedEventArgs e)
         {
-            if (TracksList.SelectedItem is Track t)
+            if (TracksList.SelectedItem is MusicFile t)
             {
                 if (!string.IsNullOrEmpty(t.SourceUri))
                 {
@@ -103,7 +103,7 @@ namespace Musicefy
 
         private void TracksList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (TracksList.SelectedItem is Track t)
+            if (TracksList.SelectedItem is MusicFile t)
             {
                 NowPlayingTitle.Text = t.Title;
                 NowPlayingArtist.Text = t.Artist;
