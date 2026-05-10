@@ -39,6 +39,29 @@ jobs:
           # Save exit code so we can upload log and still fail later
           Set-Content -Path msbuild.exitcode -Value $exit
 
+      - name: Print MSBuild error block (if any)
+        if: always()
+        shell: pwsh
+        run: |
+          if (Test-Path msbuild.log) {
+            Write-Host '=== MSBuild error block (10 lines context) ==='
+            $matches = Select-String -Path msbuild.log -Pattern 'error :' -AllMatches
+            if ($matches.Count -eq 0) {
+              Write-Host 'No "error :" lines found in msbuild.log'
+            } else {
+              foreach ($m in $matches) {
+                $lineNum = $m.LineNumber
+                $start = [Math]::Max(1, $lineNum - 10)
+                $end = $lineNum + 10
+                Write-Host "---- context around line $lineNum ----"
+                Get-Content msbuild.log -TotalCount $end | Select-Object -Skip ($start - 1) -First ($end - $start + 1) | ForEach-Object { Write-Host $_ }
+              }
+            }
+            Write-Host '=== end MSBuild error block ==='
+          } else {
+            Write-Host 'msbuild.log not found; nothing to print.'
+          }
+
       - name: Upload msbuild.log (always)
         if: always()
         uses: actions/upload-artifact@v4
