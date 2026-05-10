@@ -59,6 +59,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- ApplicationDefinition ensures App.xaml is compiled into the temporary assembly correctly -->
+    <ApplicationDefinition Include="App.xaml" />
+    <Page Include="MainWindow.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -67,25 +73,16 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="App.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="MainWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-  </ItemGroup>
 
-  <ItemGroup>
+    <!-- Keep AssemblyInfo if present -->
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Keep the .resx as an EmbeddedResource so the build generates Resources.Designer.cs automatically.
+         Do NOT include a manual Compile for Resources.Designer.cs here; the build will generate it. -->
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -95,8 +92,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Musicefy.Core\Musicefy.Core.csproj">
       <Name>Musicefy.Core</Name>
-      <!-- ProjectReference should not copy the project output as a separate private assembly;
-           the main project will reference the built output from the project build. -->
       <Private>false</Private>
     </ProjectReference>
   </ItemGroup>
