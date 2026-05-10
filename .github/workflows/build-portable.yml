@@ -27,10 +27,26 @@ jobs:
         shell: pwsh
         run: nuget restore Musicefy.sln -PackagesDirectory packages
 
-      - name: Build solution (Release, Any CPU)
+      - name: Build solution with diagnostic logging
         shell: pwsh
         run: |
-          msbuild Musicefy.sln /t:Rebuild /p:Configuration=Release /p:DebugType=none
+          # Produce a full diagnostic log for MSBuild and save it as msbuild.log
+          msbuild Musicefy.sln /t:Rebuild /p:Configuration=Release /p:DebugType=none /v:diag > msbuild.log 2>&1
+          # Print the first 200 lines for quick inspection in the Actions log
+          Get-Content msbuild.log -TotalCount 200 | ForEach-Object { Write-Host $_ }
+          # List candidate Release output folders for debugging
+          Get-ChildItem -Path . -Recurse -Directory -ErrorAction SilentlyContinue |
+            Where-Object { $_.FullName -match '\\bin\\Release' } |
+            ForEach-Object {
+              Write-Host "Contents of $($_.FullName):"
+              Get-ChildItem -Path $_.FullName -Recurse | ForEach-Object { Write-Host "  $($_.FullName)" }
+            }
+
+      - name: Upload MSBuild log
+        uses: actions/upload-artifact@v4
+        with:
+          name: msbuild-log
+          path: msbuild.log
 
       - name: Locate build output folder
         id: locate
@@ -39,7 +55,7 @@ jobs:
           $exe = Get-ChildItem -Path . -Filter Musicefy.exe -Recurse -ErrorAction SilentlyContinue |
                  Where-Object { $_.FullName -match '\\bin\\Release' } | Select-Object -First 1
           if (-not $exe) {
-            Write-Host "Musicefy.exe not found in any bin\\Release folder. Listing candidates for debug:"
+            Write-Host "Musicefy.exe not found in any bin\\Release folder. Listing candidate folders for debug:"
             Get-ChildItem -Path . -Directory -Recurse | Where-Object { $_.FullName -match '\\bin\\Release' } | ForEach-Object { Write-Host $_.FullName }
             throw "Musicefy.exe not found"
           }
@@ -62,6 +78,12 @@ jobs:
             Copy-Item -Path $_.FullName -Destination $portable -Force
           }
 
+      - name: Diagnostic: list portable folder contents
+        shell: pwsh
+        run: |
+          Write-Host "Musicefy-Portable contents:"
+          Get-ChildItem -Path Musicefy-Portable -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "  $($_.FullName)" }
+
       - name: Smoke test EXE on runner
         shell: pwsh
         run: |
@@ -75,7 +97,6 @@ jobs:
           if (-not $proc.HasExited) {
             try { $proc.Kill(); Write-Host "Process killed after smoke test." } catch { Write-Host "Failed to kill process: $_" }
           }
-          # If process exited, check exit code; otherwise treat as success if it started and didn't crash immediately
           if ($proc.HasExited) {
             Write-Host "Process exited with code $($proc.ExitCode)"
             if ($proc.ExitCode -ne 0) { throw "Smoke test failed: exit code $($proc.ExitCode)" }
