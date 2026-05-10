@@ -27,7 +27,6 @@
             <!-- Sidebar -->
             <StackPanel Grid.Column="0" Background="{StaticResource SecondaryBackgroundBrush}" Padding="10">
                 <!-- Buttons and textblocks here are fine with Padding -->
-                ...
             </StackPanel>
             
             <!-- Music List Area -->
@@ -78,7 +77,6 @@
             <!-- Control Buttons -->
             <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
                 <!-- Buttons are fine with Padding -->
-                ...
             </StackPanel>
             
             <!-- Volume Control -->
