@@ -1,15 +1,9 @@
 <Window x:Class="Musicefy.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d"
         Title="Musicefy - Music Streaming Player"
         Height="600" Width="900"
-        Background="{StaticResource BackgroundBrush}"
-        Foreground="{StaticResource ForegroundBrush}"
-        WindowStartupLocation="CenterScreen"
-        Icon="/Musicefy;component/Resources/music_icon.ico">
+        WindowStartupLocation="CenterScreen">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -17,125 +11,34 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="100"/>
         </Grid.RowDefinitions>
-        
-        <!-- Main Content Area -->
-        <Grid Grid.Row="0" Background="{StaticResource BackgroundBrush}">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="250"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            
-            <!-- Sidebar -->
-            <StackPanel Grid.Column="0"
-                        Background="{StaticResource SecondaryBackgroundBrush}"
-                        Padding="10">
-                <!-- Sidebar content -->
-            </StackPanel>
-            
-            <!-- Music List Area -->
-            <Grid Grid.Column="1" Margin="20">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                
-                <!-- Search Bar -->
-                <StackPanel Grid.Row="0" Margin="0,0,0,15">
-                    <TextBlock Text="My Music Library"
-                               FontSize="24"
-                               FontWeight="Bold"
-                               Foreground="{StaticResource ForegroundBrush}"
-                               Margin="0,0,0,10"/>
-                    <TextBox x:Name="SearchTextBox"
-                             Background="{StaticResource SecondaryBackgroundBrush}"
-                             Foreground="#888888"
-                             Padding="10"
-                             Height="35"
-                             FontSize="14"/>
-                </StackPanel>
-                
-                <!-- Songs List -->
-                <ListBox x:Name="SongsListBox"
-                         Grid.Row="1"
-                         Background="{StaticResource BackgroundBrush}"
-                         Foreground="{StaticResource ForegroundBrush}"
-                         BorderBrush="{StaticResource BorderBrush}">
-                    <ListBoxItem Background="{StaticResource SecondaryBackgroundBrush}"
-                                 Padding="15,10"
-                                 Margin="0,5">
-                        <StackPanel>
-                            <TextBlock Text="Song Title"
-                                       FontSize="14"
-                                       FontWeight="Bold"/>
-                            <TextBlock Text="Artist Name"
-                                       FontSize="11"
-                                       Foreground="#AAAAAA"/>
-                        </StackPanel>
-                    </ListBoxItem>
+
+        <!-- Sidebar -->
+        <StackPanel Grid.Row="0" Background="LightGray" Width="200" Padding="10">
+            <TextBlock Text="Sidebar" FontSize="16" FontWeight="Bold"/>
+        </StackPanel>
+
+        <!-- Main Content -->
+        <Border Grid.Row="0" Grid.Column="1" Padding="20" Background="White">
+            <StackPanel>
+                <TextBlock Text="My Music Library" FontSize="24" FontWeight="Bold" Margin="0,0,0,10"/>
+                <TextBox x:Name="SearchTextBox" Padding="5" Height="30" Text="Search..."/>
+                <ListBox Margin="0,10,0,0">
+                    <ListBoxItem Padding="5">Song Title - Artist</ListBoxItem>
                 </ListBox>
-            </Grid>
-        </Grid>
-        
-        <!-- Progress Bar -->
-        <ProgressBar Grid.Row="1"
-                     Height="3"
-                     Foreground="{StaticResource AccentBrush}"
-                     Background="{StaticResource SecondaryBackgroundBrush}"
-                     Value="35"/>
-        
-        <!-- Player Controls -->
-        <Grid Grid.Row="2"
-              Background="{StaticResource SecondaryBackgroundBrush}"
-              Margin="15">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="200"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="150"/>
-            </Grid.ColumnDefinitions>
-            
-            <!-- Current Song Info -->
-            <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                <TextBlock Text="Now Playing"
-                           FontSize="12"
-                           Foreground="#888888"/>
-                <TextBlock x:Name="CurrentSongTitle"
-                           Text="Song Title"
-                           FontSize="14"
-                           FontWeight="Bold"
-                           Foreground="{StaticResource ForegroundBrush}"/>
-                <TextBlock x:Name="CurrentSongArtist"
-                           Text="Artist Name"
-                           FontSize="11"
-                           Foreground="#AAAAAA"/>
             </StackPanel>
-            
-            <!-- Control Buttons -->
-            <StackPanel Grid.Column="1"
-                        Orientation="Horizontal"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center">
-                <!-- Use Margin on each Button -->
+        </Border>
+
+        <!-- Progress Bar -->
+        <ProgressBar Grid.Row="1" Height="3" Value="35"/>
+
+        <!-- Player Controls -->
+        <Border Grid.Row="2" Padding="10" Background="LightGray">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                 <Button Content="⏮" Margin="5"/>
                 <Button Content="▶" Margin="5"/>
                 <Button Content="⏭" Margin="5"/>
+                <Slider Width="100" Minimum="0" Maximum="100" Value="70" Margin="10,0,0,0"/>
             </StackPanel>
-            
-            <!-- Volume Control -->
-            <StackPanel Grid.Column="2"
-                        Orientation="Horizontal"
-                        VerticalAlignment="Center">
-                <TextBlock Text="🔊"
-                           FontSize="16"
-                           VerticalAlignment="Center"
-                           Margin="0,0,5,0"/>
-                <Slider x:Name="VolumeSlider"
-                        Width="100"
-                        VerticalAlignment="Center"
-                        Minimum="0"
-                        Maximum="100"
-                        Value="70"
-                        Background="{StaticResource BorderBrush}"/>
-            </StackPanel>
-        </Grid>
+        </Border>
     </Grid>
 </Window>
