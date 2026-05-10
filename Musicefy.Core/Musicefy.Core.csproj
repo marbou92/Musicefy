@@ -7,6 +7,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+
+    <!-- Build as a library (no Main required) -->
+    <OutputType>Library</OutputType>
+
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <AssemblyName>Musicefy.Core</AssemblyName>
     <RootNamespace>Musicefy.Core</RootNamespace>
@@ -16,6 +20,9 @@
     <!-- Fallback output paths so MSBuild never fails regardless of Platform spelling -->
     <BaseOutputPath>$(MSBuildProjectDirectory)\bin\</BaseOutputPath>
     <OutputPath>$(BaseOutputPath)$(Configuration)\</OutputPath>
+
+    <!-- Deterministic builds where possible -->
+    <Deterministic>true</Deterministic>
   </PropertyGroup>
 
   <!-- Explicit per-configuration OutputPath entries for both spellings -->
