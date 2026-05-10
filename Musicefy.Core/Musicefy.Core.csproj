@@ -1,17 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!-- Target .NET Framework 4.7.2 (runs on Windows 7 SP1 with updates) -->
     <TargetFramework>net472</TargetFramework>
     <AssemblyName>Musicefy.Core</AssemblyName>
     <RootNamespace>Musicefy.Core</RootNamespace>
-
-    <!-- Prevent duplicate attributes since you have your own AssemblyInfo.cs -->
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- NuGet packages -->
     <PackageReference Include="NAudio" Version="2.2.1" />
     <PackageReference Include="TagLibSharp" Version="2.2.0" />
     <PackageReference Include="System.Text.Json" Version="6.0.0" />
