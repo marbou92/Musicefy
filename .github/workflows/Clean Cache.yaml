@@ -1,8 +1,0 @@
-- name: Clean build artifacts
-  shell: pwsh
-  run: |
-    Write-Host "Cleaning bin and obj folders..."
-    Get-ChildItem -Path . -Include bin,obj -Recurse -Force | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
-    Write-Host "Running clean build..."
-    msbuild Musicefy.sln /t:Clean
-    msbuild Musicefy.sln /p:Configuration=Release /p:Platform="Any CPU" /p:DebugType=none

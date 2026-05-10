@@ -1,0 +1,30 @@
+name: Clean and Build Musicefy
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1.3.1
+
+      - name: Clean bin and obj folders
+        shell: pwsh
+        run: |
+          Write-Host "Cleaning bin and obj folders..."
+          Get-ChildItem -Path . -Include bin,obj -Recurse -Force | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+
+      - name: Build solution
+        shell: pwsh
+        run: |
+          msbuild Musicefy.sln /t:Clean
+          msbuild Musicefy.sln /p:Configuration=Release /p:Platform="Any CPU" /p:DebugType=none
