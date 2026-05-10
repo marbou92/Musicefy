@@ -7,9 +7,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{A1B2C3D4-E5F6-47G8-H9I0-J1K2L3M4N5O6}</ProjectGuid>
 
-    <!-- Application type -->
     <OutputType>WinExe</OutputType>
-
     <RootNamespace>Musicefy</RootNamespace>
     <AssemblyName>Musicefy</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
@@ -17,34 +15,26 @@
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
 
-    <!-- Consistent platform target and safe fallback output path -->
     <PlatformTarget>AnyCPU</PlatformTarget>
     <BaseOutputPath>$(MSBuildProjectDirectory)\bin\</BaseOutputPath>
     <OutputPath>$(BaseOutputPath)$(Configuration)\</OutputPath>
 
-    <!-- Deterministic builds where possible -->
     <Deterministic>true</Deterministic>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
 
   <ItemGroup>
@@ -58,10 +48,11 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
 
+  <!-- XAML items -->
   <ItemGroup>
-    <!-- ApplicationDefinition ensures App.xaml is compiled into the temporary assembly correctly -->
     <ApplicationDefinition Include="App.xaml" />
     <Page Include="MainWindow.xaml" />
+    <Page Include="Views\AddSourceWindow.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -73,26 +64,26 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-
-    <!-- Keep AssemblyInfo if present -->
-    <Compile Include="Properties\AssemblyInfo.cs">
+    <Compile Include="Views\AddSourceWindow.xaml.cs">
+      <DependentUpon>AddSourceWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Keep the .resx as an EmbeddedResource so the build generates Resources.Designer.cs automatically.
-         Do NOT include a manual Compile for Resources.Designer.cs here; the build will generate it. -->
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
 
+  <!-- ProjectReference to Core: ensure the Core assembly is available during XAML temp-assembly compilation -->
   <ItemGroup>
     <ProjectReference Include="..\Musicefy.Core\Musicefy.Core.csproj">
       <Name>Musicefy.Core</Name>
-      <Private>false</Private>
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+      <Private>true</Private>
     </ProjectReference>
   </ItemGroup>
 
