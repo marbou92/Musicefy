@@ -33,6 +33,7 @@
             </StackPanel>
             
             <!-- Music List Area -->
+            <!-- FIX: Grid cannot have Padding, use Margin -->
             <Grid Grid.Column="1" Margin="20">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -84,6 +85,7 @@
                      Value="35"/>
         
         <!-- Player Controls -->
+        <!-- FIX: Grid cannot have Padding, use Margin -->
         <Grid Grid.Row="2"
               Background="{StaticResource SecondaryBackgroundBrush}"
               Margin="15">
