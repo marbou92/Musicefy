@@ -31,15 +31,8 @@ jobs:
         shell: pwsh
         run: |
           msbuild Musicefy.sln /t:Rebuild /p:Configuration=Release /p:DebugType=none /v:diag > msbuild.log 2>&1
-          Write-Host "=== First 200 lines of msbuild.log ==="
-          Get-Content msbuild.log -TotalCount 200 | ForEach-Object { Write-Host $_ }
-          Write-Host "=== Searching for bin\\Release folders ==="
-          Get-ChildItem -Path . -Recurse -Directory -ErrorAction SilentlyContinue |
-            Where-Object { $_.FullName -match '\\\\bin\\\\Release' } |
-            ForEach-Object {
-              Write-Host "Contents of $($_.FullName):"
-              Get-ChildItem -Path $_.FullName -Recurse | ForEach-Object { Write-Host "  $($_.FullName)" }
-            }
+          Write-Host '=== First 200 lines of msbuild.log ==='
+          Get-Content msbuild.log -TotalCount 200
 
       - name: Upload MSBuild log
         uses: actions/upload-artifact@v4
@@ -52,12 +45,12 @@ jobs:
         shell: pwsh
         run: |
           $exe = Get-ChildItem -Path . -Filter Musicefy.exe -Recurse -ErrorAction SilentlyContinue |
-                 Where-Object { $_.FullName -match '\\\\bin\\\\Release' } | Select-Object -First 1
+                 Where-Object { $_.FullName -like '*\bin\Release*' } | Select-Object -First 1
           if (-not $exe) {
-            Write-Host "Musicefy.exe not found in any bin\\Release folder. Candidate Release folders:"
+            Write-Host 'Musicefy.exe not found in any bin\Release folder. Candidate Release folders:'
             Get-ChildItem -Path . -Recurse -Directory -ErrorAction SilentlyContinue |
-              Where-Object { $_.FullName -match '\\\\bin\\\\Release' } | ForEach-Object { Write-Host "  $($_.FullName)" }
-            throw "Musicefy.exe not found"
+              Where-Object { $_.FullName -like '*\bin\Release*' } | ForEach-Object { Write-Host "  $($_.FullName)" }
+            throw 'Musicefy.exe not found'
           }
           $outDir = $exe.Directory.FullName
           Write-Host "Found build output: $outDir"
@@ -73,7 +66,7 @@ jobs:
           Write-Host "Copying files from $out to $portable"
           Copy-Item -Path (Join-Path $out '*') -Destination $portable -Recurse -Force
           if (Test-Path packages) {
-            Write-Host "Copying any DLLs from packages folder into portable folder"
+            Write-Host "Copying DLLs from packages into portable folder (if any)"
             Get-ChildItem -Path packages -Filter *.dll -Recurse -ErrorAction SilentlyContinue |
               ForEach-Object { Copy-Item -Path $_.FullName -Destination $portable -Force }
           }
@@ -81,68 +74,68 @@ jobs:
       - name: Diagnostic: list portable folder contents
         shell: pwsh
         run: |
-          Write-Host "Musicefy-Portable contents:"
+          Write-Host 'Musicefy-Portable contents:'
           if (Test-Path Musicefy-Portable) {
             Get-ChildItem -Path Musicefy-Portable -Recurse -ErrorAction SilentlyContinue |
               ForEach-Object { Write-Host "  $($_.FullName)" }
           } else {
-            Write-Host "Musicefy-Portable folder not found."
+            Write-Host 'Musicefy-Portable folder not found.'
           }
 
       - name: Smoke test EXE on runner
         shell: pwsh
         run: |
           $exe = Get-ChildItem -Path . -Filter Musicefy.exe -Recurse -ErrorAction SilentlyContinue |
-                 Where-Object { $_.FullName -match '\\\\Musicefy-Portable\\\\' } | Select-Object -First 1
-          if (-not $exe) { throw "Musicefy.exe not found in Musicefy-Portable; smoke test cannot run." }
+                 Where-Object { $_.FullName -like '*\Musicefy-Portable\*' } | Select-Object -First 1
+          if (-not $exe) { throw 'Musicefy.exe not found in Musicefy-Portable; smoke test cannot run.' }
           Write-Host "Found EXE: $($exe.FullName)"
-          Write-Host "Starting smoke test: launching EXE for 10 seconds..."
+          Write-Host 'Starting smoke test: launching EXE for 10 seconds...'
           $proc = Start-Process -FilePath $exe.FullName -ArgumentList '/silent' -PassThru -WindowStyle Hidden
           Start-Sleep -Seconds 10
           if (-not $proc.HasExited) {
-            try { $proc.Kill(); Write-Host "Process killed after smoke test." } catch { Write-Host "Failed to kill process: $_" }
+            try { $proc.Kill(); Write-Host 'Process killed after smoke test.' } catch { Write-Host "Failed to kill process: $_" }
           }
           if ($proc.HasExited) {
             Write-Host "Process exited with code $($proc.ExitCode)"
             if ($proc.ExitCode -ne 0) { throw "Smoke test failed: exit code $($proc.ExitCode)" }
-            else { Write-Host "Smoke test OK (exit code 0)." }
+            else { Write-Host 'Smoke test OK (exit code 0).' }
           } else {
-            Write-Host "Smoke test OK (process started and was alive for the duration)."
+            Write-Host 'Smoke test OK (process started and was alive for the duration).'
           }
 
       - name: Create README for portable package
         shell: pwsh
         run: |
-          $readme = Join-Path $PWD "Musicefy-Portable\README.txt"
+          $readme = Join-Path $PWD 'Musicefy-Portable\README.txt'
           @(
-            "Musicefy Portable",
-            "=================",
-            "",
-            "This is a standalone version of Musicefy that requires no installation.",
-            "",
-            "To run:",
-            "1. Extract all files to a folder",
-            "2. Double-click Musicefy.exe",
-            "3. Enjoy streaming music!",
-            "",
-            "Requirements:",
-            "- Windows 7 SP1 or later",
-            "- Internet connection for streaming",
-            "- No additional software required",
-            "",
-            "Supported Streaming Services:",
-            "- Squidify (Subsonic API)",
-            "- Monochrome (Hi-Fi / TIDAL)",
-            "- Local Music Files"
+            'Musicefy Portable',
+            '=================',
+            '',
+            'This is a standalone version of Musicefy that requires no installation.',
+            '',
+            'To run:',
+            '1. Extract all files to a folder',
+            '2. Double-click Musicefy.exe',
+            '3. Enjoy streaming music!',
+            '',
+            'Requirements:',
+            '- Windows 7 SP1 or later',
+            '- Internet connection for streaming',
+            '- No additional software required',
+            '',
+            'Supported Streaming Services:',
+            '- Squidify (Subsonic API)',
+            '- Monochrome (Hi-Fi / TIDAL)',
+            '- Local Music Files'
           ) | Out-File -FilePath $readme -Encoding UTF8
 
       - name: Create ZIP Archive
         shell: pwsh
         run: |
-          $zipPath = Join-Path $PWD "Musicefy-Portable.zip"
+          $zipPath = Join-Path $PWD 'Musicefy-Portable.zip'
           if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
           Add-Type -AssemblyName System.IO.Compression.FileSystem
-          [System.IO.Compression.ZipFile]::CreateFromDirectory((Join-Path $PWD "Musicefy-Portable"), $zipPath)
+          [System.IO.Compression.ZipFile]::CreateFromDirectory((Join-Path $PWD 'Musicefy-Portable'), $zipPath)
           Write-Host "Created $zipPath"
 
       - name: Get Tag (version)
