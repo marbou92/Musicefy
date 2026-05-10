@@ -6,7 +6,10 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{A1B2C3D4-E5F6-47G8-H9I0-J1K2L3M4N5O6}</ProjectGuid>
+
+    <!-- Application type -->
     <OutputType>WinExe</OutputType>
+
     <RootNamespace>Musicefy</RootNamespace>
     <AssemblyName>Musicefy</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
@@ -14,12 +17,12 @@
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
 
-    <!-- Ensure consistent platform target and safe fallback output path -->
+    <!-- Consistent platform target and safe fallback output path -->
     <PlatformTarget>AnyCPU</PlatformTarget>
     <BaseOutputPath>$(MSBuildProjectDirectory)\bin\</BaseOutputPath>
     <OutputPath>$(BaseOutputPath)$(Configuration)\</OutputPath>
 
-    <!-- Keep deterministic builds where possible -->
+    <!-- Deterministic builds where possible -->
     <Deterministic>true</Deterministic>
   </PropertyGroup>
 
@@ -92,6 +95,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Musicefy.Core\Musicefy.Core.csproj">
       <Name>Musicefy.Core</Name>
+      <!-- ProjectReference should not copy the project output as a separate private assembly;
+           the main project will reference the built output from the project build. -->
       <Private>false</Private>
     </ProjectReference>
   </ItemGroup>
