@@ -1,11 +1,3 @@
-name: Clean and Build Musicefy
-
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
 jobs:
   build:
     runs-on: windows-latest
@@ -17,12 +9,12 @@ jobs:
       - name: Setup NuGet
         uses: NuGet/setup-nuget@v1.2.0
 
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1.3.1
+
       - name: Restore NuGet packages
         shell: pwsh
         run: msbuild Musicefy.sln /t:Restore
-
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v1.3.1
 
       - name: Clean bin and obj folders
         shell: pwsh
