@@ -22,6 +22,10 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1.3.1
 
+      # Explicit NuGet restore
+      - name: NuGet restore
+        run: nuget restore Musicefy.sln
+
       - name: Restore packages
         run: dotnet restore Musicefy.sln
 
