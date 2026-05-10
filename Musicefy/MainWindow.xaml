@@ -114,7 +114,7 @@
                         Orientation="Horizontal"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center">
-                <!-- Instead of Spacing, use Margin on each Button -->
+                <!-- Use Margin on each Button instead of Spacing -->
                 <Button Content="⏮" Margin="5"/>
                 <Button Content="▶" Margin="5"/>
                 <Button Content="⏭" Margin="5"/>
@@ -124,7 +124,7 @@
             <StackPanel Grid.Column="2"
                         Orientation="Horizontal"
                         VerticalAlignment="Center">
-                <!-- Instead of Spacing, use Margin on children -->
+                <!-- Use Margin on children instead of Spacing -->
                 <TextBlock Text="🔊"
                            FontSize="16"
                            VerticalAlignment="Center"
