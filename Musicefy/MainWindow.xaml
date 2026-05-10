@@ -17,7 +17,7 @@
             <TextBlock Text="Sidebar" FontSize="16" FontWeight="Bold"/>
         </StackPanel>
 
-        <!-- Main Content -->
+        <!-- Music List Area -->
         <Border Grid.Row="0" Grid.Column="1" Padding="20" Background="White">
             <StackPanel>
                 <TextBlock Text="My Music Library" FontSize="24" FontWeight="Bold" Margin="0,0,0,10"/>
