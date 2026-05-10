@@ -17,6 +17,12 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1.3.1
 
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v1.2.0
+
+      - name: Restore NuGet packages
+        run: nuget restore Musicefy.sln
+
       - name: Clean bin and obj folders
         shell: pwsh
         run: |
