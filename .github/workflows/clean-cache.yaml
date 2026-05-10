@@ -10,7 +10,6 @@ on:
 jobs:
   build:
     runs-on: windows-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -22,15 +21,13 @@ jobs:
         uses: microsoft/setup-msbuild@v1.3.1
 
       - name: Restore NuGet packages
-        shell: pwsh
-        run: msbuild Musicefy.sln /t:Restore
+        run: dotnet restore Musicefy.sln
 
       - name: Clean bin and obj folders
         shell: pwsh
-        run: |
-          Write-Host "Cleaning bin and obj folders..."
-          Get-ChildItem -Path . -Include bin,obj -Recurse -Force | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+        run: Get-ChildItem -Path . -Include bin,obj -Recurse -Force | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
 
       - name: Rebuild solution
         shell: pwsh
         run: msbuild Musicefy.sln /t:Rebuild /p:Configuration=Release /p:Platform="Any CPU"
+
