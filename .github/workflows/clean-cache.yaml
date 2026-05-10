@@ -17,12 +17,6 @@ jobs:
       - name: Setup NuGet
         uses: NuGet/setup-nuget@v1.2.0
 
-      - name: Clean and Rebuild solution
-  shell: pwsh
-  run: |
-    msbuild Musicefy.sln /t:Clean
-    msbuild Musicefy.sln /t:Rebuild /p:Configuration=Release /p:Platform="Any CPU"
-
       - name: Restore NuGet packages
         run: nuget restore Musicefy.sln
 
@@ -35,9 +29,7 @@ jobs:
           Write-Host "Cleaning bin and obj folders..."
           Get-ChildItem -Path . -Include bin,obj -Recurse -Force | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
 
-      - name: Build solution
+      - name: Rebuild solution
         shell: pwsh
         run: |
-          msbuild Musicefy.sln /t:Restore
-          msbuild Musicefy.sln /t:Clean
-          msbuild Musicefy.sln /p:Configuration=Release /p:Platform="Any CPU" /p:DebugType=none
+          msbuild Musicefy.sln /t:Rebuild /p:Configuration=Release /p:Platform="Any CPU"
