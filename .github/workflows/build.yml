@@ -1,0 +1,16 @@
+name: CI Build
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup NuGet
+        run: |
+          Invoke-WebRequest -Uri https://dist.nuget.org/win-x86-commandline/latest/nuget.exe -OutFile nuget.exe
+      - name: Restore NuGet packages
+        run: .\nuget.exe restore Musicefy.sln -PackagesDirectory packages
+      - name: Build solution
+        run: msbuild Musicefy.sln /t:Rebuild /p:Configuration=Release /v:m
