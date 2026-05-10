@@ -14,14 +14,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v1.3.1
-
       - name: Setup NuGet
         uses: NuGet/setup-nuget@v1.2.0
 
       - name: Restore NuGet packages
         run: nuget restore Musicefy.sln
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1.3.1
 
       - name: Clean bin and obj folders
         shell: pwsh
@@ -32,5 +32,6 @@ jobs:
       - name: Build solution
         shell: pwsh
         run: |
+          msbuild Musicefy.sln /t:Restore
           msbuild Musicefy.sln /t:Clean
           msbuild Musicefy.sln /p:Configuration=Release /p:Platform="Any CPU" /p:DebugType=none
