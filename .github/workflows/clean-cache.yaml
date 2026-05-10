@@ -17,6 +17,13 @@ jobs:
       - name: Setup NuGet
         uses: NuGet/setup-nuget@v1.2.0
 
+      - name: Clean and Rebuild solution
+  shell: pwsh
+  run: |
+    msbuild Musicefy.sln /t:Clean
+    msbuild Musicefy.sln /t:Rebuild /p:Configuration=Release /p:Platform="Any CPU"
+
+      
       - name: Restore NuGet packages
         run: nuget restore Musicefy.sln
 
