@@ -1,16 +1,54 @@
-name: CI Build
+name: Build (Windows MSBuild)
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
 
 jobs:
   build:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Setup NuGet
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download NuGet CLI
+        shell: pwsh
         run: |
           Invoke-WebRequest -Uri https://dist.nuget.org/win-x86-commandline/latest/nuget.exe -OutFile nuget.exe
+
       - name: Restore NuGet packages
+        shell: pwsh
         run: .\nuget.exe restore Musicefy.sln -PackagesDirectory packages
-      - name: Build solution
-        run: msbuild Musicefy.sln /t:Rebuild /p:Configuration=Release /v:m
+
+      - name: Locate MSBuild (vswhere)
+        shell: pwsh
+        id: find-msbuild
+        run: |
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          if (-not (Test-Path $vswhere)) {
+            Write-Host "vswhere not found at $vswhere; trying default MSBuild locations..."
+            $candidates = @(
+              "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe",
+              "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe",
+              "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe"
+            )
+            foreach ($c in $candidates) {
+              if (Test-Path $c) { Write-Host "Found MSBuild at $c"; Write-Output $c; exit 0 }
+            }
+            Write-Error "MSBuild not found."
+            exit 1
+          }
+          $msbuild = & $vswhere -latest -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe
+          if (-not $msbuild) { Write-Error "MSBuild not found via vswhere"; exit 1 }
+          Write-Host "MSBuild found: $msbuild"
+          Write-Output $msbuild
+
+      - name: Build solution with MSBuild
+        shell: pwsh
+        run: |
+          $msbuildPath = '${{ steps.find-msbuild.outputs[''stdout''] }}'.Trim()
+          if (-not $msbuildPath) {
+            Write-Error "MSBuild path not available from previous step."
+            exit 1
+          }
+          & $msbuildPath Musicefy.sln /t:Rebuild /p:Configuration=Release /v:m
