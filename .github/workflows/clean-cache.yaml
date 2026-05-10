@@ -28,8 +28,8 @@ jobs:
       - name: Clear NuGet cache
         run: nuget locals all -clear
 
-      - name: NuGet restore
-        run: nuget restore Musicefy.sln
+      - name: NuGet restore (packages folder)
+        run: nuget restore Musicefy.sln -PackagesDirectory packages
 
       - name: Dotnet restore
         run: dotnet restore Musicefy.sln
@@ -44,4 +44,4 @@ jobs:
           if (Test-Path "Musicefy.Core/obj") { Remove-Item -Recurse -Force "Musicefy.Core/obj" }
 
       - name: Build solution
-        run: msbuild Musicefy.sln /t:Rebuild /p:Configuration=Release /p:Platform="Any CPU"
+        run: msbuild Musicefy.sln /t:Rebuild /p:Configuration=Release /p:Platform="Any CPU" /p:RestorePackages=true /p:NuGetPackageRoot=packages
