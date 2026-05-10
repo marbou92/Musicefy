@@ -26,9 +26,13 @@ jobs:
         run: dotnet restore Musicefy.sln
 
       - name: Clean build artifacts
+        shell: pwsh
         run: |
           git clean -xfd
-          Remove-Item -Recurse -Force Musicefy/bin,Musicefy/obj,Musicefy.Core/bin,Musicefy.Core/obj
+          if (Test-Path "Musicefy/bin") { Remove-Item -Recurse -Force "Musicefy/bin" }
+          if (Test-Path "Musicefy/obj") { Remove-Item -Recurse -Force "Musicefy/obj" }
+          if (Test-Path "Musicefy.Core/bin") { Remove-Item -Recurse -Force "Musicefy.Core/bin" }
+          if (Test-Path "Musicefy.Core/obj") { Remove-Item -Recurse -Force "Musicefy.Core/obj" }
 
       - name: Build solution
         run: msbuild Musicefy.sln /t:Rebuild /p:Configuration=Release /p:Platform="Any CPU"
