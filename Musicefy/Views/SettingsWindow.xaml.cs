@@ -1,4 +1,6 @@
 using System.Windows;
+using System.Windows.Controls;
+using Musicefy.Core; // Import ThemeManager
 
 namespace Musicefy.Views
 {
@@ -9,29 +11,18 @@ namespace Musicefy.Views
             InitializeComponent();
         }
 
-        private void ThemeCombo_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private void ThemeCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var selected = (ThemeCombo.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Content.ToString();
-            if (selected == "Light")
+            var selected = (ThemeCombo.SelectedItem as ComboBoxItem)?.Content.ToString();
+            if (!string.IsNullOrEmpty(selected))
             {
-                ApplyTheme("Themes/Light.xaml");
+                ThemeManager.ApplyTheme(selected);
             }
-            else if (selected == "Dark")
-            {
-                ApplyTheme("Themes/Dark.xaml");
-            }
-        }
-
-        private void ApplyTheme(string themePath)
-        {
-            var dict = new ResourceDictionary { Source = new System.Uri(themePath, System.UriKind.Relative) };
-            Application.Current.Resources.MergedDictionaries.Clear();
-            Application.Current.Resources.MergedDictionaries.Add(dict);
         }
 
         private void Save_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Persist settings (Properties.Settings or JSON)
+            // Persist settings already handled by ThemeManager
             this.DialogResult = true;
             Close();
         }
