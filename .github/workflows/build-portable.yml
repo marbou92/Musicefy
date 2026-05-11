@@ -23,9 +23,14 @@ jobs:
         shell: pwsh
         run: nuget locals all -clear
 
-      - name: Restore NuGet packages
+      # Restore for packages.config projects
+      - name: NuGet restore
         shell: pwsh
-        run: nuget restore Musicefy.sln -PackagesDirectory packages
+        run: nuget restore Musicefy.sln
+
+      # Restore for SDK-style projects
+      - name: Dotnet restore
+        run: dotnet restore Musicefy.sln
 
       - name: Build solution (Release)
         shell: pwsh
@@ -53,16 +58,6 @@ jobs:
           New-Item -ItemType Directory -Path $portable | Out-Null
           Write-Host "Copying files from $out to $portable"
           Copy-Item -Path (Join-Path $out '*') -Destination $portable -Recurse -Force
-          if (Test-Path packages) {
-            Write-Host "Copying DLLs from packages into portable folder (if any)"
-            Get-ChildItem -Path packages -Filter *.dll -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Copy-Item -Path $_.FullName -Destination $portable -Force }
-          }
-
-      - name: List portable folder contents
-        shell: pwsh
-        run: |
-          Write-Host 'Musicefy-Portable contents:'
-          Get-ChildItem -Path 'Musicefy-Portable' -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "  $($_.FullName)" }
 
       - name: Create ZIP of portable folder
         shell: pwsh
@@ -80,3 +75,13 @@ jobs:
           path: |
             Musicefy-Portable
             Musicefy-Portable.zip
+
+      # Publish single-file EXE
+      - name: Publish single-file EXE
+        run: dotnet publish Musicefy/Musicefy.csproj -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true /p:IncludeAllContentForSelfExtract=true /p:DebugType=none /p:PublishTrimmed=false -o Musicefy-SingleFile
+
+      - name: Upload single-file EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: Musicefy-SingleFile
+          path: Musicefy-SingleFile
