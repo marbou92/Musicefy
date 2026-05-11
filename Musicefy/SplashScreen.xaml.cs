@@ -15,8 +15,19 @@ namespace Musicefy
                 var fadeIn = new DoubleAnimation(0, 1, new Duration(System.TimeSpan.FromSeconds(1)));
                 BeginAnimation(Window.OpacityProperty, fadeIn);
 
+                // Animate equalizer bars
+                AnimateBar(Bar1, 0.5);
+                AnimateBar(Bar2, 0.7);
+                AnimateBar(Bar3, 0.6);
+                AnimateBar(Bar4, 0.8);
+                AnimateBar(Bar5, 0.5);
+
+                // Animate gradient background
+                AnimateGradient(GradientStop1, "#1E1E1E", "#3B82F6", 3);
+                AnimateGradient(GradientStop2, "#00D4FF", "#9333EA", 3);
+
                 // Simulate loading
-                await Task.Delay(2000);
+                await Task.Delay(3500);
 
                 // Fade out
                 var fadeOut = new DoubleAnimation(1, 0, new Duration(System.TimeSpan.FromSeconds(1)));
@@ -28,6 +39,31 @@ namespace Musicefy
                 };
                 BeginAnimation(Window.OpacityProperty, fadeOut);
             };
+        }
+
+        private void AnimateBar(System.Windows.Shapes.Rectangle bar, double speed)
+        {
+            var anim = new DoubleAnimationUsingKeyFrames
+            {
+                RepeatBehavior = RepeatBehavior.Forever,
+                AutoReverse = true
+            };
+            anim.KeyFrames.Add(new EasingDoubleKeyFrame(20, KeyTime.FromTimeSpan(System.TimeSpan.FromSeconds(0))));
+            anim.KeyFrames.Add(new EasingDoubleKeyFrame(80, KeyTime.FromTimeSpan(System.TimeSpan.FromSeconds(speed))));
+            bar.BeginAnimation(System.Windows.Shapes.Rectangle.HeightProperty, anim);
+        }
+
+        private void AnimateGradient(System.Windows.Media.GradientStop stop, string fromColor, string toColor, double duration)
+        {
+            var anim = new ColorAnimation
+            {
+                From = (Color)ColorConverter.ConvertFromString(fromColor),
+                To = (Color)ColorConverter.ConvertFromString(toColor),
+                Duration = new Duration(System.TimeSpan.FromSeconds(duration)),
+                AutoReverse = true,
+                RepeatBehavior = RepeatBehavior.Forever
+            };
+            stop.BeginAnimation(System.Windows.Media.GradientStop.ColorProperty, anim);
         }
     }
 }
