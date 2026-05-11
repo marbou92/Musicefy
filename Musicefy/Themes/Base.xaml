@@ -1,0 +1,71 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Shared Accent Gradient -->
+    <LinearGradientBrush x:Key="AccentBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#B57EDC" Offset="0.0"/>
+        <GradientStop Color="#C89DF2" Offset="1.0"/>
+    </LinearGradientBrush>
+
+    <!-- Buttons -->
+    <Style TargetType="Button">
+        <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+        <Setter Property="Padding" Value="10,6"/>
+        <Setter Property="Margin" Value="4"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="BorderThickness" Value="2"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect BlurRadius="0" ShadowDepth="0" Color="#00000000"/>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <!-- Hover animation -->
+            <Trigger Property="IsMouseOver" Value="True">
+                <Trigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <ColorAnimation Storyboard.TargetProperty="(Button.Background).(GradientBrush.GradientStops)[0].Color"
+                                            To="#D6B8F7" Duration="0:0:0.3"/>
+                            <ColorAnimation Storyboard.TargetProperty="(Button.Background).(GradientBrush.GradientStops)[1].Color"
+                                            To="#B57EDC" Duration="0:0:0.3"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </Trigger.EnterActions>
+            </Trigger>
+            <!-- Pressed animation -->
+            <Trigger Property="IsPressed" Value="True">
+                <Trigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <ColorAnimation Storyboard.TargetProperty="(Button.Background).(GradientBrush.GradientStops)[0].Color"
+                                            To="#9A6FD0" Duration="0:0:0.2"/>
+                            <ColorAnimation Storyboard.TargetProperty="(Button.Background).(GradientBrush.GradientStops)[1].Color"
+                                            To="#7E56B8" Duration="0:0:0.2"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </Trigger.EnterActions>
+            </Trigger>
+            <!-- Focus glow -->
+            <Trigger Property="IsFocused" Value="True">
+                <Trigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <ColorAnimation Storyboard.TargetProperty="(Button.Effect).(DropShadowEffect.Color)"
+                                            To="#B57EDC" Duration="0:0:0.3"/>
+                            <DoubleAnimation Storyboard.TargetProperty="(Button.Effect).(DropShadowEffect.BlurRadius)"
+                                             To="15" Duration="0:0:0.3"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </Trigger.EnterActions>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- TextBox, ComboBox, ListBoxItem, MenuItem, ToolTip, ScrollBar, CheckBox, RadioButton, GroupBox, Label -->
+    <!-- (All the styles we built earlier go here, unchanged, so they are shared across every theme) -->
+
+</ResourceDictionary>
