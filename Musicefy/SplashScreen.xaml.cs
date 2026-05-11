@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Media;
 using System.Windows.Media.Animation;
 
 namespace Musicefy
@@ -23,11 +24,11 @@ namespace Musicefy
                 AnimateBar(Bar5, 0.5);
 
                 // Animate gradient background
-                AnimateGradient(GradientStop1, "#1E1E1E", "#3B82F6", 3);
-                AnimateGradient(GradientStop2, "#00D4FF", "#9333EA", 3);
+                AnimateGradient(GradientStop1, "#1E1E1E", "#3B82F6", 6);
+                AnimateGradient(GradientStop2, "#00D4FF", "#9333EA", 6);
 
                 // Simulate loading
-                await Task.Delay(3500);
+                await Task.Delay(4000);
 
                 // Fade out
                 var fadeOut = new DoubleAnimation(1, 0, new Duration(System.TimeSpan.FromSeconds(1)));
@@ -53,7 +54,7 @@ namespace Musicefy
             bar.BeginAnimation(System.Windows.Shapes.Rectangle.HeightProperty, anim);
         }
 
-        private void AnimateGradient(System.Windows.Media.GradientStop stop, string fromColor, string toColor, double duration)
+        private void AnimateGradient(GradientStop stop, string fromColor, string toColor, double duration)
         {
             var anim = new ColorAnimation
             {
@@ -63,7 +64,7 @@ namespace Musicefy
                 AutoReverse = true,
                 RepeatBehavior = RepeatBehavior.Forever
             };
-            stop.BeginAnimation(System.Windows.Media.GradientStop.ColorProperty, anim);
+            stop.BeginAnimation(GradientStop.ColorProperty, anim);
         }
     }
 }
