@@ -71,14 +71,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
-
-  <!-- ProjectReference to Core: ensure the Core assembly is available during XAML temp-assembly compilation -->
+  <!-- ProjectReference to Core -->
   <ItemGroup>
     <ProjectReference Include="..\Musicefy.Core\Musicefy.Core.csproj">
       <Name>Musicefy.Core</Name>
