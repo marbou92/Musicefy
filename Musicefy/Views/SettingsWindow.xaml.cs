@@ -31,6 +31,7 @@ namespace Musicefy.Views
             InitializeComponent();
             DataContext = this;
 
+            // Load available themes from ThemeManager
             AvailableThemes = new ObservableCollection<string>(ThemeManager.GetAvailableThemes());
 
             // Save the original theme so we can revert if Cancel is clicked
@@ -53,6 +54,8 @@ namespace Musicefy.Views
         private void Save_Click(object sender, RoutedEventArgs e)
         {
             ThemeManager.SaveTheme(SelectedTheme);
+            Properties.Settings.Default.SelectedTheme = SelectedTheme;
+            Properties.Settings.Default.Save();
             this.DialogResult = true;
             Close();
         }
