@@ -1,21 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
+    <!-- Target .NET Framework 4.7.2 -->
     <TargetFramework>net472</TargetFramework>
     <AssemblyName>Musicefy.Core</AssemblyName>
     <RootNamespace>Musicefy.Core</RootNamespace>
+
+    <!-- Keep custom AssemblyInfo.cs -->
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
-
-  <!-- Framework references -->
-  <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Drawing" />
-  </ItemGroup>
 
   <!-- NuGet packages -->
   <ItemGroup>
@@ -23,4 +16,5 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="TagLibSharp" Version="2.2.0" />
   </ItemGroup>
+
 </Project>
