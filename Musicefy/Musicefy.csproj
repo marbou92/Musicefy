@@ -5,11 +5,12 @@
     <TargetFramework>net472</TargetFramework>
     <UseWPF>true</UseWPF>
 
+    <!-- Prevent duplicate AssemblyInfo -->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+
     <!-- App metadata -->
     <RootNamespace>Musicefy</RootNamespace>
     <AssemblyName>Musicefy</AssemblyName>
-
-    <!-- Optional: embed your app icon -->
     <ApplicationIcon>Assets\musicefy.ico</ApplicationIcon>
   </PropertyGroup>
 
