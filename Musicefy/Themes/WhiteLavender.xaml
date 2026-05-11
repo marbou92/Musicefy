@@ -7,13 +7,14 @@
     <Color x:Key="ForegroundColor">#000000</Color>
     <Color x:Key="BorderColor">#DDDDDD</Color>
 
-    <!-- Lavender accent -->
-    <Color x:Key="AccentColor">#B57EDC</Color>
-
     <!-- Brushes -->
     <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
     <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="{StaticResource SecondaryBackgroundColor}"/>
     <SolidColorBrush x:Key="ForegroundBrush" Color="{StaticResource ForegroundColor}"/>
     <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
-    <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
+
+    <!-- Merge shared lavender styles -->
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="LavenderTheme.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>
