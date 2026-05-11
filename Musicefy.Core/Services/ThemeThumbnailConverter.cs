@@ -5,7 +5,7 @@ using System.Windows.Media;
 
 namespace Musicefy.Core
 {
-    public class ThemeThumbnailConverter : IValueConverter
+    public class ThemePreviewConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -22,13 +22,19 @@ namespace Musicefy.Core
                             Color.FromRgb(181, 126, 220),
                             Color.FromRgb(154, 111, 208),
                             new Point(0, 0),
-                            new Point(1, 1));
+                            new Point(1, 1))
+                        {
+                            MappingMode = BrushMappingMode.RelativeToBoundingBox
+                        };
                     case "WhiteLavender":
                         return new LinearGradientBrush(
                             Color.FromRgb(181, 126, 220),
                             Color.FromRgb(200, 157, 242),
                             new Point(0, 0),
-                            new Point(1, 1));
+                            new Point(1, 1))
+                        {
+                            MappingMode = BrushMappingMode.RelativeToBoundingBox
+                        };
                     default:
                         return new SolidColorBrush(Colors.Gray);
                 }
