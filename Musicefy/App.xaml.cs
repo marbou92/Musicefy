@@ -1,5 +1,7 @@
+using System;
+using System.IO;
 using System.Windows;
-using Musicefy.Services;
+using System.Windows.Threading;
 
 namespace Musicefy
 {
@@ -8,12 +10,42 @@ namespace Musicefy
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
-            ThemeManager.LoadSavedTheme();
+
+            // Global exception handlers
+            this.DispatcherUnhandledException += App_DispatcherUnhandledException;
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
         }
 
-        public static void ApplyTheme(string themeName)
+        private void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
-            ThemeManager.ApplyTheme(themeName);
+            LogException(e.Exception);
+            MessageBox.Show($"Unexpected error: {e.Exception.Message}\nSee crash.log for details.",
+                            "Musicefy Crash",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+            e.Handled = true; // prevent silent crash
+        }
+
+        private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            if (e.ExceptionObject is Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void LogException(Exception ex)
+        {
+            try
+            {
+                string logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "crash.log");
+                File.AppendAllText(logPath,
+                    $"[{DateTime.Now}] {ex}\n---------------------------------\n");
+            }
+            catch
+            {
+                // ignore logging errors
+            }
         }
     }
 }
