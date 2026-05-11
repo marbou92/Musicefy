@@ -60,9 +60,9 @@
             </StackPanel>
 
             <!-- Buttons -->
-            <StackPanel Grid.Row="8" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
-                <Button x:Name="CancelButton" Content="Cancel" Background="{StaticResource BorderBrush}" Foreground="{StaticResource ForegroundBrush}" Padding="20,10" Width="100" Click="CancelButton_Click"/>
-                <Button x:Name="TestButton" Content="Test" Background="{StaticResource AccentBrush}" Foreground="{StaticResource BackgroundBrush}" Padding="20,10" Width="100" Click="TestButton_Click" FontWeight="Bold"/>
+            <StackPanel Grid.Row="8" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button x:Name="CancelButton" Content="Cancel" Background="{StaticResource BorderBrush}" Foreground="{StaticResource ForegroundBrush}" Padding="20,10" Width="100" Click="CancelButton_Click" Margin="0,0,10,0"/>
+                <Button x:Name="TestButton" Content="Test" Background="{StaticResource AccentBrush}" Foreground="{StaticResource BackgroundBrush}" Padding="20,10" Width="100" Click="TestButton_Click" FontWeight="Bold" Margin="0,0,10,0"/>
                 <Button x:Name="AddButton" Content="Add Source" Background="{StaticResource AccentBrush}" Foreground="{StaticResource BackgroundBrush}" Padding="20,10" Width="120" Click="AddButton_Click" FontWeight="Bold"/>
             </StackPanel>
         </Grid>
