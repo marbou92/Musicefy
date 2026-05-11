@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media;
 
-namespace Musicefy.Core
+namespace Musicefy.Converters
 {
     public class ThemeThumbnailConverter : IValueConverter
     {
