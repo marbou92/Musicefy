@@ -1,6 +1,7 @@
 <Application x:Class="Musicefy.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Musicefy.Core"
              StartupUri="SplashScreen.xaml"
              Icon="Assets/musicefy.ico">
     <Application.Resources>
@@ -12,6 +13,9 @@
                 <!-- Shared base animations + styles -->
                 <ResourceDictionary Source="Themes/Base.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+
+            <!-- Register ThemeThumbnailConverter globally -->
+            <local:ThemeThumbnailConverter x:Key="ThemeThumbnailConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
