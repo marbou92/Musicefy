@@ -26,9 +26,6 @@ namespace Musicefy.Core.Services
             this.httpClient = new HttpClient();
         }
 
-        /// <summary>
-        /// Test connection to the streaming service
-        /// </summary>
         public async Task<bool> TestConnectionAsync()
         {
             try
@@ -43,9 +40,6 @@ namespace Musicefy.Core.Services
             }
         }
 
-        /// <summary>
-        /// Get all music folders from the streaming service
-        /// </summary>
         public async Task<List<string>> GetMusicFoldersAsync()
         {
             try
@@ -75,9 +69,6 @@ namespace Musicefy.Core.Services
             }
         }
 
-        /// <summary>
-        /// Search for songs on the streaming service
-        /// </summary>
         public async Task<List<MusicFile>> SearchAsync(string query, int count = 50)
         {
             try
@@ -108,9 +99,6 @@ namespace Musicefy.Core.Services
             }
         }
 
-        /// <summary>
-        /// Get random songs from the streaming service
-        /// </summary>
         public async Task<List<MusicFile>> GetRandomSongsAsync(int count = 50)
         {
             try
@@ -139,9 +127,6 @@ namespace Musicefy.Core.Services
             }
         }
 
-        /// <summary>
-        /// Get the streaming URL for a song
-        /// </summary>
         public string GetStreamUrl(string songId)
         {
             var salt = Guid.NewGuid().ToString().Substring(0, 8);
@@ -156,14 +141,11 @@ namespace Musicefy.Core.Services
                    $"&id={songId}";
         }
 
-        /// <summary>
-        /// Parse song information from XML response
-        /// </summary>
         private MusicFile ParseSongFromXml(XElement songElement)
         {
             return new MusicFile
             {
-                FilePath = $"{source.Id}:{songElement.Attribute("id")?.Value}", // Use source:songId format
+                FilePath = $"{source.Id}:{songElement.Attribute("id")?.Value}",
                 Title = songElement.Attribute("title")?.Value ?? "Unknown",
                 Artist = songElement.Attribute("artist")?.Value ?? "Unknown Artist",
                 Album = songElement.Attribute("album")?.Value ?? "Unknown Album",
@@ -174,21 +156,13 @@ namespace Musicefy.Core.Services
             };
         }
 
-        /// <summary>
-        /// Parse duration from seconds to TimeSpan
-        /// </summary>
         private TimeSpan ParseDuration(string durationStr)
         {
             if (int.TryParse(durationStr, out var seconds))
-            {
                 return TimeSpan.FromSeconds(seconds);
-            }
             return TimeSpan.Zero;
         }
 
-        /// <summary>
-        /// Generate MD5 token hash for Subsonic API authentication
-        /// </summary>
         private string GenerateTokenHash(string password, string salt)
         {
             var combined = password + salt;
@@ -199,9 +173,6 @@ namespace Musicefy.Core.Services
             }
         }
 
-        /// <summary>
-        /// Make a generic Subsonic API request
-        /// </summary>
         private async Task<XElement> MakeSubsonicRequestAsync(string method, Dictionary<string, string> parameters)
         {
             var salt = Guid.NewGuid().ToString().Substring(0, 8);
