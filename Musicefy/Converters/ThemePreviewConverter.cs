@@ -1,6 +1,6 @@
 using System;
 using System.Globalization;
-using System.Windows;              // <-- Needed for Point
+using System.Windows;              // Needed for Point
 using System.Windows.Data;
 using System.Windows.Media;
 
@@ -23,19 +23,13 @@ namespace Musicefy.Converters
                             Color.FromRgb(181, 126, 220),
                             Color.FromRgb(154, 111, 208),
                             new Point(0, 0),
-                            new Point(1, 1))
-                        {
-                            MappingMode = BrushMappingMode.RelativeToBoundingBox
-                        };
+                            new Point(1, 1));
                     case "WhiteLavender":
                         return new LinearGradientBrush(
                             Color.FromRgb(181, 126, 220),
                             Color.FromRgb(200, 157, 242),
                             new Point(0, 0),
-                            new Point(1, 1))
-                        {
-                            MappingMode = BrushMappingMode.RelativeToBoundingBox
-                        };
+                            new Point(1, 1));
                     default:
                         return new SolidColorBrush(Colors.Gray);
                 }
@@ -44,8 +38,6 @@ namespace Musicefy.Converters
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
+            => throw new NotImplementedException();
     }
 }
