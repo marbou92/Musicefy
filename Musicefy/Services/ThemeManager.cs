@@ -8,7 +8,6 @@ namespace Musicefy.Services
 {
     public static class ThemeManager
     {
-        // List of available themes
         private static readonly string[] AvailableThemes =
         {
             "Dark",
@@ -17,10 +16,8 @@ namespace Musicefy.Services
             "WhiteLavender"
         };
 
-        // Returns all available themes
         public static IEnumerable<string> GetAvailableThemes() => AvailableThemes;
 
-        // Apply a theme by name
         public static void ApplyTheme(string themeName)
         {
             if (!AvailableThemes.Contains(themeName))
@@ -34,7 +31,6 @@ namespace Musicefy.Services
             Application.Current.Resources.MergedDictionaries.Clear();
             Application.Current.Resources.MergedDictionaries.Add(dict);
 
-            // Always merge Base.xaml for shared styles/animations
             Application.Current.Resources.MergedDictionaries.Add(
                 new ResourceDictionary
                 {
@@ -42,24 +38,22 @@ namespace Musicefy.Services
                 });
         }
 
-        // Load saved theme or default
         public static void LoadSavedTheme()
         {
-            string savedTheme = Settings.Default.SelectedTheme;
+            string savedTheme = Settings.Default.Theme;
 
             if (string.IsNullOrEmpty(savedTheme) || !AvailableThemes.Contains(savedTheme))
-                savedTheme = "Dark"; // default
+                savedTheme = "Dark";
 
             ApplyTheme(savedTheme);
         }
 
-        // Save selected theme
         public static void SaveTheme(string themeName)
         {
             if (!AvailableThemes.Contains(themeName))
                 throw new ArgumentException($"Theme '{themeName}' is not defined.");
 
-            Settings.Default.SelectedTheme = themeName;
+            Settings.Default.Theme = themeName;
             Settings.Default.Save();
         }
     }
