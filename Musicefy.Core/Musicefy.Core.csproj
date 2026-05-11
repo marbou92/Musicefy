@@ -55,9 +55,9 @@
   <!-- NuGet package references -->
 <ItemGroup>
   <Reference Include="NAudio">
-    <HintPath>..\packages\NAudio.2.2.1\lib\net472\NAudio.dll</HintPath>
-    <Private>True</Private>
-  </Reference>
+  <HintPath>..\packages\NAudio.2.2.1\lib\netstandard2.0\NAudio.dll</HintPath>
+  <Private>True</Private>
+</Reference>
   <Reference Include="Newtonsoft.Json">
     <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     <Private>True</Private>
