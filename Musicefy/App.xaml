@@ -14,8 +14,9 @@
                 <ResourceDictionary Source="Themes/Base.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
-            <!-- Register ThemeThumbnailConverter globally -->
+            <!-- Global converters -->
             <local:ThemeThumbnailConverter x:Key="ThemeThumbnailConverter"/>
+            <local:ThemePreviewConverter x:Key="ThemePreviewConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
