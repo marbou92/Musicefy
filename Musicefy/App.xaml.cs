@@ -1,19 +1,15 @@
 using System;
 using System.Windows;
-using Musicefy.Services; // ThemeManager
+using Musicefy.Services;
 
 namespace Musicefy
 {
     public partial class App : Application
     {
-        protected override void OnStartup(StartupEventArgs e)
+        // Forward ApplyTheme calls to ThemeManager
+        public static void ApplyTheme(string themeName)
         {
-            base.OnStartup(e);
-
-            // Load saved theme or default
-            ThemeManager.LoadSavedTheme();
-
-            // Future: Initialize logging, analytics, or dependency injection here
+            ThemeManager.ApplyTheme(themeName);
         }
     }
 }
