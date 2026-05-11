@@ -93,12 +93,12 @@ namespace Musicefy
 
         private void PreviousButton_Click(object sender, RoutedEventArgs e)
         {
-            // placeholder: implement playlist navigation
+            // TODO: implement playlist navigation
         }
 
         private void NextButton_Click(object sender, RoutedEventArgs e)
         {
-            // placeholder: implement playlist navigation
+            // TODO: implement playlist navigation
         }
 
         private void TracksList_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -109,6 +109,32 @@ namespace Musicefy
                 NowPlayingArtist.Text = t.Artist;
                 NowPlayingMeta.Text = $"{t.Album} • {t.Year}";
             }
+        }
+
+        // New: Settings button handler
+        private void OpenSettings_Click(object sender, RoutedEventArgs e)
+        {
+            var settingsWindow = new SettingsWindow { Owner = this };
+            if (settingsWindow.ShowDialog() == true)
+            {
+                string selectedTheme = Properties.Settings.Default.Theme;
+                App.ApplyTheme(selectedTheme);
+            }
+        }
+
+        // New: About dialog
+        private void About_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Musicefy - Music Streaming Player\nVersion 1.0.0\n© 2026 Musicefy Team",
+                            "About Musicefy",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+        }
+
+        // New: Exit menu
+        private void Exit_Click(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown();
         }
     }
 }
