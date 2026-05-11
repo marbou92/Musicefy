@@ -25,8 +25,9 @@
                     <ComboBox x:Name="ThemeCombo"
                               Width="220"
                               ItemsSource="{Binding AvailableThemes}"
-                              SelectedItem="{Binding SelectedTheme, Mode=TwoWay}"/>
-                    <TextBlock Text="Choose a base theme or a lavender skin." 
+                              SelectedItem="{Binding SelectedTheme, Mode=TwoWay}"
+                              PreviewMouseMove="ThemeCombo_PreviewMouseMove"/>
+                    <TextBlock Text="Hover to preview, Save to apply permanently." 
                                FontSize="12" Foreground="Gray" Margin="0,6,0,0"/>
                 </StackPanel>
             </TabItem>
