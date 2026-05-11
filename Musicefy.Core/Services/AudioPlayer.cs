@@ -3,9 +3,6 @@ using NAudio.Wave;
 
 namespace Musicefy.Core.Services
 {
-    /// <summary>
-    /// Handles audio playback using NAudio
-    /// </summary>
     public class AudioPlayer : IDisposable
     {
         private IWavePlayer wavePlayer;
@@ -25,11 +22,9 @@ namespace Musicefy.Core.Services
             try
             {
                 audioFileReader?.Dispose();
-
                 audioFileReader = new AudioFileReader(filePath);
                 wavePlayer.Init(audioFileReader);
                 wavePlayer.Play();
-
                 PlaybackStarted?.Invoke(this, EventArgs.Empty);
             }
             catch (Exception ex)
@@ -70,9 +65,7 @@ namespace Musicefy.Core.Services
         }
 
         public PlaybackState PlaybackState => wavePlayer.PlaybackState;
-
         public TimeSpan CurrentTime => audioFileReader?.CurrentTime ?? TimeSpan.Zero;
-
         public TimeSpan TotalTime => audioFileReader?.TotalTime ?? TimeSpan.Zero;
 
         public void Dispose()
