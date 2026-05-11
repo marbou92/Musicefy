@@ -1,28 +1,45 @@
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Windows;
-using System.Windows.Controls;
-using Musicefy.Core; // Import ThemeManager
+using Musicefy.Core; // ThemeManager
 
 namespace Musicefy.Views
 {
-    public partial class SettingsWindow : Window
+    public partial class SettingsWindow : Window, INotifyPropertyChanged
     {
+        public ObservableCollection<string> AvailableThemes { get; }
+        private string _selectedTheme;
+
+        public string SelectedTheme
+        {
+            get => _selectedTheme;
+            set
+            {
+                if (_selectedTheme != value)
+                {
+                    _selectedTheme = value;
+                    OnPropertyChanged();
+                    ThemeManager.ApplyTheme(_selectedTheme);
+                    ThemeManager.SaveTheme(_selectedTheme);
+                }
+            }
+        }
+
         public SettingsWindow()
         {
             InitializeComponent();
-        }
+            DataContext = this;
 
-        private void ThemeCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            var selected = (ThemeCombo.SelectedItem as ComboBoxItem)?.Content.ToString();
-            if (!string.IsNullOrEmpty(selected))
-            {
-                ThemeManager.ApplyTheme(selected);
-            }
+            // Load available themes dynamically
+            AvailableThemes = new ObservableCollection<string>(ThemeManager.GetAvailableThemes());
+
+            // Set initial selection
+            SelectedTheme = Properties.Settings.Default.SelectedTheme ?? "Dark";
         }
 
         private void Save_Click(object sender, RoutedEventArgs e)
         {
-            // ThemeManager already persists the selected theme
             this.DialogResult = true;
             Close();
         }
@@ -32,5 +49,9 @@ namespace Musicefy.Views
             this.DialogResult = false;
             Close();
         }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }
