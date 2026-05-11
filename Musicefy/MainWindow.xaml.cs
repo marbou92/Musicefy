@@ -111,18 +111,17 @@ namespace Musicefy
             }
         }
 
-        // New: Settings button handler
+        // Settings button handler
         private void OpenSettings_Click(object sender, RoutedEventArgs e)
         {
             var settingsWindow = new SettingsWindow { Owner = this };
             if (settingsWindow.ShowDialog() == true)
             {
-                string selectedTheme = Properties.Settings.Default.Theme;
+                string selectedTheme = Musicefy.Properties.Settings.Default.Theme;
                 App.ApplyTheme(selectedTheme);
             }
         }
 
-        // New: About dialog
         private void About_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("Musicefy - Music Streaming Player\nVersion 1.0.0\n© 2026 Musicefy Team",
@@ -131,7 +130,6 @@ namespace Musicefy
                             MessageBoxImage.Information);
         }
 
-        // New: Exit menu
         private void Exit_Click(object sender, RoutedEventArgs e)
         {
             Application.Current.Shutdown();
