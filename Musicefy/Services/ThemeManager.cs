@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using Musicefy.Properties; // Settings
 
 namespace Musicefy.Services
 {
@@ -30,7 +31,6 @@ namespace Musicefy.Services
                 Source = new Uri($"Themes/{themeName}.xaml", UriKind.Relative)
             };
 
-            // Clear existing merged dictionaries and apply new one
             Application.Current.Resources.MergedDictionaries.Clear();
             Application.Current.Resources.MergedDictionaries.Add(dict);
 
@@ -45,7 +45,7 @@ namespace Musicefy.Services
         // Load saved theme or default
         public static void LoadSavedTheme()
         {
-            string savedTheme = Properties.Settings.Default.SelectedTheme;
+            string savedTheme = Settings.Default.SelectedTheme;
 
             if (string.IsNullOrEmpty(savedTheme) || !AvailableThemes.Contains(savedTheme))
                 savedTheme = "Dark"; // default
@@ -59,8 +59,8 @@ namespace Musicefy.Services
             if (!AvailableThemes.Contains(themeName))
                 throw new ArgumentException($"Theme '{themeName}' is not defined.");
 
-            Properties.Settings.Default.SelectedTheme = themeName;
-            Properties.Settings.Default.Save();
+            Settings.Default.SelectedTheme = themeName;
+            Settings.Default.Save();
         }
     }
 }
