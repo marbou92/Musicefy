@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
+using System.Windows.Controls;
 using Musicefy.Core; // ThemeManager
 
 namespace Musicefy.Views
@@ -10,6 +11,7 @@ namespace Musicefy.Views
     {
         public ObservableCollection<string> AvailableThemes { get; }
         private string _selectedTheme;
+        private string _originalTheme;
 
         public string SelectedTheme
         {
@@ -20,8 +22,6 @@ namespace Musicefy.Views
                 {
                     _selectedTheme = value;
                     OnPropertyChanged();
-                    ThemeManager.ApplyTheme(_selectedTheme);
-                    ThemeManager.SaveTheme(_selectedTheme);
                 }
             }
         }
@@ -31,21 +31,36 @@ namespace Musicefy.Views
             InitializeComponent();
             DataContext = this;
 
-            // Load available themes dynamically
             AvailableThemes = new ObservableCollection<string>(ThemeManager.GetAvailableThemes());
 
-            // Set initial selection
-            SelectedTheme = Properties.Settings.Default.SelectedTheme ?? "Dark";
+            // Save the original theme so we can revert if Cancel is clicked
+            _originalTheme = Properties.Settings.Default.SelectedTheme ?? "Dark";
+            SelectedTheme = _originalTheme;
+
+            // Apply the original theme immediately
+            ThemeManager.ApplyTheme(_originalTheme);
+        }
+
+        // Hover preview
+        private void ThemeCombo_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (ThemeCombo.SelectedItem is string hoveredTheme)
+            {
+                ThemeManager.ApplyTheme(hoveredTheme);
+            }
         }
 
         private void Save_Click(object sender, RoutedEventArgs e)
         {
+            ThemeManager.SaveTheme(SelectedTheme);
             this.DialogResult = true;
             Close();
         }
 
         private void Cancel_Click(object sender, RoutedEventArgs e)
         {
+            // Revert to original theme if user cancels
+            ThemeManager.ApplyTheme(_originalTheme);
             this.DialogResult = false;
             Close();
         }
