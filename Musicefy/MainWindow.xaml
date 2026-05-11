@@ -5,7 +5,7 @@
         Height="720" Width="1200"
         WindowStartupLocation="CenterScreen"
         MinHeight="600" MinWidth="900"
-        Icon="Assets/musicefy.ico"
+        Icon="pack://application:,,,/Assets/musicefy.ico"
         Background="{DynamicResource BackgroundBrush}"
         Foreground="{DynamicResource ForegroundBrush}">
 
@@ -21,7 +21,7 @@
 
                 <!-- Logo -->
                 <StackPanel Orientation="Horizontal" Grid.Column="0">
-                    <Image Source="Assets/musicefy.png" Height="40" Width="40" Margin="0,0,10,0"/>
+                    <Image Source="pack://application:,,,/Assets/musicefy.png" Height="40" Width="40" Margin="0,0,10,0"/>
                     <TextBlock Text="Musicefy" FontSize="22" FontWeight="Bold"
                                Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center"/>
                 </StackPanel>
