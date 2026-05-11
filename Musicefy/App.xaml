@@ -8,45 +8,10 @@
             <ResourceDictionary.MergedDictionaries>
                 <!-- Default theme (Dark) -->
                 <ResourceDictionary Source="Themes/Dark.xaml"/>
+
+                <!-- Shared base animations + styles -->
+                <ResourceDictionary Source="Themes/Base.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-
-            <!-- Shared styles -->
-            <Style TargetType="Button">
-                <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
-                <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
-                <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
-                <Setter Property="Padding" Value="10,6"/>
-                <Setter Property="Margin" Value="4"/>
-                <Setter Property="FontWeight" Value="SemiBold"/>
-                <Setter Property="Cursor" Value="Hand"/>
-            </Style>
-
-            <Style TargetType="TextBox">
-                <Setter Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}"/>
-                <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
-                <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
-                <Setter Property="Padding" Value="8,6"/>
-                <Setter Property="Margin" Value="4"/>
-            </Style>
-
-            <!-- Fade-in animation for windows -->
-            <Style TargetType="Window">
-                <Setter Property="AllowsTransparency" Value="False"/>
-                <Setter Property="WindowStartupLocation" Value="CenterScreen"/>
-                <Setter Property="Opacity" Value="0"/>
-                <Style.Triggers>
-                    <EventTrigger RoutedEvent="Window.Loaded">
-                        <BeginStoryboard>
-                            <Storyboard>
-                                <DoubleAnimation Storyboard.TargetProperty="Opacity"
-                                                 From="0" To="1"
-                                                 Duration="0:0:1.2"
-                                                 FillBehavior="HoldEnd"/>
-                            </Storyboard>
-                        </BeginStoryboard>
-                    </EventTrigger>
-                </Style.Triggers>
-            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
