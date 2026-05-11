@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Windows;              // <-- Needed for Point
 using System.Windows.Data;
 using System.Windows.Media;
 
