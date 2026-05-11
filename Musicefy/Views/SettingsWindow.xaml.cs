@@ -32,7 +32,7 @@ namespace Musicefy.Views
 
             AvailableThemes = new ObservableCollection<string>(ThemeManager.GetAvailableThemes());
 
-            _originalTheme = Musicefy.Properties.Settings.Default.SelectedTheme ?? "Dark";
+            _originalTheme = Musicefy.Properties.Settings.Default.Theme ?? "Dark";
             SelectedTheme = _originalTheme;
 
             ThemeManager.ApplyTheme(_originalTheme);
@@ -49,7 +49,7 @@ namespace Musicefy.Views
         private void Save_Click(object sender, RoutedEventArgs e)
         {
             ThemeManager.SaveTheme(SelectedTheme);
-            Musicefy.Properties.Settings.Default.SelectedTheme = SelectedTheme;
+            Musicefy.Properties.Settings.Default.Theme = SelectedTheme;
             Musicefy.Properties.Settings.Default.Save();
             DialogResult = true;
             Close();
