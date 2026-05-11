@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Musicefy.Core.Models;
-using System.Text.Json;
+using Newtonsoft.Json;
 
 namespace Musicefy.Core.Services
 {
@@ -25,30 +25,19 @@ namespace Musicefy.Core.Services
             LoadSources();
         }
 
-        /// <summary>
-        /// Add a new streaming source
-        /// </summary>
         public async Task<bool> AddSourceAsync(StreamingSource source)
         {
             if (source == null)
-            {
                 throw new ArgumentNullException(nameof(source));
-            }
 
-            // Generate unique ID if not provided
             if (string.IsNullOrEmpty(source.Id))
-            {
                 source.Id = Guid.NewGuid().ToString();
-            }
 
-            // Test connection
             var client = new SubsonicClient(source);
             var connected = await client.TestConnectionAsync();
 
             if (!connected)
-            {
                 throw new InvalidOperationException("Failed to connect to the streaming service. Please check your credentials.");
-            }
 
             source.IsConnected = true;
             sources.Add(source);
@@ -58,9 +47,6 @@ namespace Musicefy.Core.Services
             return true;
         }
 
-        /// <summary>
-        /// Remove a streaming source
-        /// </summary>
         public void RemoveSource(string sourceId)
         {
             var source = sources.FirstOrDefault(s => s.Id == sourceId);
@@ -76,37 +62,16 @@ namespace Musicefy.Core.Services
             }
         }
 
-        /// <summary>
-        /// Get all streaming sources
-        /// </summary>
-        public List<StreamingSource> GetAllSources()
-        {
-            return new List<StreamingSource>(sources);
-        }
+        public List<StreamingSource> GetAllSources() => new List<StreamingSource>(sources);
 
-        /// <summary>
-        /// Get a specific streaming source
-        /// </summary>
-        public StreamingSource GetSource(string sourceId)
-        {
-            return sources.FirstOrDefault(s => s.Id == sourceId);
-        }
+        public StreamingSource GetSource(string sourceId) => sources.FirstOrDefault(s => s.Id == sourceId);
 
-        /// <summary>
-        /// Get the Subsonic client for a source
-        /// </summary>
         public SubsonicClient GetClient(string sourceId)
         {
-            if (activeClients.TryGetValue(sourceId, out var client))
-            {
-                return client;
-            }
-            return null;
+            activeClients.TryGetValue(sourceId, out var client);
+            return client;
         }
 
-        /// <summary>
-        /// Search all connected sources for songs
-        /// </summary>
         public async Task<List<MusicFile>> SearchAllSourcesAsync(string query)
         {
             var allSongs = new List<MusicFile>();
@@ -131,20 +96,14 @@ namespace Musicefy.Core.Services
             return allSongs;
         }
 
-        /// <summary>
-        /// Save sources to a JSON file
-        /// </summary>
         private void SaveSources()
         {
             try
             {
                 var directory = Path.GetDirectoryName(sourcesFilePath);
                 if (!Directory.Exists(directory))
-                {
                     Directory.CreateDirectory(directory);
-                }
 
-                // Don't save passwords in plain text - remove before saving
                 var sourcesToSave = sources.Select(s => new
                 {
                     s.Id,
@@ -155,7 +114,7 @@ namespace Musicefy.Core.Services
                     s.IsConnected
                 }).ToList();
 
-                var json = JsonSerializer.Serialize(sourcesToSave, new JsonSerializerOptions { WriteIndented = true });
+                var json = JsonConvert.SerializeObject(sourcesToSave, Formatting.Indented);
                 File.WriteAllText(sourcesFilePath, json);
             }
             catch (Exception ex)
@@ -164,9 +123,6 @@ namespace Musicefy.Core.Services
             }
         }
 
-        /// <summary>
-        /// Load sources from JSON file
-        /// </summary>
         private void LoadSources()
         {
             try
@@ -174,9 +130,8 @@ namespace Musicefy.Core.Services
                 if (File.Exists(sourcesFilePath))
                 {
                     var json = File.ReadAllText(sourcesFilePath);
-                    var loadedSources = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(json);
+                    var loadedSources = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(json);
 
-                    // Note: Passwords are not loaded for security reasons
                     if (loadedSources != null)
                     {
                         foreach (var sourceData in loadedSources)
@@ -188,7 +143,7 @@ namespace Musicefy.Core.Services
                                 Type = sourceData["Type"].ToString(),
                                 Url = sourceData["Url"].ToString(),
                                 Username = sourceData["Username"].ToString(),
-                                IsConnected = false // Will reconnect when needed
+                                IsConnected = false
                             });
                         }
                     }
