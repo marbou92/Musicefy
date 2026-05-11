@@ -20,35 +20,21 @@ jobs:
         shell: pwsh
         run: .\nuget.exe restore Musicefy.sln -PackagesDirectory packages
 
-      - name: Locate MSBuild (vswhere)
+      - name: Locate MSBuild
+        id: msbuild
         shell: pwsh
-        id: find-msbuild
         run: |
           $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
-          if (-not (Test-Path $vswhere)) {
-            Write-Host "vswhere not found at $vswhere; trying default MSBuild locations..."
-            $candidates = @(
-              "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe",
-              "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe",
-              "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe"
-            )
-            foreach ($c in $candidates) {
-              if (Test-Path $c) { Write-Host "Found MSBuild at $c"; Write-Output $c; exit 0 }
-            }
-            Write-Error "MSBuild not found."
+          $msbuild = & $vswhere -latest -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe
+          if (-not $msbuild) {
+            Write-Error "MSBuild not found via vswhere"
             exit 1
           }
-          $msbuild = & $vswhere -latest -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe
-          if (-not $msbuild) { Write-Error "MSBuild not found via vswhere"; exit 1 }
           Write-Host "MSBuild found: $msbuild"
-          Write-Output $msbuild
+          # set output for later step
+          echo "MSBUILD_PATH=$msbuild" | Out-File -FilePath $env:GITHUB_ENV -Append
 
-      - name: Build solution with MSBuild
+      - name: Build solution
         shell: pwsh
         run: |
-          $msbuildPath = '${{ steps.find-msbuild.outputs[''stdout''] }}'.Trim()
-          if (-not $msbuildPath) {
-            Write-Error "MSBuild path not available from previous step."
-            exit 1
-          }
-          & $msbuildPath Musicefy.sln /t:Rebuild /p:Configuration=Release /v:m
+          & "${env:MSBUILD_PATH}" Musicefy.sln /t:Rebuild /p:Configuration=Release /v:m
