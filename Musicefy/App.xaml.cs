@@ -1,6 +1,6 @@
 using System;
 using System.Windows;
-using Musicefy.Core; // ThemeManager lives here
+using Musicefy.Services; // ThemeManager
 
 namespace Musicefy
 {
