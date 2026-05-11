@@ -20,17 +20,11 @@ namespace Musicefy.Core.Services
             wavePlayer = new WaveOutEvent();
         }
 
-        /// <summary>
-        /// Play a music file
-        /// </summary>
         public void Play(string filePath)
         {
             try
             {
-                if (audioFileReader != null)
-                {
-                    audioFileReader.Dispose();
-                }
+                audioFileReader?.Dispose();
 
                 audioFileReader = new AudioFileReader(filePath);
                 wavePlayer.Init(audioFileReader);
@@ -44,9 +38,6 @@ namespace Musicefy.Core.Services
             }
         }
 
-        /// <summary>
-        /// Pause the current playback
-        /// </summary>
         public void Pause()
         {
             if (wavePlayer.PlaybackState == PlaybackState.Playing)
@@ -56,9 +47,6 @@ namespace Musicefy.Core.Services
             }
         }
 
-        /// <summary>
-        /// Resume playback
-        /// </summary>
         public void Resume()
         {
             if (wavePlayer.PlaybackState == PlaybackState.Paused)
@@ -67,18 +55,12 @@ namespace Musicefy.Core.Services
             }
         }
 
-        /// <summary>
-        /// Stop the current playback
-        /// </summary>
         public void Stop()
         {
             wavePlayer.Stop();
             PlaybackStopped?.Invoke(this, EventArgs.Empty);
         }
 
-        /// <summary>
-        /// Set the volume (0.0 to 1.0)
-        /// </summary>
         public void SetVolume(float volume)
         {
             if (audioFileReader != null)
@@ -87,19 +69,10 @@ namespace Musicefy.Core.Services
             }
         }
 
-        /// <summary>
-        /// Get the current playback state
-        /// </summary>
         public PlaybackState PlaybackState => wavePlayer.PlaybackState;
 
-        /// <summary>
-        /// Get the current playback position
-        /// </summary>
         public TimeSpan CurrentTime => audioFileReader?.CurrentTime ?? TimeSpan.Zero;
 
-        /// <summary>
-        /// Get the total duration of the current track
-        /// </summary>
         public TimeSpan TotalTime => audioFileReader?.TotalTime ?? TimeSpan.Zero;
 
         public void Dispose()
