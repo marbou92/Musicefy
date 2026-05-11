@@ -12,9 +12,9 @@ namespace Musicefy.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("Dark")]
-        public string SelectedTheme {
-            get => ((string)(this["SelectedTheme"]));
-            set => this["SelectedTheme"] = value;
+        public string Theme {
+            get => ((string)(this["Theme"]));
+            set => this["Theme"] = value;
         }
     }
 }
