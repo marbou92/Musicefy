@@ -1,47 +1,66 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 
 namespace Musicefy.Core
 {
     public static class ThemeManager
     {
-        /// <summary>
-        /// Apply a theme by name. Looks for a ResourceDictionary in /Themes.
-        /// </summary>
+        // List of available themes
+        private static readonly string[] AvailableThemes =
+        {
+            "Dark",
+            "Light",
+            "DarkLavender",
+            "WhiteLavender"
+        };
+
+        // Returns all available themes
+        public static IEnumerable<string> GetAvailableThemes() => AvailableThemes;
+
+        // Apply a theme by name
         public static void ApplyTheme(string themeName)
         {
-            string themePath = $"Themes/{themeName}.xaml";
+            if (!AvailableThemes.Contains(themeName))
+                throw new ArgumentException($"Theme '{themeName}' is not defined.");
 
-            try
+            var dict = new ResourceDictionary
             {
-                var dict = new ResourceDictionary { Source = new Uri(themePath, UriKind.Relative) };
-                Application.Current.Resources.MergedDictionaries.Clear();
-                Application.Current.Resources.MergedDictionaries.Add(dict);
+                Source = new Uri($"Themes/{themeName}.xaml", UriKind.Relative)
+            };
 
-                // Persist choice
-                Properties.Settings.Default.Theme = themeName;
-                Properties.Settings.Default.Save();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Failed to apply theme '{themeName}': {ex.Message}", "Theme Error");
-            }
+            // Clear existing merged dictionaries and apply new one
+            Application.Current.Resources.MergedDictionaries.Clear();
+            Application.Current.Resources.MergedDictionaries.Add(dict);
+
+            // Always merge Base.xaml for shared styles/animations
+            Application.Current.Resources.MergedDictionaries.Add(
+                new ResourceDictionary
+                {
+                    Source = new Uri("Themes/Base.xaml", UriKind.Relative)
+                });
         }
 
-        /// <summary>
-        /// Load the saved theme at startup.
-        /// </summary>
+        // Load saved theme or default
         public static void LoadSavedTheme()
         {
-            string savedTheme = Properties.Settings.Default.Theme;
-            if (!string.IsNullOrEmpty(savedTheme))
-            {
-                ApplyTheme(savedTheme);
-            }
-            else
-            {
-                ApplyTheme("Dark"); // default fallback
-            }
+            string savedTheme = Properties.Settings.Default.SelectedTheme;
+
+            if (string.IsNullOrEmpty(savedTheme) || !AvailableThemes.Contains(savedTheme))
+                savedTheme = "Dark"; // default
+
+            ApplyTheme(savedTheme);
+        }
+
+        // Save selected theme
+        public static void SaveTheme(string themeName)
+        {
+            if (!AvailableThemes.Contains(themeName))
+                throw new ArgumentException($"Theme '{themeName}' is not defined.");
+
+            Properties.Settings.Default.SelectedTheme = themeName;
+            Properties.Settings.Default.Save();
         }
     }
 }
