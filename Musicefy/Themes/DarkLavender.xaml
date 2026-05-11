@@ -1,0 +1,19 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Base Dark colors -->
+    <Color x:Key="BackgroundColor">#1E1E1E</Color>
+    <Color x:Key="SecondaryBackgroundColor">#2A2A2A</Color>
+    <Color x:Key="ForegroundColor">#FFFFFF</Color>
+    <Color x:Key="BorderColor">#444444</Color>
+
+    <!-- Lavender accent -->
+    <Color x:Key="AccentColor">#B57EDC</Color>
+
+    <!-- Brushes -->
+    <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
+    <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="{StaticResource SecondaryBackgroundColor}"/>
+    <SolidColorBrush x:Key="ForegroundBrush" Color="{StaticResource ForegroundColor}"/>
+    <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+    <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
+</ResourceDictionary>
