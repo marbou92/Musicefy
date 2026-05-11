@@ -75,13 +75,3 @@ jobs:
           path: |
             Musicefy-Portable
             Musicefy-Portable.zip
-
-      # Publish single-file EXE
-      - name: Publish single-file EXE
-        run: dotnet publish Musicefy/Musicefy.csproj -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true /p:IncludeAllContentForSelfExtract=true /p:DebugType=none /p:PublishTrimmed=false -o Musicefy-SingleFile
-
-      - name: Upload single-file EXE
-        uses: actions/upload-artifact@v4
-        with:
-          name: Musicefy-SingleFile
-          path: Musicefy-SingleFile
