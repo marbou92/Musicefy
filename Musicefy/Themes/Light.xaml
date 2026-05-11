@@ -1,10 +1,20 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- Light theme brushes -->
-    <SolidColorBrush x:Key="BackgroundBrush" Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="ForegroundBrush" Color="#000000"/>
-    <SolidColorBrush x:Key="AccentBrush" Color="#007ACC"/>
-    <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#F0F0F0"/>
-    <SolidColorBrush x:Key="BorderBrush" Color="#CCCCCC"/>
+    <!-- Base Light colors -->
+    <Color x:Key="BackgroundColor">#FFFFFF</Color>
+    <Color x:Key="SecondaryBackgroundColor">#F5F5F5</Color>
+    <Color x:Key="ForegroundColor">#000000</Color>
+    <Color x:Key="BorderColor">#DDDDDD</Color>
+
+    <!-- Brushes -->
+    <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
+    <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="{StaticResource SecondaryBackgroundColor}"/>
+    <SolidColorBrush x:Key="ForegroundBrush" Color="{StaticResource ForegroundColor}"/>
+    <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+
+    <!-- Merge shared base -->
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="Base.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>
