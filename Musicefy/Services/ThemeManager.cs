@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 
-namespace Musicefy.Core
+namespace Musicefy.Services
 {
     public static class ThemeManager
     {
