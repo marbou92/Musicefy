@@ -22,7 +22,7 @@ namespace Musicefy.Views
 
         private void Save_Click(object sender, RoutedEventArgs e)
         {
-            // Persist settings already handled by ThemeManager
+            // ThemeManager already persists the selected theme
             this.DialogResult = true;
             Close();
         }
