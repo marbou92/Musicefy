@@ -22,10 +22,14 @@
             <TabItem Header="Appearance">
                 <StackPanel Margin="10">
                     <TextBlock Text="Theme" FontWeight="Bold" Margin="0,0,0,5"/>
-                    <ComboBox x:Name="ThemeCombo" Width="200" SelectionChanged="ThemeCombo_SelectionChanged">
-                        <ComboBoxItem Content="Light" IsSelected="True"/>
+                    <ComboBox x:Name="ThemeCombo" Width="220" SelectionChanged="ThemeCombo_SelectionChanged">
+                        <ComboBoxItem Content="Light"/>
                         <ComboBoxItem Content="Dark"/>
+                        <ComboBoxItem Content="WhiteLavender"/>
+                        <ComboBoxItem Content="DarkLavender"/>
                     </ComboBox>
+                    <TextBlock Text="Choose a base theme or a lavender skin." 
+                               FontSize="12" Foreground="Gray" Margin="0,6,0,0"/>
                 </StackPanel>
             </TabItem>
 
