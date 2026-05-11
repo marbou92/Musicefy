@@ -19,4 +19,10 @@
     <ProjectReference Include="..\Musicefy.Core\Musicefy.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Embed assets as resources -->
+    <Resource Include="Assets\musicefy.ico" />
+    <Resource Include="Assets\musicefy.png" />
+  </ItemGroup>
+
 </Project>
