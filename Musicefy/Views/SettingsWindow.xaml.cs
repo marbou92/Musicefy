@@ -2,8 +2,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
-using System.Windows.Controls;
-using Musicefy.Services; // ThemeManager
+using Musicefy.Services;
 
 namespace Musicefy.Views
 {
@@ -31,18 +30,14 @@ namespace Musicefy.Views
             InitializeComponent();
             DataContext = this;
 
-            // Load available themes from ThemeManager
             AvailableThemes = new ObservableCollection<string>(ThemeManager.GetAvailableThemes());
 
-            // Save the original theme so we can revert if Cancel is clicked
-            _originalTheme = Properties.Settings.Default.SelectedTheme ?? "Dark";
+            _originalTheme = Musicefy.Properties.Settings.Default.SelectedTheme ?? "Dark";
             SelectedTheme = _originalTheme;
 
-            // Apply the original theme immediately
             ThemeManager.ApplyTheme(_originalTheme);
         }
 
-        // Hover preview
         private void ThemeCombo_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
         {
             if (ThemeCombo.SelectedItem is string hoveredTheme)
@@ -54,17 +49,16 @@ namespace Musicefy.Views
         private void Save_Click(object sender, RoutedEventArgs e)
         {
             ThemeManager.SaveTheme(SelectedTheme);
-            Properties.Settings.Default.SelectedTheme = SelectedTheme;
-            Properties.Settings.Default.Save();
-            this.DialogResult = true;
+            Musicefy.Properties.Settings.Default.SelectedTheme = SelectedTheme;
+            Musicefy.Properties.Settings.Default.Save();
+            DialogResult = true;
             Close();
         }
 
         private void Cancel_Click(object sender, RoutedEventArgs e)
         {
-            // Revert to original theme if user cancels
             ThemeManager.ApplyTheme(_originalTheme);
-            this.DialogResult = false;
+            DialogResult = false;
             Close();
         }
 
