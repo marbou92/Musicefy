@@ -1,7 +1,7 @@
 <Application x:Class="Musicefy.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:Musicefy.Core"
+             xmlns:conv="clr-namespace:Musicefy.Converters"
              StartupUri="SplashScreen.xaml"
              Icon="Assets/musicefy.ico">
     <Application.Resources>
@@ -15,8 +15,8 @@
             </ResourceDictionary.MergedDictionaries>
 
             <!-- Global converters -->
-            <local:ThemeThumbnailConverter x:Key="ThemeThumbnailConverter"/>
-            <local:ThemePreviewConverter x:Key="ThemePreviewConverter"/>
+            <conv:ThemeThumbnailConverter x:Key="ThemeThumbnailConverter"/>
+            <conv:ThemePreviewConverter x:Key="ThemePreviewConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
