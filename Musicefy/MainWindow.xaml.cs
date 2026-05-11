@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using Musicefy.Core.Services;
 using Musicefy.Core.Models;
 using Musicefy.Views;
+using Musicefy.Services; // <-- Added so ThemeManager is accessible
 
 namespace Musicefy
 {
@@ -118,7 +119,7 @@ namespace Musicefy
             if (settingsWindow.ShowDialog() == true)
             {
                 string selectedTheme = Musicefy.Properties.Settings.Default.Theme;
-                App.ApplyTheme(selectedTheme);
+                ThemeManager.ApplyTheme(selectedTheme); // ✅ Fixed call
             }
         }
 
