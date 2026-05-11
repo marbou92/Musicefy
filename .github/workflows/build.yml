@@ -20,11 +20,6 @@ jobs:
         shell: pwsh
         run: .\nuget.exe restore Musicefy.sln -PackagesDirectory packages
 
-      - name: Build solution
-        shell: pwsh 
-        run: & "${env:MSBUILD_PATH}" Musicefy.sln /t:Rebuild /p:Configuration=Release /v:m
-        
-
       - name: Locate MSBuild
         id: msbuild
         shell: pwsh
@@ -36,7 +31,6 @@ jobs:
             exit 1
           }
           Write-Host "MSBuild found: $msbuild"
-          # set output for later step
           echo "MSBUILD_PATH=$msbuild" | Out-File -FilePath $env:GITHUB_ENV -Append
 
       - name: Build solution
