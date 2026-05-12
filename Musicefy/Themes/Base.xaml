@@ -7,75 +7,69 @@
 
     <!-- Buttons -->
     <Style TargetType="Button">
-        <!-- Local gradient brush with named stops -->
-        <Setter Property="Background">
+        <Setter Property="Template">
             <Setter.Value>
-                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                    <GradientStop x:Name="AccentStart" Color="{StaticResource AccentStartColor}" Offset="0.0"/>
-                    <GradientStop x:Name="AccentEnd" Color="{StaticResource AccentEndColor}" Offset="1.0"/>
-                </LinearGradientBrush>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="4"
+                            Background="{TemplateBinding Background}">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop x:Name="AccentStart" Color="{StaticResource AccentStartColor}" Offset="0.0"/>
+                                <GradientStop x:Name="AccentEnd" Color="{StaticResource AccentEndColor}" Offset="1.0"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          Margin="{TemplateBinding Padding}"
+                                          RecognizesAccessKey="True"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <!-- Hover animation -->
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimation Storyboard.TargetName="AccentStart"
+                                                        Storyboard.TargetProperty="Color"
+                                                        To="#D6B8F7" Duration="0:0:0.3"/>
+                                        <ColorAnimation Storyboard.TargetName="AccentEnd"
+                                                        Storyboard.TargetProperty="Color"
+                                                        To="#B57EDC" Duration="0:0:0.3"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                        </Trigger>
+
+                        <!-- Pressed animation -->
+                        <Trigger Property="IsPressed" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimation Storyboard.TargetName="AccentStart"
+                                                        Storyboard.TargetProperty="Color"
+                                                        To="#9A6FD0" Duration="0:0:0.2"/>
+                                        <ColorAnimation Storyboard.TargetName="AccentEnd"
+                                                        Storyboard.TargetProperty="Color"
+                                                        To="#7E56B8" Duration="0:0:0.2"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                        </Trigger>
+
+                        <!-- Focus glow -->
+                        <Trigger Property="IsFocused" Value="True">
+                            <Setter TargetName="border" Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="#B57EDC" BlurRadius="15" ShadowDepth="0"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
             </Setter.Value>
         </Setter>
-        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
-        <Setter Property="Padding" Value="10,6"/>
-        <Setter Property="Margin" Value="4"/>
-        <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="Cursor" Value="Hand"/>
-        <Setter Property="BorderThickness" Value="2"/>
-        <Setter Property="Effect">
-            <Setter.Value>
-                <DropShadowEffect BlurRadius="0" ShadowDepth="0" Color="#00000000"/>
-            </Setter.Value>
-        </Setter>
-
-        <Style.Triggers>
-            <!-- Hover animation -->
-            <Trigger Property="IsMouseOver" Value="True">
-                <Trigger.EnterActions>
-                    <BeginStoryboard>
-                        <Storyboard>
-                            <ColorAnimation Storyboard.TargetName="AccentStart"
-                                            Storyboard.TargetProperty="Color"
-                                            To="#D6B8F7" Duration="0:0:0.3"/>
-                            <ColorAnimation Storyboard.TargetName="AccentEnd"
-                                            Storyboard.TargetProperty="Color"
-                                            To="#B57EDC" Duration="0:0:0.3"/>
-                        </Storyboard>
-                    </BeginStoryboard>
-                </Trigger.EnterActions>
-            </Trigger>
-
-            <!-- Pressed animation -->
-            <Trigger Property="IsPressed" Value="True">
-                <Trigger.EnterActions>
-                    <BeginStoryboard>
-                        <Storyboard>
-                            <ColorAnimation Storyboard.TargetName="AccentStart"
-                                            Storyboard.TargetProperty="Color"
-                                            To="#9A6FD0" Duration="0:0:0.2"/>
-                            <ColorAnimation Storyboard.TargetName="AccentEnd"
-                                            Storyboard.TargetProperty="Color"
-                                            To="#7E56B8" Duration="0:0:0.2"/>
-                        </Storyboard>
-                    </BeginStoryboard>
-                </Trigger.EnterActions>
-            </Trigger>
-
-            <!-- Focus glow -->
-            <Trigger Property="IsFocused" Value="True">
-                <Trigger.EnterActions>
-                    <BeginStoryboard>
-                        <Storyboard>
-                            <ColorAnimation Storyboard.TargetProperty="(Button.Effect).(DropShadowEffect.Color)"
-                                            To="#B57EDC" Duration="0:0:0.3"/>
-                            <DoubleAnimation Storyboard.TargetProperty="(Button.Effect).(DropShadowEffect.BlurRadius)"
-                                             To="15" Duration="0:0:0.3"/>
-                        </Storyboard>
-                    </BeginStoryboard>
-                </Trigger.EnterActions>
-            </Trigger>
-        </Style.Triggers>
     </Style>
-
 </ResourceDictionary>
