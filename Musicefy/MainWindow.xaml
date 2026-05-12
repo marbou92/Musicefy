@@ -63,10 +63,11 @@
             <!-- Splitter -->
             <GridSplitter Grid.Column="1" Width="8" HorizontalAlignment="Stretch" Background="Transparent"/>
 
-            <!-- Library + Now Playing -->
+            <!-- Library + Queue + Now Playing -->
             <Grid Grid.Column="2">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
@@ -79,8 +80,30 @@
                     </StackPanel>
                 </Border>
 
+                <!-- Queue View -->
+                <Border Grid.Row="1" Background="{DynamicResource BackgroundBrush}" Padding="12"
+                        CornerRadius="6" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Margin="0,12,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Queue" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <ListBox x:Name="QueueList" Margin="0,4,0,0" Height="200" MouseDoubleClick="QueueList_DoubleClick">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Margin="4">
+                                        <Image Width="40" Height="40" Stretch="UniformToFill"
+                                               Source="pack://application:,,,/Assets/default_cover.png"/>
+                                        <StackPanel Margin="8,0,0,0">
+                                            <TextBlock Text="{Binding Title}" FontWeight="Bold"/>
+                                            <TextBlock Text="{Binding Artist}" FontSize="12" Foreground="Gray"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </StackPanel>
+                </Border>
+
                 <!-- Now Playing Card -->
-                <Border Grid.Row="1" Background="{DynamicResource SecondaryBackgroundBrush}" Padding="12" CornerRadius="6">
+                <Border Grid.Row="2" Background="{DynamicResource SecondaryBackgroundBrush}" Padding="12" CornerRadius="6" Margin="0,12,0,0">
                     <StackPanel>
                         <TextBlock Text="Now Playing" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,8"/>
                         <StackPanel Orientation="Horizontal">
@@ -151,10 +174,4 @@
                 <!-- Volume Control -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="Vol" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                    <Slider x:Name="VolumeSlider" Width="120" Minimum="0" Maximum="100" Value="70" Height="20"
-                            ValueChanged="VolumeSlider_ValueChanged"/>
-                </StackPanel>
-            </Grid>
-        </Border>
-    </DockPanel>
-</Window>
+                    <Slider x:Name="VolumeSlider" Width
