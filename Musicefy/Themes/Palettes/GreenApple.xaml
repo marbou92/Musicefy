@@ -1,8 +1,17 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+
+    <!-- Normal -->
     <Color x:Key="AccentStartColor">#4CAF50</Color>
     <Color x:Key="AccentEndColor">#81C784</Color>
-    <LinearGradientBrush x:Key="AccentBrush" StartPoint="0,0" EndPoint="1,1">
-        <GradientStop Color="{StaticResource AccentStartColor}" Offset="0.0"/>
-        <GradientStop Color="{StaticResource AccentEndColor}" Offset="1.0"/>
-    </LinearGradientBrush>
+
+    <!-- Hover -->
+    <Color x:Key="AccentHoverStartColor">#66BB6A</Color>
+    <Color x:Key="AccentHoverEndColor">#388E3C</Color>
+
+    <!-- Pressed -->
+    <Color x:Key="AccentPressedStartColor">#2E7D32</Color>
+    <Color x:Key="AccentPressedEndColor">#1B5E20</Color>
+
+    <!-- Glow -->
+    <Color x:Key="AccentGlowColor">#4CAF50</Color>
 </ResourceDictionary>
