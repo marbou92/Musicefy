@@ -7,12 +7,12 @@
 
     <!-- Buttons -->
     <Style TargetType="Button">
-        <!-- Give each button its own unfrozen gradient brush -->
+        <!-- Local gradient brush with named stops -->
         <Setter Property="Background">
             <Setter.Value>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                    <GradientStop Color="{StaticResource AccentStartColor}" Offset="0.0"/>
-                    <GradientStop Color="{StaticResource AccentEndColor}" Offset="1.0"/>
+                    <GradientStop x:Name="AccentStart" Color="{StaticResource AccentStartColor}" Offset="0.0"/>
+                    <GradientStop x:Name="AccentEnd" Color="{StaticResource AccentEndColor}" Offset="1.0"/>
                 </LinearGradientBrush>
             </Setter.Value>
         </Setter>
@@ -35,9 +35,11 @@
                 <Trigger.EnterActions>
                     <BeginStoryboard>
                         <Storyboard>
-                            <ColorAnimation Storyboard.TargetProperty="(Button.Background).(GradientBrush.GradientStops)[0].Color"
+                            <ColorAnimation Storyboard.TargetName="AccentStart"
+                                            Storyboard.TargetProperty="Color"
                                             To="#D6B8F7" Duration="0:0:0.3"/>
-                            <ColorAnimation Storyboard.TargetProperty="(Button.Background).(GradientBrush.GradientStops)[1].Color"
+                            <ColorAnimation Storyboard.TargetName="AccentEnd"
+                                            Storyboard.TargetProperty="Color"
                                             To="#B57EDC" Duration="0:0:0.3"/>
                         </Storyboard>
                     </BeginStoryboard>
@@ -49,9 +51,11 @@
                 <Trigger.EnterActions>
                     <BeginStoryboard>
                         <Storyboard>
-                            <ColorAnimation Storyboard.TargetProperty="(Button.Background).(GradientBrush.GradientStops)[0].Color"
+                            <ColorAnimation Storyboard.TargetName="AccentStart"
+                                            Storyboard.TargetProperty="Color"
                                             To="#9A6FD0" Duration="0:0:0.2"/>
-                            <ColorAnimation Storyboard.TargetProperty="(Button.Background).(GradientBrush.GradientStops)[1].Color"
+                            <ColorAnimation Storyboard.TargetName="AccentEnd"
+                                            Storyboard.TargetProperty="Color"
                                             To="#7E56B8" Duration="0:0:0.2"/>
                         </Storyboard>
                     </BeginStoryboard>
@@ -74,5 +78,4 @@
         </Style.Triggers>
     </Style>
 
-    <!-- Other shared styles (TextBox, ComboBox, etc.) go here -->
 </ResourceDictionary>
