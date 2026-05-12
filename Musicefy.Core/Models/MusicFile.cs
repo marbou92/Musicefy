@@ -4,13 +4,13 @@ namespace Musicefy.Core.Models
 {
     public class MusicFile
     {
-        // Unique identifier for each track
+        // Unique identifier
         public string Id { get; set; }
 
         // Local file path (if applicable)
         public string FilePath { get; set; }
 
-        // Display metadata
+        // Metadata
         public string Title { get; set; }
         public string Artist { get; set; }
         public string Album { get; set; }
