@@ -53,7 +53,48 @@ namespace Musicefy
             VolumeSlider.Value = 70;
         }
 
-        // … (sources, library, enqueue, playback methods as you already have)
+        private void RefreshSources()
+        {
+            SourcesListBox.Items.Clear();
+            var sources = _sourceManager.GetAllSources();
+
+            foreach (var source in sources)
+                SourcesListBox.Items.Add(source);
+
+            NoSourcesHint.Visibility = sources.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        // … (library, queue, playback methods as before)
+
+        private void WaveOut_PlaybackStopped(object sender, StoppedEventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (e.Exception == null && _playlistManager.RepeatEnabled)
+                {
+                    if (_currentQueueIndex >= 0 && _currentQueueIndex < _queue.Count)
+                        PlayTrack(_queue[_currentQueueIndex]);
+                }
+                else if (e.Exception == null)
+                {
+                    NextButton_Click(null, null);
+                }
+            });
+        }
+
+        private void StopPlayback()
+        {
+            _timer.Stop();
+            if (_waveOut != null)
+            {
+                _waveOut.PlaybackStopped -= WaveOut_PlaybackStopped;
+                _waveOut.Stop();
+                _waveOut.Dispose();
+                _waveOut = null;
+            }
+            _audioFile?.Dispose();
+            _audioFile = null;
+        }
 
         private void Timer_Tick(object sender, EventArgs e)
         {
