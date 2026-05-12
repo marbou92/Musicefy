@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 namespace Musicefy.Core.Services
 {
     /// <summary>
-    /// Manages streaming sources and their connections
+    /// Manages streaming sources and their connections (Subsonic + Local)
     /// </summary>
     public class StreamingSourceManager
     {
@@ -25,6 +25,9 @@ namespace Musicefy.Core.Services
             LoadSources();
         }
 
+        /// <summary>
+        /// Add a new source (Subsonic or Local)
+        /// </summary>
         public async Task<bool> AddSourceAsync(StreamingSource source)
         {
             if (source == null)
@@ -33,18 +36,32 @@ namespace Musicefy.Core.Services
             if (string.IsNullOrEmpty(source.Id))
                 source.Id = Guid.NewGuid().ToString();
 
-            var client = new SubsonicClient(source);
-            var connected = await client.TestConnectionAsync();
+            if (source.Type == "Local")
+            {
+                if (!Directory.Exists(source.Url))
+                    throw new InvalidOperationException("Local folder not found.");
 
-            if (!connected)
-                throw new InvalidOperationException("Failed to connect to the streaming service. Please check your credentials.");
+                source.IsConnected = true;
+                sources.Add(source);
+                SaveSources();
+                return true;
+            }
+            else if (source.Type == "Subsonic")
+            {
+                var client = new SubsonicClient(source);
+                var connected = await client.TestConnectionAsync();
 
-            source.IsConnected = true;
-            sources.Add(source);
-            activeClients[source.Id] = client;
-            SaveSources();
+                if (!connected)
+                    throw new InvalidOperationException("Failed to connect to the streaming service. Please check your credentials.");
 
-            return true;
+                source.IsConnected = true;
+                sources.Add(source);
+                activeClients[source.Id] = client;
+                SaveSources();
+                return true;
+            }
+
+            throw new InvalidOperationException("Unsupported source type.");
         }
 
         public void RemoveSource(string sourceId)
@@ -72,6 +89,9 @@ namespace Musicefy.Core.Services
             return client;
         }
 
+        /// <summary>
+        /// Search across all sources (Subsonic + Local)
+        /// </summary>
         public async Task<List<MusicFile>> SearchAllSourcesAsync(string query)
         {
             var allSongs = new List<MusicFile>();
@@ -80,11 +100,19 @@ namespace Musicefy.Core.Services
             {
                 try
                 {
-                    var client = GetClient(source.Id);
-                    if (client != null)
+                    if (source.Type == "Local")
                     {
-                        var songs = await client.SearchAsync(query);
-                        allSongs.AddRange(songs);
+                        var localSongs = SearchLocalFiles(source.Url, query);
+                        allSongs.AddRange(localSongs);
+                    }
+                    else if (source.Type == "Subsonic")
+                    {
+                        var client = GetClient(source.Id);
+                        if (client != null)
+                        {
+                            var songs = await client.SearchAsync(query);
+                            allSongs.AddRange(songs);
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -94,6 +122,38 @@ namespace Musicefy.Core.Services
             }
 
             return allSongs;
+        }
+
+        /// <summary>
+        /// Scan local folder for audio files
+        /// </summary>
+        private List<MusicFile> SearchLocalFiles(string folderPath, string query)
+        {
+            var files = Directory.EnumerateFiles(folderPath, "*.*", SearchOption.AllDirectories)
+                                 .Where(f => f.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase) ||
+                                             f.EndsWith(".wav", StringComparison.OrdinalIgnoreCase) ||
+                                             f.EndsWith(".flac", StringComparison.OrdinalIgnoreCase));
+
+            var results = new List<MusicFile>();
+
+            foreach (var file in files)
+            {
+                var name = Path.GetFileNameWithoutExtension(file);
+                if (string.IsNullOrEmpty(query) || name.Contains(query, StringComparison.OrdinalIgnoreCase))
+                {
+                    results.Add(new MusicFile
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Title = name,
+                        Artist = "Local",
+                        Album = "",
+                        Path = file,
+                        SourceType = "Local"
+                    });
+                }
+            }
+
+            return results;
         }
 
         private void SaveSources()
@@ -142,8 +202,8 @@ namespace Musicefy.Core.Services
                                 Name = sourceData["Name"].ToString(),
                                 Type = sourceData["Type"].ToString(),
                                 Url = sourceData["Url"].ToString(),
-                                Username = sourceData["Username"].ToString(),
-                                IsConnected = false
+                                Username = sourceData.ContainsKey("Username") ? sourceData["Username"].ToString() : "",
+                                IsConnected = sourceData.ContainsKey("IsConnected") && (bool)sourceData["IsConnected"]
                             });
                         }
                     }
