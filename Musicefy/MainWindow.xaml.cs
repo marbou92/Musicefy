@@ -1,219 +1,417 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Musicefy.Core.Models;
 using Musicefy.Core.Services;
 using Musicefy.Views;
-using Musicefy.Services; // ThemeManager
+using Musicefy.Services;
 using NAudio.Wave;
-using IOFile = System.IO.File;   // ✅ alias for System.IO.File
-using TagLibFile = TagLib.File; // ✅ alias for TagLib.File
+using IOFile = System.IO.File;
+using TagLibFile = TagLib.File;
 
 namespace Musicefy
 {
     public partial class MainWindow : Window
     {
-        private IWavePlayer waveOut;
-        private AudioFileReader audioFile;
-        private DispatcherTimer timer;
-        private StreamingSourceManager sourceManager;
-        private PlaylistManager playlistManager;
-        private int currentTrackIndex = -1;
+        // ── Playback ──────────────────────────────────────────────
+        private IWavePlayer _waveOut;
+        private AudioFileReader _audioFile;
+        private DispatcherTimer _timer;
+
+        // ── Data ──────────────────────────────────────────────────
+        private StreamingSourceManager _sourceManager;
+        private PlaylistManager _playlistManager;
+
+        // All loaded tracks (full library)
+        private ObservableCollection<MusicFile> _allTracks = new ObservableCollection<MusicFile>();
+        // Queue (what will play next)
+        private ObservableCollection<MusicFile> _queue = new ObservableCollection<MusicFile>();
+
+        private int _currentQueueIndex = -1;
 
         public MainWindow()
         {
             InitializeComponent();
             InitializeApp();
             RefreshSources();
-            RefreshTracks();
         }
 
+        // ═══════════════════════════════════════════════════════════
+        //  INIT
+        // ═══════════════════════════════════════════════════════════
         private void InitializeApp()
         {
-            sourceManager = new StreamingSourceManager();
-            playlistManager = new PlaylistManager();
+            _sourceManager = new StreamingSourceManager();
+            _playlistManager = new PlaylistManager();
 
-            TracksList.SelectionChanged += TracksList_SelectionChanged;
+            // Bind collections
+            TracksList.ItemsSource = _allTracks;
+            QueueList.ItemsSource = _queue;
 
-            timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromSeconds(1);
-            timer.Tick += Timer_Tick;
+            // Timer for playback position
+            _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
+            _timer.Tick += Timer_Tick;
 
-            VolumeSlider.ValueChanged += VolumeSlider_ValueChanged;
+            // Volume
+            VolumeSlider.Value = 70;
         }
 
+        // ═══════════════════════════════════════════════════════════
+        //  SOURCES
+        // ═══════════════════════════════════════════════════════════
         private void RefreshSources()
         {
             SourcesListBox.Items.Clear();
-            var sources = sourceManager.GetAllSources();
+            var sources = _sourceManager.GetAllSources();
 
             foreach (var source in sources)
-            {
-                var item = new ListBoxItem
-                {
-                    Content = source.Name,
-                    Padding = new Thickness(10),
-                    Margin = new Thickness(0, 5, 0, 0)
-                };
-                SourcesListBox.Items.Add(item);
-            }
-        }
+                SourcesListBox.Items.Add(source);
 
-        private void RefreshTracks()
-        {
-            var tracks = playlistManager.GetSampleTracks();
-            TracksList.ItemsSource = tracks;
-            QueueList.ItemsSource = tracks; // ✅ Show queue
+            NoSourcesHint.Visibility = sources.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void AddSourceButton_Click(object sender, RoutedEventArgs e)
         {
-            var addSourceWindow = new AddSourceWindow(sourceManager)
-            {
-                Owner = this
-            };
-
-            if (addSourceWindow.ShowDialog() == true)
+            var win = new AddSourceWindow(_sourceManager) { Owner = this };
+            if (win.ShowDialog() == true)
             {
                 RefreshSources();
-                MessageBox.Show("Source added successfully!", "Source Added");
+                MessageBox.Show("Source added!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
+        /// <summary>
+        /// When user clicks a source in the sidebar, load its tracks into the library.
+        /// </summary>
+        private void SourcesListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (SourcesListBox.SelectedItem == null) return;
+
+            // Try to cast to StreamingSource (adjust if your model differs)
+            dynamic source = SourcesListBox.SelectedItem;
+
+            try
+            {
+                string sourceType = source.Type?.ToString() ?? "";
+                string path = source.Path?.ToString() ?? source.Url?.ToString() ?? "";
+
+                if (sourceType.Equals("Local", StringComparison.OrdinalIgnoreCase) && Directory.Exists(path))
+                {
+                    LoadTracksFromFolder(path);
+                }
+                // Future: handle Subsonic/Monochrome here
+            }
+            catch { /* non-local sources: handle separately */ }
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //  LIBRARY
+        // ═══════════════════════════════════════════════════════════
+
+        /// <summary>Add Folder button — opens folder browser and loads tracks</summary>
+        private void AddFolderButton_Click(object sender, RoutedEventArgs e)
+        {
+            using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
+            {
+                dialog.Description = "Select a music folder";
+                dialog.ShowNewFolderButton = false;
+                if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                    LoadTracksFromFolder(dialog.SelectedPath);
+            }
+        }
+
+        private void LoadTracksFromFolder(string folderPath)
+        {
+            if (!Directory.Exists(folderPath)) return;
+
+            var extensions = new[] { ".mp3", ".wav", ".flac", ".ogg", ".m4a", ".aac" };
+
+            var files = Directory.EnumerateFiles(folderPath, "*.*", SearchOption.AllDirectories)
+                                 .Where(f => extensions.Contains(Path.GetExtension(f).ToLowerInvariant()));
+
+            _allTracks.Clear();
+
+            foreach (var file in files)
+            {
+                var track = CreateTrackFromFile(file);
+                _allTracks.Add(track);
+            }
+
+            UpdateLibraryUI();
+        }
+
+        private MusicFile CreateTrackFromFile(string filePath)
+        {
+            // Defaults from filename
+            string title = Path.GetFileNameWithoutExtension(filePath);
+            string artist = "Unknown Artist";
+            string album = "Unknown Album";
+            int year = 0;
+
+            // Try reading tags with TagLib
+            try
+            {
+                var tag = TagLibFile.Create(filePath);
+                if (!string.IsNullOrWhiteSpace(tag.Tag.Title)) title = tag.Tag.Title;
+                if (tag.Tag.Performers?.Length > 0 && !string.IsNullOrWhiteSpace(tag.Tag.Performers[0]))
+                    artist = tag.Tag.Performers[0];
+                if (!string.IsNullOrWhiteSpace(tag.Tag.Album)) album = tag.Tag.Album;
+                if (tag.Tag.Year > 0) year = (int)tag.Tag.Year;
+                tag.Dispose();
+            }
+            catch { /* bad file — use filename defaults */ }
+
+            return new MusicFile(title, artist, album, year, filePath)
+            {
+                SourceType = "Local",
+                SourceUri = filePath
+            };
+        }
+
+        private void UpdateLibraryUI()
+        {
+            int count = _allTracks.Count;
+            TrackCountLabel.Text = $"{count} track{(count == 1 ? "" : "s")}";
+            LibraryEmptyState.Visibility = count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //  SEARCH
+        // ═══════════════════════════════════════════════════════════
+        private List<MusicFile> _unfilteredTracks = new List<MusicFile>();
+
+        private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            string query = SearchTextBox.Text?.Trim().ToLowerInvariant() ?? "";
+            SearchPlaceholder.Visibility = string.IsNullOrEmpty(SearchTextBox.Text)
+                ? Visibility.Visible : Visibility.Collapsed;
+
+            if (string.IsNullOrEmpty(query))
+            {
+                // Show all
+                TracksList.ItemsSource = _allTracks;
+            }
+            else
+            {
+                var filtered = _allTracks
+                    .Where(t => (t.Title?.ToLowerInvariant().Contains(query) == true) ||
+                                (t.Artist?.ToLowerInvariant().Contains(query) == true) ||
+                                (t.Album?.ToLowerInvariant().Contains(query) == true))
+                    .ToList();
+                TracksList.ItemsSource = filtered;
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //  QUEUE
+        // ═══════════════════════════════════════════════════════════
+        private void EnqueueTrack(MusicFile track)
+        {
+            if (!_queue.Contains(track))
+                _queue.Add(track);
+            QueueEmptyHint.Visibility = _queue.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private void ClearQueue_Click(object sender, RoutedEventArgs e)
+        {
+            _queue.Clear();
+            _currentQueueIndex = -1;
+            QueueEmptyHint.Visibility = Visibility.Visible;
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //  PLAYBACK
+        // ═══════════════════════════════════════════════════════════
+        private void TracksList_DoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (TracksList.SelectedItem is MusicFile track)
+            {
+                // Add all library tracks to queue, start from selected
+                _queue.Clear();
+                foreach (var t in _allTracks) _queue.Add(t);
+                _currentQueueIndex = _queue.IndexOf(track);
+                QueueEmptyHint.Visibility = _queue.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+                PlayTrack(track);
+            }
+        }
+
+        private void QueueList_DoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (QueueList.SelectedItem is MusicFile track)
+            {
+                _currentQueueIndex = _queue.IndexOf(track);
+                PlayTrack(track);
             }
         }
 
         private void PlayButton_Click(object sender, RoutedEventArgs e)
         {
+            if (_waveOut != null)
+            {
+                _waveOut.Play();
+                return;
+            }
             if (TracksList.SelectedItem is MusicFile track)
             {
+                EnqueueTrack(track);
+                _currentQueueIndex = _queue.IndexOf(track);
                 PlayTrack(track);
             }
         }
 
-        private void PauseButton_Click(object sender, RoutedEventArgs e)
-        {
-            waveOut?.Pause();
-        }
+        private void PauseButton_Click(object sender, RoutedEventArgs e) => _waveOut?.Pause();
 
         private void PreviousButton_Click(object sender, RoutedEventArgs e)
         {
-            var prev = playlistManager.Previous();
-            if (prev != null) PlayTrack(prev);
+            if (_queue.Count == 0) return;
+            _currentQueueIndex = Math.Max(0, _currentQueueIndex - 1);
+            PlayTrack(_queue[_currentQueueIndex]);
         }
 
         private void NextButton_Click(object sender, RoutedEventArgs e)
         {
-            var next = playlistManager.Next();
-            if (next != null) PlayTrack(next);
-        }
-
-        private void QueueList_DoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
-            if (QueueList.SelectedItem is MusicFile track)
-            {
-                PlayTrack(track);
-            }
+            if (_queue.Count == 0) return;
+            if (_playlistManager.ShuffleEnabled)
+                _currentQueueIndex = new Random().Next(_queue.Count);
+            else
+                _currentQueueIndex = (_currentQueueIndex + 1) % _queue.Count;
+            PlayTrack(_queue[_currentQueueIndex]);
         }
 
         private void PlayTrack(MusicFile track)
         {
             StopPlayback();
 
-            if (string.IsNullOrEmpty(track.SourceUri) && !string.IsNullOrEmpty(track.Path))
-                track.SourceUri = track.Path;
+            string uri = track.SourceUri ?? track.Path ?? track.FilePath;
 
-            if (string.IsNullOrEmpty(track.SourceUri))
+            if (string.IsNullOrEmpty(uri) || !IOFile.Exists(uri))
             {
-                MessageBox.Show("Track has no source URI.", "Cannot Play");
+                MessageBox.Show($"File not found:\n{uri}", "Cannot Play", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             try
             {
-                waveOut = new WaveOutEvent();
-                audioFile = new AudioFileReader(track.SourceUri);
-                waveOut.Init(audioFile);
-                waveOut.Play();
+                _waveOut = new WaveOutEvent();
+                _audioFile = new AudioFileReader(uri);
+                _audioFile.Volume = (float)(VolumeSlider.Value / 100.0);
+                _waveOut.Init(_audioFile);
+                _waveOut.Play();
+                _waveOut.PlaybackStopped += WaveOut_PlaybackStopped;
 
-                currentTrackIndex = TracksList.Items.IndexOf(track);
-
-                // Update Now Playing info
+                // Update Now Playing
                 NowPlayingTitle.Text = track.Title;
                 NowPlayingArtist.Text = track.Artist;
-                NowPlayingMeta.Text = $"{track.Album} • {track.Year}";
+                NowPlayingMeta.Text = $"{track.Album}{(track.Year > 0 ? " • " + track.Year : "")}";
 
-                // Album art
+                // Player bar mini-label
+                PlayerBarTitle.Text = track.Title + "  ";
+                PlayerBarArtist.Text = "— " + track.Artist;
+
                 LoadAlbumArt(track);
 
-                PlaybackSlider.Maximum = audioFile.TotalTime.TotalSeconds;
-                timer.Start();
+                PlaybackSlider.Maximum = _audioFile.TotalTime.TotalSeconds;
+                PlaybackSlider.Value = 0;
+                _timer.Start();
 
-                // ✅ Update queue highlight
+                // Sync queue highlight
                 QueueList.SelectedItem = track;
                 QueueList.ScrollIntoView(track);
+                TracksList.SelectedItem = track;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Playback error: {ex.Message}", "Playback Error");
+                MessageBox.Show($"Playback error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        private void WaveOut_PlaybackStopped(object sender, StoppedEventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (e.Exception == null && _playlistManager.RepeatEnabled)
+                {
+                    // Repeat current
+                    if (_currentQueueIndex >= 0 && _currentQueueIndex < _queue.Count)
+                        PlayTrack(_queue[_currentQueueIndex]);
+                }
+                else if (e.Exception == null)
+                {
+                    // Auto-advance
+                    NextButton_Click(null, null);
+                }
+            });
         }
 
         private void StopPlayback()
         {
-            timer.Stop();
-            waveOut?.Stop();
-            audioFile?.Dispose();
-            waveOut?.Dispose();
-            waveOut = null;
-            audioFile = null;
+            _timer.Stop();
+            if (_waveOut != null)
+            {
+                _waveOut.PlaybackStopped -= WaveOut_PlaybackStopped;
+                _waveOut.Stop();
+                _waveOut.Dispose();
+                _waveOut = null;
+            }
+            _audioFile?.Dispose();
+            _audioFile = null;
         }
 
         private void Timer_Tick(object sender, EventArgs e)
         {
-            if (audioFile != null)
-            {
-                PlaybackSlider.Value = audioFile.CurrentTime.TotalSeconds;
-                ElapsedText.Text = audioFile.CurrentTime.ToString(@"m\:ss");
-                RemainingText.Text = (audioFile.TotalTime - audioFile.CurrentTime).ToString(@"m\:ss");
-            }
+            if (_audioFile == null) return;
+            PlaybackSlider.Value = _audioFile.CurrentTime.TotalSeconds;
+            ElapsedText.Text = _audioFile.CurrentTime.ToString(@"m\:ss");
+            RemainingText.Text = (_audioFile.TotalTime - _audioFile.CurrentTime).ToString(@"m\:ss");
         }
 
-        private void PlaybackSlider_MouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void PlaybackSlider_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (audioFile != null)
-            {
-                audioFile.CurrentTime = TimeSpan.FromSeconds(PlaybackSlider.Value);
-            }
+            if (_audioFile != null)
+                _audioFile.CurrentTime = TimeSpan.FromSeconds(PlaybackSlider.Value);
         }
 
         private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            if (audioFile != null)
-            {
-                audioFile.Volume = (float)(VolumeSlider.Value / 100.0);
-            }
+            if (_audioFile != null)
+                _audioFile.Volume = (float)(VolumeSlider.Value / 100.0);
+            if (VolumeLabel != null)
+                VolumeLabel.Text = $"{(int)VolumeSlider.Value}%";
         }
 
+        // ═══════════════════════════════════════════════════════════
+        //  SELECTION CHANGED (hover preview, no playback)
+        // ═══════════════════════════════════════════════════════════
         private void TracksList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (TracksList.SelectedItem is MusicFile track)
             {
                 NowPlayingTitle.Text = track.Title;
                 NowPlayingArtist.Text = track.Artist;
-                NowPlayingMeta.Text = $"{track.Album} • {track.Year}";
+                NowPlayingMeta.Text = $"{track.Album}{(track.Year > 0 ? " • " + track.Year : "")}";
                 LoadAlbumArt(track);
             }
         }
 
+        // ═══════════════════════════════════════════════════════════
+        //  ALBUM ART
+        // ═══════════════════════════════════════════════════════════
         private void LoadAlbumArt(MusicFile track)
         {
             try
             {
-                if (!string.IsNullOrEmpty(track.Path) && IOFile.Exists(track.Path))
+                string path = track.Path ?? track.FilePath;
+                if (!string.IsNullOrEmpty(path) && IOFile.Exists(path))
                 {
-                    var file = TagLibFile.Create(track.Path);
+                    var file = TagLibFile.Create(path);
                     if (file.Tag.Pictures.Length > 0)
                     {
                         var pic = file.Tag.Pictures[0];
@@ -225,63 +423,56 @@ namespace Musicefy
                             img.CacheOption = BitmapCacheOption.OnLoad;
                             img.EndInit();
                             AlbumArtImage.Source = img;
+                            file.Dispose();
+                            return;
                         }
                     }
-                    else
-                    {
-                        AlbumArtImage.Source = new BitmapImage(new Uri("pack://application:,,,/Assets/default_cover.png"));
-                    }
-                }
-                else
-                {
-                    AlbumArtImage.Source = new BitmapImage(new Uri("pack://application:,,,/Assets/default_cover.png"));
+                    file.Dispose();
                 }
             }
-            catch
-            {
-                AlbumArtImage.Source = new BitmapImage(new Uri("pack://application:,,,/Assets/default_cover.png"));
-            }
+            catch { }
+
+            AlbumArtImage.Source = new BitmapImage(new Uri("pack://application:,,,/Assets/default_cover.png"));
         }
 
-        // Shuffle & Repeat toggles
+        // ═══════════════════════════════════════════════════════════
+        //  SHUFFLE / REPEAT
+        // ═══════════════════════════════════════════════════════════
         private void ShuffleButton_Click(object sender, RoutedEventArgs e)
         {
-            playlistManager.ShuffleEnabled = !playlistManager.ShuffleEnabled;
-            ShuffleButton.Background = playlistManager.ShuffleEnabled
+            _playlistManager.ShuffleEnabled = !_playlistManager.ShuffleEnabled;
+            ShuffleButton.Foreground = _playlistManager.ShuffleEnabled
                 ? (Brush)FindResource("AccentBrush")
-                : (Brush)FindResource("SecondaryBackgroundBrush");
+                : (Brush)FindResource("ForegroundBrush");
         }
 
         private void RepeatButton_Click(object sender, RoutedEventArgs e)
         {
-            playlistManager.RepeatEnabled = !playlistManager.RepeatEnabled;
-            RepeatButton.Background = playlistManager.RepeatEnabled
+            _playlistManager.RepeatEnabled = !_playlistManager.RepeatEnabled;
+            RepeatButton.Foreground = _playlistManager.RepeatEnabled
                 ? (Brush)FindResource("AccentBrush")
-                : (Brush)FindResource("SecondaryBackgroundBrush");
+                : (Brush)FindResource("ForegroundBrush");
         }
 
-        // Settings button handler
+        // ═══════════════════════════════════════════════════════════
+        //  SETTINGS / ABOUT / EXIT
+        // ═══════════════════════════════════════════════════════════
         private void OpenSettings_Click(object sender, RoutedEventArgs e)
         {
-            var settingsWindow = new SettingsWindow { Owner = this };
-            if (settingsWindow.ShowDialog() == true)
+            var win = new SettingsWindow { Owner = this };
+            if (win.ShowDialog() == true)
             {
-                string selectedTheme = Musicefy.Properties.Settings.Default.Theme;
-                ThemeManager.ApplyTheme(selectedTheme);
+                string theme = Musicefy.Properties.Settings.Default.Theme;
+                ThemeManager.ApplyTheme(theme);
             }
         }
 
         private void About_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Musicefy - Music Streaming Player\nVersion 1.0.0\n© 2026 Musicefy Team",
-                            "About Musicefy",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Information);
+            MessageBox.Show("Musicefy — Music Streaming Player\nVersion 1.0.0\n© 2026",
+                            "About Musicefy", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        private void Exit_Click(object sender, RoutedEventArgs e)
-        {
-            Application.Current.Shutdown();
-        }
+        private void Exit_Click(object sender, RoutedEventArgs e) => Application.Current.Shutdown();
     }
 }
