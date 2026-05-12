@@ -169,4 +169,4 @@
                 </StackPanel>
 
                 <!-- Volume Control -->
-                <StackPanel Grid.Column="2" Orientation="Horizontal" Vertical
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment
