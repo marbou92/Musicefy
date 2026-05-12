@@ -52,7 +52,7 @@ namespace Musicefy
 
             VolumeSlider.Value = 70;
         }
-        private void RefreshSources()
+                private void RefreshSources()
         {
             SourcesListBox.Items.Clear();
             var sources = _sourceManager.GetAllSources();
@@ -94,12 +94,14 @@ namespace Musicefy
         private void SourcesListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (SourcesListBox.SelectedItem == null) return;
-            var source = SourcesListBox.SelectedItem as SourceModel; // replace dynamic with your model
+            var source = SourcesListBox.SelectedItem;
 
             if (source != null)
             {
-                string sourceType = source.Type ?? "";
-                string path = source.Path ?? source.Url ?? "";
+                string sourceType = source.GetType().GetProperty("Type")?.GetValue(source)?.ToString() ?? "";
+                string path = source.GetType().GetProperty("Path")?.GetValue(source)?.ToString()
+                             ?? source.GetType().GetProperty("Url")?.GetValue(source)?.ToString()
+                             ?? "";
 
                 if (sourceType.Equals("Local", StringComparison.OrdinalIgnoreCase) && Directory.Exists(path))
                 {
@@ -160,6 +162,7 @@ namespace Musicefy
             TrackCountLabel.Text = $"{count} track{(count == 1 ? "" : "s")}";
             LibraryEmptyState.Visibility = count == 0 ? Visibility.Visible : Visibility.Collapsed;
         }
+
         private void EnqueueTrack(MusicFile track)
         {
             if (!_queue.Contains(track))
@@ -289,6 +292,44 @@ namespace Musicefy
                 LoadAlbumArt(track);
             }
         }
+
+        private void PlayTrack(MusicFile track)
+{
+    StopPlayback();
+
+    string uri = track.SourceUri ?? track.FilePath;
+
+    if (string.IsNullOrEmpty(uri) || !IOFile.Exists(uri))
+    {
+        MessageBox.Show($"File not found:\n{uri}", "Cannot Play", MessageBoxButton.OK, MessageBoxImage.Warning);
+        return;
+    }
+
+    try
+    {
+        _waveOut = new WaveOutEvent();
+        _audioFile = new AudioFileReader(uri);
+        _audioFile.Volume = (float)(VolumeSlider.Value / 100.0);
+        _waveOut.Init(_audioFile);
+        _waveOut.Play();
+        _waveOut.PlaybackStopped += WaveOut_PlaybackStopped;
+
+        NowPlayingTitle.Text = track.Title;
+        NowPlayingArtist.Text = track.Artist;
+        NowPlayingMeta.Text = $"{track.Album}{(track.Year > 0 ? " • " + track.Year : "")}";
+
+        LoadAlbumArt(track);
+
+        PlaybackSlider.Maximum = _audioFile.TotalTime.TotalSeconds;
+        PlaybackSlider.Value = 0;
+        _timer.Start();
+    }
+    catch (Exception ex)
+    {
+        MessageBox.Show($"Playback error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+    }
+}
+
 
         private void LoadAlbumArt(MusicFile track)
         {
