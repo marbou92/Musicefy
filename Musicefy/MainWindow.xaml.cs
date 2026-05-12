@@ -94,19 +94,18 @@ namespace Musicefy
         private void SourcesListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (SourcesListBox.SelectedItem == null) return;
-            dynamic source = SourcesListBox.SelectedItem;
+            var source = SourcesListBox.SelectedItem as SourceModel; // replace dynamic with your model
 
-            try
+            if (source != null)
             {
-                string sourceType = source.Type?.ToString() ?? "";
-                string path = source.Path?.ToString() ?? source.Url?.ToString() ?? "";
+                string sourceType = source.Type ?? "";
+                string path = source.Path ?? source.Url ?? "";
 
                 if (sourceType.Equals("Local", StringComparison.OrdinalIgnoreCase) && Directory.Exists(path))
                 {
                     LoadTracksFromFolder(path);
                 }
             }
-            catch { }
         }
 
         private void LoadTracksFromFolder(string folderPath)
@@ -195,7 +194,6 @@ namespace Musicefy
                 PlayTrack(track);
             }
         }
-
         private void PlayButton_Click(object sender, RoutedEventArgs e)
         {
             if (_waveOut != null)
