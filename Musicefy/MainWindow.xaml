@@ -84,9 +84,13 @@
                     <StackPanel>
                         <TextBlock Text="Now Playing" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,8"/>
                         <StackPanel Orientation="Horizontal">
-                            <Rectangle Width="96" Height="96" Fill="#444" RadiusX="6" RadiusY="6"
-                                       HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                            <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                            <!-- Album Art -->
+                            <Image x:Name="AlbumArtImage"
+                                   Width="96" Height="96"
+                                   Stretch="UniformToFill"
+                                   Margin="0,0,12,0"
+                                   Source="pack://application:,,,/Assets/default_cover.png"/>
+                            <StackPanel VerticalAlignment="Center">
                                 <TextBlock x:Name="NowPlayingTitle" Text="Track Title" FontWeight="Bold"/>
                                 <TextBlock x:Name="NowPlayingArtist" Text="Artist" Foreground="Gray" Margin="0,4,0,0"/>
                                 <TextBlock x:Name="NowPlayingMeta" Text="Album • Year" Foreground="Gray" FontSize="12"/>
@@ -108,20 +112,24 @@
 
                 <!-- Playback Controls -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
-                    <Button x:Name="PreviousButton" Content="⏮" Width="40" Height="36" Margin="4"
+                    <Button x:Name="PreviousButton" Content="⏮" Width="48" Height="40" Margin="4"
                             Background="{DynamicResource AccentBrush}" Foreground="White"
-                            Click="PreviousButton_Click"/>
-                    <Button x:Name="PlayButton" Content="⏯" Width="40" Height="36" Margin="4"
+                            FontSize="18" FontWeight="Bold" Click="PreviousButton_Click"/>
+                    <Button x:Name="PlayButton" Content="▶" Width="64" Height="40" Margin="4"
                             Background="{DynamicResource AccentBrush}" Foreground="White"
-                            Click="PlayButton_Click"/>
-                    <Button x:Name="NextButton" Content="⏭" Width="40" Height="36" Margin="4"
+                            FontSize="18" FontWeight="Bold" Click="PlayButton_Click"/>
+                    <Button x:Name="PauseButton" Content="⏸" Width="64" Height="40" Margin="4"
                             Background="{DynamicResource AccentBrush}" Foreground="White"
-                            Click="NextButton_Click"/>
+                            FontSize="18" FontWeight="Bold" Click="PauseButton_Click"/>
+                    <Button x:Name="NextButton" Content="⏭" Width="48" Height="40" Margin="4"
+                            Background="{DynamicResource AccentBrush}" Foreground="White"
+                            FontSize="18" FontWeight="Bold" Click="NextButton_Click"/>
                 </StackPanel>
 
                 <!-- Playback Slider -->
                 <StackPanel Grid.Column="1" Orientation="Vertical" Margin="12,0">
-                    <Slider x:Name="PlaybackSlider" Minimum="0" Maximum="100" Value="0" Height="20"/>
+                    <Slider x:Name="PlaybackSlider" Minimum="0" Maximum="100" Value="0" Height="20"
+                            PreviewMouseUp="PlaybackSlider_MouseUp"/>
                     <Grid Margin="0,6,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
@@ -136,7 +144,8 @@
                 <!-- Volume Control -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="Vol" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                    <Slider x:Name="VolumeSlider" Width="120" Minimum="0" Maximum="100" Value="70" Height="20"/>
+                    <Slider x:Name="VolumeSlider" Width="120" Minimum="0" Maximum="100" Value="70" Height="20"
+                            ValueChanged="VolumeSlider_ValueChanged"/>
                 </StackPanel>
             </Grid>
         </Border>
