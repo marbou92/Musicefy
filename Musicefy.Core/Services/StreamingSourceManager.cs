@@ -139,7 +139,9 @@ namespace Musicefy.Core.Services
             foreach (var file in files)
             {
                 var name = Path.GetFileNameWithoutExtension(file);
-                if (string.IsNullOrEmpty(query) || name.Contains(query, StringComparison.OrdinalIgnoreCase))
+
+                // ✅ FIX: use IndexOf instead of Contains with StringComparison
+                if (string.IsNullOrEmpty(query) || name.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0)
                 {
                     results.Add(new MusicFile
                     {
@@ -147,7 +149,8 @@ namespace Musicefy.Core.Services
                         Title = name,
                         Artist = "Local",
                         Album = "",
-                        Path = file,
+                        FilePath = file,   // ✅ FIX: use FilePath property
+                        SourceUri = file,
                         SourceType = "Local"
                     });
                 }
