@@ -13,10 +13,76 @@
 
     <DockPanel LastChildFill="True">
         <!-- Top Navigation Bar -->
-        <!-- ... your top bar code unchanged ... -->
+        <!-- ... unchanged ... -->
 
         <!-- Main Content Area -->
-        <!-- ... your sidebar, library, queue, now playing unchanged ... -->
+        <Grid DockPanel.Dock="Top" Margin="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="260"/>
+                <ColumnDefinition Width="8"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Sidebar -->
+            <Border Grid.Column="0" Background="{DynamicResource SecondaryBackgroundBrush}" Padding="12" CornerRadius="6">
+                <StackPanel>
+                    <TextBlock Text="Sources" FontSize="16" FontWeight="Bold"/>
+                    <Button x:Name="AddSourceButton" Content="Add Source" Margin="0,8,0,0"
+                            Background="{DynamicResource AccentBrush}" Foreground="White"
+                            Click="AddSourceButton_Click"/>
+                    <ListBox x:Name="SourcesListBox" Margin="0,12,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Splitter -->
+            <GridSplitter Grid.Column="1" Width="8" HorizontalAlignment="Stretch" Background="Transparent"/>
+
+            <!-- Library + Queue + Now Playing -->
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Library -->
+                <Border Grid.Row="0" Background="{DynamicResource BackgroundBrush}" Padding="12"
+                        CornerRadius="6" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="My Music Library" FontSize="20" FontWeight="Bold"/>
+                        <ListBox x:Name="TracksList" Margin="0,12,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Queue View -->
+                <Border Grid.Row="1" Background="{DynamicResource BackgroundBrush}" Padding="12"
+                        CornerRadius="6" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Margin="0,12,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Queue" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <ListBox x:Name="QueueList" Margin="0,4,0,0" Height="200" MouseDoubleClick="QueueList_DoubleClick"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Now Playing Card -->
+                <Border Grid.Row="2" Background="{DynamicResource SecondaryBackgroundBrush}" Padding="12" CornerRadius="6" Margin="0,12,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Now Playing" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Image x:Name="AlbumArtImage"
+                                   Width="96" Height="96"
+                                   Stretch="UniformToFill"
+                                   Margin="0,0,12,0"
+                                   Source="pack://application:,,,/Assets/default_cover.png"/>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock x:Name="NowPlayingTitle" Text="Track Title" FontWeight="Bold"/>
+                                <TextBlock x:Name="NowPlayingArtist" Text="Artist" Foreground="Gray" Margin="0,4,0,0"/>
+                                <TextBlock x:Name="NowPlayingMeta" Text="Album • Year" Foreground="Gray" FontSize="12"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Grid>
 
         <!-- Bottom Player Bar -->
         <Border DockPanel.Dock="Bottom" Background="{DynamicResource SecondaryBackgroundBrush}" Padding="12">
@@ -28,28 +94,7 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Playback Controls -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal">
-                    <Button x:Name="PreviousButton" Content="⏮" Width="48" Height="40" Margin="4"
-                            Background="{DynamicResource AccentBrush}" Foreground="White"
-                            FontSize="18" FontWeight="Bold" Click="PreviousButton_Click"/>
-                    <Button x:Name="PlayButton" Content="▶" Width="64" Height="40" Margin="4"
-                            Background="{DynamicResource AccentBrush}" Foreground="White"
-                            FontSize="18" FontWeight="Bold" Click="PlayButton_Click"/>
-                    <Button x:Name="PauseButton" Content="⏸" Width="64" Height="40" Margin="4"
-                            Background="{DynamicResource AccentBrush}" Foreground="White"
-                            FontSize="18" FontWeight="Bold" Click="PauseButton_Click"/>
-                    <Button x:Name="NextButton" Content="⏭" Width="48" Height="40" Margin="4"
-                            Background="{DynamicResource AccentBrush}" Foreground="White"
-                            FontSize="18" FontWeight="Bold" Click="NextButton_Click"/>
-
-                    <!-- Shuffle & Repeat -->
-                    <Button x:Name="ShuffleButton" Content="🔀" Width="48" Height="40" Margin="4"
-                            Background="{DynamicResource SecondaryBackgroundBrush}" Foreground="{DynamicResource ForegroundBrush}"
-                            FontSize="18" FontWeight="Bold" Click="ShuffleButton_Click"/>
-                    <Button x:Name="RepeatButton" Content="🔁" Width="48" Height="40" Margin="4"
-                            Background="{DynamicResource SecondaryBackgroundBrush}" Foreground="{DynamicResource ForegroundBrush}"
-                            FontSize="18" FontWeight="Bold" Click="RepeatButton_Click"/>
-                </StackPanel>
+                <!-- ... unchanged ... -->
 
                 <!-- Playback Slider -->
                 <StackPanel Grid.Column="1" Orientation="Vertical" Margin="12,0">
