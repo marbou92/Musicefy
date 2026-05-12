@@ -4,13 +4,16 @@ namespace Musicefy.Core.Models
 {
     public class MusicFile
     {
-        // Unique identifier
         public string Id { get; set; }
-
-        // Local file path (if applicable)
         public string FilePath { get; set; }
 
-        // Metadata
+        // Alias for compatibility with existing code
+        public string Path
+        {
+            get => FilePath;
+            set => FilePath = value;
+        }
+
         public string Title { get; set; }
         public string Artist { get; set; }
         public string Album { get; set; }
@@ -19,9 +22,8 @@ namespace Musicefy.Core.Models
         public TimeSpan Duration { get; set; }
         public int TrackNumber { get; set; }
 
-        // Playback source
-        public string SourceUri { get; set; }     // URI for playback (local or streaming)
-        public string SourceType { get; set; }    // "Local", "Subsonic", etc.
+        public string SourceUri { get; set; }
+        public string SourceType { get; set; }
 
         public MusicFile()
         {
