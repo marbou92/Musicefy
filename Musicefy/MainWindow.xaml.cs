@@ -52,7 +52,6 @@ namespace Musicefy
 
             VolumeSlider.Value = 70;
         }
-
         private void RefreshSources()
         {
             SourcesListBox.Items.Clear();
@@ -64,8 +63,172 @@ namespace Musicefy
             NoSourcesHint.Visibility = sources.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        // … (library, queue, playback methods as before)
+        private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            string query = SearchTextBox.Text?.Trim().ToLowerInvariant() ?? "";
+            if (string.IsNullOrEmpty(query))
+            {
+                TracksList.ItemsSource = _allTracks;
+            }
+            else
+            {
+                var filtered = _allTracks
+                    .Where(t => (t.Title?.ToLowerInvariant().Contains(query) == true) ||
+                                (t.Artist?.ToLowerInvariant().Contains(query) == true) ||
+                                (t.Album?.ToLowerInvariant().Contains(query) == true))
+                    .ToList();
+                TracksList.ItemsSource = filtered;
+            }
+        }
 
+        private void AddSourceButton_Click(object sender, RoutedEventArgs e)
+        {
+            var win = new AddSourceWindow(_sourceManager) { Owner = this };
+            if (win.ShowDialog() == true)
+            {
+                RefreshSources();
+                MessageBox.Show("Source added!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
+        private void SourcesListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (SourcesListBox.SelectedItem == null) return;
+            dynamic source = SourcesListBox.SelectedItem;
+
+            try
+            {
+                string sourceType = source.Type?.ToString() ?? "";
+                string path = source.Path?.ToString() ?? source.Url?.ToString() ?? "";
+
+                if (sourceType.Equals("Local", StringComparison.OrdinalIgnoreCase) && Directory.Exists(path))
+                {
+                    LoadTracksFromFolder(path);
+                }
+            }
+            catch { }
+        }
+
+        private void LoadTracksFromFolder(string folderPath)
+        {
+            if (!Directory.Exists(folderPath)) return;
+
+            var extensions = new[] { ".mp3", ".wav", ".flac", ".ogg", ".m4a", ".aac" };
+
+            var files = Directory.EnumerateFiles(folderPath, "*.*", SearchOption.AllDirectories)
+                                 .Where(f => extensions.Contains(Path.GetExtension(f).ToLowerInvariant()));
+
+            _allTracks.Clear();
+
+            foreach (var file in files)
+            {
+                var track = CreateTrackFromFile(file);
+                _allTracks.Add(track);
+            }
+
+            UpdateLibraryUI();
+        }
+
+        private MusicFile CreateTrackFromFile(string filePath)
+        {
+            string title = Path.GetFileNameWithoutExtension(filePath);
+            string artist = "Unknown Artist";
+            string album = "Unknown Album";
+            int year = 0;
+
+            try
+            {
+                var tag = TagLibFile.Create(filePath);
+                if (!string.IsNullOrWhiteSpace(tag.Tag.Title)) title = tag.Tag.Title;
+                if (tag.Tag.Performers?.Length > 0 && !string.IsNullOrWhiteSpace(tag.Tag.Performers[0]))
+                    artist = tag.Tag.Performers[0];
+                if (!string.IsNullOrWhiteSpace(tag.Tag.Album)) album = tag.Tag.Album;
+                if (tag.Tag.Year > 0) year = (int)tag.Tag.Year;
+                tag.Dispose();
+            }
+            catch { }
+
+            return new MusicFile(title, artist, album, year, filePath)
+            {
+                SourceType = "Local",
+                SourceUri = filePath
+            };
+        }
+
+        private void UpdateLibraryUI()
+        {
+            int count = _allTracks.Count;
+            TrackCountLabel.Text = $"{count} track{(count == 1 ? "" : "s")}";
+            LibraryEmptyState.Visibility = count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        }
+        private void EnqueueTrack(MusicFile track)
+        {
+            if (!_queue.Contains(track))
+                _queue.Add(track);
+            QueueEmptyHint.Visibility = _queue.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private void ClearQueue_Click(object sender, RoutedEventArgs e)
+        {
+            _queue.Clear();
+            _currentQueueIndex = -1;
+            QueueEmptyHint.Visibility = Visibility.Visible;
+        }
+
+        private void TracksList_DoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (TracksList.SelectedItem is MusicFile track)
+            {
+                _queue.Clear();
+                foreach (var t in _allTracks) _queue.Add(t);
+                _currentQueueIndex = _queue.IndexOf(track);
+                QueueEmptyHint.Visibility = _queue.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+                PlayTrack(track);
+            }
+        }
+
+        private void QueueList_DoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (QueueList.SelectedItem is MusicFile track)
+            {
+                _currentQueueIndex = _queue.IndexOf(track);
+                PlayTrack(track);
+            }
+        }
+
+        private void PlayButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_waveOut != null)
+            {
+                _waveOut.Play();
+                return;
+            }
+            if (TracksList.SelectedItem is MusicFile track)
+            {
+                EnqueueTrack(track);
+                _currentQueueIndex = _queue.IndexOf(track);
+                PlayTrack(track);
+            }
+        }
+
+        private void PauseButton_Click(object sender, RoutedEventArgs e) => _waveOut?.Pause();
+
+        private void PreviousButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_queue.Count == 0) return;
+            _currentQueueIndex = Math.Max(0, _currentQueueIndex - 1);
+            PlayTrack(_queue[_currentQueueIndex]);
+        }
+
+        private void NextButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_queue.Count == 0) return;
+            if (_playlistManager.ShuffleEnabled)
+                _currentQueueIndex = new Random().Next(_queue.Count);
+            else
+                _currentQueueIndex = (_currentQueueIndex + 1) % _queue.Count;
+            PlayTrack(_queue[_currentQueueIndex]);
+        }
         private void WaveOut_PlaybackStopped(object sender, StoppedEventArgs e)
         {
             Dispatcher.Invoke(() =>
