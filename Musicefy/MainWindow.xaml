@@ -76,7 +76,22 @@
                         CornerRadius="6" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
                     <StackPanel>
                         <TextBlock Text="My Music Library" FontSize="20" FontWeight="Bold"/>
-                        <ListBox x:Name="TracksList" Margin="0,12,0,0"/>
+                        <ListBox x:Name="TracksList" Margin="0,12,0,0">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Margin="6">
+                                        <Image Width="48" Height="48" Stretch="UniformToFill"
+                                               Source="pack://application:,,,/Assets/default_cover.png"/>
+                                        <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="14"/>
+                                            <TextBlock Text="{Binding Artist}" FontSize="12" Foreground="Gray"/>
+                                            <TextBlock Text="{Binding Album}" FontSize="11" Foreground="DarkGray"/>
+                                            <TextBlock Text="{Binding Year}" FontSize="11" Foreground="DarkGray"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
                     </StackPanel>
                 </Border>
 
@@ -88,12 +103,13 @@
                         <ListBox x:Name="QueueList" Margin="0,4,0,0" Height="200" MouseDoubleClick="QueueList_DoubleClick">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" Margin="4">
+                                    <StackPanel Orientation="Horizontal" Margin="6">
                                         <Image Width="40" Height="40" Stretch="UniformToFill"
                                                Source="pack://application:,,,/Assets/default_cover.png"/>
-                                        <StackPanel Margin="8,0,0,0">
-                                            <TextBlock Text="{Binding Title}" FontWeight="Bold"/>
-                                            <TextBlock Text="{Binding Artist}" FontSize="12" Foreground="Gray"/>
+                                        <StackPanel Margin="8,0,0,0" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="13"/>
+                                            <TextBlock Text="{Binding Artist}" FontSize="11" Foreground="Gray"/>
+                                            <TextBlock Text="{Binding Genre}" FontSize="11" Foreground="DarkGray"/>
                                         </StackPanel>
                                     </StackPanel>
                                 </DataTemplate>
@@ -157,21 +173,4 @@
                 </StackPanel>
 
                 <!-- Playback Slider -->
-                <StackPanel Grid.Column="1" Orientation="Vertical" Margin="12,0">
-                    <Slider x:Name="PlaybackSlider" Minimum="0" Maximum="100" Value="0" Height="20"
-                            PreviewMouseUp="PlaybackSlider_MouseUp"/>
-                    <Grid Margin="0,6,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" x:Name="ElapsedText" Text="0:00" FontSize="12" Foreground="Gray"/>
-                        <TextBlock Grid.Column="2" x:Name="RemainingText" Text="0:00" FontSize="12" Foreground="Gray" HorizontalAlignment="Right"/>
-                    </Grid>
-                </StackPanel>
-
-                <!-- Volume Control -->
-                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="Vol" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                    <Slider x:Name="VolumeSlider" Width
+                <StackPanel Grid.Column="1" Orientation="Vertical
