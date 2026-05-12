@@ -1,178 +1,115 @@
-<Window x:Class="Musicefy.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Musicefy"
-        Height="720" Width="1200"
-        WindowStartupLocation="CenterScreen"
-        MinHeight="600" MinWidth="900"
-        Icon="pack://application:,,,/Assets/musicefy.ico"
-        Background="{DynamicResource BackgroundBrush}"
-        Foreground="{DynamicResource ForegroundBrush}"
-        ResizeMode="CanResize"
-        SizeToContent="Manual">
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Musicefy.Core.Models;
 
-    <DockPanel LastChildFill="True">
-        <!-- Top Navigation Bar -->
-        <Border DockPanel.Dock="Top" Background="{DynamicResource SecondaryBackgroundBrush}" Padding="12">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+namespace Musicefy.Core.Services
+{
+    public class PlaylistManager
+    {
+        private List<MusicFile> _tracks = new List<MusicFile>();
+        private int _currentIndex = -1;
 
-                <!-- Logo -->
-                <StackPanel Orientation="Horizontal" Grid.Column="0">
-                    <Image Source="pack://application:,,,/Assets/musicefy.png"
-                           Height="40" Width="40" Margin="0,0,10,0"/>
-                    <TextBlock Text="Musicefy" FontSize="22" FontWeight="Bold"
-                               Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center"/>
-                </StackPanel>
+        public bool ShuffleEnabled { get; set; } = false;
+        public bool RepeatEnabled { get; set; } = false;
 
-                <!-- Search -->
-                <TextBox x:Name="SearchTextBox" Grid.Column="1" Height="32" Margin="20,0"
-                         Padding="8,4" VerticalContentAlignment="Center"
-                         Text="Search..." Foreground="Gray"/>
+        public void LoadFromLocalFolder(string folderPath)
+        {
+            if (!Directory.Exists(folderPath))
+                throw new DirectoryNotFoundException("Local folder not found.");
 
-                <!-- Settings Button -->
-                <Button Grid.Column="2" Content="⚙ Settings" Padding="12,6"
-                        Background="{DynamicResource AccentBrush}" Foreground="White"
-                        Click="OpenSettings_Click"/>
-            </Grid>
-        </Border>
+            var files = Directory.EnumerateFiles(folderPath, "*.*", SearchOption.AllDirectories)
+                                 .Where(f => f.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase) ||
+                                             f.EndsWith(".wav", StringComparison.OrdinalIgnoreCase) ||
+                                             f.EndsWith(".flac", StringComparison.OrdinalIgnoreCase));
 
-        <!-- Main Content Area -->
-        <Grid DockPanel.Dock="Top" Margin="12">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="260"/>
-                <ColumnDefinition Width="8"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+            foreach (var file in files)
+            {
+                var track = new MusicFile
+                {
+                    Title = Path.GetFileNameWithoutExtension(file),
+                    Artist = "Local",
+                    Album = "",
+                    Year = DateTime.Now.Year,
+                    FilePath = file,
+                    SourceUri = file,
+                    SourceType = "Local"
+                };
+                _tracks.Add(track);
+            }
+        }
 
-            <!-- Sidebar -->
-            <Border Grid.Column="0" Background="{DynamicResource SecondaryBackgroundBrush}" Padding="12" CornerRadius="6">
-                <StackPanel>
-                    <TextBlock Text="Sources" FontSize="16" FontWeight="Bold"/>
-                    <Button x:Name="AddSourceButton" Content="Add Source" Margin="0,8,0,0"
-                            Background="{DynamicResource AccentBrush}" Foreground="White"
-                            Click="AddSourceButton_Click"/>
-                    <ListBox x:Name="SourcesListBox" Margin="0,12,0,0"/>
-                </StackPanel>
-            </Border>
+        public IEnumerable<MusicFile> All() => _tracks.AsReadOnly();
 
-            <!-- Splitter -->
-            <GridSplitter Grid.Column="1" Width="8" HorizontalAlignment="Stretch" Background="Transparent"/>
+        public IEnumerable<MusicFile> GetSampleTracks()
+        {
+            return new[]
+            {
+                new MusicFile("Song Title 1", "Artist 1", "Album A", 2020, @"C:\Music\song1.mp3"),
+                new MusicFile("Song Title 2", "Artist 2", "Album B", 2019, @"C:\Music\song2.mp3"),
+                new MusicFile("Song Title 3", "Artist 3", "Album C", 2021, @"C:\Music\song3.mp3")
+            };
+        }
 
-            <!-- Library + Queue + Now Playing -->
-            <Grid Grid.Column="2">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
+        public void Shuffle()
+        {
+            var rnd = new Random();
+            _tracks = _tracks.OrderBy(x => rnd.Next()).ToList();
+            _currentIndex = -1;
+            ShuffleEnabled = true;
+        }
 
-                <!-- Library -->
-                <Border Grid.Row="0" Background="{DynamicResource BackgroundBrush}" Padding="12"
-                        CornerRadius="6" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
-                    <StackPanel>
-                        <TextBlock Text="My Music Library" FontSize="20" FontWeight="Bold"/>
-                        <ListBox x:Name="TracksList" Margin="0,12,0,0"/>
-                    </StackPanel>
-                </Border>
+        public MusicFile Next()
+        {
+            if (_tracks.Count == 0) return null;
 
-                <!-- Queue View -->
-                <Border Grid.Row="1" Background="{DynamicResource BackgroundBrush}" Padding="12"
-                        CornerRadius="6" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Margin="0,12,0,0">
-                    <StackPanel>
-                        <TextBlock Text="Queue" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                        <ListBox x:Name="QueueList"
-                                 Margin="0,4,0,0"
-                                 Height="200"
-                                 MouseDoubleClick="QueueList_DoubleClick"/>
-                    </StackPanel>
-                </Border>
+            if (ShuffleEnabled)
+            {
+                var rnd = new Random();
+                _currentIndex = rnd.Next(_tracks.Count);
+            }
+            else
+            {
+                _currentIndex++;
+                if (_currentIndex >= _tracks.Count)
+                {
+                    if (RepeatEnabled)
+                        _currentIndex = 0;
+                    else
+                        _currentIndex = _tracks.Count - 1;
+                }
+            }
 
-                <!-- Now Playing Card -->
-                <Border Grid.Row="2" Background="{DynamicResource SecondaryBackgroundBrush}" Padding="12" CornerRadius="6" Margin="0,12,0,0">
-                    <StackPanel>
-                        <TextBlock Text="Now Playing" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                        <StackPanel Orientation="Horizontal">
-                            <Image x:Name="AlbumArtImage"
-                                   Width="96" Height="96"
-                                   Stretch="UniformToFill"
-                                   Margin="0,0,12,0"
-                                   Source="pack://application:,,,/Assets/default_cover.png"/>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock x:Name="NowPlayingTitle" Text="Track Title" FontWeight="Bold"/>
-                                <TextBlock x:Name="NowPlayingArtist" Text="Artist" Foreground="Gray" Margin="0,4,0,0"/>
-                                <TextBlock x:Name="NowPlayingMeta" Text="Album • Year" Foreground="Gray" FontSize="12"/>
-                            </StackPanel>
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
-            </Grid>
-        </Grid>
+            return _tracks[_currentIndex];
+        }
 
-        <!-- Bottom Player Bar -->
-        <Border DockPanel.Dock="Bottom" Background="{DynamicResource SecondaryBackgroundBrush}" Padding="12">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+        public MusicFile Previous()
+        {
+            if (_tracks.Count == 0) return null;
 
-                <!-- Playback Controls -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal">
-                    <Button x:Name="PreviousButton" Content="⏮" Width="48" Height="40" Margin="4"
-                            Background="{DynamicResource AccentBrush}" Foreground="White"
-                            FontSize="18" FontWeight="Bold" Click="PreviousButton_Click"/>
-                    <Button x:Name="PlayButton" Content="▶" Width="64" Height="40" Margin="4"
-                            Background="{DynamicResource AccentBrush}" Foreground="White"
-                            FontSize="18" FontWeight="Bold" Click="PlayButton_Click"/>
-                    <Button x:Name="PauseButton" Content="⏸" Width="64" Height="40" Margin="4"
-                            Background="{DynamicResource AccentBrush}" Foreground="White"
-                            FontSize="18" FontWeight="Bold" Click="PauseButton_Click"/>
-                    <Button x:Name="NextButton" Content="⏭" Width="48" Height="40" Margin="4"
-                            Background="{DynamicResource AccentBrush}" Foreground="White"
-                            FontSize="18" FontWeight="Bold" Click="NextButton_Click"/>
+            _currentIndex--;
+            if (_currentIndex < 0)
+            {
+                if (RepeatEnabled)
+                    _currentIndex = _tracks.Count - 1;
+                else
+                    _currentIndex = 0;
+            }
 
-                    <!-- Shuffle & Repeat -->
-                    <Button x:Name="ShuffleButton" Content="🔀" Width="48" Height="40" Margin="4"
-                            Background="{DynamicResource SecondaryBackgroundBrush}" Foreground="{DynamicResource ForegroundBrush}"
-                            FontSize="18" FontWeight="Bold" Click="ShuffleButton_Click"/>
-                    <Button x:Name="RepeatButton" Content="🔁" Width="48" Height="40" Margin="4"
-                            Background="{DynamicResource SecondaryBackgroundBrush}" Foreground="{DynamicResource ForegroundBrush}"
-                            FontSize="18" FontWeight="Bold" Click="RepeatButton_Click"/>
-                </StackPanel>
+            return _tracks[_currentIndex];
+        }
 
-                <!-- Playback Slider -->
-                <StackPanel Grid.Column="1" Orientation="Vertical" Margin="12,0">
-                    <Slider x:Name="PlaybackSlider" Minimum="0" Maximum="100" Value="0" Height="20"
-                            PreviewMouseUp="PlaybackSlider_MouseUp"/>
-                    <Grid Margin="0,6,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" x:Name="ElapsedText" Text="0:00" FontSize="12" Foreground="Gray"/>
-                        <TextBlock Grid.Column="2" x:Name="RemainingText" Text="0:00" FontSize="12" Foreground="Gray" HorizontalAlignment="Right"/>
-                    </Grid>
-                </StackPanel>
+        public MusicFile Current()
+        {
+            if (_currentIndex < 0 || _currentIndex >= _tracks.Count) return null;
+            return _tracks[_currentIndex];
+        }
 
-                <!-- Volume Control -->
-                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="Vol" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                    <Slider x:Name="VolumeSlider"
-                            Width="120"
-                            Minimum="0"
-                            Maximum="100"
-                            Value="70"
-                            Height="20"
-                            ValueChanged="VolumeSlider_ValueChanged"/>
-                </StackPanel>
-            </Grid>
-        </Border>
-    </DockPanel>
-</Window>
+        public void Clear()
+        {
+            _tracks.Clear();
+            _currentIndex = -1;
+        }
+    }
+}
