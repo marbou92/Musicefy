@@ -1,6 +1,8 @@
 using System.Windows;
 using Musicefy.Core.Models;
 using Musicefy.Core.Services;
+using Microsoft.Win32;
+using System.IO;
 
 namespace Musicefy.Views
 {
@@ -12,6 +14,23 @@ namespace Musicefy.Views
         {
             InitializeComponent();
             sourceManager = manager;
+
+            // Update labels when source type changes
+            SourceTypeCombo.SelectionChanged += (s, e) =>
+            {
+                if (SourceTypeCombo.SelectedIndex == 1) // Local Folder
+                {
+                    UrlLabel.Text = "Local Folder Path";
+                    UsernameTextBox.IsEnabled = false;
+                    PasswordBox.IsEnabled = false;
+                }
+                else
+                {
+                    UrlLabel.Text = "Server URL";
+                    UsernameTextBox.IsEnabled = true;
+                    PasswordBox.IsEnabled = true;
+                }
+            };
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
@@ -22,27 +41,39 @@ namespace Musicefy.Views
 
         private async void TestButton_Click(object sender, RoutedEventArgs e)
         {
+            var type = SourceTypeCombo.SelectedIndex == 1 ? "Local" : "Subsonic";
+
             var source = new StreamingSource
             {
                 Name = NameTextBox.Text,
                 Url = UrlTextBox.Text,
                 Username = UsernameTextBox.Text,
                 Password = PasswordBox.Password,
-                Type = "Subsonic"
+                Type = type
             };
 
             try
             {
-                var client = new SubsonicClient(source);
-                bool connected = await client.TestConnectionAsync();
-
-                if (connected)
+                if (type == "Local")
                 {
-                    MessageBox.Show("Successfully connected to the streaming service!", "Connection Successful", MessageBoxButton.OK, MessageBoxImage.Information);
+                    if (Directory.Exists(source.Url))
+                    {
+                        MessageBox.Show("Local folder found!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Folder not found. Please check the path.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
                 }
                 else
                 {
-                    MessageBox.Show("Failed to connect to the streaming service. Please check your credentials.", "Connection Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                    var client = new SubsonicClient(source);
+                    bool connected = await client.TestConnectionAsync();
+
+                    if (connected)
+                        MessageBox.Show("Successfully connected to the streaming service!", "Connection Successful", MessageBoxButton.OK, MessageBoxImage.Information);
+                    else
+                        MessageBox.Show("Failed to connect. Please check your credentials.", "Connection Failed", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (System.Exception ex)
@@ -53,19 +84,21 @@ namespace Musicefy.Views
 
         private async void AddButton_Click(object sender, RoutedEventArgs e)
         {
+            var type = SourceTypeCombo.SelectedIndex == 1 ? "Local" : "Subsonic";
+
             var source = new StreamingSource
             {
                 Name = NameTextBox.Text,
                 Url = UrlTextBox.Text,
                 Username = UsernameTextBox.Text,
                 Password = PasswordBox.Password,
-                Type = "Subsonic"
+                Type = type
             };
 
             try
             {
                 await sourceManager.AddSourceAsync(source);
-                MessageBox.Show("Streaming source added successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show($"{type} source added successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                 this.DialogResult = true;
                 this.Close();
             }
