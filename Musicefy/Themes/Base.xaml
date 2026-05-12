@@ -13,8 +13,7 @@
                     <Border x:Name="border"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="4"
-                            Background="{TemplateBinding Background}">
+                            CornerRadius="4">
                         <Border.Background>
                             <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                                 <GradientStop x:Name="AccentStart" Color="{StaticResource AccentStartColor}" Offset="0.0"/>
