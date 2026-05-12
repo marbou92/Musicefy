@@ -97,7 +97,28 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Playback Controls -->
-                <!-- ... unchanged ... -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <Button x:Name="PreviousButton" Content="⏮" Width="48" Height="40" Margin="4"
+                            Background="{DynamicResource AccentBrush}" Foreground="White"
+                            FontSize="18" FontWeight="Bold" Click="PreviousButton_Click"/>
+                    <Button x:Name="PlayButton" Content="▶" Width="64" Height="40" Margin="4"
+                            Background="{DynamicResource AccentBrush}" Foreground="White"
+                            FontSize="18" FontWeight="Bold" Click="PlayButton_Click"/>
+                    <Button x:Name="PauseButton" Content="⏸" Width="64" Height="40" Margin="4"
+                            Background="{DynamicResource AccentBrush}" Foreground="White"
+                            FontSize="18" FontWeight="Bold" Click="PauseButton_Click"/>
+                    <Button x:Name="NextButton" Content="⏭" Width="48" Height="40" Margin="4"
+                            Background="{DynamicResource AccentBrush}" Foreground="White"
+                            FontSize="18" FontWeight="Bold" Click="NextButton_Click"/>
+
+                    <!-- Shuffle & Repeat -->
+                    <Button x:Name="ShuffleButton" Content="🔀" Width="48" Height="40" Margin="4"
+                            Background="{DynamicResource SecondaryBackgroundBrush}" Foreground="{DynamicResource ForegroundBrush}"
+                            FontSize="18" FontWeight="Bold" Click="ShuffleButton_Click"/>
+                    <Button x:Name="RepeatButton" Content="🔁" Width="48" Height="40" Margin="4"
+                            Background="{DynamicResource SecondaryBackgroundBrush}" Foreground="{DynamicResource ForegroundBrush}"
+                            FontSize="18" FontWeight="Bold" Click="RepeatButton_Click"/>
+                </StackPanel>
 
                 <!-- Playback Slider -->
                 <StackPanel Grid.Column="1" Orientation="Vertical" Margin="12,0">
