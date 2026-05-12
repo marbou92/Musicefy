@@ -169,4 +169,18 @@
                 </StackPanel>
 
                 <!-- Volume Control -->
-                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Vol" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                    <Slider x:Name="VolumeSlider"
+                            Width="120"
+                            Minimum="0"
+                            Maximum="100"
+                            Value="70"
+                            Height="20"
+                            ValueChanged="VolumeSlider_ValueChanged"/>
+                    <TextBlock x:Name="VolumeLabel" Text="70%" Margin="6,0,0,0"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </DockPanel>
+</Window>
