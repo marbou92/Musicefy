@@ -11,7 +11,8 @@
     <StackPanel Margin="20" Orientation="Vertical" Spacing="15">
 
         <!-- Theme Tabs -->
-        <TabControl SelectedIndex="{Binding SelectedThemeIndex}">
+        <TabControl SelectedIndex="{Binding SelectedThemeIndex}"
+                    SelectionChanged="ThemeTabs_SelectionChanged">
             <TabItem Header="System"/>
             <TabItem Header="Light"/>
             <TabItem Header="Dark"/>
@@ -21,12 +22,14 @@
         <ItemsControl ItemsSource="{Binding ThemePreviews}">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <Border Background="{Binding AccentBrush}" Padding="10" Margin="5" CornerRadius="6">
+                    <Button Click="PalettePreview_Click"
+                            Padding="0" Margin="5"
+                            Background="{Binding AccentBrush}">
                         <StackPanel>
                             <TextBlock Text="{Binding Name}" FontWeight="Bold" Foreground="White"/>
                             <Rectangle Height="40" Fill="{Binding AccentBrush}" Margin="0,5,0,0"/>
                         </StackPanel>
-                    </Border>
+                    </Button>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
