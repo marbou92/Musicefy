@@ -1,60 +1,24 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Windows;
-using Musicefy.Properties; // Settings
 
 namespace Musicefy.Services
 {
     public static class ThemeManager
     {
-        private static readonly string[] AvailableThemes =
+        public static void ApplyTheme(string mode, string palette)
         {
-            "Dark",
-            "Light",
-            "DarkLavender",
-            "WhiteLavender"
-        };
-
-        public static IEnumerable<string> GetAvailableThemes() => AvailableThemes;
-
-        public static void ApplyTheme(string themeName)
-        {
-            if (!AvailableThemes.Contains(themeName))
-                throw new ArgumentException($"Theme '{themeName}' is not defined.");
-
-            var dict = new ResourceDictionary
-            {
-                Source = new Uri($"Themes/{themeName}.xaml", UriKind.Relative)
-            };
-
             Application.Current.Resources.MergedDictionaries.Clear();
-            Application.Current.Resources.MergedDictionaries.Add(dict);
 
+            // Always include base styles
             Application.Current.Resources.MergedDictionaries.Add(
-                new ResourceDictionary
-                {
-                    Source = new Uri("Themes/Base.xaml", UriKind.Relative)
-                });
-        }
+                new ResourceDictionary { Source = new System.Uri("/Themes/Base.xaml", System.UriKind.Relative) });
 
-        public static void LoadSavedTheme()
-        {
-            string savedTheme = Settings.Default.Theme;
+            // Mode (Light/Dark)
+            Application.Current.Resources.MergedDictionaries.Add(
+                new ResourceDictionary { Source = new System.Uri($"/Themes/Modes/{mode}.xaml", System.UriKind.Relative) });
 
-            if (string.IsNullOrEmpty(savedTheme) || !AvailableThemes.Contains(savedTheme))
-                savedTheme = "Dark";
-
-            ApplyTheme(savedTheme);
-        }
-
-        public static void SaveTheme(string themeName)
-        {
-            if (!AvailableThemes.Contains(themeName))
-                throw new ArgumentException($"Theme '{themeName}' is not defined.");
-
-            Settings.Default.Theme = themeName;
-            Settings.Default.Save();
+            // Palette (Default/Catppuccin/GreenApple/Lavender)
+            Application.Current.Resources.MergedDictionaries.Add(
+                new ResourceDictionary { Source = new System.Uri($"/Themes/Palettes/{palette}.xaml", System.UriKind.Relative) });
         }
     }
 }
