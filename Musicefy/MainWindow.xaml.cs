@@ -121,4 +121,167 @@ namespace Musicefy
         {
             StopPlayback();
 
-            if (
+            if (string.IsNullOrEmpty(track.SourceUri) && !string.IsNullOrEmpty(track.Path))
+                track.SourceUri = track.Path;
+
+            if (string.IsNullOrEmpty(track.SourceUri))
+            {
+                MessageBox.Show("Track has no source URI.", "Cannot Play");
+                return;
+            }
+
+            try
+            {
+                waveOut = new WaveOutEvent();
+                audioFile = new AudioFileReader(track.SourceUri);
+                waveOut.Init(audioFile);
+                waveOut.Play();
+
+                currentTrackIndex = TracksList.Items.IndexOf(track);
+
+                // Update Now Playing info
+                NowPlayingTitle.Text = track.Title;
+                NowPlayingArtist.Text = track.Artist;
+                NowPlayingMeta.Text = $"{track.Album} • {track.Year}";
+
+                // Album art
+                LoadAlbumArt(track);
+
+                PlaybackSlider.Maximum = audioFile.TotalTime.TotalSeconds;
+                timer.Start();
+
+                // ✅ Update queue highlight
+                QueueList.SelectedItem = track;
+                QueueList.ScrollIntoView(track);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Playback error: {ex.Message}", "Playback Error");
+            }
+        }
+
+        private void StopPlayback()
+        {
+            timer.Stop();
+            waveOut?.Stop();
+            audioFile?.Dispose();
+            waveOut?.Dispose();
+            waveOut = null;
+            audioFile = null;
+        }
+
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            if (audioFile != null)
+            {
+                PlaybackSlider.Value = audioFile.CurrentTime.TotalSeconds;
+                ElapsedText.Text = audioFile.CurrentTime.ToString(@"m\:ss");
+                RemainingText.Text = (audioFile.TotalTime - audioFile.CurrentTime).ToString(@"m\:ss");
+            }
+        }
+
+        private void PlaybackSlider_MouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (audioFile != null)
+            {
+                audioFile.CurrentTime = TimeSpan.FromSeconds(PlaybackSlider.Value);
+            }
+        }
+
+        private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (audioFile != null)
+            {
+                audioFile.Volume = (float)(VolumeSlider.Value / 100.0);
+            }
+        }
+
+        private void TracksList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (TracksList.SelectedItem is MusicFile track)
+            {
+                NowPlayingTitle.Text = track.Title;
+                NowPlayingArtist.Text = track.Artist;
+                NowPlayingMeta.Text = $"{track.Album} • {track.Year}";
+                LoadAlbumArt(track);
+            }
+        }
+
+        private void LoadAlbumArt(MusicFile track)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(track.Path) && IOFile.Exists(track.Path))
+                {
+                    var file = TagLibFile.Create(track.Path);
+                    if (file.Tag.Pictures.Length > 0)
+                    {
+                        var pic = file.Tag.Pictures[0];
+                        using (var ms = new MemoryStream(pic.Data.Data))
+                        {
+                            var img = new BitmapImage();
+                            img.BeginInit();
+                            img.StreamSource = ms;
+                            img.CacheOption = BitmapCacheOption.OnLoad;
+                            img.EndInit();
+                            AlbumArtImage.Source = img;
+                        }
+                    }
+                    else
+                    {
+                        AlbumArtImage.Source = new BitmapImage(new Uri("pack://application:,,,/Assets/default_cover.png"));
+                    }
+                }
+                else
+                {
+                    AlbumArtImage.Source = new BitmapImage(new Uri("pack://application:,,,/Assets/default_cover.png"));
+                }
+            }
+            catch
+            {
+                AlbumArtImage.Source = new BitmapImage(new Uri("pack://application:,,,/Assets/default_cover.png"));
+            }
+        }
+
+        // Shuffle & Repeat toggles
+        private void ShuffleButton_Click(object sender, RoutedEventArgs e)
+        {
+            playlistManager.ShuffleEnabled = !playlistManager.ShuffleEnabled;
+            ShuffleButton.Background = playlistManager.ShuffleEnabled
+                ? (Brush)FindResource("AccentBrush")
+                : (Brush)FindResource("SecondaryBackgroundBrush");
+        }
+
+        private void RepeatButton_Click(object sender, RoutedEventArgs e)
+        {
+            playlistManager.RepeatEnabled = !playlistManager.RepeatEnabled;
+            RepeatButton.Background = playlistManager.RepeatEnabled
+                ? (Brush)FindResource("AccentBrush")
+                : (Brush)FindResource("SecondaryBackgroundBrush");
+        }
+
+        // Settings button handler
+        private void OpenSettings_Click(object sender, RoutedEventArgs e)
+        {
+            var settingsWindow = new SettingsWindow { Owner = this };
+            if (settingsWindow.ShowDialog() == true)
+            {
+                string selectedTheme = Musicefy.Properties.Settings.Default.Theme;
+                ThemeManager.ApplyTheme(selectedTheme);
+            }
+        }
+
+        private void About_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Musicefy - Music Streaming Player\nVersion 1.0.0\n© 2026 Musicefy Team",
+                            "About Musicefy",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+        }
+
+        private void Exit_Click(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown();
+        }
+    }
+}
