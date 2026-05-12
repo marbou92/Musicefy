@@ -14,14 +14,6 @@ namespace Musicefy.Core.Services
         public bool ShuffleEnabled { get; set; } = false;
         public bool RepeatEnabled { get; set; } = false;
 
-        public PlaylistManager()
-        {
-            // lightweight constructor
-        }
-
-        /// <summary>
-        /// Load tracks from a local folder into the playlist
-        /// </summary>
         public void LoadFromLocalFolder(string folderPath)
         {
             if (!Directory.Exists(folderPath))
@@ -36,37 +28,20 @@ namespace Musicefy.Core.Services
             {
                 var track = new MusicFile
                 {
-                    Id = Guid.NewGuid().ToString(),
                     Title = Path.GetFileNameWithoutExtension(file),
                     Artist = "Local",
                     Album = "",
                     Year = DateTime.Now.Year,
-                    Path = file,
-                    SourceType = "Local",
-                    SourceUri = file
+                    FilePath = file,
+                    SourceUri = file,
+                    SourceType = "Local"
                 };
                 _tracks.Add(track);
             }
         }
 
-        /// <summary>
-        /// Add a track manually
-        /// </summary>
-        public void Add(MusicFile t) => _tracks.Add(t);
-
-        /// <summary>
-        /// Remove a track
-        /// </summary>
-        public bool Remove(MusicFile t) => _tracks.Remove(t);
-
-        /// <summary>
-        /// Get all tracks
-        /// </summary>
         public IEnumerable<MusicFile> All() => _tracks.AsReadOnly();
 
-        /// <summary>
-        /// Get sample demo tracks
-        /// </summary>
         public IEnumerable<MusicFile> GetSampleTracks()
         {
             return new[]
@@ -77,9 +52,6 @@ namespace Musicefy.Core.Services
             };
         }
 
-        /// <summary>
-        /// Shuffle playlist
-        /// </summary>
         public void Shuffle()
         {
             var rnd = new Random();
@@ -88,9 +60,6 @@ namespace Musicefy.Core.Services
             ShuffleEnabled = true;
         }
 
-        /// <summary>
-        /// Get next track
-        /// </summary>
         public MusicFile Next()
         {
             if (_tracks.Count == 0) return null;
@@ -115,9 +84,6 @@ namespace Musicefy.Core.Services
             return _tracks[_currentIndex];
         }
 
-        /// <summary>
-        /// Get previous track
-        /// </summary>
         public MusicFile Previous()
         {
             if (_tracks.Count == 0) return null;
@@ -134,18 +100,12 @@ namespace Musicefy.Core.Services
             return _tracks[_currentIndex];
         }
 
-        /// <summary>
-        /// Get current track
-        /// </summary>
         public MusicFile Current()
         {
             if (_currentIndex < 0 || _currentIndex >= _tracks.Count) return null;
             return _tracks[_currentIndex];
         }
 
-        /// <summary>
-        /// Reset playlist
-        /// </summary>
         public void Clear()
         {
             _tracks.Clear();
