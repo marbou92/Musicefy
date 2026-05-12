@@ -1,0 +1,8 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <Color x:Key="AccentStartColor">#F5C2E7</Color>
+    <Color x:Key="AccentEndColor">#DDB6F2</Color>
+    <LinearGradientBrush x:Key="AccentBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="{StaticResource AccentStartColor}" Offset="0.0"/>
+        <GradientStop Color="{StaticResource AccentEndColor}" Offset="1.0"/>
+    </LinearGradientBrush>
+</ResourceDictionary>
