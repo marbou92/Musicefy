@@ -163,4 +163,10 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" x:Name="ElapsedText" Text
+                        <TextBlock Grid.Column="0" x:Name="ElapsedText" Text="0:00" FontSize="12" Foreground="Gray"/>
+                        <TextBlock Grid.Column="2" x:Name="RemainingText" Text="0:00" FontSize="12" Foreground="Gray" HorizontalAlignment="Right"/>
+                    </Grid>
+                </StackPanel>
+
+                <!-- Volume Control -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Vertical
