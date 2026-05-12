@@ -169,8 +169,4 @@
                             FontSize="18" FontWeight="Bold" Click="ShuffleButton_Click"/>
                     <Button x:Name="RepeatButton" Content="🔁" Width="48" Height="40" Margin="4"
                             Background="{DynamicResource SecondaryBackgroundBrush}" Foreground="{DynamicResource ForegroundBrush}"
-                            FontSize="18" FontWeight="Bold" Click="RepeatButton_Click"/>
-                </StackPanel>
-
-                <!-- Playback Slider -->
-                <StackPanel Grid.Column="1" Orientation="Vertical
+                            FontSize="18
