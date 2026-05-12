@@ -13,7 +13,33 @@
 
     <DockPanel LastChildFill="True">
         <!-- Top Navigation Bar -->
-        <!-- ... unchanged ... -->
+        <Border DockPanel.Dock="Top" Background="{DynamicResource SecondaryBackgroundBrush}" Padding="12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Logo -->
+                <StackPanel Orientation="Horizontal" Grid.Column="0">
+                    <Image Source="pack://application:,,,/Assets/musicefy.png"
+                           Height="40" Width="40" Margin="0,0,10,0"/>
+                    <TextBlock Text="Musicefy" FontSize="22" FontWeight="Bold"
+                               Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Search -->
+                <TextBox x:Name="SearchTextBox" Grid.Column="1" Height="32" Margin="20,0"
+                         Padding="8,4" VerticalContentAlignment="Center"
+                         Text="Search..." Foreground="Gray"/>
+
+                <!-- Settings Button -->
+                <Button Grid.Column="2" Content="⚙ Settings" Padding="12,6"
+                        Background="{DynamicResource AccentBrush}" Foreground="White"
+                        Click="OpenSettings_Click"/>
+            </Grid>
+        </Border>
 
         <!-- Main Content Area -->
         <Grid DockPanel.Dock="Top" Margin="12">
