@@ -13,11 +13,10 @@
     <SolidColorBrush x:Key="ForegroundBrush" Color="{StaticResource ForegroundColor}"/>
     <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
 
-    <!-- Accent colors for gradient -->
+    <!-- Accent colors -->
     <Color x:Key="AccentStartColor">#B57EDC</Color>
     <Color x:Key="AccentEndColor">#C89DF2</Color>
 
-    <!-- Merge shared base -->
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="Base.xaml"/>
     </ResourceDictionary.MergedDictionaries>
