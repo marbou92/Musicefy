@@ -35,7 +35,7 @@
                     <TabItem Header="Dark"/>
                 </TabControl>
 
-                <!-- Theme Previews (real palettes with thumbnails) -->
+                <!-- Theme Previews -->
                 <ItemsControl ItemsSource="{Binding ThemePreviews}" Margin="0,0,0,15">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -50,12 +50,10 @@
                                     Background="{Binding AccentBrush}">
                                 <Border BorderThickness="1" BorderBrush="White" CornerRadius="4">
                                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                        <!-- Palette name -->
                                         <TextBlock Text="{Binding Name}" 
                                                    FontWeight="Bold" 
                                                    Foreground="White" 
                                                    HorizontalAlignment="Center"/>
-                                        <!-- Live thumbnail preview -->
                                         <Grid Height="50" Margin="0,5,0,0">
                                             <Rectangle Fill="{Binding AccentBrush}" RadiusX="4" RadiusY="4"/>
                                             <TextBlock Text="Aa" 
@@ -71,12 +69,11 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
 
-                <!-- Toggles -->
-                <CheckBox Content="Pure black dark mode" IsChecked="{Binding PureBlackMode}" Margin="0,0,0,10"/>
-                <CheckBox Content="Relative timestamps" IsChecked="{Binding RelativeTimestamps}" Margin="0,0,0,10"/>
-                <CheckBox Content="Render images in manga descriptions" IsChecked="{Binding RenderImages}" Margin="0,0,0,10"/>
-                <CheckBox Content="Show updates in the nav" IsChecked="{Binding ShowUpdates}" Margin="0,0,0,10"/>
-
+                <!-- Pure Dark Mode Toggle -->
+                <CheckBox Content="Enable pure black dark mode" 
+                          IsChecked="{Binding PureBlackMode}" 
+                          Margin="0,0,0,10"/>
+                
                 <!-- Date Format -->
                 <ComboBox ItemsSource="{Binding DateFormats}" 
                           SelectedItem="{Binding SelectedDateFormat}" 
