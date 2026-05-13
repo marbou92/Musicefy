@@ -2,17 +2,23 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!-- Normal -->
-    <Color x:Key="AccentStartColor">#F5C2E7</Color>
-    <Color x:Key="AccentEndColor">#DDB6F2</Color>
+    <LinearGradientBrush x:Key="AccentBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#F5C2E7" Offset="0"/>
+        <GradientStop Color="#DDB6F2" Offset="1"/>
+    </LinearGradientBrush>
 
     <!-- Hover -->
-    <Color x:Key="AccentHoverStartColor">#D6B8F7</Color>
-    <Color x:Key="AccentHoverEndColor">#B57EDC</Color>
+    <LinearGradientBrush x:Key="AccentHoverBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#D6B8F7" Offset="0"/>
+        <GradientStop Color="#B57EDC" Offset="1"/>
+    </LinearGradientBrush>
 
     <!-- Pressed -->
-    <Color x:Key="AccentPressedStartColor">#9A6FD0</Color>
-    <Color x:Key="AccentPressedEndColor">#7E56B8</Color>
+    <LinearGradientBrush x:Key="AccentPressedBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#9A6FD0" Offset="0"/>
+        <GradientStop Color="#7E56B8" Offset="1"/>
+    </LinearGradientBrush>
 
     <!-- Glow -->
-    <Color x:Key="AccentGlowColor">#B57EDC</Color>
+    <SolidColorBrush x:Key="AccentGlowBrush" Color="#B57EDC"/>
 </ResourceDictionary>
