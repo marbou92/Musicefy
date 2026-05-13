@@ -27,6 +27,9 @@ namespace Musicefy
                 AnimateGradient(GradientStop1, "#1E1E1E", "#3B82F6", 6);
                 AnimateGradient(GradientStop2, "#00D4FF", "#9333EA", 6);
 
+                // Animate progress ring
+                AnimateRing();
+
                 // Simulate loading
                 await Task.Delay(4000);
 
@@ -65,6 +68,18 @@ namespace Musicefy
                 RepeatBehavior = RepeatBehavior.Forever
             };
             stop.BeginAnimation(GradientStop.ColorProperty, anim);
+        }
+
+        private void AnimateRing()
+        {
+            var rotateAnim = new DoubleAnimation
+            {
+                From = 0,
+                To = 360,
+                Duration = new Duration(System.TimeSpan.FromSeconds(2)),
+                RepeatBehavior = RepeatBehavior.Forever
+            };
+            RingRotate.BeginAnimation(RotateTransform.AngleProperty, rotateAnim);
         }
     }
 }
