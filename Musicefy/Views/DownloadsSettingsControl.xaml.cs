@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using Microsoft.Win32;
 
 namespace Musicefy.Views
 {
@@ -14,6 +13,9 @@ namespace Musicefy.Views
         {
             InitializeComponent();
             LoadSettings();
+
+            // Hook into application exit for auto-clear
+            Application.Current.Exit += OnAppExit;
         }
 
         private void LoadSettings()
@@ -56,6 +58,42 @@ namespace Musicefy.Views
         private void Cancel_Click(object sender, RoutedEventArgs e)
         {
             LoadSettings();
+        }
+
+        private void ClearNow_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                ClearCache(_downloadsPath);
+                MessageBox.Show("Downloads cache cleared.", "Musicefy", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to clear cache: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void OnAppExit(object sender, ExitEventArgs e)
+        {
+            if (Musicefy.Properties.Settings.Default.AutoClearCache)
+            {
+                ClearCache(_downloadsPath);
+            }
+        }
+
+        private void ClearCache(string path)
+        {
+            if (Directory.Exists(path))
+            {
+                foreach (var file in Directory.GetFiles(path))
+                {
+                    File.Delete(file);
+                }
+                foreach (var dir in Directory.GetDirectories(path))
+                {
+                    Directory.Delete(dir, true);
+                }
+            }
         }
     }
 }
