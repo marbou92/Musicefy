@@ -1,25 +1,23 @@
 using System.Windows;
 using System.Windows.Controls;
 using Musicefy.Services;
-using Musicefy.ViewModels;
 
 namespace Musicefy.Views
 {
-    public partial class AppearanceSettingsView : Window
+    public partial class AppearanceSettingsControl : UserControl
     {
         private string _currentMode = "Dark";     // default
         private string _currentPalette = "Default";
 
-        public AppearanceSettingsView()
+        public AppearanceSettingsControl()
         {
             InitializeComponent();
 
-            // Load saved theme on startup
+            // Load saved theme
             string savedTheme = Musicefy.Properties.Settings.Default.Theme ?? "Dark|Default";
             ApplyThemeFromString(savedTheme);
         }
 
-        // Handle TabControl selection (System / Light / Dark)
         private void ThemeTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!(sender is TabControl tab)) return;
@@ -34,7 +32,6 @@ namespace Musicefy.Views
             ThemeManager.ApplyTheme(_currentMode, _currentPalette);
         }
 
-        // Handle palette preview click
         private void PalettePreview_Click(object sender, RoutedEventArgs e)
         {
             if (!(sender is Button btn) || !(btn.DataContext is ThemePreview preview)) return;
@@ -43,24 +40,18 @@ namespace Musicefy.Views
             ThemeManager.ApplyTheme(_currentMode, _currentPalette);
         }
 
-        // Save button
         private void Save_Click(object sender, RoutedEventArgs e)
         {
             string themeString = $"{_currentMode}|{_currentPalette}";
             ThemeManager.SaveTheme(themeString);
             Musicefy.Properties.Settings.Default.Theme = themeString;
             Musicefy.Properties.Settings.Default.Save();
-            DialogResult = true;
-            Close();
         }
 
-        // Cancel button
         private void Cancel_Click(object sender, RoutedEventArgs e)
         {
             string savedTheme = Musicefy.Properties.Settings.Default.Theme ?? "Dark|Default";
             ApplyThemeFromString(savedTheme);
-            DialogResult = false;
-            Close();
         }
 
         private void ApplyThemeFromString(string themeString)
