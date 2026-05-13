@@ -1,6 +1,7 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <SolidColorBrush x:Key="BackgroundBrush" Color="#121212"/>
-    <SolidColorBrush x:Key="ForegroundBrush" Color="White"/>
+    <!-- Greyish dark mode -->
+    <SolidColorBrush x:Key="BackgroundBrush" Color="#1E1E1E"/>
+    <SolidColorBrush x:Key="ForegroundBrush" Color="#FFFFFF"/>
 </ResourceDictionary>
