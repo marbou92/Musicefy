@@ -103,7 +103,7 @@
                     <TextBlock Text="🎨" FontSize="16" Margin="0,0,8,0"/>
                     <StackPanel>
                         <TextBlock Text="Appearance" FontWeight="Bold"/>
-                        <TextBlock Text="Theme, date & time format" FontSize="12"/>
+                        <TextBlock Text="Theme, date &amp; time format" FontSize="12"/>
                     </StackPanel>
                 </StackPanel>
             </Button>
@@ -114,7 +114,7 @@
                     <TextBlock Text="⬇️" FontSize="16" Margin="0,0,8,0"/>
                     <StackPanel>
                         <TextBlock Text="Downloads" FontWeight="Bold"/>
-                        <TextBlock Text="Cache, path & limits" FontSize="12"/>
+                        <TextBlock Text="Cache, path &amp; limits" FontSize="12"/>
                     </StackPanel>
                 </StackPanel>
             </Button>
