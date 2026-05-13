@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows;
 using Musicefy.Services;
 
 namespace Musicefy.ViewModels
@@ -50,6 +51,7 @@ namespace Musicefy.ViewModels
                 {
                     _selectedThemeIndex = value;
                     OnPropertyChanged();
+                    ApplyTheme();
                 }
             }
         }
@@ -61,6 +63,20 @@ namespace Musicefy.ViewModels
         {
             get => _selectedDateFormat;
             set { _selectedDateFormat = value; OnPropertyChanged(); }
+        }
+
+        public bool PureBlackMode
+        {
+            get => Musicefy.Properties.Settings.Default.PureBlackMode;
+            set
+            {
+                if (Musicefy.Properties.Settings.Default.PureBlackMode != value)
+                {
+                    Musicefy.Properties.Settings.Default.PureBlackMode = value;
+                    OnPropertyChanged();
+                    ApplyTheme(); // immediately re-apply theme when toggled
+                }
+            }
         }
 
         public void SelectPalette(string paletteName)
@@ -89,6 +105,45 @@ namespace Musicefy.ViewModels
             Musicefy.Properties.Settings.Default.Theme?.Split('|').Length > 1
                 ? Musicefy.Properties.Settings.Default.Theme.Split('|')[1]
                 : "Default";
+
+        private void ApplyTheme()
+        {
+            string mode = GetModeFromIndex(_selectedThemeIndex);
+            string palette = GetCurrentPalette();
+
+            Application.Current.Resources.MergedDictionaries.Clear();
+            Application.Current.Resources.MergedDictionaries.Add(
+                new ResourceDictionary { Source = new Uri("/Themes/Base.xaml", UriKind.Relative) });
+
+            if (mode.Equals("System", System.StringComparison.OrdinalIgnoreCase))
+            {
+                bool isDark = ThemeManager.IsSystemDarkMode();
+                mode = isDark ? "Dark" : "Light";
+            }
+
+            if (mode == "Dark" && PureBlackMode)
+            {
+                Application.Current.Resources.MergedDictionaries.Add(
+                    new ResourceDictionary { Source = new Uri("/Themes/Modes/DarkPure.xaml", UriKind.Relative) });
+            }
+            else
+            {
+                Application.Current.Resources.MergedDictionaries.Add(
+                    new ResourceDictionary { Source = new Uri($"/Themes/Modes/{mode}.xaml", UriKind.Relative) });
+            }
+
+            if (palette.Equals("Default", System.StringComparison.OrdinalIgnoreCase))
+            {
+                string paletteFile = mode == "Dark" ? "Default.Dark.xaml" : "Default.Light.xaml";
+                Application.Current.Resources.MergedDictionaries.Add(
+                    new ResourceDictionary { Source = new Uri($"/Themes/Palettes/{paletteFile}", UriKind.Relative) });
+            }
+            else
+            {
+                Application.Current.Resources.MergedDictionaries.Add(
+                    new ResourceDictionary { Source = new Uri($"/Themes/Palettes/{palette}.xaml", UriKind.Relative) });
+            }
+        }
 
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
