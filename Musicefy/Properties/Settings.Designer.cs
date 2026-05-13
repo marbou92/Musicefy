@@ -9,10 +9,10 @@ namespace Musicefy.Properties {
         
         public static Settings Default => defaultInstance;
 
-        // Theme setting
+        // Theme setting (mode|palette)
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Dark")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Dark|Default")]
         public string Theme {
             get => ((string)(this["Theme"]));
             set => this["Theme"] = value;
@@ -36,7 +36,7 @@ namespace Musicefy.Properties {
             set => this["AutoClearCache"] = value;
         }
 
-        // Limit per-file download size (500 MB)
+        // Limit per-file download size (500 MB toggle)
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
@@ -45,22 +45,76 @@ namespace Musicefy.Properties {
             set => this["LimitDownloadSize"] = value;
         }
 
-        // Global cache limit (default 2 GB)
+        // Global cache limit (default 2 GB in bytes)
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("2147483648")] // 2 GB in bytes
+        [global::System.Configuration.DefaultSettingValueAttribute("2147483648")]
         public long GlobalCacheLimit {
             get => ((long)(this["GlobalCacheLimit"]));
             set => this["GlobalCacheLimit"] = value;
         }
 
-        // Cache warning threshold (default 400 MB)
+        // Cache warning threshold (default 400 MB in bytes)
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("419430400")] // 400 MB in bytes
+        [global::System.Configuration.DefaultSettingValueAttribute("419430400")]
         public long CacheWarningThreshold {
             get => ((long)(this["CacheWarningThreshold"]));
             set => this["CacheWarningThreshold"] = value;
+        }
+
+        // Accent color (for appearance settings)
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Default")]
+        public string AccentColor {
+            get => ((string)(this["AccentColor"]));
+            set => this["AccentColor"] = value;
+        }
+
+        // Pure black dark mode toggle
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool PureBlackMode {
+            get => ((bool)(this["PureBlackMode"]));
+            set => this["PureBlackMode"] = value;
+        }
+
+        // Relative timestamps toggle
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool RelativeTimestamps {
+            get => ((bool)(this["RelativeTimestamps"]));
+            set => this["RelativeTimestamps"] = value;
+        }
+
+        // Render images toggle
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool RenderImages {
+            get => ((bool)(this["RenderImages"]));
+            set => this["RenderImages"] = value;
+        }
+
+        // Show updates toggle
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ShowUpdates {
+            get => ((bool)(this["ShowUpdates"]));
+            set => this["ShowUpdates"] = value;
+        }
+
+        // Date format selection
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("MM/dd/yyyy")]
+        public string DateFormat {
+            get => ((string)(this["DateFormat"]));
+            set => this["DateFormat"] = value;
         }
     }
 }
