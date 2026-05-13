@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Windows;
+using System.Windows.Media.Animation;
+using Microsoft.Win32;
 
 namespace Musicefy.Services
 {
@@ -20,13 +22,22 @@ namespace Musicefy.Services
             Application.Current.Resources.MergedDictionaries.Add(
                 new ResourceDictionary { Source = new Uri("/Themes/Base.xaml", UriKind.Relative) });
 
-            // Mode (System/Light/Dark)
+            // Handle "System" mode
+            if (mode.Equals("System", StringComparison.OrdinalIgnoreCase))
+            {
+                bool isDark = IsSystemDarkMode();
+                mode = isDark ? "Dark" : "Light";
+            }
+
+            // Mode dictionary
             Application.Current.Resources.MergedDictionaries.Add(
                 new ResourceDictionary { Source = new Uri($"/Themes/Modes/{mode}.xaml", UriKind.Relative) });
 
-            // Palette (Default/Catppuccin/GreenApple/Lavender)
+            // Palette dictionary
             Application.Current.Resources.MergedDictionaries.Add(
                 new ResourceDictionary { Source = new Uri($"/Themes/Palettes/{palette}.xaml", UriKind.Relative) });
+
+            AnimateThemeTransition();
         }
 
         /// <summary>
@@ -78,6 +89,64 @@ namespace Musicefy.Services
         {
             Musicefy.Properties.Settings.Default.Theme = themeString;
             Musicefy.Properties.Settings.Default.Save();
+        }
+
+        /// <summary>
+        /// Detect if Windows is in dark mode.
+        /// </summary>
+        private static bool IsSystemDarkMode()
+        {
+            try
+            {
+                using (var key = Registry.CurrentUser.OpenSubKey(
+                    @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"))
+                {
+                    if (key != null)
+                    {
+                        object value = key.GetValue("AppsUseLightTheme");
+                        if (value is int intVal)
+                        {
+                            return intVal == 0; // 0 = Dark, 1 = Light
+                        }
+                    }
+                }
+            }
+            catch { }
+            return false; // fallback to Light
+        }
+
+        /// <summary>
+        /// Start watching for system theme changes.
+        /// </summary>
+        public static void StartSystemThemeWatcher()
+        {
+            SystemEvents.UserPreferenceChanged += (s, e) =>
+            {
+                if (e.Category == UserPreferenceCategory.General)
+                {
+                    string savedTheme = Musicefy.Properties.Settings.Default.Theme ?? "System|Default";
+                    if (savedTheme.StartsWith("System", StringComparison.OrdinalIgnoreCase))
+                    {
+                        ApplyThemeFromString(savedTheme);
+                    }
+                }
+            };
+        }
+
+        /// <summary>
+        /// Animate theme transition with a fade effect.
+        /// </summary>
+        private static void AnimateThemeTransition()
+        {
+            var anim = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromMilliseconds(400)))
+            {
+                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut }
+            };
+
+            foreach (Window win in Application.Current.Windows)
+            {
+                win.BeginAnimation(UIElement.OpacityProperty, anim);
+            }
         }
     }
 }
