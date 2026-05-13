@@ -1,6 +1,7 @@
 <Window x:Class="Musicefy.Views.SettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:Musicefy.ViewModels"
         Title="Settings"
         Height="600" Width="900"
         WindowStartupLocation="CenterOwner"
