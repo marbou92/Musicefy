@@ -3,8 +3,20 @@
               CurrentProfile="(Default)">
   <Profiles />
   <Settings>
+    <!-- Existing theme setting -->
     <Setting Name="Theme" Type="System.String" Scope="User">
       <Value Profile="(Default)">Dark</Value>
+    </Setting>
+
+    <!-- New download settings -->
+    <Setting Name="DownloadsPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)"></Value>
+    </Setting>
+    <Setting Name="AutoClearCache" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="LimitDownloadSize" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
     </Setting>
   </Settings>
 </SettingsFile>
