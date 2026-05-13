@@ -11,9 +11,6 @@ namespace Musicefy.Services
         private static readonly string[] Modes = { "System", "Light", "Dark" };
         private static readonly string[] Palettes = { "Default", "Catppuccin", "GreenApple", "Lavender" };
 
-        /// <summary>
-        /// Apply theme with both mode and palette.
-        /// </summary>
         public static void ApplyTheme(string mode, string palette)
         {
             Application.Current.Resources.MergedDictionaries.Clear();
@@ -38,14 +35,8 @@ namespace Musicefy.Services
                 new ResourceDictionary { Source = new Uri($"/Themes/Palettes/{palette}.xaml", UriKind.Relative) });
         }
 
-        /// <summary>
-        /// Apply theme with only mode, defaults to "Default" palette.
-        /// </summary>
         public static void ApplyTheme(string mode) => ApplyTheme(mode, "Default");
 
-        /// <summary>
-        /// Apply theme from a combined string like "Dark|Catppuccin".
-        /// </summary>
         public static void ApplyThemeFromString(string themeString)
         {
             if (string.IsNullOrWhiteSpace(themeString))
@@ -61,9 +52,6 @@ namespace Musicefy.Services
             ApplyTheme(mode, palette);
         }
 
-        /// <summary>
-        /// Returns all valid mode + palette combinations as strings like "Dark|Catppuccin".
-        /// </summary>
         public static IEnumerable<string> GetAvailableThemes()
         {
             var themes = new List<string>();
@@ -73,18 +61,12 @@ namespace Musicefy.Services
             return themes;
         }
 
-        /// <summary>
-        /// Saves the selected theme string (Mode|Palette) to settings.
-        /// </summary>
         public static void SaveTheme(string themeString)
         {
             Musicefy.Properties.Settings.Default.Theme = themeString;
             Musicefy.Properties.Settings.Default.Save();
         }
 
-        /// <summary>
-        /// Detect if Windows is in dark mode.
-        /// </summary>
         private static bool IsSystemDarkMode()
         {
             try
@@ -101,12 +83,9 @@ namespace Musicefy.Services
                 }
             }
             catch { }
-            return false; // fallback to Light
+            return false;
         }
 
-        /// <summary>
-        /// Start watching for system theme changes.
-        /// </summary>
         public static void StartSystemThemeWatcher()
         {
             SystemEvents.UserPreferenceChanged += (s, e) =>
@@ -123,9 +102,6 @@ namespace Musicefy.Services
             };
         }
 
-        /// <summary>
-        /// Animate all open windows with a fade-in after theme change.
-        /// </summary>
         public static void AnimateWindowsFade()
         {
             var anim = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(400))
@@ -135,7 +111,7 @@ namespace Musicefy.Services
 
             foreach (Window win in Application.Current.Windows)
             {
-                win.Opacity = 0; // reset
+                win.Opacity = 0;
                 win.BeginAnimation(UIElement.OpacityProperty, anim);
             }
         }
