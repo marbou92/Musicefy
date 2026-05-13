@@ -1,6 +1,9 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
+    <!-- Shared DropShadow for splash + ring glow -->
+    <DropShadowEffect x:Key="DropShadowEffect" BlurRadius="20" ShadowDepth="0" Opacity="0.4" Color="Black"/>
+
     <!-- Accent colors are defined in palette dictionaries -->
     <!-- Base only defines how to use them -->
 
