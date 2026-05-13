@@ -20,11 +20,7 @@ namespace Musicefy
             try
             {
                 string savedTheme = Musicefy.Properties.Settings.Default.Theme ?? "Dark|Default";
-                var parts = savedTheme.Split('|');
-                string mode = parts.Length > 0 ? parts[0] : "Dark";
-                string palette = parts.Length > 1 ? parts[1] : "Default";
-
-                ThemeManager.ApplyTheme(mode, palette);
+                ThemeManager.ApplyThemeFromString(savedTheme);
             }
             catch (Exception ex)
             {
