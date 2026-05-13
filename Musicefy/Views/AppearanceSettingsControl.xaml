@@ -35,17 +35,37 @@
                     <TabItem Header="Dark"/>
                 </TabControl>
 
-                <!-- Theme Previews -->
+                <!-- Theme Previews (real palettes with thumbnails) -->
                 <ItemsControl ItemsSource="{Binding ThemePreviews}" Margin="0,0,0,15">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Button Click="PalettePreview_Click"
                                     Padding="0" Margin="5"
+                                    Width="140" Height="100"
                                     Background="{Binding AccentBrush}">
-                                <StackPanel>
-                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" Foreground="White"/>
-                                    <Rectangle Height="40" Fill="{Binding AccentBrush}" Margin="0,5,0,0"/>
-                                </StackPanel>
+                                <Border BorderThickness="1" BorderBrush="White" CornerRadius="4">
+                                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <!-- Palette name -->
+                                        <TextBlock Text="{Binding Name}" 
+                                                   FontWeight="Bold" 
+                                                   Foreground="White" 
+                                                   HorizontalAlignment="Center"/>
+                                        <!-- Live thumbnail preview -->
+                                        <Grid Height="50" Margin="0,5,0,0">
+                                            <Rectangle Fill="{Binding AccentBrush}" RadiusX="4" RadiusY="4"/>
+                                            <TextBlock Text="Aa" 
+                                                       Foreground="White" 
+                                                       FontSize="16" 
+                                                       HorizontalAlignment="Center" 
+                                                       VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
                             </Button>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
@@ -58,7 +78,9 @@
                 <CheckBox Content="Show updates in the nav" IsChecked="{Binding ShowUpdates}" Margin="0,0,0,10"/>
 
                 <!-- Date Format -->
-                <ComboBox ItemsSource="{Binding DateFormats}" SelectedItem="{Binding SelectedDateFormat}" Width="200" Margin="0,10,0,0"/>
+                <ComboBox ItemsSource="{Binding DateFormats}" 
+                          SelectedItem="{Binding SelectedDateFormat}" 
+                          Width="200" Margin="0,10,0,0"/>
             </StackPanel>
         </ScrollViewer>
 
