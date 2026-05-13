@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Windows;
 using System.Windows.Threading;
-using Musicefy.Services; // <-- Needed for ThemeManager
+using Musicefy.Services; // Needed for ThemeManager
 
 namespace Musicefy
 {
@@ -19,11 +19,12 @@ namespace Musicefy
             // Apply saved theme at startup
             try
             {
-                string savedTheme = Musicefy.Properties.Settings.Default.Theme;
-                if (!string.IsNullOrEmpty(savedTheme))
-                {
-                    ThemeManager.ApplyTheme(savedTheme);
-                }
+                string savedTheme = Musicefy.Properties.Settings.Default.Theme ?? "Dark|Default";
+                var parts = savedTheme.Split('|');
+                string mode = parts.Length > 0 ? parts[0] : "Dark";
+                string palette = parts.Length > 1 ? parts[1] : "Default";
+
+                ThemeManager.ApplyTheme(mode, palette);
             }
             catch (Exception ex)
             {
@@ -42,7 +43,7 @@ namespace Musicefy
                             "Musicefy Crash",
                             MessageBoxButton.OK,
                             MessageBoxImage.Error);
-            e.Handled = true; // prevent silent crash
+            e.Handled = true;
         }
 
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
@@ -61,10 +62,7 @@ namespace Musicefy
                 File.AppendAllText(logPath,
                     $"[{DateTime.Now}] {ex}\n---------------------------------\n");
             }
-            catch
-            {
-                // ignore logging errors
-            }
+            catch { }
         }
     }
 }
