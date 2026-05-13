@@ -23,18 +23,19 @@
 
         <!-- Appearance content -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <StackPanel Orientation="Vertical" Spacing="15">
+            <StackPanel Orientation="Vertical">
 
                 <!-- Theme Tabs -->
                 <TabControl SelectedIndex="{Binding SelectedThemeIndex}"
-                            SelectionChanged="ThemeTabs_SelectionChanged">
+                            SelectionChanged="ThemeTabs_SelectionChanged"
+                            Margin="0,0,0,15">
                     <TabItem Header="System"/>
                     <TabItem Header="Light"/>
                     <TabItem Header="Dark"/>
                 </TabControl>
 
                 <!-- Theme Previews -->
-                <ItemsControl ItemsSource="{Binding ThemePreviews}">
+                <ItemsControl ItemsSource="{Binding ThemePreviews}" Margin="0,0,0,15">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Button Padding="0" Margin="5"
@@ -50,14 +51,14 @@
                 </ItemsControl>
 
                 <!-- Toggles -->
-                <CheckBox Content="Pure black dark mode" IsChecked="{Binding PureBlackMode}"/>
-                <CheckBox Content="Relative timestamps" IsChecked="{Binding RelativeTimestamps}"/>
-                <CheckBox Content="Render images in manga descriptions" IsChecked="{Binding RenderImages}"/>
-                <CheckBox Content="Show updates in the nav" IsChecked="{Binding ShowUpdates}"/>
+                <CheckBox Content="Pure black dark mode" IsChecked="{Binding PureBlackMode}" Margin="0,0,0,10"/>
+                <CheckBox Content="Relative timestamps" IsChecked="{Binding RelativeTimestamps}" Margin="0,0,0,10"/>
+                <CheckBox Content="Render images in manga descriptions" IsChecked="{Binding RenderImages}" Margin="0,0,0,10"/>
+                <CheckBox Content="Show updates in the nav" IsChecked="{Binding ShowUpdates}" Margin="0,0,0,10"/>
 
                 <!-- Date Format -->
-                <StackPanel Orientation="Horizontal" Spacing="10">
-                    <TextBlock Text="Date format:" VerticalAlignment="Center"/>
+                <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                    <TextBlock Text="Date format:" VerticalAlignment="Center" Margin="0,0,10,0"/>
                     <ComboBox ItemsSource="{Binding DateFormats}" SelectedItem="{Binding SelectedDateFormat}" Width="200"/>
                 </StackPanel>
             </StackPanel>
