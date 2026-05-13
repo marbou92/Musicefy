@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Windows;
+using System.Windows.Media;
 using System.Windows.Media.Animation;
 using Microsoft.Win32;
 
@@ -103,9 +104,13 @@ namespace Musicefy.Services
             };
         }
 
+        /// <summary>
+        /// Animate all open windows and buttons for a smooth fade/hover/press effect.
+        /// </summary>
         public static void AnimateWindowsFade()
         {
-            var anim = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(400))
+            // Fade-in animation for windows
+            var fadeAnim = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(400))
             {
                 EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut }
             };
@@ -113,7 +118,69 @@ namespace Musicefy.Services
             foreach (Window win in Application.Current.Windows)
             {
                 win.Opacity = 0;
-                win.BeginAnimation(UIElement.OpacityProperty, anim);
+                win.BeginAnimation(UIElement.OpacityProperty, fadeAnim);
+
+                // Animate all buttons inside this window
+                AnimateButtons(win);
+            }
+        }
+
+        private static void AnimateButtons(Window win)
+        {
+            foreach (var child in FindVisualChildren<System.Windows.Controls.Button>(win))
+            {
+                child.MouseEnter += (s, e) =>
+                {
+                    AnimateButtonGradient(child,
+                        (Color)Application.Current.FindResource("AccentHoverStartColor"),
+                        (Color)Application.Current.FindResource("AccentHoverEndColor"),
+                        300);
+                };
+
+                child.PreviewMouseDown += (s, e) =>
+                {
+                    AnimateButtonGradient(child,
+                        (Color)Application.Current.FindResource("AccentPressedStartColor"),
+                        (Color)Application.Current.FindResource("AccentPressedEndColor"),
+                        200);
+                };
+
+                child.MouseLeave += (s, e) =>
+                {
+                    AnimateButtonGradient(child,
+                        (Color)Application.Current.FindResource("AccentStartColor"),
+                        (Color)Application.Current.FindResource("AccentEndColor"),
+                        300);
+                };
+            }
+        }
+
+        private static void AnimateButtonGradient(System.Windows.Controls.Button btn,
+            Color toStart, Color toEnd, int durationMs)
+        {
+            if (btn.Template.FindName("AccentStart", btn) is GradientStop start &&
+                btn.Template.FindName("AccentEnd", btn) is GradientStop end)
+            {
+                var anim1 = new ColorAnimation(toStart, TimeSpan.FromMilliseconds(durationMs));
+                var anim2 = new ColorAnimation(toEnd, TimeSpan.FromMilliseconds(durationMs));
+                start.BeginAnimation(GradientStop.ColorProperty, anim1);
+                end.BeginAnimation(GradientStop.ColorProperty, anim2);
+            }
+        }
+
+        private static IEnumerable<T> FindVisualChildren<T>(DependencyObject depObj) where T : DependencyObject
+        {
+            if (depObj != null)
+            {
+                for (int i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
+                {
+                    DependencyObject child = VisualTreeHelper.GetChild(depObj, i);
+                    if (child is T t)
+                        yield return t;
+
+                    foreach (T childOfChild in FindVisualChildren<T>(child))
+                        yield return childOfChild;
+                }
             }
         }
     }
