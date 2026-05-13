@@ -64,22 +64,28 @@ namespace Musicefy
         }
 
         private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            string query = SearchTextBox.Text?.Trim().ToLowerInvariant() ?? "";
-            if (string.IsNullOrEmpty(query))
-            {
-                TracksList.ItemsSource = _allTracks;
-            }
-            else
-            {
-                var filtered = _allTracks
-                    .Where(t => (t.Title?.ToLowerInvariant().Contains(query) == true) ||
-                                (t.Artist?.ToLowerInvariant().Contains(query) == true) ||
-                                (t.Album?.ToLowerInvariant().Contains(query) == true))
-                    .ToList();
-                TracksList.ItemsSource = filtered;
-            }
-        }
+{
+    // Prevent crashes if controls or collections aren't initialized yet
+    if (_allTracks == null || TracksList == null || SearchTextBox == null)
+        return;
+
+    string query = SearchTextBox.Text?.Trim().ToLowerInvariant() ?? "";
+    if (string.IsNullOrEmpty(query))
+    {
+        TracksList.ItemsSource = _allTracks;
+    }
+    else
+    {
+        var filtered = _allTracks
+            .Where(t => (t.Title?.ToLowerInvariant().Contains(query) == true) ||
+                        (t.Artist?.ToLowerInvariant().Contains(query) == true) ||
+                        (t.Album?.ToLowerInvariant().Contains(query) == true))
+            .ToList();
+
+        TracksList.ItemsSource = filtered;
+    }
+}
+
 
         private void AddSourceButton_Click(object sender, RoutedEventArgs e)
         {
