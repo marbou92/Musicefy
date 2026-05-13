@@ -3,12 +3,30 @@
               CurrentProfile="(Default)">
   <Profiles />
   <Settings>
-    <!-- Existing theme setting -->
+    <!-- Appearance settings -->
     <Setting Name="Theme" Type="System.String" Scope="User">
-      <Value Profile="(Default)">Dark</Value>
+      <Value Profile="(Default)">Dark|Default</Value>
+    </Setting>
+    <Setting Name="AccentColor" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Default</Value>
+    </Setting>
+    <Setting Name="PureBlackMode" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="RelativeTimestamps" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="RenderImages" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="ShowUpdates" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="DateFormat" Type="System.String" Scope="User">
+      <Value Profile="(Default)">MM/dd/yyyy</Value>
     </Setting>
 
-    <!-- New download settings -->
+    <!-- Download settings -->
     <Setting Name="DownloadsPath" Type="System.String" Scope="User">
       <Value Profile="(Default)"></Value>
     </Setting>
@@ -17,6 +35,12 @@
     </Setting>
     <Setting Name="LimitDownloadSize" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="GlobalCacheLimit" Type="System.Int64" Scope="User">
+      <Value Profile="(Default)">2147483648</Value> <!-- 2 GB -->
+    </Setting>
+    <Setting Name="CacheWarningThreshold" Type="System.Int64" Scope="User">
+      <Value Profile="(Default)">419430400</Value> <!-- 400 MB -->
     </Setting>
   </Settings>
 </SettingsFile>
