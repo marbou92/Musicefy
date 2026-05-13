@@ -1,0 +1,18 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Default palette for Dark mode -->
+    <Color x:Key="AccentStartColor">#FFFFFF</Color> <!-- White -->
+    <Color x:Key="AccentEndColor">#DDDDDD</Color>   <!-- Light grey -->
+
+    <!-- Hover -->
+    <Color x:Key="AccentHoverStartColor">#F5F5F5</Color>
+    <Color x:Key="AccentHoverEndColor">#CCCCCC</Color>
+
+    <!-- Pressed -->
+    <Color x:Key="AccentPressedStartColor">#BBBBBB</Color>
+    <Color x:Key="AccentPressedEndColor">#999999</Color>
+
+    <!-- Glow -->
+    <Color x:Key="AccentGlowColor">#FFFFFF</Color>
+</ResourceDictionary>
