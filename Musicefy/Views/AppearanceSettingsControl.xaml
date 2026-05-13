@@ -29,7 +29,6 @@
 
                 <!-- Theme Tabs -->
                 <TabControl SelectedIndex="{Binding SelectedThemeIndex}"
-                            SelectionChanged="ThemeTabs_SelectionChanged"
                             Margin="0,0,0,15">
                     <TabItem Header="System"/>
                     <TabItem Header="Light"/>
