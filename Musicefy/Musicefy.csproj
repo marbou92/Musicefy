@@ -21,8 +21,16 @@
 
   <ItemGroup>
     <!-- Embed assets as resources -->
-    <Resource Include="Assets\musicefy.ico" />
-    <Resource Include="Assets\musicefy.png" />
+  <Resource Include="Themes\Base.xaml" />
+  <Resource Include="Themes\Modes\Dark.xaml" />
+  <Resource Include="Themes\Modes\Light.xaml" />
+  <Resource Include="Themes\Modes\System.xaml" />
+  <Resource Include="Themes\Palettes\Default.xaml" />
+  <Resource Include="Themes\Palettes\Catppuccin.xaml" />
+  <Resource Include="Themes\Palettes\GreenApple.xaml" />
+  <Resource Include="Themes\Palettes\Lavender.xaml" />
+  <Resource Include="Assets\default_cover.png" />
+  <Resource Include="Assets\musicefy.ico" />
   </ItemGroup>
 
 </Project>
