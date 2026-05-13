@@ -32,6 +32,19 @@
             <CheckBox x:Name="AutoClearCacheBox" Content="Auto-clear cache on exit" Margin="0,0,0,10"/>
             <CheckBox x:Name="LimitDownloadSizeBox" Content="Limit download size to 500 MB" Margin="0,0,0,10"/>
 
+            <!-- Cache status -->
+            <TextBlock x:Name="CacheStatusLabel" Text="Cache size: 0 MB"
+                       Margin="0,10,0,5" FontStyle="Italic"/>
+
+            <!-- Cache progress bar with tooltip -->
+            <ProgressBar x:Name="CacheProgressBar"
+                         Height="20"
+                         Maximum="2000"
+                         Value="0"
+                         Background="{DynamicResource SecondaryBackgroundBrush}"
+                         Margin="0,0,0,10"
+                         ToolTip="Cache size"/>
+            
             <!-- Manual clear -->
             <Button Content="Clear Now" Width="120" Margin="0,10,0,0" Click="ClearNow_Click"/>
         </StackPanel>
