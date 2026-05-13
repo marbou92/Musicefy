@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace Musicefy.Views
 {
@@ -28,6 +29,8 @@ namespace Musicefy.Views
             DownloadPathBox.Text = _downloadsPath;
             AutoClearCacheBox.IsChecked = Musicefy.Properties.Settings.Default.AutoClearCache;
             LimitDownloadSizeBox.IsChecked = Musicefy.Properties.Settings.Default.LimitDownloadSize;
+
+            UpdateCacheStatus();
         }
 
         private void Browse_Click(object sender, RoutedEventArgs e)
@@ -42,6 +45,7 @@ namespace Musicefy.Views
             {
                 _downloadsPath = dialog.SelectedPath;
                 DownloadPathBox.Text = _downloadsPath;
+                UpdateCacheStatus();
             }
         }
 
@@ -62,14 +66,23 @@ namespace Musicefy.Views
 
         private void ClearNow_Click(object sender, RoutedEventArgs e)
         {
-            try
+            var result = MessageBox.Show("Are you sure you want to clear all downloads? This action cannot be undone.",
+                                         "Confirm Clear",
+                                         MessageBoxButton.YesNo,
+                                         MessageBoxImage.Warning);
+
+            if (result == MessageBoxResult.Yes)
             {
-                ClearCache(_downloadsPath);
-                MessageBox.Show("Downloads cache cleared.", "Musicefy", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Failed to clear cache: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                try
+                {
+                    ClearCache(_downloadsPath);
+                    UpdateCacheStatus();
+                    MessageBox.Show("Downloads cache cleared.", "Musicefy", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to clear cache: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
 
@@ -94,6 +107,70 @@ namespace Musicefy.Views
                     Directory.Delete(dir, true);
                 }
             }
+        }
+
+        private void UpdateCacheStatus()
+        {
+            long size = GetDirectorySize(_downloadsPath);
+            double sizeMB = size / (1024.0 * 1024.0);
+            CacheStatusLabel.Text = $"Cache size: {sizeMB:F2} MB";
+
+            // Update progress bar (max 2000 MB = 2 GB)
+            CacheProgressBar.Value = Math.Min(sizeMB, 2000);
+
+            // Tooltip with exact size
+            CacheProgressBar.ToolTip = $"Cache size: {sizeMB:F2} MB ({size / (1024.0 * 1024.0 * 1024.0):F2} GB)";
+
+            // Dynamic color gradient
+            if (sizeMB < 100)
+            {
+                CacheProgressBar.Foreground = new SolidColorBrush(Colors.LimeGreen);
+            }
+            else if (sizeMB < 300)
+            {
+                CacheProgressBar.Foreground = new SolidColorBrush(Colors.Gold);
+            }
+            else
+            {
+                CacheProgressBar.Foreground = new SolidColorBrush(Colors.OrangeRed);
+            }
+
+            // Warning popup if cache exceeds 400 MB
+            if (sizeMB > 400 && sizeMB < 2000)
+            {
+                MessageBox.Show("Warning: Cache size exceeds 400 MB. Consider clearing to free space.",
+                                "Cache Warning",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Warning);
+            }
+
+            // Hard limit at 2 GB
+            if (sizeMB >= 2000)
+            {
+                MessageBox.Show("Cache limit reached (2 GB). Downloads may be blocked until you clear space.",
+                                "Cache Limit",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Error);
+            }
+        }
+
+        private long GetDirectorySize(string path)
+        {
+            if (!Directory.Exists(path)) return 0;
+
+            long size = 0;
+            try
+            {
+                foreach (var file in Directory.GetFiles(path, "*", SearchOption.AllDirectories))
+                {
+                    size += new FileInfo(file).Length;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error calculating cache size: {ex.Message}");
+            }
+            return size;
         }
     }
 }
