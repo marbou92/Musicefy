@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Windows;
 using System.Windows.Threading;
-using Musicefy.Services; // Needed for ThemeManager
+using Musicefy.Services;
 
 namespace Musicefy
 {
@@ -12,11 +12,9 @@ namespace Musicefy
         {
             base.OnStartup(e);
 
-            // Global exception handlers
             this.DispatcherUnhandledException += App_DispatcherUnhandledException;
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
-            // Apply saved theme at startup
             try
             {
                 string savedTheme = Musicefy.Properties.Settings.Default.Theme ?? "Dark|Default";
