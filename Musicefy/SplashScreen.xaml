@@ -9,8 +9,12 @@
         Background="Transparent">
 
     <!-- Rounded container with shadow -->
-    <Border CornerRadius="20" Background="{DynamicResource BackgroundBrush}" 
-            Effect="{DynamicResource DropShadowEffect}">
+    <Border CornerRadius="20" Background="{DynamicResource BackgroundBrush}">
+        <Border.Effect>
+            <!-- Explicit DropShadowEffect so code-behind can animate it -->
+            <DropShadowEffect Color="Black" BlurRadius="15" ShadowDepth="0" Opacity="0.5"/>
+        </Border.Effect>
+
         <Grid>
             <!-- Animated gradient background -->
             <Border CornerRadius="20">
@@ -46,11 +50,14 @@
                 <!-- Progress Ring -->
                 <Grid Width="70" Height="70" Margin="0,30,0,0">
                     <Ellipse x:Name="Ring" Width="70" Height="70" Stroke="{DynamicResource AccentBrush}" StrokeThickness="6"
-                             StrokeDashArray="2 6" RenderTransformOrigin="0.5,0.5"
-                             Effect="{DynamicResource DropShadowEffect}">
+                             StrokeDashArray="2 6" RenderTransformOrigin="0.5,0.5">
                         <Ellipse.RenderTransform>
                             <RotateTransform x:Name="RingRotate"/>
                         </Ellipse.RenderTransform>
+                        <Ellipse.Effect>
+                            <!-- Explicit DropShadowEffect for glow animation -->
+                            <DropShadowEffect Color="Black" BlurRadius="20" ShadowDepth="0" Opacity="0.3"/>
+                        </Ellipse.Effect>
                     </Ellipse>
                 </Grid>
             </StackPanel>
