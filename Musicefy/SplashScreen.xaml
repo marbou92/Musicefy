@@ -5,31 +5,44 @@
         Width="420" Height="320"
         WindowStartupLocation="CenterScreen"
         ShowInTaskbar="False" AllowsTransparency="True"
-        Opacity="0">
+        Opacity="0"
+        Background="Transparent">
 
-    <!-- Animated gradient background -->
-    <Window.Background>
-        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-            <GradientStop x:Name="GradientStop1" Color="#1E1E1E" Offset="0.0"/>
-            <GradientStop x:Name="GradientStop2" Color="#00D4FF" Offset="1.0"/>
-        </LinearGradientBrush>
-    </Window.Background>
+    <!-- Rounded container with shadow -->
+    <Border CornerRadius="20" Background="{DynamicResource BackgroundBrush}" 
+            Effect="{DynamicResource DropShadowEffect}">
+        <Grid>
+            <!-- Animated gradient background -->
+            <Border CornerRadius="20">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop x:Name="GradientStop1" Color="#1E1E1E" Offset="0.0"/>
+                        <GradientStop x:Name="GradientStop2" Color="#00D4FF" Offset="1.0"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+            </Border>
 
-    <Grid>
-        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-            <Image Source="Assets/musicefy.png" Height="96" Width="96" Margin="0,0,0,20"/>
-            <TextBlock Text="Musicefy" FontSize="28" FontWeight="Bold"
-                       Foreground="{DynamicResource ForegroundBrush}" HorizontalAlignment="Center"/>
-            <TextBlock Text="Loading your music..." FontSize="14" Foreground="Gray" Margin="0,12,0,20"/>
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <!-- Logo -->
+                <Image Source="Assets/musicefy.png" Height="96" Width="96" Margin="0,0,0,20"/>
 
-            <!-- Equalizer Bars -->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
-                <Rectangle x:Name="Bar1" Width="12" Height="40" Fill="{DynamicResource AccentBrush}" Margin="4"/>
-                <Rectangle x:Name="Bar2" Width="12" Height="40" Fill="{DynamicResource AccentBrush}" Margin="4"/>
-                <Rectangle x:Name="Bar3" Width="12" Height="40" Fill="{DynamicResource AccentBrush}" Margin="4"/>
-                <Rectangle x:Name="Bar4" Width="12" Height="40" Fill="{DynamicResource AccentBrush}" Margin="4"/>
-                <Rectangle x:Name="Bar5" Width="12" Height="40" Fill="{DynamicResource AccentBrush}" Margin="4"/>
+                <!-- Title -->
+                <TextBlock Text="Musicefy" FontSize="28" FontWeight="Bold"
+                           Foreground="{DynamicResource ForegroundBrush}" HorizontalAlignment="Center"/>
+
+                <!-- Subtitle -->
+                <TextBlock Text="Loading your music..." FontSize="14" 
+                           Foreground="{DynamicResource ForegroundBrush}" Opacity="0.7" Margin="0,12,0,20"/>
+
+                <!-- Equalizer Bars -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
+                    <Rectangle x:Name="Bar1" Width="12" Height="40" Fill="{DynamicResource AccentBrush}" Margin="4" RadiusX="6" RadiusY="6"/>
+                    <Rectangle x:Name="Bar2" Width="12" Height="40" Fill="{DynamicResource AccentBrush}" Margin="4" RadiusX="6" RadiusY="6"/>
+                    <Rectangle x:Name="Bar3" Width="12" Height="40" Fill="{DynamicResource AccentBrush}" Margin="4" RadiusX="6" RadiusY="6"/>
+                    <Rectangle x:Name="Bar4" Width="12" Height="40" Fill="{DynamicResource AccentBrush}" Margin="4" RadiusX="6" RadiusY="6"/>
+                    <Rectangle x:Name="Bar5" Width="12" Height="40" Fill="{DynamicResource AccentBrush}" Margin="4" RadiusX="6" RadiusY="6"/>
+                </StackPanel>
             </StackPanel>
-        </StackPanel>
-    </Grid>
+        </Grid>
+    </Border>
 </Window>
