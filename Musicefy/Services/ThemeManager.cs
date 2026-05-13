@@ -89,10 +89,16 @@ namespace Musicefy.Services
         {
             try
             {
-                using var key = Registry.CurrentUser.OpenSubKey(
-                    @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
-                if (key?.GetValue("AppsUseLightTheme") is int val)
-                    return val == 0; // 0 = Dark, 1 = Light
+                using (var key = Registry.CurrentUser.OpenSubKey(
+                    @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"))
+                {
+                    if (key != null)
+                    {
+                        object value = key.GetValue("AppsUseLightTheme");
+                        if (value is int intVal)
+                            return intVal == 0; // 0 = Dark, 1 = Light
+                    }
+                }
             }
             catch { }
             return false; // fallback to Light
