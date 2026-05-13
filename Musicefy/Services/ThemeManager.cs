@@ -109,7 +109,6 @@ namespace Musicefy.Services
         /// </summary>
         public static void AnimateWindowsFade()
         {
-            // Fade-in animation for windows
             var fadeAnim = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(400))
             {
                 EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut }
@@ -120,7 +119,6 @@ namespace Musicefy.Services
                 win.Opacity = 0;
                 win.BeginAnimation(UIElement.OpacityProperty, fadeAnim);
 
-                // Animate all buttons inside this window
                 AnimateButtons(win);
             }
         }
@@ -181,6 +179,22 @@ namespace Musicefy.Services
                     foreach (T childOfChild in FindVisualChildren<T>(child))
                         yield return childOfChild;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Provides accent brushes for theme previews in MVVM.
+        /// </summary>
+        public static Brush GetAccentBrush(string name)
+        {
+            switch (name)
+            {
+                case "Blue": return Brushes.SkyBlue;
+                case "Red": return Brushes.IndianRed;
+                case "GreenApple": return Brushes.Green;
+                case "Lavender": return Brushes.MediumPurple;
+                case "Catppuccin": return Brushes.MediumOrchid;
+                default: return Brushes.Gray;
             }
         }
     }
