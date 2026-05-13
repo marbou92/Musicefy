@@ -379,14 +379,19 @@ namespace Musicefy
         }
 
         private void OpenSettings_Click(object sender, RoutedEventArgs e)
-        {
-            var win = new SettingsWindow { Owner = this };
-            if (win.ShowDialog() == true)
-            {
-                string theme = Musicefy.Properties.Settings.Default.Theme;
-                ThemeManager.ApplyTheme(theme);
-            }
-        }
+{
+    var win = new SettingsWindow { Owner = this };
+    if (win.ShowDialog() == true)
+    {
+        string theme = Musicefy.Properties.Settings.Default.Theme ?? "Dark|Default";
+        var parts = theme.Split('|');
+        string mode = parts.Length > 0 ? parts[0] : "Dark";
+        string palette = parts.Length > 1 ? parts[1] : "Default";
+
+        ThemeManager.ApplyTheme(mode, palette);
+    }
+}
+
 
         private void About_Click(object sender, RoutedEventArgs e)
         {
