@@ -36,17 +36,12 @@ namespace Musicefy.Services
             // Palette dictionary
             Application.Current.Resources.MergedDictionaries.Add(
                 new ResourceDictionary { Source = new Uri($"/Themes/Palettes/{palette}.xaml", UriKind.Relative) });
-
-            AnimateThemeTransition();
         }
 
         /// <summary>
         /// Apply theme with only mode, defaults to "Default" palette.
         /// </summary>
-        public static void ApplyTheme(string mode)
-        {
-            ApplyTheme(mode, "Default");
-        }
+        public static void ApplyTheme(string mode) => ApplyTheme(mode, "Default");
 
         /// <summary>
         /// Apply theme from a combined string like "Dark|Catppuccin".
@@ -73,12 +68,8 @@ namespace Musicefy.Services
         {
             var themes = new List<string>();
             foreach (var mode in Modes)
-            {
                 foreach (var palette in Palettes)
-                {
                     themes.Add($"{mode}|{palette}");
-                }
-            }
             return themes;
         }
 
@@ -98,18 +89,10 @@ namespace Musicefy.Services
         {
             try
             {
-                using (var key = Registry.CurrentUser.OpenSubKey(
-                    @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"))
-                {
-                    if (key != null)
-                    {
-                        object value = key.GetValue("AppsUseLightTheme");
-                        if (value is int intVal)
-                        {
-                            return intVal == 0; // 0 = Dark, 1 = Light
-                        }
-                    }
-                }
+                using var key = Registry.CurrentUser.OpenSubKey(
+                    @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
+                if (key?.GetValue("AppsUseLightTheme") is int val)
+                    return val == 0; // 0 = Dark, 1 = Light
             }
             catch { }
             return false; // fallback to Light
@@ -128,23 +111,25 @@ namespace Musicefy.Services
                     if (savedTheme.StartsWith("System", StringComparison.OrdinalIgnoreCase))
                     {
                         ApplyThemeFromString(savedTheme);
+                        AnimateWindowsFade();
                     }
                 }
             };
         }
 
         /// <summary>
-        /// Animate theme transition with a fade effect.
+        /// Animate all open windows with a fade-in after theme change.
         /// </summary>
-        private static void AnimateThemeTransition()
+        public static void AnimateWindowsFade()
         {
-            var anim = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromMilliseconds(400)))
+            var anim = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(400))
             {
                 EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut }
             };
 
             foreach (Window win in Application.Current.Windows)
             {
+                win.Opacity = 0; // reset
                 win.BeginAnimation(UIElement.OpacityProperty, anim);
             }
         }
