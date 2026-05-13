@@ -52,7 +52,6 @@ namespace Musicefy
             _timer.Tick += Timer_Tick;
 
             VolumeSlider.Value = 70;
-
             _isInitialized = true;
         }
         private void RefreshSources()
@@ -61,7 +60,6 @@ namespace Musicefy
 
             SourcesListBox.Items.Clear();
             var sources = _sourceManager.GetAllSources();
-
             foreach (var source in sources)
                 SourcesListBox.Items.Add(source);
 
@@ -74,7 +72,7 @@ namespace Musicefy
 
             string query = SearchTextBox.Text?.Trim().ToLowerInvariant() ?? "";
             TracksList.ItemsSource = string.IsNullOrEmpty(query)
-                ? _allTracks
+                ? _allTracks.ToList()
                 : _allTracks.Where(t =>
                     (t.Title?.ToLowerInvariant().Contains(query) == true) ||
                     (t.Artist?.ToLowerInvariant().Contains(query) == true) ||
@@ -244,6 +242,51 @@ namespace Musicefy
                 : (_currentQueueIndex + 1) % _queue.Count;
             PlayTrack(_queue[_currentQueueIndex]);
         }
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            if (!_isInitialized || _audioFile == null) return;
+            PlaybackSlider.Value = _audioFile.CurrentTime.TotalSeconds;
+            ElapsedText.Text = _audioFile.CurrentTime.ToString(@"m\:ss");
+            RemainingText.Text = (_audioFile.TotalTime - _audioFile.CurrentTime).ToString(@"m\:ss");
+        }
+
+        private void StopPlayback()
+        {
+            _timer.Stop();
+            if (_waveOut != null)
+            {
+                _waveOut.PlaybackStopped -= WaveOut_PlaybackStopped;
+                _waveOut.Stop();
+                _waveOut.Dispose();
+                _waveOut = null;
+            }
+            _audioFile?.Dispose();
+            _audioFile = null;
+        }
+
+        private void WaveOut_PlaybackStopped(object sender, StoppedEventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (e.Exception == null && _playlistManager.RepeatEnabled)
+                {
+                    if (_currentQueueIndex >= 0 && _currentQueueIndex < _queue.Count)
+                        PlayTrack(_queue[_currentQueueIndex]);
+                }
+                else if (e.Exception == null)
+                {
+                    NextButton_Click(null, null);
+                }
+            });
+        }
+
+        private void PlaybackSlider_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (!_isInitialized) return;
+            if (_audioFile != null)
+                _audioFile.CurrentTime = TimeSpan.FromSeconds(PlaybackSlider.Value);
+        }
+
         private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (!_isInitialized) return;
@@ -252,6 +295,19 @@ namespace Musicefy
                 _audioFile.Volume = (float)(VolumeSlider.Value / 100.0);
             if (VolumeLabel != null)
                 VolumeLabel.Text = $"{(int)VolumeSlider.Value}%";
+        }
+
+        private void TracksList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!_isInitialized) return;
+
+            if (TracksList.SelectedItem is MusicFile track)
+            {
+                NowPlayingTitle.Text = track.Title;
+                NowPlayingArtist.Text = track.Artist;
+                NowPlayingMeta.Text = $"{track.Album}{(track.Year > 0 ? " • " + track.Year : "")}";
+                LoadAlbumArt(track);
+            }
         }
 
         private void PlayTrack(MusicFile track)
