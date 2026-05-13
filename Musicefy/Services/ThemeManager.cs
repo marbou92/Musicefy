@@ -15,22 +15,18 @@ namespace Musicefy.Services
         {
             Application.Current.Resources.MergedDictionaries.Clear();
 
-            // Always include base styles
             Application.Current.Resources.MergedDictionaries.Add(
                 new ResourceDictionary { Source = new Uri("/Themes/Base.xaml", UriKind.Relative) });
 
-            // Handle "System" mode
             if (mode.Equals("System", StringComparison.OrdinalIgnoreCase))
             {
                 bool isDark = IsSystemDarkMode();
                 mode = isDark ? "Dark" : "Light";
             }
 
-            // Mode dictionary
             Application.Current.Resources.MergedDictionaries.Add(
                 new ResourceDictionary { Source = new Uri($"/Themes/Modes/{mode}.xaml", UriKind.Relative) });
 
-            // Palette dictionary
             Application.Current.Resources.MergedDictionaries.Add(
                 new ResourceDictionary { Source = new Uri($"/Themes/Palettes/{palette}.xaml", UriKind.Relative) });
         }
@@ -78,7 +74,7 @@ namespace Musicefy.Services
                     {
                         object value = key.GetValue("AppsUseLightTheme");
                         if (value is int intVal)
-                            return intVal == 0; // 0 = Dark, 1 = Light
+                            return intVal == 0;
                     }
                 }
             }
@@ -96,7 +92,12 @@ namespace Musicefy.Services
                     if (savedTheme.StartsWith("System", StringComparison.OrdinalIgnoreCase))
                     {
                         ApplyThemeFromString(savedTheme);
-                        AnimateWindowsFade();
+
+                        // Run fade AFTER theme re-application
+                        Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                        {
+                            AnimateWindowsFade();
+                        }), System.Windows.Threading.DispatcherPriority.ApplicationIdle);
                     }
                 }
             };
