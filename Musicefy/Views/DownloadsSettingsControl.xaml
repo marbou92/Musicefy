@@ -1,0 +1,14 @@
+<UserControl x:Class="Musicefy.Views.DownloadsSettingsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="{DynamicResource BackgroundBrush}"
+             Foreground="{DynamicResource ForegroundBrush}">
+
+    <Grid Margin="20">
+        <TextBlock Text="Downloads settings will go here."
+                   Foreground="{DynamicResource ForegroundBrush}"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center"
+                   FontSize="16"/>
+    </Grid>
+</UserControl>
