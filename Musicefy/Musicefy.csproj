@@ -12,6 +12,9 @@
     <RootNamespace>Musicefy</RootNamespace>
     <AssemblyName>Musicefy</AssemblyName>
     <ApplicationIcon>Assets\musicefy.ico</ApplicationIcon>
+
+    <!-- Force modern C# features -->
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -31,6 +34,12 @@
     <Resource Include="Themes\Palettes\Lavender.xaml" />
     <Resource Include="Assets\default_cover.png" />
     <Resource Include="Assets\musicefy.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Explicit references for Windows 7 compatibility -->
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
   </ItemGroup>
 
 </Project>
