@@ -47,17 +47,19 @@
                             <Button Click="PalettePreview_Click"
                                     Padding="0" Margin="5"
                                     Width="140" Height="100"
-                                    Background="{Binding AccentBrush}">
+                                    Background="{Binding BackgroundBrush}">
                                 <Border BorderThickness="1" BorderBrush="White" CornerRadius="4">
                                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <!-- Palette name -->
                                         <TextBlock Text="{Binding Name}" 
                                                    FontWeight="Bold" 
-                                                   Foreground="White" 
+                                                   Foreground="{Binding AccentBrush}" 
                                                    HorizontalAlignment="Center"/>
+                                        <!-- Live thumbnail preview -->
                                         <Grid Height="50" Margin="0,5,0,0">
                                             <Rectangle Fill="{Binding AccentBrush}" RadiusX="4" RadiusY="4"/>
                                             <TextBlock Text="Aa" 
-                                                       Foreground="White" 
+                                                       Foreground="{Binding BackgroundBrush}" 
                                                        FontSize="16" 
                                                        HorizontalAlignment="Center" 
                                                        VerticalAlignment="Center"/>
