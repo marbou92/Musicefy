@@ -28,8 +28,18 @@ namespace Musicefy.Services
             Application.Current.Resources.MergedDictionaries.Add(
                 new ResourceDictionary { Source = new Uri($"/Themes/Modes/{mode}.xaml", UriKind.Relative) });
 
-            Application.Current.Resources.MergedDictionaries.Add(
-                new ResourceDictionary { Source = new Uri($"/Themes/Palettes/{palette}.xaml", UriKind.Relative) });
+            // Handle Default palette adaptation
+            if (palette.Equals("Default", StringComparison.OrdinalIgnoreCase))
+            {
+                string paletteFile = mode == "Dark" ? "Default.Dark.xaml" : "Default.Light.xaml";
+                Application.Current.Resources.MergedDictionaries.Add(
+                    new ResourceDictionary { Source = new Uri($"/Themes/Palettes/{paletteFile}", UriKind.Relative) });
+            }
+            else
+            {
+                Application.Current.Resources.MergedDictionaries.Add(
+                    new ResourceDictionary { Source = new Uri($"/Themes/Palettes/{palette}.xaml", UriKind.Relative) });
+            }
         }
 
         public static void ApplyTheme(string mode) => ApplyTheme(mode, "Default");
@@ -64,7 +74,8 @@ namespace Musicefy.Services
             Musicefy.Properties.Settings.Default.Save();
         }
 
-        private static bool IsSystemDarkMode()
+        // FIX: make public so ViewModel can call it
+        public static bool IsSystemDarkMode()
         {
             try
             {
@@ -94,7 +105,6 @@ namespace Musicefy.Services
                     {
                         ApplyThemeFromString(savedTheme);
 
-                        // Run fade AFTER theme re-application
                         Application.Current.Dispatcher.BeginInvoke(new Action(() =>
                         {
                             AnimateWindowsFade();
@@ -104,9 +114,6 @@ namespace Musicefy.Services
             };
         }
 
-        /// <summary>
-        /// Animate all open windows and buttons for a smooth fade/hover/press effect.
-        /// </summary>
         public static void AnimateWindowsFade()
         {
             var fadeAnim = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(400))
@@ -118,7 +125,6 @@ namespace Musicefy.Services
             {
                 win.Opacity = 0;
                 win.BeginAnimation(UIElement.OpacityProperty, fadeAnim);
-
                 AnimateButtons(win);
             }
         }
@@ -189,11 +195,10 @@ namespace Musicefy.Services
         {
             switch (name)
             {
-                case "Blue": return Brushes.SkyBlue;
-                case "Red": return Brushes.IndianRed;
+                case "Default": return Brushes.Gray; // neutral preview
+                case "Catppuccin": return Brushes.MediumOrchid;
                 case "GreenApple": return Brushes.Green;
                 case "Lavender": return Brushes.MediumPurple;
-                case "Catppuccin": return Brushes.MediumOrchid;
                 default: return Brushes.Gray;
             }
         }
