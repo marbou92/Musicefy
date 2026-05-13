@@ -89,10 +89,13 @@
         </Grid.ColumnDefinitions>
 
         <!-- Sidebar -->
-        <StackPanel Grid.Column="0" Background="{DynamicResource BackgroundBrush}" 
-                    Foreground="{DynamicResource ForegroundBrush}" Padding="20">
-            <TextBlock Text="Settings" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
-            
+        <StackPanel Grid.Column="0" Background="{DynamicResource BackgroundBrush}" Padding="20">
+    <TextBlock Text="Settings" 
+               FontSize="24" 
+               FontWeight="Bold" 
+               Margin="0,0,0,20"
+               Foreground="{DynamicResource ForegroundBrush}"/>
+
             <!-- Appearance option -->
             <Button Style="{StaticResource SidebarButtonStyle}" Margin="0,0,0,10">
                 <StackPanel Orientation="Horizontal">
