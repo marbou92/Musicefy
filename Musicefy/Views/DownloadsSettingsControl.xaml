@@ -5,10 +5,38 @@
              Foreground="{DynamicResource ForegroundBrush}">
 
     <Grid Margin="20">
-        <TextBlock Text="Downloads settings will go here."
-                   Foreground="{DynamicResource ForegroundBrush}"
-                   VerticalAlignment="Center"
-                   HorizontalAlignment="Center"
-                   FontSize="16"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Title -->
+        <TextBlock Grid.Row="0"
+                   Text="Downloads Settings"
+                   FontSize="22"
+                   FontWeight="Bold"
+                   Margin="0,0,0,15"/>
+
+        <!-- Content -->
+        <StackPanel Grid.Row="1" Orientation="Vertical" Margin="0,0,0,15">
+
+            <!-- Download Path -->
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                <TextBlock Text="Download path:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                <TextBox x:Name="DownloadPathBox" Width="400" IsReadOnly="True"/>
+                <Button Content="Browse..." Margin="10,0,0,0" Click="Browse_Click"/>
+            </StackPanel>
+
+            <!-- Extra settings -->
+            <CheckBox x:Name="AutoClearCacheBox" Content="Auto-clear cache on exit" Margin="0,0,0,10"/>
+            <CheckBox x:Name="LimitDownloadSizeBox" Content="Limit download size to 500 MB" Margin="0,0,0,10"/>
+        </StackPanel>
+
+        <!-- Buttons -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="Cancel" Width="100" Margin="0,0,10,0" Click="Cancel_Click"/>
+            <Button Content="Save" Width="100" Background="{DynamicResource AccentBrush}" Foreground="White" Click="Save_Click"/>
+        </StackPanel>
     </Grid>
 </UserControl>
