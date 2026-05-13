@@ -9,6 +9,8 @@ namespace Musicefy.Services
     public static class DownloadManager
     {
         private const long MaxDownloadSizeBytes = 500L * 1024L * 1024L; // 500 MB
+        private const long MaxCacheSizeBytes = 2L * 1024L * 1024L * 1024L; // 2 GB
+        private const long WarningThresholdBytes = 400L * 1024L * 1024L; // 400 MB
 
         public static async Task<bool> DownloadFileAsync(string url, string fileName)
         {
@@ -24,6 +26,24 @@ namespace Musicefy.Services
 
                 if (!Directory.Exists(downloadsPath))
                     Directory.CreateDirectory(downloadsPath);
+
+                // Check current cache size before starting
+                long currentCacheSize = GetDirectorySize(downloadsPath);
+                if (currentCacheSize >= MaxCacheSizeBytes)
+                {
+                    MessageBox.Show("Cache limit reached (2 GB). Downloads are blocked until you clear space.",
+                                    "Cache Limit",
+                                    MessageBoxButton.OK,
+                                    MessageBoxImage.Error);
+                    return false;
+                }
+                else if (currentCacheSize > WarningThresholdBytes)
+                {
+                    MessageBox.Show("Warning: Cache size exceeds 400 MB. Consider clearing to free space.",
+                                    "Cache Warning",
+                                    MessageBoxButton.OK,
+                                    MessageBoxImage.Warning);
+                }
 
                 string targetPath = Path.Combine(downloadsPath, fileName);
 
@@ -55,6 +75,7 @@ namespace Musicefy.Services
                         {
                             totalBytes += read;
 
+                            // Enforce per-file limit
                             if (Musicefy.Properties.Settings.Default.LimitDownloadSize &&
                                 totalBytes > MaxDownloadSizeBytes)
                             {
@@ -65,6 +86,19 @@ namespace Musicefy.Services
                                                 "Download Cancelled",
                                                 MessageBoxButton.OK,
                                                 MessageBoxImage.Warning);
+                                return false;
+                            }
+
+                            // Enforce global cache limit
+                            if (currentCacheSize + totalBytes > MaxCacheSizeBytes)
+                            {
+                                fs.Close();
+                                File.Delete(targetPath);
+
+                                MessageBox.Show("Cache limit reached (2 GB). Download cancelled.",
+                                                "Cache Limit",
+                                                MessageBoxButton.OK,
+                                                MessageBoxImage.Error);
                                 return false;
                             }
 
@@ -111,6 +145,25 @@ namespace Musicefy.Services
             {
                 Console.WriteLine($"Auto-clear failed: {ex.Message}");
             }
+        }
+
+        private static long GetDirectorySize(string path)
+        {
+            if (!Directory.Exists(path)) return 0;
+
+            long size = 0;
+            try
+            {
+                foreach (var file in Directory.GetFiles(path, "*", SearchOption.AllDirectories))
+                {
+                    size += new FileInfo(file).Length;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error calculating cache size: {ex.Message}");
+            }
+            return size;
         }
     }
 }
