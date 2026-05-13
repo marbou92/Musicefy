@@ -18,6 +18,33 @@ namespace Musicefy.Properties {
             set => this["Theme"] = value;
         }
 
+        // Accent color (for appearance settings)
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Default")]
+        public string AccentColor {
+            get => ((string)(this["AccentColor"]));
+            set => this["AccentColor"] = value;
+        }
+
+        // Pure black dark mode toggle
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool PureBlackMode {
+            get => ((bool)(this["PureBlackMode"]));
+            set => this["PureBlackMode"] = value;
+        }
+
+        // Date format selection
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("MM/dd/yyyy")]
+        public string DateFormat {
+            get => ((string)(this["DateFormat"]));
+            set => this["DateFormat"] = value;
+        }
+
         // Downloads path
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -61,60 +88,6 @@ namespace Musicefy.Properties {
         public long CacheWarningThreshold {
             get => ((long)(this["CacheWarningThreshold"]));
             set => this["CacheWarningThreshold"] = value;
-        }
-
-        // Accent color (for appearance settings)
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Default")]
-        public string AccentColor {
-            get => ((string)(this["AccentColor"]));
-            set => this["AccentColor"] = value;
-        }
-
-        // Pure black dark mode toggle
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool PureBlackMode {
-            get => ((bool)(this["PureBlackMode"]));
-            set => this["PureBlackMode"] = value;
-        }
-
-        // Relative timestamps toggle
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool RelativeTimestamps {
-            get => ((bool)(this["RelativeTimestamps"]));
-            set => this["RelativeTimestamps"] = value;
-        }
-
-        // Render images toggle
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool RenderImages {
-            get => ((bool)(this["RenderImages"]));
-            set => this["RenderImages"] = value;
-        }
-
-        // Show updates toggle
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool ShowUpdates {
-            get => ((bool)(this["ShowUpdates"]));
-            set => this["ShowUpdates"] = value;
-        }
-
-        // Date format selection
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("MM/dd/yyyy")]
-        public string DateFormat {
-            get => ((string)(this["DateFormat"]));
-            set => this["DateFormat"] = value;
         }
     }
 }
