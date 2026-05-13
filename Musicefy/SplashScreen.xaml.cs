@@ -29,6 +29,7 @@ namespace Musicefy
 
                 // Animate progress ring
                 AnimateRing();
+                AnimateRingGlow();
 
                 // Simulate loading
                 await Task.Delay(4000);
@@ -80,6 +81,23 @@ namespace Musicefy
                 RepeatBehavior = RepeatBehavior.Forever
             };
             RingRotate.BeginAnimation(RotateTransform.AngleProperty, rotateAnim);
+        }
+
+        private void AnimateRingGlow()
+        {
+            var glowAnim = new DoubleAnimation
+            {
+                From = 0.3,
+                To = 0.8,
+                Duration = new Duration(System.TimeSpan.FromSeconds(1.5)),
+                AutoReverse = true,
+                RepeatBehavior = RepeatBehavior.Forever
+            };
+
+            if (Ring.Effect is DropShadowEffect shadow)
+            {
+                shadow.BeginAnimation(DropShadowEffect.OpacityProperty, glowAnim);
+            }
         }
     }
 }
