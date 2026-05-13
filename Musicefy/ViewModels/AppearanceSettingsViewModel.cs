@@ -46,11 +46,13 @@ namespace Musicefy.ViewModels
 
             // Theme previews
             ThemePreviews = new ObservableCollection<ThemePreview>
-            {
-                new ThemePreview { Name = "Default", AccentBrush = ThemeManager.GetAccentBrush("Default") },
-                new ThemePreview { Name = "Blue", AccentBrush = ThemeManager.GetAccentBrush("Blue") },
-                new ThemePreview { Name = "Red", AccentBrush = ThemeManager.GetAccentBrush("Red") }
-            };
+{
+    new ThemePreview { Name = "Default", AccentBrush = ThemeManager.GetAccentBrush("Default") },
+    new ThemePreview { Name = "Catppuccin", AccentBrush = ThemeManager.GetAccentBrush("Catppuccin") },
+    new ThemePreview { Name = "GreenApple", AccentBrush = ThemeManager.GetAccentBrush("GreenApple") },
+    new ThemePreview { Name = "Lavender", AccentBrush = ThemeManager.GetAccentBrush("Lavender") }
+};
+;
         }
 
         public int SelectedThemeIndex
