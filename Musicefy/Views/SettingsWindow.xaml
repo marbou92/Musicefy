@@ -133,7 +133,28 @@
                        FontSize="22" FontWeight="Bold" Margin="0,0,0,20"/>
 
             <!-- Content -->
-            <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="20">
+            <StackPanel Grid.Row="1" Orientation="Vertical">
+    <!-- Apply Margin to children instead of Spacing -->
+    <TabControl SelectedIndex="{Binding SelectedThemeIndex}" 
+                Background="{DynamicResource BackgroundBrush}" 
+                Foreground="{DynamicResource ForegroundBrush}" 
+                Margin="0,0,0,20"/>
+    
+    <ItemsControl ItemsSource="{Binding ThemePreviews}" Margin="0,0,0,20">
+        ...
+    </ItemsControl>
+
+    <CheckBox Content="Enable pure black dark mode" 
+              IsChecked="{Binding PureBlackMode}" 
+              Foreground="{DynamicResource ForegroundBrush}" 
+              Margin="0,0,0,20"/>
+
+    <ComboBox ItemsSource="{Binding DateFormats}" 
+              SelectedItem="{Binding SelectedDateFormat}" 
+              Width="200" Foreground="{DynamicResource ForegroundBrush}" 
+              Background="{DynamicResource BackgroundBrush}" 
+              Margin="0,0,0,20"/>
+</StackPanel>
 
                 <!-- Theme Tabs -->
                 <TabControl SelectedIndex="{Binding SelectedThemeIndex}" 
