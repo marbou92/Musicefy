@@ -9,6 +9,9 @@ namespace Musicefy.Services
         private static readonly string[] Modes = { "System", "Light", "Dark" };
         private static readonly string[] Palettes = { "Default", "Catppuccin", "GreenApple", "Lavender" };
 
+        /// <summary>
+        /// Apply theme with both mode and palette.
+        /// </summary>
         public static void ApplyTheme(string mode, string palette)
         {
             Application.Current.Resources.MergedDictionaries.Clear();
@@ -24,6 +27,32 @@ namespace Musicefy.Services
             // Palette (Default/Catppuccin/GreenApple/Lavender)
             Application.Current.Resources.MergedDictionaries.Add(
                 new ResourceDictionary { Source = new Uri($"/Themes/Palettes/{palette}.xaml", UriKind.Relative) });
+        }
+
+        /// <summary>
+        /// Apply theme with only mode, defaults to "Default" palette.
+        /// </summary>
+        public static void ApplyTheme(string mode)
+        {
+            ApplyTheme(mode, "Default");
+        }
+
+        /// <summary>
+        /// Apply theme from a combined string like "Dark|Catppuccin".
+        /// </summary>
+        public static void ApplyThemeFromString(string themeString)
+        {
+            if (string.IsNullOrWhiteSpace(themeString))
+            {
+                ApplyTheme("Dark", "Default");
+                return;
+            }
+
+            var parts = themeString.Split('|');
+            string mode = parts.Length > 0 ? parts[0] : "Dark";
+            string palette = parts.Length > 1 ? parts[1] : "Default";
+
+            ApplyTheme(mode, palette);
         }
 
         /// <summary>
