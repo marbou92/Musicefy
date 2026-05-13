@@ -6,7 +6,7 @@ namespace Musicefy.Views
 {
     public partial class AppearanceSettingsControl : UserControl
     {
-        private AppearanceSettingsViewModel _viewModel;
+        private readonly AppearanceSettingsViewModel _viewModel;
 
         public AppearanceSettingsControl()
         {
@@ -15,6 +15,7 @@ namespace Musicefy.Views
             this.DataContext = _viewModel;
         }
 
+        // Handles palette preview button clicks
         private void PalettePreview_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button btn && btn.DataContext is ThemePreview preview)
@@ -23,12 +24,14 @@ namespace Musicefy.Views
             }
         }
 
+        // Save button delegates to ViewModel
         private void Save_Click(object sender, RoutedEventArgs e)
         {
             _viewModel.Save();
             MessageBox.Show("Appearance settings saved.", "Musicefy", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
+        // Cancel button delegates to ViewModel
         private void Cancel_Click(object sender, RoutedEventArgs e)
         {
             _viewModel.Cancel();
