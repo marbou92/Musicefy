@@ -121,7 +121,7 @@
         </StackPanel>
 
         <!-- Main Content -->
-        <Grid Grid.Column="1" Padding="30">
+        <Grid Grid.Column="1" Margin="30">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
