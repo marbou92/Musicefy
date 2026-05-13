@@ -22,6 +22,9 @@ namespace Musicefy
                 string savedTheme = Musicefy.Properties.Settings.Default.Theme ?? "Dark|Default";
                 ThemeManager.ApplyThemeFromString(savedTheme);
 
+                // Fade in after applying theme
+                ThemeManager.AnimateWindowsFade();
+
                 // Start watching for system theme changes
                 ThemeManager.StartSystemThemeWatcher();
             }
