@@ -73,6 +73,12 @@ namespace Musicefy.Services
                     }
                 }
 
+                // Auto-clear cache immediately after download if enabled
+                if (Musicefy.Properties.Settings.Default.AutoClearCache)
+                {
+                    ClearCache(downloadsPath);
+                }
+
                 return true;
             }
             catch (Exception ex)
@@ -82,6 +88,28 @@ namespace Musicefy.Services
                                 MessageBoxButton.OK,
                                 MessageBoxImage.Error);
                 return false;
+            }
+        }
+
+        private static void ClearCache(string downloadsPath)
+        {
+            try
+            {
+                if (Directory.Exists(downloadsPath))
+                {
+                    foreach (var file in Directory.GetFiles(downloadsPath))
+                    {
+                        File.Delete(file);
+                    }
+                    foreach (var dir in Directory.GetDirectories(downloadsPath))
+                    {
+                        Directory.Delete(dir, true);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Auto-clear failed: {ex.Message}");
             }
         }
     }
