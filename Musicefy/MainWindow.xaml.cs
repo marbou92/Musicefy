@@ -31,6 +31,7 @@ namespace Musicefy
         private ObservableCollection<MusicFile> _queue = new ObservableCollection<MusicFile>();
 
         private int _currentQueueIndex = -1;
+        private bool _isInitialized = false;
 
         public MainWindow()
         {
@@ -51,9 +52,13 @@ namespace Musicefy
             _timer.Tick += Timer_Tick;
 
             VolumeSlider.Value = 70;
+
+            _isInitialized = true;
         }
-                private void RefreshSources()
+        private void RefreshSources()
         {
+            if (!_isInitialized) return;
+
             SourcesListBox.Items.Clear();
             var sources = _sourceManager.GetAllSources();
 
@@ -64,31 +69,23 @@ namespace Musicefy
         }
 
         private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
-{
-    // Prevent crashes if controls or collections aren't initialized yet
-    if (_allTracks == null || TracksList == null || SearchTextBox == null)
-        return;
+        {
+            if (!_isInitialized) return;
 
-    string query = SearchTextBox.Text?.Trim().ToLowerInvariant() ?? "";
-    if (string.IsNullOrEmpty(query))
-    {
-        TracksList.ItemsSource = _allTracks;
-    }
-    else
-    {
-        var filtered = _allTracks
-            .Where(t => (t.Title?.ToLowerInvariant().Contains(query) == true) ||
-                        (t.Artist?.ToLowerInvariant().Contains(query) == true) ||
-                        (t.Album?.ToLowerInvariant().Contains(query) == true))
-            .ToList();
-
-        TracksList.ItemsSource = filtered;
-    }
-}
-
+            string query = SearchTextBox.Text?.Trim().ToLowerInvariant() ?? "";
+            TracksList.ItemsSource = string.IsNullOrEmpty(query)
+                ? _allTracks
+                : _allTracks.Where(t =>
+                    (t.Title?.ToLowerInvariant().Contains(query) == true) ||
+                    (t.Artist?.ToLowerInvariant().Contains(query) == true) ||
+                    (t.Album?.ToLowerInvariant().Contains(query) == true))
+                  .ToList();
+        }
 
         private void AddSourceButton_Click(object sender, RoutedEventArgs e)
         {
+            if (!_isInitialized) return;
+
             var win = new AddSourceWindow(_sourceManager) { Owner = this };
             if (win.ShowDialog() == true)
             {
@@ -99,39 +96,32 @@ namespace Musicefy
 
         private void SourcesListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (!_isInitialized) return;
             if (SourcesListBox.SelectedItem == null) return;
+
             var source = SourcesListBox.SelectedItem;
+            string sourceType = source.GetType().GetProperty("Type")?.GetValue(source)?.ToString() ?? "";
+            string path = source.GetType().GetProperty("Path")?.GetValue(source)?.ToString()
+                         ?? source.GetType().GetProperty("Url")?.GetValue(source)?.ToString()
+                         ?? "";
 
-            if (source != null)
+            if (sourceType.Equals("Local", StringComparison.OrdinalIgnoreCase) && Directory.Exists(path))
             {
-                string sourceType = source.GetType().GetProperty("Type")?.GetValue(source)?.ToString() ?? "";
-                string path = source.GetType().GetProperty("Path")?.GetValue(source)?.ToString()
-                             ?? source.GetType().GetProperty("Url")?.GetValue(source)?.ToString()
-                             ?? "";
-
-                if (sourceType.Equals("Local", StringComparison.OrdinalIgnoreCase) && Directory.Exists(path))
-                {
-                    LoadTracksFromFolder(path);
-                }
+                LoadTracksFromFolder(path);
             }
         }
-
         private void LoadTracksFromFolder(string folderPath)
         {
+            if (!_isInitialized) return;
             if (!Directory.Exists(folderPath)) return;
 
             var extensions = new[] { ".mp3", ".wav", ".flac", ".ogg", ".m4a", ".aac" };
-
             var files = Directory.EnumerateFiles(folderPath, "*.*", SearchOption.AllDirectories)
                                  .Where(f => extensions.Contains(Path.GetExtension(f).ToLowerInvariant()));
 
             _allTracks.Clear();
-
             foreach (var file in files)
-            {
-                var track = CreateTrackFromFile(file);
-                _allTracks.Add(track);
-            }
+                _allTracks.Add(CreateTrackFromFile(file));
 
             UpdateLibraryUI();
         }
@@ -164,6 +154,8 @@ namespace Musicefy
 
         private void UpdateLibraryUI()
         {
+            if (!_isInitialized) return;
+
             int count = _allTracks.Count;
             TrackCountLabel.Text = $"{count} track{(count == 1 ? "" : "s")}";
             LibraryEmptyState.Visibility = count == 0 ? Visibility.Visible : Visibility.Collapsed;
@@ -171,20 +163,26 @@ namespace Musicefy
 
         private void EnqueueTrack(MusicFile track)
         {
+            if (!_isInitialized || track == null) return;
+
             if (!_queue.Contains(track))
                 _queue.Add(track);
+
             QueueEmptyHint.Visibility = _queue.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void ClearQueue_Click(object sender, RoutedEventArgs e)
         {
+            if (!_isInitialized) return;
+
             _queue.Clear();
             _currentQueueIndex = -1;
             QueueEmptyHint.Visibility = Visibility.Visible;
         }
-
         private void TracksList_DoubleClick(object sender, MouseButtonEventArgs e)
         {
+            if (!_isInitialized) return;
+
             if (TracksList.SelectedItem is MusicFile track)
             {
                 _queue.Clear();
@@ -197,14 +195,19 @@ namespace Musicefy
 
         private void QueueList_DoubleClick(object sender, MouseButtonEventArgs e)
         {
+            if (!_isInitialized) return;
+
             if (QueueList.SelectedItem is MusicFile track)
             {
                 _currentQueueIndex = _queue.IndexOf(track);
                 PlayTrack(track);
             }
         }
+
         private void PlayButton_Click(object sender, RoutedEventArgs e)
         {
+            if (!_isInitialized) return;
+
             if (_waveOut != null)
             {
                 _waveOut.Play();
@@ -218,10 +221,15 @@ namespace Musicefy
             }
         }
 
-        private void PauseButton_Click(object sender, RoutedEventArgs e) => _waveOut?.Pause();
+        private void PauseButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!_isInitialized) return;
+            _waveOut?.Pause();
+        }
 
         private void PreviousButton_Click(object sender, RoutedEventArgs e)
         {
+            if (!_isInitialized) return;
             if (_queue.Count == 0) return;
             _currentQueueIndex = Math.Max(0, _currentQueueIndex - 1);
             PlayTrack(_queue[_currentQueueIndex]);
@@ -229,116 +237,65 @@ namespace Musicefy
 
         private void NextButton_Click(object sender, RoutedEventArgs e)
         {
+            if (!_isInitialized) return;
             if (_queue.Count == 0) return;
-            if (_playlistManager.ShuffleEnabled)
-                _currentQueueIndex = new Random().Next(_queue.Count);
-            else
-                _currentQueueIndex = (_currentQueueIndex + 1) % _queue.Count;
+            _currentQueueIndex = _playlistManager.ShuffleEnabled
+                ? new Random().Next(_queue.Count)
+                : (_currentQueueIndex + 1) % _queue.Count;
             PlayTrack(_queue[_currentQueueIndex]);
         }
-        private void WaveOut_PlaybackStopped(object sender, StoppedEventArgs e)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                if (e.Exception == null && _playlistManager.RepeatEnabled)
-                {
-                    if (_currentQueueIndex >= 0 && _currentQueueIndex < _queue.Count)
-                        PlayTrack(_queue[_currentQueueIndex]);
-                }
-                else if (e.Exception == null)
-                {
-                    NextButton_Click(null, null);
-                }
-            });
-        }
-
-        private void StopPlayback()
-        {
-            _timer.Stop();
-            if (_waveOut != null)
-            {
-                _waveOut.PlaybackStopped -= WaveOut_PlaybackStopped;
-                _waveOut.Stop();
-                _waveOut.Dispose();
-                _waveOut = null;
-            }
-            _audioFile?.Dispose();
-            _audioFile = null;
-        }
-
-        private void Timer_Tick(object sender, EventArgs e)
-        {
-            if (_audioFile == null) return;
-            PlaybackSlider.Value = _audioFile.CurrentTime.TotalSeconds;
-            ElapsedText.Text = _audioFile.CurrentTime.ToString(@"m\:ss");
-            RemainingText.Text = (_audioFile.TotalTime - _audioFile.CurrentTime).ToString(@"m\:ss");
-        }
-
-        private void PlaybackSlider_MouseUp(object sender, MouseButtonEventArgs e)
-        {
-            if (_audioFile != null)
-                _audioFile.CurrentTime = TimeSpan.FromSeconds(PlaybackSlider.Value);
-        }
-
         private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
+            if (!_isInitialized) return;
+
             if (_audioFile != null)
                 _audioFile.Volume = (float)(VolumeSlider.Value / 100.0);
             if (VolumeLabel != null)
                 VolumeLabel.Text = $"{(int)VolumeSlider.Value}%";
         }
 
-        private void TracksList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void PlayTrack(MusicFile track)
         {
-            if (TracksList.SelectedItem is MusicFile track)
+            if (!_isInitialized || track == null) return;
+
+            StopPlayback();
+
+            string uri = track.SourceUri ?? track.FilePath;
+            if (string.IsNullOrEmpty(uri) || !IOFile.Exists(uri))
             {
+                MessageBox.Show($"File not found:\n{uri}", "Cannot Play", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                _waveOut = new WaveOutEvent();
+                _audioFile = new AudioFileReader(uri);
+                _audioFile.Volume = (float)(VolumeSlider.Value / 100.0);
+                _waveOut.Init(_audioFile);
+                _waveOut.Play();
+                _waveOut.PlaybackStopped += WaveOut_PlaybackStopped;
+
                 NowPlayingTitle.Text = track.Title;
                 NowPlayingArtist.Text = track.Artist;
                 NowPlayingMeta.Text = $"{track.Album}{(track.Year > 0 ? " • " + track.Year : "")}";
+
                 LoadAlbumArt(track);
+
+                PlaybackSlider.Maximum = _audioFile.TotalTime.TotalSeconds;
+                PlaybackSlider.Value = 0;
+                _timer.Start();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Playback error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        private void PlayTrack(MusicFile track)
-{
-    StopPlayback();
-
-    string uri = track.SourceUri ?? track.FilePath;
-
-    if (string.IsNullOrEmpty(uri) || !IOFile.Exists(uri))
-    {
-        MessageBox.Show($"File not found:\n{uri}", "Cannot Play", MessageBoxButton.OK, MessageBoxImage.Warning);
-        return;
-    }
-
-    try
-    {
-        _waveOut = new WaveOutEvent();
-        _audioFile = new AudioFileReader(uri);
-        _audioFile.Volume = (float)(VolumeSlider.Value / 100.0);
-        _waveOut.Init(_audioFile);
-        _waveOut.Play();
-        _waveOut.PlaybackStopped += WaveOut_PlaybackStopped;
-
-        NowPlayingTitle.Text = track.Title;
-        NowPlayingArtist.Text = track.Artist;
-        NowPlayingMeta.Text = $"{track.Album}{(track.Year > 0 ? " • " + track.Year : "")}";
-
-        LoadAlbumArt(track);
-
-        PlaybackSlider.Maximum = _audioFile.TotalTime.TotalSeconds;
-        PlaybackSlider.Value = 0;
-        _timer.Start();
-    }
-    catch (Exception ex)
-    {
-        MessageBox.Show($"Playback error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-    }
-}
-
-
         private void LoadAlbumArt(MusicFile track)
         {
+            if (!_isInitialized || track == null) return;
+
             try
             {
                 string path = track.FilePath;
@@ -370,6 +327,8 @@ namespace Musicefy
 
         private void ShuffleButton_Click(object sender, RoutedEventArgs e)
         {
+            if (!_isInitialized) return;
+
             _playlistManager.ShuffleEnabled = !_playlistManager.ShuffleEnabled;
             ShuffleButton.Foreground = _playlistManager.ShuffleEnabled
                 ? (Brush)FindResource("AccentBrush")
@@ -378,6 +337,8 @@ namespace Musicefy
 
         private void RepeatButton_Click(object sender, RoutedEventArgs e)
         {
+            if (!_isInitialized) return;
+
             _playlistManager.RepeatEnabled = !_playlistManager.RepeatEnabled;
             RepeatButton.Foreground = _playlistManager.RepeatEnabled
                 ? (Brush)FindResource("AccentBrush")
@@ -385,23 +346,29 @@ namespace Musicefy
         }
 
         private void OpenSettings_Click(object sender, RoutedEventArgs e)
-{
-    var win = new SettingsWindow { Owner = this };
-    if (win.ShowDialog() == true)
-    {
-        string theme = Musicefy.Properties.Settings.Default.Theme ?? "Dark|Default";
-        ThemeManager.ApplyThemeFromString(theme);
-    }
-}
+        {
+            if (!_isInitialized) return;
 
-
+            var win = new SettingsWindow { Owner = this };
+            if (win.ShowDialog() == true)
+            {
+                string theme = Musicefy.Properties.Settings.Default.Theme ?? "Dark|Default";
+                ThemeManager.ApplyThemeFromString(theme);
+            }
+        }
 
         private void About_Click(object sender, RoutedEventArgs e)
         {
+            if (!_isInitialized) return;
+
             MessageBox.Show("Musicefy — Music Streaming Player\nVersion 1.0.0\n© 2026",
                             "About Musicefy", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        private void Exit_Click(object sender, RoutedEventArgs e) => Application.Current.Shutdown();
+        private void Exit_Click(object sender, RoutedEventArgs e)
+        {
+            if (!_isInitialized) return;
+            Application.Current.Shutdown();
+        }
     }
 }
