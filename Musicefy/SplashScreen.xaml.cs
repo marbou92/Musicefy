@@ -2,6 +2,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Media.Effects; // <-- Needed for DropShadowEffect
+using System.Windows.Shapes;        // <-- For Rectangle
 
 namespace Musicefy
 {
@@ -46,7 +48,7 @@ namespace Musicefy
             };
         }
 
-        private void AnimateBar(System.Windows.Shapes.Rectangle bar, double speed)
+        private void AnimateBar(Rectangle bar, double speed)
         {
             var anim = new DoubleAnimationUsingKeyFrames
             {
@@ -55,7 +57,7 @@ namespace Musicefy
             };
             anim.KeyFrames.Add(new EasingDoubleKeyFrame(20, KeyTime.FromTimeSpan(System.TimeSpan.FromSeconds(0))));
             anim.KeyFrames.Add(new EasingDoubleKeyFrame(80, KeyTime.FromTimeSpan(System.TimeSpan.FromSeconds(speed))));
-            bar.BeginAnimation(System.Windows.Shapes.Rectangle.HeightProperty, anim);
+            bar.BeginAnimation(Rectangle.HeightProperty, anim);
         }
 
         private void AnimateGradient(GradientStop stop, string fromColor, string toColor, double duration)
