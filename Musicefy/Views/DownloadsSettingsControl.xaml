@@ -55,21 +55,29 @@
                                    Margin="0,5,0,0"
                                    Foreground="{DynamicResource ForegroundBrush}"/>
                         <StackPanel Orientation="Horizontal" Spacing="10">
-                            <Button Content="Clear Now"
+                            <Button x:Name="ClearNowButton"
+                                    Content="Clear Now"
                                     Width="120"
                                     Click="ClearNow_Click"/>
-                            <Button Content="Test Download"
+                            <Button x:Name="TestDownloadButton"
+                                    Content="Test Download"
                                     Width="140"
                                     Click="TestDownload_Click"/>
-                            <Button Content="Pause Download"
+                            <Button x:Name="PauseDownloadButton"
+                                    Content="Pause Download"
                                     Width="140"
-                                    Click="PauseDownload_Click"/>
-                            <Button Content="Resume Download"
+                                    Click="PauseDownload_Click"
+                                    IsEnabled="False"/>
+                            <Button x:Name="ResumeDownloadButton"
+                                    Content="Resume Download"
                                     Width="140"
-                                    Click="ResumeDownload_Click"/>
-                            <Button Content="Cancel Download"
+                                    Click="ResumeDownload_Click"
+                                    IsEnabled="False"/>
+                            <Button x:Name="CancelDownloadButton"
+                                    Content="Cancel Download"
                                     Width="140"
-                                    Click="CancelDownload_Click"/>
+                                    Click="CancelDownload_Click"
+                                    IsEnabled="False"/>
                         </StackPanel>
                     </StackPanel>
                 </Border>
