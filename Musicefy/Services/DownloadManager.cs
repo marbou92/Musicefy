@@ -24,7 +24,7 @@ namespace Musicefy.Services
         public static async Task<bool> DownloadFileAsync(
             string url,
             string fileName,
-            Action<int, long>? progress = null,
+            Action<int, long> progress = null,
             CancellationToken cancellationToken = default,
             bool resume = false)
         {
