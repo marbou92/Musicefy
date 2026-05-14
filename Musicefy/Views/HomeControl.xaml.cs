@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
 using Musicefy.Core.Models;
 
@@ -9,8 +10,7 @@ namespace Musicefy.Views
     public partial class HomeControl : UserControl
     {
         public ObservableCollection<AlbumItem> Albums { get; set; }
-        public ObservableCollection<string> QuickPicks { get; set; }
-        public ObservableCollection<string> TopVideos { get; set; }
+        public ObservableCollection<MusicFile> AlbumTracks { get; set; }
 
         private Random _rng = new Random();
 
@@ -18,7 +18,7 @@ namespace Musicefy.Views
         {
             InitializeComponent();
 
-            // Example: pull albums from your library (replace with PlaylistManager or SourceManager)
+            // Example: pull albums from your library
             var allTracks = MusicefyApp.Library; // assume you expose your library globally
             var randomAlbums = allTracks
                 .GroupBy(t => t.Album)
@@ -30,24 +30,27 @@ namespace Musicefy.Views
                     Artist = g.First().Artist,
                     Cover = string.IsNullOrEmpty(g.First().CoverPath)
                         ? "pack://application:,,,/Assets/default_cover.png"
-                        : g.First().CoverPath
+                        : g.First().CoverPath,
+                    Tracks = g.ToList()
                 });
 
             Albums = new ObservableCollection<AlbumItem>(randomAlbums);
-
-            QuickPicks = new ObservableCollection<string>
-            {
-                "Sahiba", "Ishqa Ve", "Nee Singam Dhan", "Pal Pal (with Talwinder)"
-            };
-
-            TopVideos = new ObservableCollection<string>
-            {
-                "Shararat", "Teri Yaadon Ki Chadar", "RANU BOMBAI KI RANU"
-            };
+            AlbumTracks = new ObservableCollection<MusicFile>();
 
             AlbumsList.ItemsSource = Albums;
-            QuickPicksList.ItemsSource = QuickPicks;
-            TopVideosList.ItemsSource = TopVideos;
+            AlbumTracksList.ItemsSource = AlbumTracks;
+        }
+
+        private void AlbumsList_DoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (AlbumsList.SelectedItem is AlbumItem album)
+            {
+                AlbumTracks.Clear();
+                foreach (var track in album.Tracks)
+                    AlbumTracks.Add(track);
+
+                AlbumTracksEmpty.Visibility = AlbumTracks.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            }
         }
     }
 
@@ -56,5 +59,6 @@ namespace Musicefy.Views
         public string Album { get; set; }
         public string Artist { get; set; }
         public string Cover { get; set; }
+        public System.Collections.Generic.List<MusicFile> Tracks { get; set; }
     }
 }
