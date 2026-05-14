@@ -8,15 +8,12 @@
         Opacity="0"
         Background="Transparent">
 
-    <!-- Rounded container with shadow -->
     <Border CornerRadius="20" Background="{DynamicResource BackgroundBrush}">
         <Border.Effect>
-            <!-- Explicit DropShadowEffect so code-behind can animate it -->
             <DropShadowEffect Color="Black" BlurRadius="15" ShadowDepth="0" Opacity="0.5"/>
         </Border.Effect>
 
         <Grid>
-            <!-- Animated gradient background -->
             <Border CornerRadius="20">
                 <Border.Background>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
@@ -27,18 +24,14 @@
             </Border>
 
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                <!-- Logo -->
-                <Image Source="Assets/musicefy.png" Height="96" Width="96" Margin="0,0,0,20"/>
+                <Image Source="Assets/musicefy.png" Height="96" Width="96" Margin="0,0,0,20" RenderOptions.BitmapScalingMode="HighQuality"/>
 
-                <!-- Title -->
                 <TextBlock Text="Musicefy" FontSize="28" FontWeight="Bold"
                            Foreground="{DynamicResource ForegroundBrush}" HorizontalAlignment="Center"/>
 
-                <!-- Subtitle -->
                 <TextBlock Text="Loading your music..." FontSize="14" 
-                           Foreground="{DynamicResource ForegroundBrush}" Opacity="0.7" Margin="0,12,0,20"/>
+                           Foreground="{DynamicResource ForegroundBrush}" Opacity="0.7" Margin="0,12,0,20" HorizontalAlignment="Center"/>
 
-                <!-- Equalizer Bars -->
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
                     <Rectangle x:Name="Bar1" Width="12" Height="40" Fill="{DynamicResource AccentBrush}" Margin="4" RadiusX="6" RadiusY="6"/>
                     <Rectangle x:Name="Bar2" Width="12" Height="40" Fill="{DynamicResource AccentBrush}" Margin="4" RadiusX="6" RadiusY="6"/>
@@ -47,7 +40,6 @@
                     <Rectangle x:Name="Bar5" Width="12" Height="40" Fill="{DynamicResource AccentBrush}" Margin="4" RadiusX="6" RadiusY="6"/>
                 </StackPanel>
 
-                <!-- Progress Ring -->
                 <Grid Width="70" Height="70" Margin="0,30,0,0">
                     <Ellipse x:Name="Ring" Width="70" Height="70" Stroke="{DynamicResource AccentBrush}" StrokeThickness="6"
                              StrokeDashArray="2 6" RenderTransformOrigin="0.5,0.5">
@@ -55,7 +47,6 @@
                             <RotateTransform x:Name="RingRotate"/>
                         </Ellipse.RenderTransform>
                         <Ellipse.Effect>
-                            <!-- Explicit DropShadowEffect for glow animation -->
                             <DropShadowEffect Color="Black" BlurRadius="20" ShadowDepth="0" Opacity="0.3"/>
                         </Ellipse.Effect>
                     </Ellipse>
