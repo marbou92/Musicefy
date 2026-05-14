@@ -22,7 +22,11 @@ namespace Musicefy.Views
 
         private void ShowAppearance()
         {
-            SettingsContent.Content = new AppearanceSettingsControl();
+            // Show theme selector group
+            SettingsContent.Content = new Musicefy.Controls.ThemeSelectorGroup
+            {
+                DataContext = new Musicefy.ViewModels.AppearanceSettingsViewModel()
+            };
         }
 
         private void ShowDownloads()
