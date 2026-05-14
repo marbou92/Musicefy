@@ -31,15 +31,4 @@
                      Margin="2,2,22,2"/>
         </Border>
     </Grid>
-
-    <UserControl.Triggers>
-        <!-- Smooth animation when IsChecked changes -->
-        <EventTrigger RoutedEvent="UserControl.Loaded">
-            <BeginStoryboard>
-                <Storyboard>
-                    <BooleanAnimationUsingKeyFrames Storyboard.TargetProperty="Tag"/>
-                </Storyboard>
-            </BeginStoryboard>
-        </EventTrigger>
-    </UserControl.Triggers>
 </UserControl>
