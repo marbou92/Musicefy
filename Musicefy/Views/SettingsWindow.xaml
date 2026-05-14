@@ -87,7 +87,7 @@
                     <TextBlock Text="🎨" FontSize="16" Margin="0,0,8,0"/>
                     <StackPanel>
                         <TextBlock Text="Appearance" FontWeight="Bold"/>
-                        <TextBlock Text="Theme & palettes" FontSize="12"/>
+                        <TextBlock Text="Theme &amp; palettes" FontSize="12"/>
                     </StackPanel>
                 </StackPanel>
             </ToggleButton>
@@ -100,7 +100,7 @@
                     <TextBlock Text="⬇️" FontSize="16" Margin="0,0,8,0"/>
                     <StackPanel>
                         <TextBlock Text="Downloads" FontWeight="Bold"/>
-                        <TextBlock Text="Cache & limits" FontSize="12"/>
+                        <TextBlock Text="Cache &amp; limits" FontSize="12"/>
                     </StackPanel>
                 </StackPanel>
             </ToggleButton>
