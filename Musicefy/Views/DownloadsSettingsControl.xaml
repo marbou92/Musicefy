@@ -61,6 +61,12 @@
                             <Button Content="Test Download"
                                     Width="140"
                                     Click="TestDownload_Click"/>
+                            <Button Content="Pause Download"
+                                    Width="140"
+                                    Click="PauseDownload_Click"/>
+                            <Button Content="Resume Download"
+                                    Width="140"
+                                    Click="ResumeDownload_Click"/>
                             <Button Content="Cancel Download"
                                     Width="140"
                                     Click="CancelDownload_Click"/>
