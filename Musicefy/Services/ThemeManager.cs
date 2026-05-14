@@ -144,29 +144,38 @@ namespace Musicefy.Services
 
         private static void Button_MouseEnter(object sender, RoutedEventArgs e)
         {
-            if (sender is System.Windows.Controls.Button btn)
+            if (sender is System.Windows.Controls.Button btn &&
+                Application.Current.FindResource("AccentHoverBrush") is LinearGradientBrush brush)
+            {
                 AnimateButtonGradient(btn,
-                    (Color)Application.Current.FindResource("AccentHoverBrush").GradientStops[0].Color,
-                    (Color)Application.Current.FindResource("AccentHoverBrush").GradientStops[1].Color,
+                    brush.GradientStops[0].Color,
+                    brush.GradientStops[1].Color,
                     300);
+            }
         }
 
         private static void Button_MouseDown(object sender, RoutedEventArgs e)
         {
-            if (sender is System.Windows.Controls.Button btn)
+            if (sender is System.Windows.Controls.Button btn &&
+                Application.Current.FindResource("AccentPressedBrush") is LinearGradientBrush brush)
+            {
                 AnimateButtonGradient(btn,
-                    (Color)Application.Current.FindResource("AccentPressedBrush").GradientStops[0].Color,
-                    (Color)Application.Current.FindResource("AccentPressedBrush").GradientStops[1].Color,
+                    brush.GradientStops[0].Color,
+                    brush.GradientStops[1].Color,
                     200);
+            }
         }
 
         private static void Button_MouseLeave(object sender, RoutedEventArgs e)
         {
-            if (sender is System.Windows.Controls.Button btn)
+            if (sender is System.Windows.Controls.Button btn &&
+                Application.Current.FindResource("AccentBrush") is LinearGradientBrush brush)
+            {
                 AnimateButtonGradient(btn,
-                    (Color)Application.Current.FindResource("AccentBrush").GradientStops[0].Color,
-                    (Color)Application.Current.FindResource("AccentBrush").GradientStops[1].Color,
+                    brush.GradientStops[0].Color,
+                    brush.GradientStops[1].Color,
                     300);
+            }
         }
 
         private static void AnimateButtonGradient(System.Windows.Controls.Button btn,
