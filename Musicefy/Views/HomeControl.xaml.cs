@@ -63,6 +63,7 @@ namespace Musicefy.Views
         {
             if (AlbumTracksList.SelectedItem is MusicFile track)
             {
+                track.MarkPlayed();
                 _playback.PlayTrack(track);
             }
         }
