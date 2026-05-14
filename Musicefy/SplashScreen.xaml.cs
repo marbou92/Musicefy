@@ -3,8 +3,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using System.Windows.Media.Effects;
-using System.Windows.Shapes;
 
 namespace Musicefy
 {
@@ -13,96 +11,46 @@ namespace Musicefy
         public SplashScreen()
         {
             InitializeComponent();
-            Loaded += OnSplashScreenLoaded;
+            Loaded += StartSpotifyStyleLoading;
         }
 
-        private async void OnSplashScreenLoaded(object sender, RoutedEventArgs e)
+        private async void StartSpotifyStyleLoading(object sender, RoutedEventArgs e)
         {
-            // Fade in
-            var fadeIn = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromSeconds(1)));
+            // 1. Smooth Fade In
+            var fadeIn = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromMilliseconds(800)));
             BeginAnimation(Window.OpacityProperty, fadeIn);
 
-            // Animate equalizer bars
-            AnimateBar(Bar1, 0.5);
-            AnimateBar(Bar2, 0.7);
-            AnimateBar(Bar3, 0.6);
-            AnimateBar(Bar4, 0.8);
-            AnimateBar(Bar5, 0.5);
+            // 2. Rotate the minimal loader
+            var rotateAnim = new DoubleAnimation
+            {
+                From = 0,
+                To = 360,
+                Duration = new Duration(TimeSpan.FromSeconds(1)),
+                RepeatBehavior = RepeatBehavior.Forever
+            };
+            LoaderRotate.BeginAnimation(RotateTransform.AngleProperty, rotateAnim);
 
-            // Animate gradient background
-            AnimateGradient(GradientStop1, "#1E1E1E", "#3B82F6", 6);
-            AnimateGradient(GradientStop2, "#00D4FF", "#9333EA", 6);
+            // 3. Animate Progress Bar (0 to 100)
+            var progressAnim = new DoubleAnimation(0, 100, new Duration(TimeSpan.FromSeconds(3.5)))
+            {
+                EasingFunction = new QuarticEase { EasingMode = EasingMode.EaseInOut }
+            };
+            BottomProgress.BeginAnimation(System.Windows.Controls.ProgressBar.ValueProperty, progressAnim);
 
-            // Animate progress ring
-            AnimateRing();
-            AnimateRingGlow();
-
-            // Simulate loading
+            // Wait for "Loading" to finish
             await Task.Delay(4000);
 
-            // Fade out
-            var fadeOut = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromSeconds(1)));
-            fadeOut.Completed += (s2, e2) =>
+            // 4. Spotify-style Exit (Scale up and Fade out)
+            var fadeOut = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromMilliseconds(500)));
+            
+            fadeOut.Completed += (s, ev) =>
             {
                 var main = new MainWindow();
                 main.Show();
                 this.Close();
             };
+
             BeginAnimation(Window.OpacityProperty, fadeOut);
-        }
-
-        private void AnimateBar(Rectangle bar, double speed)
-        {
-            var anim = new DoubleAnimationUsingKeyFrames
-            {
-                RepeatBehavior = RepeatBehavior.Forever,
-                AutoReverse = true
-            };
-            anim.KeyFrames.Add(new EasingDoubleKeyFrame(20, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(0))));
-            anim.KeyFrames.Add(new EasingDoubleKeyFrame(80, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(speed))));
-            bar.BeginAnimation(Rectangle.HeightProperty, anim);
-        }
-
-        private void AnimateGradient(GradientStop stop, string fromColor, string toColor, double duration)
-        {
-            var anim = new ColorAnimation
-            {
-                From = (Color)ColorConverter.ConvertFromString(fromColor),
-                To = (Color)ColorConverter.ConvertFromString(toColor),
-                Duration = new Duration(TimeSpan.FromSeconds(duration)),
-                AutoReverse = true,
-                RepeatBehavior = RepeatBehavior.Forever
-            };
-            stop.BeginAnimation(GradientStop.ColorProperty, anim);
-        }
-
-        private void AnimateRing()
-        {
-            var rotateAnim = new DoubleAnimation
-            {
-                From = 0,
-                To = 360,
-                Duration = new Duration(TimeSpan.FromSeconds(2)),
-                RepeatBehavior = RepeatBehavior.Forever
-            };
-            RingRotate.BeginAnimation(RotateTransform.AngleProperty, rotateAnim);
-        }
-
-        private void AnimateRingGlow()
-        {
-            var glowAnim = new DoubleAnimation
-            {
-                From = 0.3,
-                To = 0.8,
-                Duration = new Duration(TimeSpan.FromSeconds(1.5)),
-                AutoReverse = true,
-                RepeatBehavior = RepeatBehavior.Forever
-            };
-
-            if (Ring.Effect is DropShadowEffect shadow)
-            {
-                shadow.BeginAnimation(DropShadowEffect.OpacityProperty, glowAnim);
-            }
         }
     }
 }
