@@ -18,6 +18,9 @@
             <!-- Global converters -->
             <conv:ThemeThumbnailConverter x:Key="ThemeThumbnailConverter"/>
             <conv:ThemePreviewConverter x:Key="ThemePreviewConverter"/>
+            <conv:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
+            <conv:PathToImageConverter x:Key="PathToImageConverter"/>
+            <conv:LyricsToLinesConverter x:Key="LyricsToLinesConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
