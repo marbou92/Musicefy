@@ -1,3 +1,4 @@
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Animation;
@@ -37,42 +38,74 @@ namespace Musicefy.Views
                 DataContext = _appearanceVM
             };
 
-            AnimateContentChange(control, "Appearance Settings");
+            AnimateContentChange(control, "Appearance Settings", fromRight: false);
         }
 
         private void ShowDownloads()
         {
             var control = new DownloadsSettingsControl();
-            AnimateContentChange(control, "Downloads Settings");
+            AnimateContentChange(control, "Downloads Settings", fromRight: true);
         }
 
         /// <summary>
-        /// Handles fade animation when swapping content.
+        /// Handles fade + slide animation when swapping content.
         /// </summary>
-        private void AnimateContentChange(UserControl newContent, string title)
+        private void AnimateContentChange(UserControl newContent, string title, bool fromRight)
         {
-            // Fade out current content
-            var fadeOut = new DoubleAnimation(1, 0, new Duration(System.TimeSpan.FromMilliseconds(200)));
-            fadeOut.Completed += (s, e) =>
-            {
-                SettingsContent.Content = newContent;
-                SectionTitle.Text = title;
-
-                // Fade in new content
-                var fadeIn = new DoubleAnimation(0, 1, new Duration(System.TimeSpan.FromMilliseconds(200)));
-                newContent.BeginAnimation(OpacityProperty, fadeIn);
-            };
-
             if (SettingsContent.Content is FrameworkElement currentContent)
             {
+                // Fade out + slide left
+                var fadeOut = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromMilliseconds(200)));
+                var slideOut = new ThicknessAnimation
+                {
+                    From = new Thickness(0),
+                    To = new Thickness(fromRight ? -50 : 50, 0, 0, 0),
+                    Duration = new Duration(TimeSpan.FromMilliseconds(200))
+                };
+
+                fadeOut.Completed += (s, e) =>
+                {
+                    SettingsContent.Content = newContent;
+                    SectionTitle.Text = title;
+
+                    // Fade in + slide in
+                    newContent.Opacity = 0;
+                    newContent.Margin = new Thickness(fromRight ? 50 : -50, 0, 0, 0);
+
+                    var fadeIn = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromMilliseconds(200)));
+                    var slideIn = new ThicknessAnimation
+                    {
+                        From = newContent.Margin,
+                        To = new Thickness(0),
+                        Duration = new Duration(TimeSpan.FromMilliseconds(200))
+                    };
+
+                    newContent.BeginAnimation(OpacityProperty, fadeIn);
+                    newContent.BeginAnimation(MarginProperty, slideIn);
+                };
+
                 currentContent.BeginAnimation(OpacityProperty, fadeOut);
+                currentContent.BeginAnimation(MarginProperty, slideOut);
             }
             else
             {
                 SettingsContent.Content = newContent;
                 SectionTitle.Text = title;
-                var fadeIn = new DoubleAnimation(0, 1, new Duration(System.TimeSpan.FromMilliseconds(200)));
+
+                // Initial fade/slide in
+                newContent.Opacity = 0;
+                newContent.Margin = new Thickness(fromRight ? 50 : -50, 0, 0, 0);
+
+                var fadeIn = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromMilliseconds(200)));
+                var slideIn = new ThicknessAnimation
+                {
+                    From = newContent.Margin,
+                    To = new Thickness(0),
+                    Duration = new Duration(TimeSpan.FromMilliseconds(200))
+                };
+
                 newContent.BeginAnimation(OpacityProperty, fadeIn);
+                newContent.BeginAnimation(MarginProperty, slideIn);
             }
         }
 
