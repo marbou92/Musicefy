@@ -1,21 +1,20 @@
+using System.IO;
 using System.Windows;
 using Musicefy.Core.Models;
 using Musicefy.Core.Services;
-using Microsoft.Win32;
-using System.IO;
+using Musicefy.Services; // for ToastService
 
 namespace Musicefy.Views
 {
     public partial class AddSourceWindow : Window
     {
-        private StreamingSourceManager sourceManager;
+        private readonly StreamingSourceManager sourceManager;
 
         public AddSourceWindow(StreamingSourceManager manager)
         {
             InitializeComponent();
             sourceManager = manager;
 
-            // Update labels when source type changes
             SourceTypeCombo.SelectionChanged += (s, e) =>
             {
                 if (SourceTypeCombo.SelectedIndex == 1) // Local Folder
@@ -35,8 +34,8 @@ namespace Musicefy.Views
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            this.DialogResult = false;
-            this.Close();
+            DialogResult = false;
+            Close();
         }
 
         private async void TestButton_Click(object sender, RoutedEventArgs e)
@@ -57,13 +56,9 @@ namespace Musicefy.Views
                 if (type == "Local")
                 {
                     if (Directory.Exists(source.Url))
-                    {
-                        MessageBox.Show("Local folder found!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                    }
+                        ToastService.ShowToast("✅ Local folder found!", Brushes.ForestGreen);
                     else
-                    {
-                        MessageBox.Show("Folder not found. Please check the path.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
+                        ToastService.ShowToast("❌ Folder not found. Please check the path.", Brushes.OrangeRed);
                 }
                 else
                 {
@@ -71,14 +66,14 @@ namespace Musicefy.Views
                     bool connected = await client.TestConnectionAsync();
 
                     if (connected)
-                        MessageBox.Show("Successfully connected to the streaming service!", "Connection Successful", MessageBoxButton.OK, MessageBoxImage.Information);
+                        ToastService.ShowToast("✅ Successfully connected to the streaming service!", Brushes.ForestGreen);
                     else
-                        MessageBox.Show("Failed to connect. Please check your credentials.", "Connection Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                        ToastService.ShowToast("❌ Failed to connect. Please check your credentials.", Brushes.OrangeRed);
                 }
             }
             catch (System.Exception ex)
             {
-                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                ToastService.ShowToast($"❌ Error: {ex.Message}", Brushes.OrangeRed);
             }
         }
 
@@ -98,13 +93,13 @@ namespace Musicefy.Views
             try
             {
                 await sourceManager.AddSourceAsync(source);
-                MessageBox.Show($"{type} source added successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                this.DialogResult = true;
-                this.Close();
+                ToastService.ShowToast($"✅ {type} source added successfully!", Brushes.ForestGreen);
+                DialogResult = true;
+                Close();
             }
             catch (System.Exception ex)
             {
-                MessageBox.Show($"Error adding source: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                ToastService.ShowToast($"❌ Error adding source: {ex.Message}", Brushes.OrangeRed);
             }
         }
     }
