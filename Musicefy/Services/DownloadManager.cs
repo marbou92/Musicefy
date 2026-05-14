@@ -2,7 +2,8 @@ using System;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
-using System.Windows;
+using System.Windows.Media;
+using Musicefy.Services; // ToastService
 
 namespace Musicefy.Services
 {
@@ -31,18 +32,14 @@ namespace Musicefy.Services
                 long currentCacheSize = GetDirectorySize(downloadsPath);
                 if (currentCacheSize >= MaxCacheSizeBytes)
                 {
-                    MessageBox.Show("Cache limit reached (2 GB). Downloads are blocked until you clear space.",
-                                    "Cache Limit",
-                                    MessageBoxButton.OK,
-                                    MessageBoxImage.Error);
+                    ToastService.ShowToast("❌ Cache limit reached (2 GB). Downloads are blocked until you clear space.",
+                                           Brushes.OrangeRed);
                     return false;
                 }
                 else if (currentCacheSize > WarningThresholdBytes)
                 {
-                    MessageBox.Show("Warning: Cache size exceeds 400 MB. Consider clearing to free space.",
-                                    "Cache Warning",
-                                    MessageBoxButton.OK,
-                                    MessageBoxImage.Warning);
+                    ToastService.ShowToast("⚠ Cache size exceeds 400 MB. Consider clearing to free space.",
+                                           Brushes.Goldenrod);
                 }
 
                 string targetPath = Path.Combine(downloadsPath, fileName);
@@ -57,10 +54,8 @@ namespace Musicefy.Services
                         response.Content.Headers.ContentLength.HasValue &&
                         response.Content.Headers.ContentLength.Value > MaxDownloadSizeBytes)
                     {
-                        MessageBox.Show("This file is larger than 500 MB and cannot be downloaded.",
-                                        "Download Blocked",
-                                        MessageBoxButton.OK,
-                                        MessageBoxImage.Warning);
+                        ToastService.ShowToast("❌ This file is larger than 500 MB and cannot be downloaded.",
+                                               Brushes.OrangeRed);
                         return false;
                     }
 
@@ -82,10 +77,8 @@ namespace Musicefy.Services
                                 fs.Close();
                                 File.Delete(targetPath);
 
-                                MessageBox.Show("Download exceeded 500 MB limit and was cancelled.",
-                                                "Download Cancelled",
-                                                MessageBoxButton.OK,
-                                                MessageBoxImage.Warning);
+                                ToastService.ShowToast("⚠ Download exceeded 500 MB limit and was cancelled.",
+                                                       Brushes.Goldenrod);
                                 return false;
                             }
 
@@ -95,10 +88,8 @@ namespace Musicefy.Services
                                 fs.Close();
                                 File.Delete(targetPath);
 
-                                MessageBox.Show("Cache limit reached (2 GB). Download cancelled.",
-                                                "Cache Limit",
-                                                MessageBoxButton.OK,
-                                                MessageBoxImage.Error);
+                                ToastService.ShowToast("❌ Cache limit reached (2 GB). Download cancelled.",
+                                                       Brushes.OrangeRed);
                                 return false;
                             }
 
@@ -111,16 +102,15 @@ namespace Musicefy.Services
                 if (Musicefy.Properties.Settings.Default.AutoClearCache)
                 {
                     ClearCache(downloadsPath);
+                    ToastService.ShowToast("🗑 Cache auto-cleared after download.", Brushes.Gray);
                 }
 
+                ToastService.ShowToast("✅ Download completed successfully.", Brushes.ForestGreen);
                 return true;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Download failed: {ex.Message}",
-                                "Error",
-                                MessageBoxButton.OK,
-                                MessageBoxImage.Error);
+                ToastService.ShowToast($"❌ Download failed: {ex.Message}", Brushes.OrangeRed);
                 return false;
             }
         }
