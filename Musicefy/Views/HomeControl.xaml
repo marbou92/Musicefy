@@ -42,9 +42,12 @@
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" Margin="4">
-                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" Width="250"/>
-                                    <TextBlock Text="{Binding Artist}" Foreground="Gray" Width="200"/>
+                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" Width="200"/>
+                                    <TextBlock Text="{Binding Artist}" Foreground="Gray" Width="150"/>
                                     <TextBlock Text="{Binding Duration}" Foreground="Gray" Width="80"/>
+                                    <TextBlock Text="❤" Foreground="{Binding IsFavourite, Converter={StaticResource BoolToBrushConverter}}" 
+                                               Width="30" ToolTip="Favourite"/>
+                                    <TextBlock Text="{Binding PlayCount}" Foreground="Gray" Width="60" ToolTip="Play Count"/>
                                 </StackPanel>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
