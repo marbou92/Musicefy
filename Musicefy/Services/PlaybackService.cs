@@ -2,13 +2,11 @@ using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
-using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Musicefy.Core.Models;
 using Musicefy.Core.Services;
 using NAudio.Wave;
 using IOFile = System.IO.File;
-using TagLibFile = TagLib.File;
 
 namespace Musicefy.Services
 {
@@ -25,6 +23,11 @@ namespace Musicefy.Services
         public event Action<TimeSpan, TimeSpan> ProgressChanged;
 
         private int _currentQueueIndex = -1;
+
+        /// <summary>
+        /// Exposes the currently loaded MusicFile for binding/UI.
+        /// </summary>
+        public MusicFile CurrentAudioFile { get; private set; }
 
         public PlaybackService()
         {
@@ -54,6 +57,7 @@ namespace Musicefy.Services
                 _waveOut.Play();
                 _waveOut.PlaybackStopped += WaveOut_PlaybackStopped;
 
+                CurrentAudioFile = track; // ✅ set current track
                 _timer.Start();
                 TrackChanged?.Invoke(track);
             }
@@ -75,6 +79,7 @@ namespace Musicefy.Services
             }
             _audioFile?.Dispose();
             _audioFile = null;
+            CurrentAudioFile = null; // ✅ clear current track
         }
 
         private void WaveOut_PlaybackStopped(object sender, StoppedEventArgs e)
@@ -98,6 +103,19 @@ namespace Musicefy.Services
 
         public void Pause() => _waveOut?.Pause();
         public void Resume() => _waveOut?.Play();
+
+        /// <summary>
+        /// Seek to a specific position in the current track.
+        /// </summary>
+        public void Seek(TimeSpan position)
+        {
+            if (_audioFile != null)
+            {
+                if (position < TimeSpan.Zero) position = TimeSpan.Zero;
+                if (position > _audioFile.TotalTime) position = _audioFile.TotalTime;
+                _audioFile.CurrentTime = position;
+            }
+        }
 
         public void Next()
         {
