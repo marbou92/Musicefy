@@ -25,7 +25,95 @@ namespace Musicefy.Views
             _cacheMonitorTimer.Start();
         }
 
-        // ... other methods unchanged ...
+        private void LoadSettings()
+        {
+            string appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            _downloadsPath = Musicefy.Properties.Settings.Default.DownloadsPath ??
+                             Path.Combine(appData, "Musicefy", "Downloads");
+
+            DownloadPathBox.Text = _downloadsPath;
+            AutoClearCacheBox.IsChecked = Musicefy.Properties.Settings.Default.AutoClearCache;
+            LimitDownloadSizeBox.IsChecked = Musicefy.Properties.Settings.Default.LimitDownloadSize;
+
+            UpdateCacheStatus();
+        }
+
+        private void Browse_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new System.Windows.Forms.FolderBrowserDialog
+            {
+                Description = "Select download folder",
+                SelectedPath = _downloadsPath
+            };
+
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                _downloadsPath = dialog.SelectedPath;
+                DownloadPathBox.Text = _downloadsPath;
+                UpdateCacheStatus();
+            }
+        }
+
+        private void Save_Click(object sender, RoutedEventArgs e)
+        {
+            Musicefy.Properties.Settings.Default.DownloadsPath = _downloadsPath;
+            Musicefy.Properties.Settings.Default.AutoClearCache = AutoClearCacheBox.IsChecked ?? false;
+            Musicefy.Properties.Settings.Default.LimitDownloadSize = LimitDownloadSizeBox.IsChecked ?? false;
+            Musicefy.Properties.Settings.Default.Save();
+
+            ToastService.ShowToast("✅ Download settings saved.", Brushes.ForestGreen);
+        }
+
+        private void Cancel_Click(object sender, RoutedEventArgs e)
+        {
+            LoadSettings();
+            ToastService.ShowToast("↩ Changes reverted.", Brushes.Gray);
+        }
+
+        private void ClearNow_Click(object sender, RoutedEventArgs e)
+        {
+            var result = MessageBox.Show("Are you sure you want to clear all downloads? This action cannot be undone.",
+                                         "Confirm Clear",
+                                         MessageBoxButton.YesNo,
+                                         MessageBoxImage.Warning);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    ClearCache(_downloadsPath);
+                    UpdateCacheStatus();
+                    ToastService.ShowToast("🗑 Downloads cache cleared.", Brushes.ForestGreen);
+                }
+                catch (Exception ex)
+                {
+                    ToastService.ShowToast($"❌ Failed to clear cache: {ex.Message}", Brushes.OrangeRed);
+                }
+            }
+        }
+
+        private void OnAppExit(object sender, ExitEventArgs e)
+        {
+            if (Musicefy.Properties.Settings.Default.AutoClearCache)
+            {
+                ClearCache(_downloadsPath);
+            }
+        }
+
+        private void ClearCache(string path)
+        {
+            if (Directory.Exists(path))
+            {
+                foreach (var file in Directory.GetFiles(path))
+                {
+                    File.Delete(file);
+                }
+                foreach (var dir in Directory.GetDirectories(path))
+                {
+                    Directory.Delete(dir, true);
+                }
+            }
+        }
 
         private void UpdateCacheStatus()
         {
@@ -43,20 +131,34 @@ namespace Musicefy.Views
             else
                 CacheProgressBar.Foreground = new SolidColorBrush(Colors.OrangeRed);
 
-            // Toast notifications instead of blocking MessageBox
             if (sizeMB > 400 && sizeMB < 2000)
             {
-                ToastService.ShowToast("⚠ Cache size exceeds 400 MB. Consider clearing to free space.",
-                                       Brushes.Goldenrod);
+                ToastService.ShowToast("⚠ Cache size exceeds 400 MB. Consider clearing to free space.", Brushes.Goldenrod);
             }
 
             if (sizeMB >= 2000)
             {
-                ToastService.ShowToast("❌ Cache limit reached (2 GB). Downloads may be blocked until you clear space.",
-                                       Brushes.OrangeRed);
+                ToastService.ShowToast("❌ Cache limit reached (2 GB). Downloads may be blocked until you clear space.", Brushes.OrangeRed);
             }
         }
 
-        // ... rest unchanged ...
+        private long GetDirectorySize(string path)
+        {
+            if (!Directory.Exists(path)) return 0;
+
+            long size = 0;
+            try
+            {
+                foreach (var file in Directory.GetFiles(path, "*", SearchOption.AllDirectories))
+                {
+                    size += new FileInfo(file).Length;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error calculating cache size: {ex.Message}");
+            }
+            return size;
+        }
     }
 }
