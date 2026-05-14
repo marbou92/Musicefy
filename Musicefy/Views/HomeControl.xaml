@@ -7,24 +7,9 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="20">
 
-            <!-- Category Buttons -->
-            <WrapPanel Margin="0,0,0,20">
-                <Button Content="Podcasts" Style="{StaticResource CategoryButtonStyle}" Margin="4"/>
-                <Button Content="Work out" Style="{StaticResource CategoryButtonStyle}" Margin="4"/>
-                <Button Content="Feel good" Style="{StaticResource CategoryButtonStyle}" Margin="4"/>
-                <Button Content="Romance" Style="{StaticResource CategoryButtonStyle}" Margin="4"/>
-                <Button Content="Party" Style="{StaticResource CategoryButtonStyle}" Margin="4"/>
-                <Button Content="Energise" Style="{StaticResource CategoryButtonStyle}" Margin="4"/>
-                <Button Content="Relax" Style="{StaticResource CategoryButtonStyle}" Margin="4"/>
-                <Button Content="Commute" Style="{StaticResource CategoryButtonStyle}" Margin="4"/>
-                <Button Content="Sad" Style="{StaticResource CategoryButtonStyle}" Margin="4"/>
-                <Button Content="Focus" Style="{StaticResource CategoryButtonStyle}" Margin="4"/>
-                <Button Content="Sleep" Style="{StaticResource CategoryButtonStyle}" Margin="4"/>
-            </WrapPanel>
-
             <!-- Random Albums -->
             <TextBlock Text="Random Albums" FontSize="20" FontWeight="Bold" Margin="0,0,0,12"/>
-            <ItemsControl x:Name="AlbumsList" Margin="0,0,0,20">
+            <ItemsControl x:Name="AlbumsList" Margin="0,0,0,20" MouseDoubleClick="AlbumsList_DoubleClick">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <WrapPanel/>
@@ -41,13 +26,15 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <!-- Quick Picks -->
-            <TextBlock Text="Quick Picks" FontSize="20" FontWeight="Bold" Margin="0,0,0,12"/>
-            <ListBox x:Name="QuickPicksList" Margin="0,0,0,20" Height="200"/>
+            <!-- Album Tracks -->
+            <Border Background="{DynamicResource SecondaryBackgroundBrush}" Padding="12" CornerRadius="6" Margin="0,12,0,0">
+                <StackPanel>
+                    <TextBlock Text="Album Tracks" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                    <ListBox x:Name="AlbumTracksList" Height="300"/>
+                    <TextBlock x:Name="AlbumTracksEmpty" Text="No tracks loaded" Foreground="Gray" Visibility="Collapsed"/>
+                </StackPanel>
+            </Border>
 
-            <!-- Top Music Videos -->
-            <TextBlock Text="Top Music Videos" FontSize="20" FontWeight="Bold" Margin="0,0,0,12"/>
-            <ListBox x:Name="TopVideosList" Height="200"/>
         </StackPanel>
     </ScrollViewer>
 </UserControl>
