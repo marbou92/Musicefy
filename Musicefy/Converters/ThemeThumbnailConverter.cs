@@ -1,6 +1,6 @@
 using System;
 using System.Globalization;
-using System.Windows;              // Needed for Point
+using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
 
@@ -31,13 +31,16 @@ namespace Musicefy.Converters
                             new Point(0, 0),
                             new Point(1, 1));
                     default:
-                        return new SolidColorBrush(Colors.Gray);
+                        // Fallback for custom or unknown themes
+                        return new SolidColorBrush(Colors.DimGray);
                 }
             }
-            return new SolidColorBrush(Colors.Gray);
+            return new SolidColorBrush(Colors.Transparent);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-            => throw new NotImplementedException();
+        {
+            throw new NotImplementedException();
+        }
     }
 }
