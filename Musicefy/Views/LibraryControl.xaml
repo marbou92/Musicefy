@@ -1,0 +1,8 @@
+<UserControl x:Class="Musicefy.Views.LibraryControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel Margin="20">
+        <TextBlock Text="My Library" FontSize="22" FontWeight="Bold"/>
+        <ListBox x:Name="LibraryList" Margin="0,12,0,0"/>
+    </StackPanel>
+</UserControl>
