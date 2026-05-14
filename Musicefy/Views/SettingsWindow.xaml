@@ -131,24 +131,8 @@
                        Text="Appearance Settings" 
                        FontSize="22" FontWeight="Bold" Margin="0,0,0,20"/>
 
-            <!-- Appearance Settings -->
-            <StackPanel Grid.Row="1" Orientation="Vertical">
-                    <TextBlock Text="Theme Mode" FontWeight="Bold" Margin="0,0,0,5"/>
-                    <ComboBox x:Name="ModeCombo" Width="200" SelectedIndex="1" Margin="0,0,0,10">
-                        <ComboBoxItem Content="System"/>
-                        <ComboBoxItem Content="Light"/>
-                        <ComboBoxItem Content="Dark"/>
-                        <ComboBoxItem Content="DarkPure"/>
-                    </ComboBox>
-                
-                    <TextBlock Text="Palette" FontWeight="Bold" Margin="0,12,0,0"/>
-                    <ComboBox x:Name="PaletteCombo" Width="200" SelectedIndex="0" Margin="0,0,0,10">
-                        <ComboBoxItem Content="Default"/>
-                        <ComboBoxItem Content="Catppuccin"/>
-                        <ComboBoxItem Content="GreenApple"/>
-                        <ComboBoxItem Content="Lavender"/>
-                    </ComboBox>
-                </StackPanel>
+            <!-- Dynamic Content Area -->
+            <ContentControl x:Name="SettingsContent" Grid.Row="1"/>
 
             <!-- Buttons -->
             <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
