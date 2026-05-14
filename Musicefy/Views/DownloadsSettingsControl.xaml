@@ -61,6 +61,9 @@
                             <Button Content="Test Download"
                                     Width="140"
                                     Click="TestDownload_Click"/>
+                            <Button Content="Cancel Download"
+                                    Width="140"
+                                    Click="CancelDownload_Click"/>
                         </StackPanel>
                     </StackPanel>
                 </Border>
