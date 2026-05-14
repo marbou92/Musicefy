@@ -2,7 +2,8 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:conv="clr-namespace:Musicefy.Converters"
-             StartupUri="SplashScreen.xaml">
+             StartupUri="SplashScreen.xaml"
+             Icon="Assets/musicefy.ico">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -10,6 +11,8 @@
                 <ResourceDictionary Source="Themes/Modes/System.xaml"/>
                 <!-- Default palette -->
                 <ResourceDictionary Source="Themes/Palettes/Default.xaml"/>
+                <!-- Base animations + styles -->
+                <ResourceDictionary Source="Themes/Base.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
             <!-- Global converters -->
