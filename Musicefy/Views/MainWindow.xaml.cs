@@ -90,8 +90,8 @@ namespace Musicefy
         // Mini Player updates
         private void OnTrackChanged(MusicFile track)
         {
-            MiniTitle.Text = track.Title;
-            MiniArtist.Text = track.Artist;
+            MiniTitle.Text = string.IsNullOrWhiteSpace(track.Title) ? "Untitled Track" : track.Title;
+            MiniArtist.Text = string.IsNullOrWhiteSpace(track.Artist) ? "Unknown" : track.Artist;
 
             MiniCover.Source = string.IsNullOrEmpty(track.CoverPath)
                 ? new BitmapImage(new Uri("pack://application:,,,/Assets/default_cover.png"))
