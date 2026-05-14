@@ -1,14 +1,13 @@
 <Window x:Class="Musicefy.Views.SettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:views="clr-namespace:Musicefy.Views"
         Title="Settings"
         Height="600" Width="900"
         Background="{DynamicResource BackgroundBrush}"
         Foreground="{DynamicResource ForegroundBrush}">
 
     <Window.Resources>
-        <!-- Sidebar ToggleButton Style with gradient -->
+        <!-- Sidebar ToggleButton Style -->
         <Style x:Key="SidebarButtonStyle" TargetType="ToggleButton">
             <Setter Property="Background" Value="{DynamicResource BackgroundBrush}"/>
             <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
@@ -20,33 +19,20 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ToggleButton">
-                        <Border Background="{TemplateBinding Background}" 
-                                CornerRadius="6" 
-                                BorderBrush="{TemplateBinding BorderBrush}" 
-                                BorderThickness="{TemplateBinding BorderThickness}">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="6">
                             <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5"/>
                         </Border>
                         <ControlTemplate.Triggers>
-                            <!-- Hover -->
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter Property="Background" Value="{DynamicResource AccentHoverBrush}"/>
                                 <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
                             </Trigger>
-                            <!-- Pressed -->
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter Property="Background" Value="{DynamicResource AccentPressedBrush}"/>
                                 <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
                             </Trigger>
-                            <!-- Active (Checked) -->
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter Property="Background">
-                                    <Setter.Value>
-                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                            <GradientStop Color="#222222" Offset="0"/>
-                                            <GradientStop Color="#333333" Offset="1"/>
-                                        </LinearGradientBrush>
-                                    </Setter.Value>
-                                </Setter>
+                                <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
                                 <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -55,31 +41,25 @@
             </Setter>
         </Style>
 
-        <!-- Primary Button Style (Save/Cancel) -->
+        <!-- Primary Button Style -->
         <Style x:Key="PrimaryButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="{DynamicResource BackgroundBrush}"/>
-            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource ForegroundBrush}"/>
-            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="Padding" Value="8,4"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" 
-                                CornerRadius="6" 
-                                BorderBrush="{TemplateBinding BorderBrush}" 
-                                BorderThickness="{TemplateBinding BorderThickness}">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="6">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter Property="Background" Value="{DynamicResource AccentHoverBrush}"/>
-                                <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter Property="Background" Value="{DynamicResource AccentPressedBrush}"/>
-                                <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -95,14 +75,9 @@
         </Grid.ColumnDefinitions>
 
         <!-- Sidebar -->
-        <StackPanel Grid.Column="0" Background="{DynamicResource BackgroundBrush}">
-            <TextBlock Text="Settings" 
-                       FontSize="24" 
-                       FontWeight="Bold" 
-                       Margin="20"
-                       Foreground="{DynamicResource ForegroundBrush}"/>
+        <StackPanel Grid.Column="0" Background="{DynamicResource SecondaryBackgroundBrush}">
+            <TextBlock Text="Settings" FontSize="24" FontWeight="Bold" Margin="20"/>
 
-            <!-- Appearance option -->
             <ToggleButton x:Name="AppearanceButton"
                           Style="{StaticResource SidebarButtonStyle}" 
                           Margin="0,0,0,10"
@@ -112,12 +87,11 @@
                     <TextBlock Text="🎨" FontSize="16" Margin="0,0,8,0"/>
                     <StackPanel>
                         <TextBlock Text="Appearance" FontWeight="Bold"/>
-                        <TextBlock Text="Theme, date &amp; time format" FontSize="12"/>
+                        <TextBlock Text="Theme & palettes" FontSize="12"/>
                     </StackPanel>
                 </StackPanel>
             </ToggleButton>
 
-            <!-- Downloads option -->
             <ToggleButton x:Name="DownloadsButton"
                           Style="{StaticResource SidebarButtonStyle}" 
                           Margin="0,0,0,10"
@@ -126,12 +100,11 @@
                     <TextBlock Text="⬇️" FontSize="16" Margin="0,0,8,0"/>
                     <StackPanel>
                         <TextBlock Text="Downloads" FontWeight="Bold"/>
-                        <TextBlock Text="Cache, path &amp; limits" FontSize="12"/>
+                        <TextBlock Text="Cache & limits" FontSize="12"/>
                     </StackPanel>
                 </StackPanel>
             </ToggleButton>
 
-            <!-- Sources option -->
             <ToggleButton x:Name="SourcesButton"
                           Style="{StaticResource SidebarButtonStyle}" 
                           Click="SourcesButton_Click">
@@ -158,10 +131,24 @@
                        Text="Appearance Settings" 
                        FontSize="22" FontWeight="Bold" Margin="0,0,0,20"/>
 
-            <!-- Dynamic Content Area -->
-            <ContentControl Grid.Row="1" x:Name="SettingsContent">
-                <views:AppearanceSettingsControl/>
-            </ContentControl>
+            <!-- Appearance Settings -->
+            <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="12">
+                <TextBlock Text="Theme Mode" FontWeight="Bold"/>
+                <ComboBox x:Name="ModeCombo" Width="200" SelectedIndex="1">
+                    <ComboBoxItem Content="System"/>
+                    <ComboBoxItem Content="Light"/>
+                    <ComboBoxItem Content="Dark"/>
+                    <ComboBoxItem Content="DarkPure"/>
+                </ComboBox>
+
+                <TextBlock Text="Palette" FontWeight="Bold" Margin="0,12,0,0"/>
+                <ComboBox x:Name="PaletteCombo" Width="200" SelectedIndex="0">
+                    <ComboBoxItem Content="Default"/>
+                    <ComboBoxItem Content="Catppuccin"/>
+                    <ComboBoxItem Content="GreenApple"/>
+                    <ComboBoxItem Content="Lavender"/>
+                </ComboBox>
+            </StackPanel>
 
             <!-- Buttons -->
             <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
