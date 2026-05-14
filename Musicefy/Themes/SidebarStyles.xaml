@@ -2,47 +2,32 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Style x:Key="SidebarButtonStyle" TargetType="ToggleButton">
-        <Setter Property="Background" Value="{DynamicResource BackgroundBrush}"/>
+        <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
-        <Setter Property="BorderBrush" Value="Transparent"/>
-        <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Padding" Value="10"/> <Setter Property="HorizontalContentAlignment" Value="Left"/>
-        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Height" Value="45"/>
+        <Setter Property="Margin" Value="5,2"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ToggleButton">
-                    <Border Background="{TemplateBinding Background}" 
-                            CornerRadius="6" 
-                            BorderBrush="{TemplateBinding BorderBrush}" 
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            Padding="{TemplateBinding Padding}">
-                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
-                                          VerticalAlignment="Center"/>
+                    <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="8">
+                        <Grid>
+                            <Rectangle x:Name="Indicator" HorizontalAlignment="Left" Width="4" Height="20" 
+                                       Fill="{DynamicResource AccentBrush}" Visibility="Hidden" Margin="2,0"/>
+                            <ContentPresenter Margin="15,0" VerticalAlignment="Center"/>
+                        </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="{DynamicResource AccentHoverBrush}"/>
-                            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
-                        </Trigger>
-                        <Trigger Property="IsPressed" Value="True">
-                            <Setter Property="Background" Value="{DynamicResource AccentPressedBrush}"/>
-                            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+                            <Setter TargetName="border" Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}"/>
                         </Trigger>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter Property="Background">
-                                <Setter.Value>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                        <GradientStop Color="#222222" Offset="0"/>
-                                        <GradientStop Color="#333333" Offset="1"/>
-                                    </LinearGradientBrush>
-                                </Setter.Value>
-                            </Setter>
-                            <Setter Property="Foreground" Value="White"/>
+                            <Setter TargetName="Indicator" Property="Visibility" Value="Visible"/>
+                            <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+                            <Setter TargetName="border" Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
-
 </ResourceDictionary>
