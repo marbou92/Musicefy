@@ -3,12 +3,14 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace Musicefy.Views
 {
     public partial class DownloadsSettingsControl : UserControl
     {
         private string _downloadsPath;
+        private DispatcherTimer _cacheMonitorTimer;
 
         public DownloadsSettingsControl()
         {
@@ -17,6 +19,14 @@ namespace Musicefy.Views
 
             // Hook into application exit for auto-clear
             Application.Current.Exit += OnAppExit;
+
+            // Start live cache monitor (update every 5 seconds)
+            _cacheMonitorTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(5)
+            };
+            _cacheMonitorTimer.Tick += (s, e) => UpdateCacheStatus();
+            _cacheMonitorTimer.Start();
         }
 
         private void LoadSettings()
@@ -124,14 +134,6 @@ namespace Musicefy.Views
                 CacheProgressBar.Foreground = new SolidColorBrush(Colors.Gold);
             else
                 CacheProgressBar.Foreground = new SolidColorBrush(Colors.OrangeRed);
-
-            if (sizeMB > 400 && sizeMB < 2000)
-            {
-                MessageBox.Show("Warning: Cache size exceeds 400 MB. Consider clearing to free space.",
-                                "Cache Warning",
-                                MessageBoxButton.OK,
-                                MessageBoxImage.Warning);
-            }
 
             if (sizeMB >= 2000)
             {
