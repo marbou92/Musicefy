@@ -73,7 +73,18 @@ namespace Musicefy.Services
                             return false;
                         }
 
-                        using (var stream = await response.Content.ReadAsStreamAsync(cancellationToken))
+                        using (var stream = await response.Content.ReadAsStreamAsync())
+{
+    // If you want cancellation, wrap the stream copy instead:
+    using (var memory = new MemoryStream())
+    {
+        await response.Content.CopyToAsync(memory, cancellationToken);
+        memory.Position = 0;
+
+        // Use 'memory' instead of 'stream'
+    }
+}
+
                         using (var fs = new FileStream(targetPath, resume ? FileMode.Append : FileMode.Create, FileAccess.Write))
                         {
                             byte[] buffer = new byte[81920];
