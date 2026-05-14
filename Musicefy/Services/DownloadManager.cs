@@ -16,11 +16,6 @@ namespace Musicefy.Services
         /// <summary>
         /// Downloads a file with progress reporting, cancellation, and pause/resume support.
         /// </summary>
-        /// <param name="url">File URL</param>
-        /// <param name="fileName">Target file name</param>
-        /// <param name="progress">Callback reporting percentage (0-100) and bytes downloaded</param>
-        /// <param name="cancellationToken">Token to cancel download at any time</param>
-        /// <param name="resume">If true, resume from partial file using HTTP Range</param>
         public static async Task<bool> DownloadFileAsync(
             string url,
             string fileName,
@@ -73,18 +68,8 @@ namespace Musicefy.Services
                             return false;
                         }
 
+                        // net472 only supports parameterless ReadAsStreamAsync
                         using (var stream = await response.Content.ReadAsStreamAsync())
-{
-    // If you want cancellation, wrap the stream copy instead:
-    using (var memory = new MemoryStream())
-    {
-        await response.Content.CopyToAsync(memory, cancellationToken);
-        memory.Position = 0;
-
-        // Use 'memory' instead of 'stream'
-    }
-}
-
                         using (var fs = new FileStream(targetPath, resume ? FileMode.Append : FileMode.Create, FileAccess.Write))
                         {
                             byte[] buffer = new byte[81920];
