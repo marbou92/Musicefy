@@ -19,38 +19,49 @@
                    Margin="0,0,0,15"/>
 
         <!-- Content -->
-        <StackPanel Grid.Row="1" Orientation="Vertical" Margin="0,0,0,15">
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Orientation="Vertical" Spacing="20">
 
-            <!-- Download Path -->
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                <TextBlock Text="Download path:" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                <TextBox x:Name="DownloadPathBox" Width="400" IsReadOnly="True"/>
-                <Button Content="Browse..." Margin="10,0,0,0" Click="Browse_Click"/>
+                <!-- Download Path -->
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Download path:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <TextBox x:Name="DownloadPathBox" Width="400" IsReadOnly="True"/>
+                    <Button Content="Browse..." Margin="10,0,0,0" Click="Browse_Click"/>
+                </StackPanel>
+
+                <!-- Toggles -->
+                <CheckBox x:Name="AutoClearCacheBox"
+                          Content="Auto-clear cache on exit"
+                          Style="{StaticResource ToggleSettingStyle}"/>
+                <CheckBox x:Name="LimitDownloadSizeBox"
+                          Content="Limit download size to 500 MB"
+                          Style="{StaticResource ToggleSettingStyle}"/>
+
+                <!-- Cache status card -->
+                <Border CornerRadius="6" Padding="10"
+                        Background="{DynamicResource SecondaryBackgroundBrush}">
+                    <StackPanel>
+                        <TextBlock x:Name="CacheStatusLabel"
+                                   Text="Cache size: 0 MB"
+                                   FontStyle="Italic"
+                                   Margin="0,0,0,5"/>
+                        <ProgressBar x:Name="CacheProgressBar"
+                                     Height="20"
+                                     Maximum="2000"
+                                     Value="0"
+                                     ToolTip="Cache size"/>
+                        <Button Content="Clear Now"
+                                Width="120"
+                                Margin="0,10,0,0"
+                                HorizontalAlignment="Left"
+                                Click="ClearNow_Click"/>
+                    </StackPanel>
+                </Border>
             </StackPanel>
-
-            <!-- Extra settings -->
-            <CheckBox x:Name="AutoClearCacheBox" Content="Auto-clear cache on exit" Margin="0,0,0,10"/>
-            <CheckBox x:Name="LimitDownloadSizeBox" Content="Limit download size to 500 MB" Margin="0,0,0,10"/>
-
-            <!-- Cache status -->
-            <TextBlock x:Name="CacheStatusLabel" Text="Cache size: 0 MB"
-                       Margin="0,10,0,5" FontStyle="Italic"/>
-
-            <!-- Cache progress bar with tooltip -->
-            <ProgressBar x:Name="CacheProgressBar"
-                         Height="20"
-                         Maximum="2000"
-                         Value="0"
-                         Background="{DynamicResource SecondaryBackgroundBrush}"
-                         Margin="0,0,0,10"
-                         ToolTip="Cache size"/>
-            
-            <!-- Manual clear -->
-            <Button Content="Clear Now" Width="120" Margin="0,10,0,0" Click="ClearNow_Click"/>
-        </StackPanel>
+        </ScrollViewer>
 
         <!-- Buttons -->
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
             <Button Content="Cancel" Width="100" Margin="0,0,10,0" Click="Cancel_Click"/>
             <Button Content="Save" Width="100" Background="{DynamicResource AccentBrush}" Foreground="White" Click="Save_Click"/>
         </StackPanel>
