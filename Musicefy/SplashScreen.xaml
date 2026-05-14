@@ -35,9 +35,13 @@
                     </Ellipse>
                 </Grid>
                 
-                <TextBlock Text="PREPARING LIBRARY" FontSize="10" FontWeight="Bold" 
-                           Foreground="#B3B3B3" LetterSpacing="2" Margin="0,20,0,0"
-                           HorizontalAlignment="Center"/>
+                <TextBlock Text="PREPARING LIBRARY" FontSize="10" FontWeight="SemiBold" 
+                           Foreground="#B3B3B3" Margin="0,20,0,0"
+                           HorizontalAlignment="Center">
+                    <TextBlock.RenderTransform>
+                        <ScaleTransform ScaleX="1.1"/>
+                    </TextBlock.RenderTransform>
+                </TextBlock>
             </StackPanel>
 
             <ProgressBar x:Name="BottomProgress" Height="4" VerticalAlignment="Bottom"
