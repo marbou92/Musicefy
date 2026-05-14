@@ -2,11 +2,9 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Animation;
-using System.Windows.Media.Imaging;
 using Musicefy.Views;
 using Musicefy.Services;
 using Musicefy.ViewModels;
-using Musicefy.Core.Models;
 
 namespace Musicefy
 {
@@ -14,7 +12,6 @@ namespace Musicefy
     {
         private readonly PlaybackService _playback;
         private readonly MainViewModel _mainViewModel;
-        // private bool _isExpanded = false; // Kept for legacy mini-player reference
 
         public MainWindow()
         {
@@ -27,126 +24,65 @@ namespace Musicefy
             // 2. Initialize Services
             _playback = new PlaybackService();
 
-            // 3. Set the initial content to the Home page, passing the required dependencies
+            // 3. Load the initial View (Home) on startup
             MainContent.Content = new HomeControl(_playback, _mainViewModel); 
         }
 
-        // Navigation through Sidebar ListBox
+        /// <summary>
+        /// Handles navigation when a sidebar icon is clicked.
+        /// </summary>
         private void Sidebar_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (SidebarList.SelectedItem is ListBoxItem selectedItem)
+            // Security check to ensure we have a selection
+            if (SidebarList == null || SidebarList.SelectedItem is not ListBoxItem selectedItem)
+                return;
+
+            // Special case for Settings which is an explicit named item in XAML
+            if (selectedItem == SettingsItem)
             {
-                if (selectedItem == SettingsItem)
-                {
-                    // Open settings as a dialog window
-                    var win = new SettingsWindow { Owner = this };
-                    win.ShowDialog();
-                    
-                    // Optional: Deselect settings and go back to the previous selection
-                    // so the user doesn't get "stuck" on the settings button
-                }
-                else
-                {
-                    // Placeholder for other navigation targets (Search, Library)
-                    // Once you update your SearchControl and LibraryControl to take 
-                    // the new ViewModels, you can uncomment and route them here:
-                    
-                    // int index = SidebarList.SelectedIndex;
-                    // if (index == 0) MainContent.Content = new HomeControl(_playback, _mainViewModel);
-                    // if (index == 1) MainContent.Content = new SearchControl(_playback);
-                    // if (index == 2) MainContent.Content = new LibraryControl(_playback);
-                }
+                OpenSettings();
+                return;
+            }
+
+            // Navigation logic based on ListBox Index
+            // Index 0: Home, 1: Search, 2: Library
+            switch (SidebarList.SelectedIndex)
+            {
+                case 0:
+                    MainContent.Content = new HomeControl(_playback, _mainViewModel);
+                    break;
+                case 1:
+                    MainContent.Content = new SearchControl(_playback);
+                    break;
+                case 2:
+                    MainContent.Content = new LibraryControl(_playback);
+                    break;
             }
         }
 
+        private void OpenSettings()
+        {
+            var win = new SettingsWindow { Owner = this };
+            win.ShowDialog();
 
-        /* 
-        =========================================================================
-           LEGACY MINI-PLAYER & ANIMATION CODE 
-           
-           (Commented out because the mini-player was removed from MainWindow.xaml 
-            to align with the new Desktop-1.jpg design. You can copy this logic 
-            over to a dedicated NowPlaying control or a new global player bar later.)
+            // After closing settings, we default back to the Home tab 
+            // so the "Settings" icon doesn't stay highlighted.
+            SidebarList.SelectedIndex = 0;
+        }
+
+        /* =========================================================================
+           LEGACY PLAYER CODE (FOR FUTURE REFERENCE)
+           You can re-enable this if you add a 'Now Playing' bar back to the UI.
         =========================================================================
         
-        private void OnTrackChanged(MusicFile track)
+        private void OnTrackChanged(Musicefy.Core.Models.MusicFile track)
         {
-            MiniTitle.Text = string.IsNullOrWhiteSpace(track.Title) ? "Untitled Track" : track.Title;
-            MiniArtist.Text = string.IsNullOrWhiteSpace(track.Artist) ? "Unknown" : track.Artist;
-
-            MiniCover.Source = string.IsNullOrEmpty(track.CoverPath)
-                ? new BitmapImage(new Uri("pack://application:,,,/Assets/default_cover.png"))
-                : new BitmapImage(new Uri(track.CoverPath, UriKind.RelativeOrAbsolute));
-
-            MiniProgress.Value = 0;
-            MiniProgress.Maximum = track.Duration.TotalSeconds;
+            // Logic for updating UI elements when a song changes
         }
 
         private void OnProgressChanged(TimeSpan current, TimeSpan total)
         {
-            MiniProgress.Maximum = total.TotalSeconds;
-            MiniProgress.Value = current.TotalSeconds;
-        }
-
-        private void PlayButton_Click(object sender, RoutedEventArgs e) => _playback.Resume();
-        private void PauseButton_Click(object sender, RoutedEventArgs e) => _playback.Pause();
-        private void NextButton_Click(object sender, RoutedEventArgs e) => _playback.Next();
-        private void PreviousButton_Click(object sender, RoutedEventArgs e) => _playback.Previous();
-
-        private void MiniProgress_MouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
-            if (_playback.CurrentAudioFile != null)
-                _playback.Seek(TimeSpan.FromSeconds(MiniProgress.Value));
-        }
-
-        private void MiniPlayer_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
-            if (_isExpanded)
-                CollapseNowPlaying();
-            else
-                ExpandNowPlaying();
-        }
-
-        private void ExpandNowPlaying()
-        {
-            var nowPlaying = new NowPlayingControl(_playback);
-            nowPlaying.RequestCollapse += CollapseNowPlaying; // hook collapse event
-            MainContent.Content = nowPlaying;
-
-            var fadeIn = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromMilliseconds(400)));
-            nowPlaying.BeginAnimation(OpacityProperty, fadeIn);
-
-            var slideUp = new ThicknessAnimation
-            {
-                From = new Thickness(0, 100, 0, -100),
-                To = new Thickness(0),
-                Duration = new Duration(TimeSpan.FromMilliseconds(400)),
-                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
-            };
-            nowPlaying.BeginAnimation(MarginProperty, slideUp);
-
-            _isExpanded = true;
-        }
-
-        private void CollapseNowPlaying()
-        {
-            var fadeOut = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromMilliseconds(400)));
-            MainContent.BeginAnimation(OpacityProperty, fadeOut);
-
-            var slideDown = new ThicknessAnimation
-            {
-                From = new Thickness(0),
-                To = new Thickness(0, 100, 0, -100),
-                Duration = new Duration(TimeSpan.FromMilliseconds(400)),
-                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseIn }
-            };
-            MainContent.BeginAnimation(MarginProperty, slideDown);
-
-            fadeOut.Completed += (s, e) =>
-            {
-                MainContent.Content = new HomeControl(_playback, _mainViewModel);
-                _isExpanded = false;
-            };
+            // Logic for updating seek bars
         }
         */
     }
