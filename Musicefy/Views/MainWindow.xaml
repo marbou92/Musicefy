@@ -10,19 +10,13 @@
         Foreground="{DynamicResource ForegroundBrush}"
         TextElement.FontFamily="Segoe UI">
 
-    <!-- Assuming theme brushes exist. Creating a style for the circular selection on sidebar buttons. -->
     <Window.Resources>
-        <!-- A definition of the dark theme colors from Desktop-1.jpg -->
         <SolidColorBrush x:Key="BackgroundBrush" Color="#000000"/>
         <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#181818"/>
         <SolidColorBrush x:Key="SidebarSelectionBrush" Color="#FFFFFF"/>
         <SolidColorBrush x:Key="ForegroundBrush" Color="#FFFFFF"/>
         <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#AAAAAA"/>
 
-        <!-- Converters and other resources can be placed here -->
-        <views:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
-
-        <!-- Style for Sidebar Buttons to look like icons with a selection circle -->
         <Style x:Key="SidebarIconButtonStyle" TargetType="ListBoxItem">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -31,17 +25,13 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="ListBoxItem">
                         <Grid Background="{TemplateBinding Background}">
-                            <!-- This circle is the selection visual from the image -->
                             <Ellipse x:Name="SelectionIndicator" Fill="{DynamicResource SidebarSelectionBrush}"
                                      Width="36" Height="36" Visibility="Collapsed" HorizontalAlignment="Center"/>
-                            
-                            <!-- Icon content goes here -->
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsSelected" Value="True">
                                 <Setter TargetName="SelectionIndicator" Property="Visibility" Value="Visible"/>
-                                <!-- Change icon color on selection for a text-based icon -->
                                 <Setter Property="Foreground" Value="{DynamicResource BackgroundBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -52,52 +42,30 @@
     </Window.Resources>
 
     <DockPanel LastChildFill="True">
-
-        <!-- Sidebar - using a ListBox to easily handle selection logic and visual -->
         <ListBox x:Name="SidebarList" DockPanel.Dock="Left" Width="60" 
                  Background="{DynamicResource BackgroundBrush}" BorderThickness="0"
                  ItemContainerStyle="{StaticResource SidebarIconButtonStyle}"
                  SelectionChanged="Sidebar_SelectionChanged">
-            <ListBox.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <StackPanel VerticalAlignment="Top"/>
-                </ItemsPanelTemplate>
-            </ListBox.ItemsPanel>
-
-            <!-- Home (Selected by default) -->
             <ListBoxItem IsSelected="True" ToolTip="Home">
-                <!-- MDL2 Unicode symbols. Substitute with vector Path or Image for quality -->
                 <TextBlock Text="&#xE10F;" FontFamily="Segoe MDL2 Assets" FontSize="20"/>
             </ListBoxItem>
-
-            <!-- Search -->
             <ListBoxItem ToolTip="Search">
                 <TextBlock Text="&#xE11A;" FontFamily="Segoe MDL2 Assets" FontSize="20"/>
             </ListBoxItem>
-
-            <!-- Library -->
             <ListBoxItem ToolTip="Library">
                 <TextBlock Text="&#xE14E;" FontFamily="Segoe MDL2 Assets" FontSize="20"/>
             </ListBoxItem>
-
-            <!-- Settings (positioned at the bottom) -->
-            <ListBoxItem x:Name="SettingsItem" ToolTip="Settings" Focusable="False">
+            <ListBoxItem x:Name="SettingsItem" ToolTip="Settings">
                 <ListBoxItem.Margin>0,200,0,0</ListBoxItem.Margin>
                 <TextBlock Text="&#xE115;" FontFamily="Segoe MDL2 Assets" FontSize="20"/>
             </ListBoxItem>
         </ListBox>
 
-        <!-- Main Content area (including header title and categories) -->
         <DockPanel>
-
-            <!-- The Mini Player was removed from MainWindow.xaml to align with image design. -->
-
-            <!-- Header with Title and Categories (Tags) -->
             <StackPanel DockPanel.Dock="Top" Background="{DynamicResource SecondaryBackgroundBrush}" Padding="0,15">
-                
-                <TextBlock Text="Echo Music" HorizontalAlignment="Center" FontWeight="Bold" FontSize="20" Margin="0,0,0,15"/>
+                <!-- Updated Title -->
+                <TextBlock Text="Musicefy" HorizontalAlignment="Center" FontWeight="Bold" FontSize="20" Margin="0,0,0,15"/>
 
-                <!-- Categories list, styled as horizontal tags -->
                 <ListBox x:Name="CategoriesList" HorizontalAlignment="Center" BorderThickness="0"
                          Background="Transparent" ScrollViewer.HorizontalScrollBarVisibility="Hidden">
                     <ListBox.ItemsPanel>
@@ -109,12 +77,11 @@
                         <Style TargetType="ListBoxItem">
                             <Setter Property="Background" Value="#33FFFFFF"/>
                             <Setter Property="Margin" Value="5,0"/>
-                            <Setter Property="Padding" Value="15,5"/>
-                            <Setter Property="Cursor" Value="Hand"/>
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="ListBoxItem">
-                                        <Border Background="{TemplateBinding Background}" CornerRadius="15">
+                                        <!-- Fixed: Padding moved to Border -->
+                                        <Border Background="{TemplateBinding Background}" CornerRadius="15" Padding="15,5">
                                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                         </Border>
                                     </ControlTemplate>
@@ -134,10 +101,7 @@
                     </ListBox.ItemTemplate>
                 </ListBox>
             </StackPanel>
-            
-            <!-- Main Content Control - HomeControl and other pages load here -->
             <ContentControl x:Name="MainContent"/>
-
         </DockPanel>
     </DockPanel>
 </Window>
