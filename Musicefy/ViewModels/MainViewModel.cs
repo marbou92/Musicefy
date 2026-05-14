@@ -1,3 +1,4 @@
+using System;
 using System.Collections.ObjectModel;
 using Musicefy.Core.Models;
 
@@ -15,30 +16,57 @@ namespace Musicefy.ViewModels
 
         public MainViewModel()
         {
-            // Example data
+            // Example data with all placeholders
             Favourites = new ObservableCollection<MusicFile>
             {
-                new MusicFile("Sahiba", "Aditya Rikhari", "Single", 2024, genre: "Indie", duration: System.TimeSpan.FromMinutes(3.5)),
-                new MusicFile("Ishqa Ve", "Talwinder", "Single", 2023, genre: "Pop", duration: System.TimeSpan.FromMinutes(3))
+                new MusicFile("Untitled Track", EnsureArtist(""), EnsureAlbum(""), 0, genre: EnsureGenre(""), duration: TimeSpan.Zero),
+                new MusicFile("Untitled Track", EnsureArtist(""), EnsureAlbum(""), 0, genre: EnsureGenre(""), duration: TimeSpan.Zero)
             };
 
             Downloads = new ObservableCollection<MusicFile>
             {
-                new MusicFile("Nee Singam Dhan", "Artist X", "Album Y", 2022, genre: "Soundtrack", duration: System.TimeSpan.FromMinutes(4)),
-                new MusicFile("Pal Pal", "Talwinder", "Collab Album", 2023, genre: "Pop", duration: System.TimeSpan.FromMinutes(3.2))
+                new MusicFile("Untitled Track", EnsureArtist(""), EnsureAlbum(""), 0, genre: EnsureGenre(""), duration: TimeSpan.Zero),
+                new MusicFile("Untitled Track", EnsureArtist(""), EnsureAlbum(""), 0, genre: EnsureGenre(""), duration: TimeSpan.Zero)
             };
 
             History = new ObservableCollection<MusicFile>
             {
-                new MusicFile("Sahiba", "Aditya Rikhari"),
-                new MusicFile("Ishqa Ve", "Talwinder"),
-                new MusicFile("Nee Singam Dhan", "Artist X"),
-                new MusicFile("Pal Pal (with Talwinder)", "Artist Y")
+                new MusicFile("Untitled Track", EnsureArtist(""), EnsureAlbum("")),
+                new MusicFile("Untitled Track", EnsureArtist(""), EnsureAlbum("")),
+                new MusicFile("Untitled Track", EnsureArtist(""), EnsureAlbum("")),
+                new MusicFile("Untitled Track", EnsureArtist(""), EnsureAlbum(""))
             };
 
             // Set Now Playing
-            NowPlaying = new MusicFile("Sahiba", "Aditya Rikhari", "Single", 2024, genre: "Indie", duration: System.TimeSpan.FromMinutes(3.5));
+            NowPlaying = new MusicFile("Untitled Track", EnsureArtist(""), EnsureAlbum(""), 0, genre: EnsureGenre(""), duration: TimeSpan.Zero);
             NowPlaying.MarkPlayed(); // increment play count
+        }
+
+        /// <summary>
+        /// Ensures that the artist string is never null or empty.
+        /// Returns "Unknown" if missing.
+        /// </summary>
+        private string EnsureArtist(string artist)
+        {
+            return string.IsNullOrWhiteSpace(artist) ? "Unknown" : artist;
+        }
+
+        /// <summary>
+        /// Ensures that the album string is never null or empty.
+        /// Returns "Unknown Album" if missing.
+        /// </summary>
+        private string EnsureAlbum(string album)
+        {
+            return string.IsNullOrWhiteSpace(album) ? "Unknown Album" : album;
+        }
+
+        /// <summary>
+        /// Ensures that the genre string is never null or empty.
+        /// Returns "Unknown Genre" if missing.
+        /// </summary>
+        private string EnsureGenre(string genre)
+        {
+            return string.IsNullOrWhiteSpace(genre) ? "Unknown Genre" : genre;
         }
     }
 }
