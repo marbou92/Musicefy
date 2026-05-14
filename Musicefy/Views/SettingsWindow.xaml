@@ -86,36 +86,41 @@
         </Grid.ColumnDefinitions>
 
         <!-- Sidebar -->
-        <StackPanel Grid.Column="0" Background="{DynamicResource BackgroundBrush}">
-            <TextBlock Text="Settings" 
-                       FontSize="24" 
-                       FontWeight="Bold" 
-                       Margin="20"
-                       Foreground="{DynamicResource ForegroundBrush}"/>
+<StackPanel Grid.Column="0" Background="{DynamicResource BackgroundBrush}">
+    <TextBlock Text="Settings" 
+               FontSize="24" 
+               FontWeight="Bold" 
+               Margin="20"
+               Foreground="{DynamicResource ForegroundBrush}"/>
 
-            <!-- Appearance option -->
-            <Button Style="{StaticResource SidebarButtonStyle}" Margin="0,0,0,10"
-                    Click="AppearanceButton_Click">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="🎨" FontSize="16" Margin="0,0,8,0"/>
-                    <StackPanel>
-                        <TextBlock Text="Appearance" FontWeight="Bold"/>
-                        <TextBlock Text="Theme, date &amp; time format" FontSize="12"/>
-                    </StackPanel>
-                </StackPanel>
-            </Button>
-
-            <!-- Downloads option -->
-            <Button Style="{StaticResource SidebarButtonStyle}" Click="DownloadsButton_Click">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="⬇️" FontSize="16" Margin="0,0,8,0"/>
-                    <StackPanel>
-                        <TextBlock Text="Downloads" FontWeight="Bold"/>
-                        <TextBlock Text="Cache, path &amp; limits" FontSize="12"/>
-                    </StackPanel>
-                </StackPanel>
-            </Button>
+        <!-- Appearance option -->
+    <ToggleButton x:Name="AppearanceButton"
+                  Style="{StaticResource SidebarButtonStyle}" 
+                  Margin="0,0,0,10"
+                  IsChecked="True"
+                  Click="AppearanceButton_Click">
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="🎨" FontSize="16" Margin="0,0,8,0"/>
+            <StackPanel>
+                <TextBlock Text="Appearance" FontWeight="Bold"/>
+                <TextBlock Text="Theme, date &amp; time format" FontSize="12"/>
+            </StackPanel>
         </StackPanel>
+    </ToggleButton>
+
+        <!-- Downloads option -->
+    <ToggleButton x:Name="DownloadsButton"
+                  Style="{StaticResource SidebarButtonStyle}" 
+                  Click="DownloadsButton_Click">
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="⬇️" FontSize="16" Margin="0,0,8,0"/>
+            <StackPanel>
+                <TextBlock Text="Downloads" FontWeight="Bold"/>
+                <TextBlock Text="Cache, path &amp; limits" FontSize="12"/>
+            </StackPanel>
+        </StackPanel>
+    </ToggleButton>
+</StackPanel>
 
         <!-- Main Content -->
         <Grid Grid.Column="1" Margin="30">
