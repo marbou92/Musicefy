@@ -4,9 +4,6 @@
     <!-- Shared DropShadow for splash + ring glow -->
     <DropShadowEffect x:Key="DropShadowEffect" BlurRadius="20" ShadowDepth="0" Opacity="0.4" Color="Black"/>
 
-    <!-- Accent colors are defined in palette dictionaries -->
-    <!-- Base only defines how to use them -->
-
     <!-- Global AccentBrush -->
     <LinearGradientBrush x:Key="AccentBrush" StartPoint="0,0" EndPoint="1,1">
         <GradientStop Color="{DynamicResource AccentStartColor}" Offset="0.0"/>
@@ -42,6 +39,36 @@
                                                       BlurRadius="15" ShadowDepth="0"/>
                                 </Setter.Value>
                             </Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ✅ Watermark TextBox Style -->
+    <Style x:Key="WatermarkTextBox" TargetType="TextBox">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Grid>
+                        <!-- Actual TextBox -->
+                        <ScrollViewer x:Name="PART_ContentHost"/>
+                        <!-- Watermark -->
+                        <TextBlock x:Name="Watermark"
+                                   Text="{TemplateBinding Tag}" 
+                                   Foreground="Gray"
+                                   Margin="4,2,0,0"
+                                   IsHitTestVisible="False"
+                                   Visibility="Collapsed"/>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <!-- Show watermark when empty and not focused -->
+                        <Trigger Property="Text" Value="">
+                            <Setter TargetName="Watermark" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                        <Trigger Property="IsFocused" Value="True">
+                            <Setter TargetName="Watermark" Property="Visibility" Value="Collapsed"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
