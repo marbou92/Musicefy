@@ -4,16 +4,20 @@ namespace Musicefy.Core.Models
 {
     public class MusicFile
     {
+        // Unique identifier
         public string Id { get; set; }
+
+        // File path on disk (local) or remote URI
         public string FilePath { get; set; }
 
-        // Alias for compatibility with existing code
+        // Alias for compatibility
         public string Path
         {
             get => FilePath;
             set => FilePath = value;
         }
 
+        // Core metadata
         public string Title { get; set; }
         public string Artist { get; set; }
         public string Album { get; set; }
@@ -22,9 +26,23 @@ namespace Musicefy.Core.Models
         public TimeSpan Duration { get; set; }
         public int TrackNumber { get; set; }
 
-        public string SourceUri { get; set; }
-        public string SourceType { get; set; }
+        // Extended metadata
+        public int Bitrate { get; set; }            // kbps
+        public long FileSize { get; set; }          // bytes
+        public string Lyrics { get; set; }          // raw lyrics text
+        public string CoverPath { get; set; }       // album art image path
 
+        // Source info
+        public string SourceUri { get; set; }       // streaming/local source
+        public string SourceType { get; set; }      // e.g. Local, Subsonic, Spotify
+
+        // User interaction
+        public int PlayCount { get; set; }
+        public DateTime LastPlayed { get; set; }
+        public bool IsFavourite { get; set; }
+        public bool IsDownloaded { get; set; }
+
+        // Constructors
         public MusicFile()
         {
             Id = Guid.NewGuid().ToString();
@@ -40,7 +58,11 @@ namespace Musicefy.Core.Models
             string genre = null,
             TimeSpan duration = default,
             int trackNumber = 0,
-            string sourceType = "Local")
+            string sourceType = "Local",
+            int bitrate = 0,
+            long fileSize = 0,
+            string lyrics = null,
+            string coverPath = null)
         {
             Id = Guid.NewGuid().ToString();
             Title = title;
@@ -53,7 +75,24 @@ namespace Musicefy.Core.Models
             Duration = duration;
             TrackNumber = trackNumber;
             SourceType = sourceType;
+            Bitrate = bitrate;
+            FileSize = fileSize;
+            Lyrics = lyrics;
+            CoverPath = coverPath;
+            PlayCount = 0;
+            LastPlayed = DateTime.MinValue;
+            IsFavourite = false;
+            IsDownloaded = false;
         }
+
+        // Methods
+        public void MarkPlayed()
+        {
+            PlayCount++;
+            LastPlayed = DateTime.Now;
+        }
+
+        public void ToggleFavourite() => IsFavourite = !IsFavourite;
 
         public override string ToString()
         {
