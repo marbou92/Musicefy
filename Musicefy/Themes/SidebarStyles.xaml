@@ -1,14 +1,12 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- Sidebar ToggleButton Style with gradient -->
     <Style x:Key="SidebarButtonStyle" TargetType="ToggleButton">
         <Setter Property="Background" Value="{DynamicResource BackgroundBrush}"/>
         <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
         <Setter Property="BorderBrush" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Padding" Value="10"/>
-        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        <Setter Property="Padding" Value="10"/> <Setter Property="HorizontalContentAlignment" Value="Left"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Template">
             <Setter.Value>
@@ -16,21 +14,20 @@
                     <Border Background="{TemplateBinding Background}" 
                             CornerRadius="6" 
                             BorderBrush="{TemplateBinding BorderBrush}" 
-                            BorderThickness="{TemplateBinding BorderThickness}">
-                        <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5"/>
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                          VerticalAlignment="Center"/>
                     </Border>
                     <ControlTemplate.Triggers>
-                        <!-- Hover -->
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter Property="Background" Value="{DynamicResource AccentHoverBrush}"/>
                             <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
                         </Trigger>
-                        <!-- Pressed -->
                         <Trigger Property="IsPressed" Value="True">
                             <Setter Property="Background" Value="{DynamicResource AccentPressedBrush}"/>
                             <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
                         </Trigger>
-                        <!-- Active (Checked) -->
                         <Trigger Property="IsChecked" Value="True">
                             <Setter Property="Background">
                                 <Setter.Value>
