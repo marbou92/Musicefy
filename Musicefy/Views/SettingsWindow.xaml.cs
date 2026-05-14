@@ -70,13 +70,12 @@ namespace Musicefy.Views
         {
             if (SettingsContent.Content is FrameworkElement currentContent)
             {
-                // Fade out + slide
-                var fadeOut = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromMilliseconds(200)));
+                var fadeOut = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(200));
                 var slideOut = new ThicknessAnimation
                 {
                     From = new Thickness(0),
                     To = new Thickness(fromRight ? -50 : 50, 0, 0, 0),
-                    Duration = new Duration(TimeSpan.FromMilliseconds(200))
+                    Duration = TimeSpan.FromMilliseconds(200)
                 };
 
                 fadeOut.Completed += (s, e) =>
@@ -84,16 +83,15 @@ namespace Musicefy.Views
                     SettingsContent.Content = newContent;
                     SectionTitle.Text = title;
 
-                    // Fade in + slide in
                     newContent.Opacity = 0;
                     newContent.Margin = new Thickness(fromRight ? 50 : -50, 0, 0, 0);
 
-                    var fadeIn = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromMilliseconds(200)));
+                    var fadeIn = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(200));
                     var slideIn = new ThicknessAnimation
                     {
                         From = newContent.Margin,
                         To = new Thickness(0),
-                        Duration = new Duration(TimeSpan.FromMilliseconds(200))
+                        Duration = TimeSpan.FromMilliseconds(200)
                     };
 
                     newContent.BeginAnimation(OpacityProperty, fadeIn);
@@ -108,16 +106,15 @@ namespace Musicefy.Views
                 SettingsContent.Content = newContent;
                 SectionTitle.Text = title;
 
-                // Initial fade/slide in
                 newContent.Opacity = 0;
                 newContent.Margin = new Thickness(fromRight ? 50 : -50, 0, 0, 0);
 
-                var fadeIn = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromMilliseconds(200)));
+                var fadeIn = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(200));
                 var slideIn = new ThicknessAnimation
                 {
                     From = newContent.Margin,
                     To = new Thickness(0),
-                    Duration = new Duration(TimeSpan.FromMilliseconds(200))
+                    Duration = TimeSpan.FromMilliseconds(200)
                 };
 
                 newContent.BeginAnimation(OpacityProperty, fadeIn);
