@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media;
 
@@ -13,12 +14,17 @@ namespace Musicefy.Services
         private const long WarningThresholdBytes = 400L * 1024L * 1024L; // 400 MB
 
         /// <summary>
-        /// Downloads a file with progress reporting.
+        /// Downloads a file with progress reporting and cancellation support.
         /// </summary>
         /// <param name="url">File URL</param>
         /// <param name="fileName">Target file name</param>
         /// <param name="progress">Callback reporting percentage (0-100) and bytes downloaded</param>
-        public static async Task<bool> DownloadFileAsync(string url, string fileName, Action<int, long>? progress = null)
+        /// <param name="cancellationToken">Token to cancel download at any time</param>
+        public static async Task<bool> DownloadFileAsync(
+            string url,
+            string fileName,
+            Action<int, long>? progress = null,
+            CancellationToken cancellationToken = default)
         {
             try
             {
@@ -46,8 +52,8 @@ namespace Musicefy.Services
                 string targetPath = Path.Combine(downloadsPath, fileName);
 
                 using (var client = new HttpClient())
+                using (var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
                 {
-                    var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
                     response.EnsureSuccessStatusCode();
 
                     long? contentLength = response.Content.Headers.ContentLength;
@@ -59,17 +65,27 @@ namespace Musicefy.Services
                         return false;
                     }
 
-                    using (var stream = await response.Content.ReadAsStreamAsync())
+                    using (var stream = await response.Content.ReadAsStreamAsync(cancellationToken))
                     using (var fs = new FileStream(targetPath, FileMode.Create, FileAccess.Write))
                     {
                         byte[] buffer = new byte[81920];
                         int read;
                         long totalBytes = 0;
 
-                        while ((read = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                        while ((read = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) > 0)
                         {
                             totalBytes += read;
 
+                            // Cancel mid-download
+                            if (cancellationToken.IsCancellationRequested)
+                            {
+                                fs.Close();
+                                File.Delete(targetPath);
+                                ToastService.ShowToast("⚠ Download cancelled by user.", Brushes.Goldenrod);
+                                return false;
+                            }
+
+                            // Enforce per-file limit
                             if (Musicefy.Properties.Settings.Default.LimitDownloadSize &&
                                 totalBytes > MaxDownloadSizeBytes)
                             {
@@ -79,6 +95,7 @@ namespace Musicefy.Services
                                 return false;
                             }
 
+                            // Enforce global cache limit
                             if (currentCacheSize + totalBytes > MaxCacheSizeBytes)
                             {
                                 fs.Close();
@@ -87,7 +104,7 @@ namespace Musicefy.Services
                                 return false;
                             }
 
-                            await fs.WriteAsync(buffer, 0, read);
+                            await fs.WriteAsync(buffer, 0, read, cancellationToken);
 
                             // Report progress
                             if (contentLength.HasValue)
@@ -111,6 +128,11 @@ namespace Musicefy.Services
 
                 ToastService.ShowToast("✅ Download completed successfully.", Brushes.ForestGreen);
                 return true;
+            }
+            catch (OperationCanceledException)
+            {
+                ToastService.ShowToast("⚠ Download cancelled.", Brushes.Goldenrod);
+                return false;
             }
             catch (Exception ex)
             {
