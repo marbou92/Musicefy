@@ -44,9 +44,19 @@ namespace Musicefy.Views
         // Update UI when track changes
         private void OnTrackChanged(MusicFile track)
         {
-            // Progress slider reset
+            // Reset progress slider
             ProgressSlider.Value = 0;
             ProgressSlider.Maximum = track.Duration.TotalSeconds;
+
+            // Ensure placeholders if metadata is missing
+            if (string.IsNullOrWhiteSpace(track.Title))
+                track.Title = "Untitled Track";
+            if (string.IsNullOrWhiteSpace(track.Artist))
+                track.Artist = "Unknown";
+            if (string.IsNullOrWhiteSpace(track.Album))
+                track.Album = "Unknown Album";
+            if (string.IsNullOrWhiteSpace(track.Genre))
+                track.Genre = "Unknown Genre";
         }
 
         // Update progress slider
@@ -61,14 +71,5 @@ namespace Musicefy.Views
         private void Pause_Click(object sender, System.Windows.RoutedEventArgs e) => _playback.Pause();
         private void Next_Click(object sender, System.Windows.RoutedEventArgs e) => _playback.Next();
         private void Previous_Click(object sender, System.Windows.RoutedEventArgs e) => _playback.Previous();
-
-        // Toggle favourite
-        private void FavouriteIcon_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            if (_playback.CurrentTrack != null)
-            {
-                _playback.CurrentTrack.ToggleFavourite();
-            }
-        }
     }
 }
