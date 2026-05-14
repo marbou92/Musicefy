@@ -25,9 +25,7 @@
         <Style x:Key="SidebarIconButtonStyle" TargetType="ListBoxItem">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Margin" Value="0,10"/>
-            <Setter Property="Padding" Value="0"/>
-            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,12"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ListBoxItem">
@@ -60,21 +58,17 @@
 
     <DockPanel LastChildFill="True">
         <Border DockPanel.Dock="Left" Width="70" Background="{DynamicResource BackgroundBrush}" BorderBrush="#282828" BorderThickness="0,0,1,0">
-            <Grid>
-                <ListBox x:Name="SidebarList" 
-                         VerticalAlignment="Center"
-                         Background="Transparent" 
-                         BorderThickness="0"
-                         ItemContainerStyle="{StaticResource SidebarIconButtonStyle}"
-                         SelectionChanged="Sidebar_SelectionChanged"
-                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                         ScrollViewer.VerticalScrollBarVisibility="Disabled">
-                    <ListBoxItem IsSelected="True" ToolTip="Home" Tag="{StaticResource IconHome}"/>
-                    <ListBoxItem ToolTip="Search" Tag="{StaticResource IconSearch}"/>
-                    <ListBoxItem ToolTip="Library" Tag="{StaticResource IconLibrary}"/>
-                    <ListBoxItem x:Name="SettingsItem" ToolTip="Settings" Tag="{StaticResource IconSettings}"/>
-                </ListBox>
-            </Grid>
+            <ListBox x:Name="SidebarList" 
+                     VerticalAlignment="Center"
+                     Background="Transparent" 
+                     BorderThickness="0"
+                     ItemContainerStyle="{StaticResource SidebarIconButtonStyle}"
+                     SelectionChanged="Sidebar_SelectionChanged">
+                <ListBoxItem IsSelected="True" ToolTip="Home" Tag="{StaticResource IconHome}"/>
+                <ListBoxItem ToolTip="Search" Tag="{StaticResource IconSearch}"/>
+                <ListBoxItem ToolTip="Library" Tag="{StaticResource IconLibrary}"/>
+                <ListBoxItem x:Name="SettingsItem" ToolTip="Settings" Tag="{StaticResource IconSettings}"/>
+            </ListBox>
         </Border>
 
         <DockPanel>
@@ -82,7 +76,8 @@
                 <TextBlock Text="Musicefy" HorizontalAlignment="Center" FontWeight="Bold" FontSize="20" Margin="0,20,0,15" Foreground="White"/>
 
                 <ListBox x:Name="CategoriesList" HorizontalAlignment="Center" BorderThickness="0" Background="Transparent" 
-                         Margin="0,0,0,15" ScrollViewer.HorizontalScrollBarVisibility="Hidden">
+                         Margin="0,0,0,15" ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                         ItemsSource="{Binding HeaderCategories}">
                     <ListBox.ItemsPanel>
                         <ItemsPanelTemplate>
                             <StackPanel Orientation="Horizontal"/>
