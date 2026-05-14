@@ -77,6 +77,9 @@ namespace Musicefy.ViewModels
 
         public void SelectPalette(string paletteName)
         {
+            foreach (var preview in ThemePreviews)
+                preview.IsSelected = preview.CardName.Equals(paletteName, StringComparison.OrdinalIgnoreCase);
+
             ThemeManager.ApplyTheme(GetModeFromIndex(_selectedThemeIndex), paletteName);
             RefreshPreviews();
         }
@@ -103,7 +106,6 @@ namespace Musicefy.ViewModels
 
         private string GetCurrentPalette()
         {
-            // Use the selected ThemePreview’s CardName
             var selected = ThemePreviews.FirstOrDefault(tp => tp.IsSelected);
             return selected?.CardName ?? "Default";
         }
@@ -151,13 +153,13 @@ namespace Musicefy.ViewModels
                 mode = isDark ? "Dark" : "Light";
             }
 
-            // Special preview for Pure Black
+            // Default card
             if (mode == "Dark" && PureBlackMode)
             {
                 ThemePreviews.Add(new ThemePreview
                 {
                     CardName = "Default (Pure Black)",
-                    AccentBrush = Brushes.White,
+                    AccentBrush = ThemeManager.GetAccentBrush("Default"),
                     BackgroundBrush = Brushes.Black,
                     IsSelected = true
                 });
@@ -167,15 +169,33 @@ namespace Musicefy.ViewModels
                 ThemePreviews.Add(new ThemePreview
                 {
                     CardName = "Default",
-                    AccentBrush = mode == "Dark" ? Brushes.White : Brushes.Black,
+                    AccentBrush = ThemeManager.GetAccentBrush("Default"),
                     BackgroundBrush = mode == "Dark" ? Brushes.DarkGray : Brushes.White,
                     IsSelected = true
                 });
             }
 
-            ThemePreviews.Add(new ThemePreview { CardName = "Catppuccin", AccentBrush = ThemeManager.GetAccentBrush("Catppuccin"), BackgroundBrush = Brushes.Transparent });
-            ThemePreviews.Add(new ThemePreview { CardName = "GreenApple", AccentBrush = ThemeManager.GetAccentBrush("GreenApple"), BackgroundBrush = Brushes.Transparent });
-            ThemePreviews.Add(new ThemePreview { CardName = "Lavender", AccentBrush = ThemeManager.GetAccentBrush("Lavender"), BackgroundBrush = Brushes.Transparent });
+            // Other palettes
+            ThemePreviews.Add(new ThemePreview
+            {
+                CardName = "Catppuccin",
+                AccentBrush = ThemeManager.GetAccentBrush("Catppuccin"),
+                BackgroundBrush = mode == "Dark" ? Brushes.DarkGray : Brushes.White
+            });
+
+            ThemePreviews.Add(new ThemePreview
+            {
+                CardName = "GreenApple",
+                AccentBrush = ThemeManager.GetAccentBrush("GreenApple"),
+                BackgroundBrush = mode == "Dark" ? Brushes.DarkGray : Brushes.White
+            });
+
+            ThemePreviews.Add(new ThemePreview
+            {
+                CardName = "Lavender",
+                AccentBrush = ThemeManager.GetAccentBrush("Lavender"),
+                BackgroundBrush = mode == "Dark" ? Brushes.DarkGray : Brushes.White
+            });
         }
 
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)
@@ -184,9 +204,12 @@ namespace Musicefy.ViewModels
 
     public class ThemePreview
     {
-        public string CardName { get; set; }   // renamed from Name
+        public string CardName { get; set; }
         public Brush AccentBrush { get; set; }
         public Brush BackgroundBrush { get; set; }
-        public bool IsSelected { get; set; }   // added for persistence
+        public bool IsSelected { get; set; }
+
+        // Highlight border/glow for selected card
+        public Brush HighlightBrush => IsSelected ? Brushes.DeepSkyBlue : Brushes.Transparent;
     }
 }
