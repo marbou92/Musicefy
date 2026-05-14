@@ -12,9 +12,6 @@ namespace Musicefy.Services
         private static readonly string[] Modes = { "System", "Light", "Dark", "DarkPure" };
         private static readonly string[] Palettes = { "Default", "Catppuccin", "GreenApple", "Lavender" };
 
-        /// <summary>
-        /// Apply a theme by mode + palette.
-        /// </summary>
         public static void ApplyTheme(string mode, string palette)
         {
             Application.Current.Resources.MergedDictionaries.Clear();
@@ -24,7 +21,9 @@ namespace Musicefy.Services
 
             // Resolve system mode
             if (mode.Equals("System", StringComparison.OrdinalIgnoreCase))
+            {
                 mode = IsSystemDarkMode() ? "Dark" : "Light";
+            }
 
             // Load mode dictionary
             MergeDictionary($"/Themes/Modes/{mode}.xaml");
@@ -74,25 +73,24 @@ namespace Musicefy.Services
             Musicefy.Properties.Settings.Default.Save();
         }
 
-        /// <summary>
-        /// Detect system dark mode via registry.
-        /// </summary>
         public static bool IsSystemDarkMode()
         {
             try
             {
-                using var key = Registry.CurrentUser.OpenSubKey(
-                    @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
-                if (key?.GetValue("AppsUseLightTheme") is int intVal)
-                    return intVal == 0;
+                // Note: This key only exists on Windows 10 and 11. 
+                // On Windows 7, this will safely fail and return true (Dark fallback).
+                using (var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"))
+                {
+                    if (key?.GetValue("AppsUseLightTheme") is int intVal)
+                        return intVal == 0;
+                }
             }
             catch { }
-            return false;
+            
+            // Fallback to Dark mode for Windows 7/8 where the registry key doesn't exist
+            return true;
         }
 
-        /// <summary>
-        /// Watch for system theme changes and reapply if mode is System.
-        /// </summary>
         public static void StartSystemThemeWatcher()
         {
             SystemEvents.UserPreferenceChanged += (s, e) =>
@@ -110,9 +108,6 @@ namespace Musicefy.Services
             };
         }
 
-        /// <summary>
-        /// Fade in all windows + animate buttons.
-        /// </summary>
         public static void AnimateWindowsFade()
         {
             var fadeAnim = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(400))
@@ -147,10 +142,7 @@ namespace Musicefy.Services
             if (sender is System.Windows.Controls.Button btn &&
                 Application.Current.FindResource("AccentHoverBrush") is LinearGradientBrush brush)
             {
-                AnimateButtonGradient(btn,
-                    brush.GradientStops[0].Color,
-                    brush.GradientStops[1].Color,
-                    300);
+                AnimateButtonGradient(btn, brush.GradientStops[0].Color, brush.GradientStops[1].Color, 300);
             }
         }
 
@@ -159,10 +151,7 @@ namespace Musicefy.Services
             if (sender is System.Windows.Controls.Button btn &&
                 Application.Current.FindResource("AccentPressedBrush") is LinearGradientBrush brush)
             {
-                AnimateButtonGradient(btn,
-                    brush.GradientStops[0].Color,
-                    brush.GradientStops[1].Color,
-                    200);
+                AnimateButtonGradient(btn, brush.GradientStops[0].Color, brush.GradientStops[1].Color, 200);
             }
         }
 
@@ -171,15 +160,11 @@ namespace Musicefy.Services
             if (sender is System.Windows.Controls.Button btn &&
                 Application.Current.FindResource("AccentBrush") is LinearGradientBrush brush)
             {
-                AnimateButtonGradient(btn,
-                    brush.GradientStops[0].Color,
-                    brush.GradientStops[1].Color,
-                    300);
+                AnimateButtonGradient(btn, brush.GradientStops[0].Color, brush.GradientStops[1].Color, 300);
             }
         }
 
-        private static void AnimateButtonGradient(System.Windows.Controls.Button btn,
-            Color toStart, Color toEnd, int durationMs)
+        private static void AnimateButtonGradient(System.Windows.Controls.Button btn, Color toStart, Color toEnd, int durationMs)
         {
             if (btn.Template.FindName("AccentStart", btn) is GradientStop start &&
                 btn.Template.FindName("AccentEnd", btn) is GradientStop end)
@@ -206,21 +191,18 @@ namespace Musicefy.Services
             }
         }
 
-        /// <summary>
-        /// Provides accent brushes for theme previews in MVVM.
-        /// </summary>
-        public static Brush GetAccentBrush(string name) => name switch
+        public static Brush GetAccentBrush(string name)
         {
-            "Default" => new LinearGradientBrush(Colors.SkyBlue, Colors.DodgerBlue, 45),
-            "Catppuccin" => Brushes.MediumOrchid,
-            "GreenApple" => Brushes.Green,
-            "Lavender" => Brushes.MediumPurple,
-            _ => Brushes.Gray
-        };
+            switch (name)
+            {
+                case "Default": return new LinearGradientBrush(Colors.SkyBlue, Colors.DodgerBlue, 45);
+                case "Catppuccin": return Brushes.MediumOrchid;
+                case "GreenApple": return Brushes.MediumSeaGreen;
+                case "Lavender": return Brushes.MediumPurple;
+                default: return Brushes.Gray;
+            }
+        }
 
-        /// <summary>
-        /// Helper to merge a resource dictionary safely.
-        /// </summary>
         private static void MergeDictionary(string path)
         {
             Application.Current.Resources.MergedDictionaries.Add(
