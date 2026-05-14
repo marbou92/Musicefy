@@ -5,47 +5,73 @@
 
     <UserControl.Resources>
         <DataTemplate x:Key="ChartCardTemplate">
-            <Border Background="#121212" CornerRadius="20" Margin="10,0" Width="160" Height="230">
+            <Border Background="#121212" CornerRadius="24" Margin="10,0" Width="170" Height="250" Effect="{StaticResource EchoShadow}">
                 <StackPanel>
-                    <Border CornerRadius="20" Margin="10" Height="140" ClipToBounds="True">
+                    <Border CornerRadius="20" Margin="12" Height="150" ClipToBounds="True">
                         <Image Source="{Binding Cover}" Stretch="UniformToFill"/>
                     </Border>
-                    <TextBlock Text="{Binding Title}" FontWeight="Bold" Margin="15,5,15,0" TextAlignment="Center"/>
+                    <TextBlock Text="{Binding Title}" FontWeight="Bold" Margin="15,5,15,0" TextAlignment="Center" Foreground="White"/>
                     <TextBlock Text="{Binding Subtitle}" Foreground="Gray" FontSize="11" TextAlignment="Center" Margin="15,2"/>
                 </StackPanel>
             </Border>
         </DataTemplate>
 
         <DataTemplate x:Key="TrackCardTemplate">
-            <Border Background="#121212" CornerRadius="12" Margin="0,5" Padding="10" Width="280">
+            <Border Background="#121212" CornerRadius="16" Margin="5" Padding="10" Width="280">
                 <DockPanel>
-                    <Border CornerRadius="8" Width="45" Height="45" ClipToBounds="True" DockPanel.Dock="Left">
+                    <Border CornerRadius="10" Width="48" Height="48" ClipToBounds="True" DockPanel.Dock="Left">
                         <Image Source="{Binding Cover}" Stretch="UniformToFill"/>
                     </Border>
                     <StackPanel VerticalAlignment="Center" Margin="12,0">
-                        <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="14"/>
+                        <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="14" Foreground="White"/>
                         <TextBlock Text="{Binding Artist}" Foreground="Gray" FontSize="12"/>
                     </StackPanel>
                 </DockPanel>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="VideoCardTemplate">
+            <Border Background="#121212" CornerRadius="20" Margin="10,0" Width="240" Height="180">
+                <StackPanel>
+                    <Border CornerRadius="15" Margin="10" Height="120" ClipToBounds="True">
+                        <Image Source="{Binding Cover}" Stretch="UniformToFill"/>
+                    </Border>
+                    <TextBlock Text="{Binding Title}" FontWeight="Bold" Margin="12,0" Foreground="White" TextTrimming="CharacterEllipsis"/>
+                    <TextBlock Text="{Binding Channel}" Foreground="Gray" FontSize="11" Margin="12,2"/>
+                </StackPanel>
             </Border>
         </DataTemplate>
     </UserControl.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Hidden">
         <StackPanel Margin="20">
-            <TextBlock Text="Charts for you" FontSize="22" FontWeight="Bold" Margin="10,0,0,20"/>
-            <ListBox ItemsSource="{Binding BrowseCharts}" ItemTemplate="{StaticResource ChartCardTemplate}" 
+            <TextBlock Text="Charts for you" FontSize="22" FontWeight="Bold" Margin="10,0,0,20" Foreground="White"/>
+            <ListBox x:Name="ChartsList" 
+                     ItemsSource="{Binding BrowseCharts}" 
+                     ItemTemplate="{StaticResource ChartCardTemplate}" 
                      Background="Transparent" BorderThickness="0">
                 <ListBox.ItemsPanel>
                     <ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate>
                 </ListBox.ItemsPanel>
             </ListBox>
 
-            <TextBlock Text="Quick Picks" FontSize="22" FontWeight="Bold" Margin="10,30,0,20"/>
-            <ListBox ItemsSource="{Binding QuickPicks}" ItemTemplate="{StaticResource TrackCardTemplate}" 
+            <TextBlock Text="Quick Picks" FontSize="22" FontWeight="Bold" Margin="10,30,0,20" Foreground="White"/>
+            <ListBox x:Name="QuickPicksList" 
+                     ItemsSource="{Binding QuickPicks}" 
+                     ItemTemplate="{StaticResource TrackCardTemplate}" 
                      Background="Transparent" BorderThickness="0">
                 <ListBox.ItemsPanel>
                     <ItemsPanelTemplate><WrapPanel Orientation="Horizontal"/></ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+            </ListBox>
+
+            <TextBlock Text="Top Music Videos" FontSize="22" FontWeight="Bold" Margin="10,30,0,20" Foreground="White"/>
+            <ListBox x:Name="VideosList" 
+                     ItemsSource="{Binding TopMusicVideos}" 
+                     ItemTemplate="{StaticResource VideoCardTemplate}"
+                     Background="Transparent" BorderThickness="0">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate>
                 </ListBox.ItemsPanel>
             </ListBox>
         </StackPanel>
