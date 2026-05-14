@@ -119,7 +119,7 @@ namespace Musicefy.Views
 
             if (success)
             {
-                DownloadStatusLabel.Text = "Download complete.";
+                DownloadStatusLabel.Text = "✅ Download complete.";
                 _resumeMode = false;
                 UpdateCacheStatus();
                 SetIdleState();
@@ -128,17 +128,17 @@ namespace Musicefy.Views
             {
                 if (_downloadCts.IsCancellationRequested && _resumeMode)
                 {
-                    DownloadStatusLabel.Text = "Download paused.";
+                    DownloadStatusLabel.Text = "⏸ Download paused.";
                     SetPausedState();
                 }
                 else if (_downloadCts.IsCancellationRequested)
                 {
-                    DownloadStatusLabel.Text = "Download cancelled.";
+                    DownloadStatusLabel.Text = "⚠ Download cancelled.";
                     SetIdleState();
                 }
                 else
                 {
-                    DownloadStatusLabel.Text = "Download failed.";
+                    DownloadStatusLabel.Text = "❌ Download failed.";
                     _resumeMode = false;
                     SetIdleState();
                 }
@@ -238,13 +238,15 @@ namespace Musicefy.Views
             return size;
         }
 
-        // --- UI State Management ---
+        // --- UI State Management with Visual Indicators ---
         private void SetIdleState()
         {
             TestDownloadButton.IsEnabled = true;
             PauseDownloadButton.IsEnabled = false;
             ResumeDownloadButton.IsEnabled = false;
             CancelDownloadButton.IsEnabled = false;
+
+            DownloadStatusLabel.Foreground = Brushes.Gray;
         }
 
         private void SetDownloadingState()
@@ -253,6 +255,8 @@ namespace Musicefy.Views
             PauseDownloadButton.IsEnabled = true;
             ResumeDownloadButton.IsEnabled = false;
             CancelDownloadButton.IsEnabled = true;
+
+            DownloadStatusLabel.Foreground = Brushes.ForestGreen;
         }
 
         private void SetPausedState()
@@ -261,6 +265,8 @@ namespace Musicefy.Views
             PauseDownloadButton.IsEnabled = false;
             ResumeDownloadButton.IsEnabled = true;
             CancelDownloadButton.IsEnabled = true;
+
+            DownloadStatusLabel.Foreground = Brushes.Goldenrod;
         }
     }
 }
