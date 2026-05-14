@@ -9,6 +9,7 @@
         Foreground="{DynamicResource ForegroundBrush}">
 
     <DockPanel LastChildFill="True">
+
         <!-- Sidebar -->
         <StackPanel DockPanel.Dock="Left" Width="80" Background="{DynamicResource SecondaryBackgroundBrush}">
             <Button Content="🏠" ToolTip="Home" Click="Home_Click"/>
@@ -19,6 +20,38 @@
         </StackPanel>
 
         <!-- Main Content -->
-        <ContentControl x:Name="MainContent"/>
+        <DockPanel>
+            <ContentControl x:Name="MainContent" DockPanel.Dock="Top"/>
+
+            <!-- Mini Player Bar -->
+            <Border DockPanel.Dock="Bottom" Background="{DynamicResource SecondaryBackgroundBrush}" Padding="8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Cover -->
+                    <Image x:Name="MiniCover" Width="48" Height="48" Margin="0,0,12,0"/>
+
+                    <!-- Info + Progress -->
+                    <StackPanel Grid.Column="1">
+                        <TextBlock x:Name="MiniTitle" FontWeight="Bold"/>
+                        <TextBlock x:Name="MiniArtist" Foreground="Gray" FontSize="12"/>
+                        <Slider x:Name="MiniProgress" Minimum="0" Maximum="100" Height="16" Margin="0,4,0,0"
+                                PreviewMouseUp="MiniProgress_MouseUp"/>
+                    </StackPanel>
+
+                    <!-- Controls -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal">
+                        <Button Content="⏮" Width="32" Height="32" Margin="2" Click="PreviousButton_Click"/>
+                        <Button Content="▶" Width="32" Height="32" Margin="2" Click="PlayButton_Click"/>
+                        <Button Content="⏸" Width="32" Height="32" Margin="2" Click="PauseButton_Click"/>
+                        <Button Content="⏭" Width="32" Height="32" Margin="2" Click="NextButton_Click"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </DockPanel>
     </DockPanel>
 </Window>
