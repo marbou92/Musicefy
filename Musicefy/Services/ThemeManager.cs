@@ -9,36 +9,38 @@ namespace Musicefy.Services
 {
     public static class ThemeManager
     {
-        private static readonly string[] Modes = { "System", "Light", "Dark" };
+        private static readonly string[] Modes = { "System", "Light", "Dark", "DarkPure" };
         private static readonly string[] Palettes = { "Default", "Catppuccin", "GreenApple", "Lavender" };
 
+        /// <summary>
+        /// Apply a theme by mode + palette.
+        /// </summary>
         public static void ApplyTheme(string mode, string palette)
         {
             Application.Current.Resources.MergedDictionaries.Clear();
 
-            Application.Current.Resources.MergedDictionaries.Add(
-                new ResourceDictionary { Source = new Uri("/Themes/Base.xaml", UriKind.Relative) });
+            // Always load base styles first
+            MergeDictionary("/Themes/Base.xaml");
 
+            // Resolve system mode
             if (mode.Equals("System", StringComparison.OrdinalIgnoreCase))
-            {
-                bool isDark = IsSystemDarkMode();
-                mode = isDark ? "Dark" : "Light";
-            }
+                mode = IsSystemDarkMode() ? "Dark" : "Light";
 
-            Application.Current.Resources.MergedDictionaries.Add(
-                new ResourceDictionary { Source = new Uri($"/Themes/Modes/{mode}.xaml", UriKind.Relative) });
+            // Load mode dictionary
+            MergeDictionary($"/Themes/Modes/{mode}.xaml");
 
-            // Handle Default palette adaptation
+            // Handle palette adaptation
             if (palette.Equals("Default", StringComparison.OrdinalIgnoreCase))
             {
-                string paletteFile = mode == "Dark" ? "Default.Dark.xaml" : "Default.Light.xaml";
-                Application.Current.Resources.MergedDictionaries.Add(
-                    new ResourceDictionary { Source = new Uri($"/Themes/Palettes/{paletteFile}", UriKind.Relative) });
+                string paletteFile = mode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase)
+                    ? "Default.Dark.xaml"
+                    : "Default.Light.xaml";
+
+                MergeDictionary($"/Themes/Palettes/{paletteFile}");
             }
             else
             {
-                Application.Current.Resources.MergedDictionaries.Add(
-                    new ResourceDictionary { Source = new Uri($"/Themes/Palettes/{palette}.xaml", UriKind.Relative) });
+                MergeDictionary($"/Themes/Palettes/{palette}.xaml");
             }
         }
 
@@ -61,11 +63,9 @@ namespace Musicefy.Services
 
         public static IEnumerable<string> GetAvailableThemes()
         {
-            var themes = new List<string>();
             foreach (var mode in Modes)
                 foreach (var palette in Palettes)
-                    themes.Add($"{mode}|{palette}");
-            return themes;
+                    yield return $"{mode}|{palette}";
         }
 
         public static void SaveTheme(string themeString)
@@ -74,26 +74,25 @@ namespace Musicefy.Services
             Musicefy.Properties.Settings.Default.Save();
         }
 
-        // FIX: make public so ViewModel can call it
+        /// <summary>
+        /// Detect system dark mode via registry.
+        /// </summary>
         public static bool IsSystemDarkMode()
         {
             try
             {
-                using (var key = Registry.CurrentUser.OpenSubKey(
-                    @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"))
-                {
-                    if (key != null)
-                    {
-                        object value = key.GetValue("AppsUseLightTheme");
-                        if (value is int intVal)
-                            return intVal == 0;
-                    }
-                }
+                using var key = Registry.CurrentUser.OpenSubKey(
+                    @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
+                if (key?.GetValue("AppsUseLightTheme") is int intVal)
+                    return intVal == 0;
             }
             catch { }
             return false;
         }
 
+        /// <summary>
+        /// Watch for system theme changes and reapply if mode is System.
+        /// </summary>
         public static void StartSystemThemeWatcher()
         {
             SystemEvents.UserPreferenceChanged += (s, e) =>
@@ -104,16 +103,16 @@ namespace Musicefy.Services
                     if (savedTheme.StartsWith("System", StringComparison.OrdinalIgnoreCase))
                     {
                         ApplyThemeFromString(savedTheme);
-
-                        Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-                        {
-                            AnimateWindowsFade();
-                        }), System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+                        Application.Current.Dispatcher.BeginInvoke(new Action(AnimateWindowsFade),
+                            System.Windows.Threading.DispatcherPriority.ApplicationIdle);
                     }
                 }
             };
         }
 
+        /// <summary>
+        /// Fade in all windows + animate buttons.
+        /// </summary>
         public static void AnimateWindowsFade()
         {
             var fadeAnim = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(400))
@@ -133,30 +132,42 @@ namespace Musicefy.Services
         {
             foreach (var child in FindVisualChildren<System.Windows.Controls.Button>(win))
             {
-                child.MouseEnter += (s, e) =>
-                {
-                    AnimateButtonGradient(child,
-                        (Color)Application.Current.FindResource("AccentHoverStartColor"),
-                        (Color)Application.Current.FindResource("AccentHoverEndColor"),
-                        300);
-                };
+                // Clear existing handlers to avoid duplicates
+                child.MouseEnter -= Button_MouseEnter;
+                child.PreviewMouseDown -= Button_MouseDown;
+                child.MouseLeave -= Button_MouseLeave;
 
-                child.PreviewMouseDown += (s, e) =>
-                {
-                    AnimateButtonGradient(child,
-                        (Color)Application.Current.FindResource("AccentPressedStartColor"),
-                        (Color)Application.Current.FindResource("AccentPressedEndColor"),
-                        200);
-                };
-
-                child.MouseLeave += (s, e) =>
-                {
-                    AnimateButtonGradient(child,
-                        (Color)Application.Current.FindResource("AccentStartColor"),
-                        (Color)Application.Current.FindResource("AccentEndColor"),
-                        300);
-                };
+                child.MouseEnter += Button_MouseEnter;
+                child.PreviewMouseDown += Button_MouseDown;
+                child.MouseLeave += Button_MouseLeave;
             }
+        }
+
+        private static void Button_MouseEnter(object sender, RoutedEventArgs e)
+        {
+            if (sender is System.Windows.Controls.Button btn)
+                AnimateButtonGradient(btn,
+                    (Color)Application.Current.FindResource("AccentHoverStartColor"),
+                    (Color)Application.Current.FindResource("AccentHoverEndColor"),
+                    300);
+        }
+
+        private static void Button_MouseDown(object sender, RoutedEventArgs e)
+        {
+            if (sender is System.Windows.Controls.Button btn)
+                AnimateButtonGradient(btn,
+                    (Color)Application.Current.FindResource("AccentPressedStartColor"),
+                    (Color)Application.Current.FindResource("AccentPressedEndColor"),
+                    200);
+        }
+
+        private static void Button_MouseLeave(object sender, RoutedEventArgs e)
+        {
+            if (sender is System.Windows.Controls.Button btn)
+                AnimateButtonGradient(btn,
+                    (Color)Application.Current.FindResource("AccentStartColor"),
+                    (Color)Application.Current.FindResource("AccentEndColor"),
+                    300);
         }
 
         private static void AnimateButtonGradient(System.Windows.Controls.Button btn,
@@ -174,33 +185,38 @@ namespace Musicefy.Services
 
         private static IEnumerable<T> FindVisualChildren<T>(DependencyObject depObj) where T : DependencyObject
         {
-            if (depObj != null)
-            {
-                for (int i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
-                {
-                    DependencyObject child = VisualTreeHelper.GetChild(depObj, i);
-                    if (child is T t)
-                        yield return t;
+            if (depObj == null) yield break;
 
-                    foreach (T childOfChild in FindVisualChildren<T>(child))
-                        yield return childOfChild;
-                }
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(depObj, i);
+                if (child is T t)
+                    yield return t;
+
+                foreach (T childOfChild in FindVisualChildren<T>(child))
+                    yield return childOfChild;
             }
         }
 
         /// <summary>
         /// Provides accent brushes for theme previews in MVVM.
         /// </summary>
-        public static Brush GetAccentBrush(string name)
+        public static Brush GetAccentBrush(string name) => name switch
         {
-            switch (name)
-            {
-                case "Default": return Brushes.Gray; // neutral preview
-                case "Catppuccin": return Brushes.MediumOrchid;
-                case "GreenApple": return Brushes.Green;
-                case "Lavender": return Brushes.MediumPurple;
-                default: return Brushes.Gray;
-            }
+            "Default" => Brushes.Gray,
+            "Catppuccin" => Brushes.MediumOrchid,
+            "GreenApple" => Brushes.Green,
+            "Lavender" => Brushes.MediumPurple,
+            _ => Brushes.Gray
+        };
+
+        /// <summary>
+        /// Helper to merge a resource dictionary safely.
+        /// </summary>
+        private static void MergeDictionary(string path)
+        {
+            Application.Current.Resources.MergedDictionaries.Add(
+                new ResourceDictionary { Source = new Uri(path, UriKind.Relative) });
         }
     }
 }
