@@ -1,0 +1,53 @@
+<UserControl x:Class="Musicefy.Views.HomeControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="{DynamicResource BackgroundBrush}"
+             Foreground="{DynamicResource ForegroundBrush}">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="20">
+
+            <!-- Category Buttons -->
+            <WrapPanel Margin="0,0,0,20">
+                <Button Content="Podcasts" Style="{StaticResource CategoryButtonStyle}" Margin="4"/>
+                <Button Content="Work out" Style="{StaticResource CategoryButtonStyle}" Margin="4"/>
+                <Button Content="Feel good" Style="{StaticResource CategoryButtonStyle}" Margin="4"/>
+                <Button Content="Romance" Style="{StaticResource CategoryButtonStyle}" Margin="4"/>
+                <Button Content="Party" Style="{StaticResource CategoryButtonStyle}" Margin="4"/>
+                <Button Content="Energise" Style="{StaticResource CategoryButtonStyle}" Margin="4"/>
+                <Button Content="Relax" Style="{StaticResource CategoryButtonStyle}" Margin="4"/>
+                <Button Content="Commute" Style="{StaticResource CategoryButtonStyle}" Margin="4"/>
+                <Button Content="Sad" Style="{StaticResource CategoryButtonStyle}" Margin="4"/>
+                <Button Content="Focus" Style="{StaticResource CategoryButtonStyle}" Margin="4"/>
+                <Button Content="Sleep" Style="{StaticResource CategoryButtonStyle}" Margin="4"/>
+            </WrapPanel>
+
+            <!-- Random Albums -->
+            <TextBlock Text="Random Albums" FontSize="20" FontWeight="Bold" Margin="0,0,0,12"/>
+            <ItemsControl x:Name="AlbumsList" Margin="0,0,0,20">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Margin="8">
+                            <Image Source="{Binding Cover}" Width="160" Height="160" Stretch="UniformToFill"/>
+                            <TextBlock Text="{Binding Album}" FontSize="14" FontWeight="SemiBold" Margin="0,6,0,0"/>
+                            <TextBlock Text="{Binding Artist}" FontSize="12" Foreground="Gray"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- Quick Picks -->
+            <TextBlock Text="Quick Picks" FontSize="20" FontWeight="Bold" Margin="0,0,0,12"/>
+            <ListBox x:Name="QuickPicksList" Margin="0,0,0,20" Height="200"/>
+
+            <!-- Top Music Videos -->
+            <TextBlock Text="Top Music Videos" FontSize="20" FontWeight="Bold" Margin="0,0,0,12"/>
+            <ListBox x:Name="TopVideosList" Height="200"/>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
