@@ -1,9 +1,11 @@
 using System;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using Musicefy.Views;
 using Musicefy.Services;
+using Musicefy.ViewModels;
 using Musicefy.Core.Models;
 
 namespace Musicefy
@@ -11,32 +13,92 @@ namespace Musicefy
     public partial class MainWindow : Window
     {
         private readonly PlaybackService _playback;
-        private bool _isExpanded = false;
+        private readonly MainViewModel _mainViewModel;
+        // private bool _isExpanded = false; // Kept for legacy mini-player reference
 
         public MainWindow()
         {
             InitializeComponent();
+            
+            // 1. Initialize View Model and set DataContext for the Window
+            _mainViewModel = new MainViewModel();
+            this.DataContext = _mainViewModel;
+
+            // 2. Initialize Services
             _playback = new PlaybackService();
 
-            _playback.TrackChanged += OnTrackChanged;
-            _playback.ProgressChanged += OnProgressChanged;
-
-            MainContent.Content = new HomeControl(_playback);
+            // 3. Set the initial content to the Home page, passing the required dependencies
+            MainContent.Content = new HomeControl(_playback, _mainViewModel); 
         }
 
-        // Navigation
-        private void Home_Click(object sender, RoutedEventArgs e) => MainContent.Content = new HomeControl(_playback);
-        private void Search_Click(object sender, RoutedEventArgs e) => MainContent.Content = new SearchControl(_playback);
-        private void Library_Click(object sender, RoutedEventArgs e) => MainContent.Content = new LibraryControl(_playback);
-        private void NowPlaying_Click(object sender, RoutedEventArgs e) => ExpandNowPlaying();
-
-        private void OpenSettings_Click(object sender, RoutedEventArgs e)
+        // Navigation through Sidebar ListBox
+        private void Sidebar_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var win = new SettingsWindow { Owner = this };
-            win.ShowDialog();
+            if (SidebarList.SelectedItem is ListBoxItem selectedItem)
+            {
+                if (selectedItem == SettingsItem)
+                {
+                    // Open settings as a dialog window
+                    var win = new SettingsWindow { Owner = this };
+                    win.ShowDialog();
+                    
+                    // Optional: Deselect settings and go back to the previous selection
+                    // so the user doesn't get "stuck" on the settings button
+                }
+                else
+                {
+                    // Placeholder for other navigation targets (Search, Library)
+                    // Once you update your SearchControl and LibraryControl to take 
+                    // the new ViewModels, you can uncomment and route them here:
+                    
+                    // int index = SidebarList.SelectedIndex;
+                    // if (index == 0) MainContent.Content = new HomeControl(_playback, _mainViewModel);
+                    // if (index == 1) MainContent.Content = new SearchControl(_playback);
+                    // if (index == 2) MainContent.Content = new LibraryControl(_playback);
+                }
+            }
         }
 
-        // Mini Player click → expand/collapse
+
+        /* 
+        =========================================================================
+           LEGACY MINI-PLAYER & ANIMATION CODE 
+           
+           (Commented out because the mini-player was removed from MainWindow.xaml 
+            to align with the new Desktop-1.jpg design. You can copy this logic 
+            over to a dedicated NowPlaying control or a new global player bar later.)
+        =========================================================================
+        
+        private void OnTrackChanged(MusicFile track)
+        {
+            MiniTitle.Text = string.IsNullOrWhiteSpace(track.Title) ? "Untitled Track" : track.Title;
+            MiniArtist.Text = string.IsNullOrWhiteSpace(track.Artist) ? "Unknown" : track.Artist;
+
+            MiniCover.Source = string.IsNullOrEmpty(track.CoverPath)
+                ? new BitmapImage(new Uri("pack://application:,,,/Assets/default_cover.png"))
+                : new BitmapImage(new Uri(track.CoverPath, UriKind.RelativeOrAbsolute));
+
+            MiniProgress.Value = 0;
+            MiniProgress.Maximum = track.Duration.TotalSeconds;
+        }
+
+        private void OnProgressChanged(TimeSpan current, TimeSpan total)
+        {
+            MiniProgress.Maximum = total.TotalSeconds;
+            MiniProgress.Value = current.TotalSeconds;
+        }
+
+        private void PlayButton_Click(object sender, RoutedEventArgs e) => _playback.Resume();
+        private void PauseButton_Click(object sender, RoutedEventArgs e) => _playback.Pause();
+        private void NextButton_Click(object sender, RoutedEventArgs e) => _playback.Next();
+        private void PreviousButton_Click(object sender, RoutedEventArgs e) => _playback.Previous();
+
+        private void MiniProgress_MouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (_playback.CurrentAudioFile != null)
+                _playback.Seek(TimeSpan.FromSeconds(MiniProgress.Value));
+        }
+
         private void MiniPlayer_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             if (_isExpanded)
@@ -82,41 +144,10 @@ namespace Musicefy
 
             fadeOut.Completed += (s, e) =>
             {
-                MainContent.Content = new HomeControl(_playback);
+                MainContent.Content = new HomeControl(_playback, _mainViewModel);
                 _isExpanded = false;
             };
         }
-
-        // Mini Player updates
-        private void OnTrackChanged(MusicFile track)
-        {
-            MiniTitle.Text = string.IsNullOrWhiteSpace(track.Title) ? "Untitled Track" : track.Title;
-            MiniArtist.Text = string.IsNullOrWhiteSpace(track.Artist) ? "Unknown" : track.Artist;
-
-            MiniCover.Source = string.IsNullOrEmpty(track.CoverPath)
-                ? new BitmapImage(new Uri("pack://application:,,,/Assets/default_cover.png"))
-                : new BitmapImage(new Uri(track.CoverPath, UriKind.RelativeOrAbsolute));
-
-            MiniProgress.Value = 0;
-            MiniProgress.Maximum = track.Duration.TotalSeconds;
-        }
-
-        private void OnProgressChanged(TimeSpan current, TimeSpan total)
-        {
-            MiniProgress.Maximum = total.TotalSeconds;
-            MiniProgress.Value = current.TotalSeconds;
-        }
-
-        // Playback controls
-        private void PlayButton_Click(object sender, RoutedEventArgs e) => _playback.Resume();
-        private void PauseButton_Click(object sender, RoutedEventArgs e) => _playback.Pause();
-        private void NextButton_Click(object sender, RoutedEventArgs e) => _playback.Next();
-        private void PreviousButton_Click(object sender, RoutedEventArgs e) => _playback.Previous();
-
-        private void MiniProgress_MouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
-            if (_playback.CurrentAudioFile != null)
-                _playback.Seek(TimeSpan.FromSeconds(MiniProgress.Value));
-        }
+        */
     }
 }
