@@ -9,13 +9,15 @@
 
             <!-- Random Albums -->
             <TextBlock Text="Featured Albums" FontSize="22" FontWeight="Bold" Margin="0,0,0,12"/>
-            <ItemsControl x:Name="AlbumsList" Margin="0,0,0,20" SelectionChanged="AlbumsList_SelectionChanged">
-                <ItemsControl.ItemsPanel>
+            
+            <!-- Changed ItemsControl to ListBox so SelectionChanged works -->
+            <ListBox x:Name="AlbumsList" Margin="0,0,0,20" SelectionChanged="AlbumsList_SelectionChanged">
+                <ListBox.ItemsPanel>
                     <ItemsPanelTemplate>
                         <WrapPanel/>
                     </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemTemplate>
                     <DataTemplate>
                         <Border Background="{DynamicResource SecondaryBackgroundBrush}" Padding="8" CornerRadius="6" Margin="8">
                             <StackPanel Width="180">
@@ -31,8 +33,8 @@
                             </StackPanel>
                         </Border>
                     </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+                </ListBox.ItemTemplate>
+            </ListBox>
 
             <!-- Album Tracks -->
             <Border Background="{DynamicResource SecondaryBackgroundBrush}" Padding="12" CornerRadius="6" Margin="0,12,0,0">
