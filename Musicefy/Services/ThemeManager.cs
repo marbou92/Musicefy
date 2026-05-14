@@ -132,7 +132,6 @@ namespace Musicefy.Services
         {
             foreach (var child in FindVisualChildren<System.Windows.Controls.Button>(win))
             {
-                // Clear existing handlers to avoid duplicates
                 child.MouseEnter -= Button_MouseEnter;
                 child.PreviewMouseDown -= Button_MouseDown;
                 child.MouseLeave -= Button_MouseLeave;
@@ -147,8 +146,8 @@ namespace Musicefy.Services
         {
             if (sender is System.Windows.Controls.Button btn)
                 AnimateButtonGradient(btn,
-                    (Color)Application.Current.FindResource("AccentHoverStartColor"),
-                    (Color)Application.Current.FindResource("AccentHoverEndColor"),
+                    (Color)Application.Current.FindResource("AccentHoverBrush").GradientStops[0].Color,
+                    (Color)Application.Current.FindResource("AccentHoverBrush").GradientStops[1].Color,
                     300);
         }
 
@@ -156,8 +155,8 @@ namespace Musicefy.Services
         {
             if (sender is System.Windows.Controls.Button btn)
                 AnimateButtonGradient(btn,
-                    (Color)Application.Current.FindResource("AccentPressedStartColor"),
-                    (Color)Application.Current.FindResource("AccentPressedEndColor"),
+                    (Color)Application.Current.FindResource("AccentPressedBrush").GradientStops[0].Color,
+                    (Color)Application.Current.FindResource("AccentPressedBrush").GradientStops[1].Color,
                     200);
         }
 
@@ -165,8 +164,8 @@ namespace Musicefy.Services
         {
             if (sender is System.Windows.Controls.Button btn)
                 AnimateButtonGradient(btn,
-                    (Color)Application.Current.FindResource("AccentStartColor"),
-                    (Color)Application.Current.FindResource("AccentEndColor"),
+                    (Color)Application.Current.FindResource("AccentBrush").GradientStops[0].Color,
+                    (Color)Application.Current.FindResource("AccentBrush").GradientStops[1].Color,
                     300);
         }
 
@@ -203,7 +202,7 @@ namespace Musicefy.Services
         /// </summary>
         public static Brush GetAccentBrush(string name) => name switch
         {
-            "Default" => Brushes.Gray,
+            "Default" => new LinearGradientBrush(Colors.SkyBlue, Colors.DodgerBlue, 45),
             "Catppuccin" => Brushes.MediumOrchid,
             "GreenApple" => Brushes.Green,
             "Lavender" => Brushes.MediumPurple,
