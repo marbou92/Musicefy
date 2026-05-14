@@ -9,19 +9,32 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <Image x:Name="Cover" Width="240" Height="240" HorizontalAlignment="Center"/>
+        <!-- Back Button -->
+        <Button x:Name="BackButton" Content="⬇ Collapse" HorizontalAlignment="Left" Width="100" Height="32"
+                Click="BackButton_Click"/>
+
+        <!-- Album Art -->
+        <Image x:Name="Cover" Width="240" Height="240" HorizontalAlignment="Center" Grid.Row="0" Margin="0,40,0,0"/>
+
+        <!-- Song Info -->
         <StackPanel Grid.Row="1" HorizontalAlignment="Center" Margin="0,12,0,12">
             <TextBlock x:Name="Title" FontSize="20" FontWeight="Bold"/>
             <TextBlock x:Name="Artist" Foreground="Gray" FontSize="16"/>
             <TextBlock x:Name="Meta" Foreground="Gray" FontSize="12"/>
         </StackPanel>
 
+        <!-- Lyrics -->
         <ListBox x:Name="Lyrics" Grid.Row="2" Margin="0,12,0,12"/>
-        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center">
-            <Button Content="⏮" Width="48" Height="40"/>
-            <Button Content="▶" Width="64" Height="40"/>
-            <Button Content="⏸" Width="64" Height="40"/>
-            <Button Content="⏭" Width="48" Height="40"/>
+
+        <!-- Playback Controls + Progress -->
+        <StackPanel Grid.Row="3" Orientation="Vertical" HorizontalAlignment="Center" Margin="0,12,0,0">
+            <Slider x:Name="ProgressSlider" Minimum="0" Maximum="100" Height="20" Width="400" Margin="0,0,0,8"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Content="⏮" Width="48" Height="40" Click="Previous_Click"/>
+                <Button Content="▶" Width="64" Height="40" Click="Play_Click"/>
+                <Button Content="⏸" Width="64" Height="40" Click="Pause_Click"/>
+                <Button Content="⏭" Width="48" Height="40" Click="Next_Click"/>
+            </StackPanel>
         </StackPanel>
     </Grid>
 </UserControl>
