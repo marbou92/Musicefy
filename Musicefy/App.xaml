@@ -5,6 +5,13 @@
              StartupUri="SplashScreen.xaml">
     <Application.Resources>
         <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- Default mode -->
+                <ResourceDictionary Source="Themes/Modes/System.xaml"/>
+                <!-- Default palette -->
+                <ResourceDictionary Source="Themes/Palettes/Default.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
             <!-- Global converters -->
             <conv:ThemeThumbnailConverter x:Key="ThemeThumbnailConverter"/>
             <conv:ThemePreviewConverter x:Key="ThemePreviewConverter"/>
