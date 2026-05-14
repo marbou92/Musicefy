@@ -42,7 +42,6 @@
     </Window.Resources>
 
     <DockPanel LastChildFill="True">
-        <!-- Sidebar Navigation -->
         <ListBox x:Name="SidebarList" DockPanel.Dock="Left" Width="60" 
                  Background="{DynamicResource BackgroundBrush}" BorderThickness="0"
                  ItemContainerStyle="{StaticResource SidebarIconButtonStyle}"
@@ -63,7 +62,6 @@
         </ListBox>
 
         <DockPanel>
-            <!-- Top Header Area -->
             <StackPanel DockPanel.Dock="Top" Background="{DynamicResource SecondaryBackgroundBrush}" Padding="0,15">
                 <TextBlock Text="Musicefy" HorizontalAlignment="Center" FontWeight="Bold" FontSize="20" Margin="0,0,0,15"/>
 
@@ -81,7 +79,6 @@
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="ListBoxItem">
-                                        <!-- FIXED: Padding is applied to the Border, which supports it -->
                                         <Border Background="{TemplateBinding Background}" CornerRadius="15" Padding="15,5">
                                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                         </Border>
@@ -103,7 +100,6 @@
                 </ListBox>
             </StackPanel>
 
-            <!-- Main Content Display -->
             <ContentControl x:Name="MainContent"/>
         </DockPanel>
     </DockPanel>
