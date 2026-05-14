@@ -1,96 +1,74 @@
 using System;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using Musicefy.Core.Models;
 using Musicefy.Services;
+using Musicefy.ViewModels;
+using Musicefy.Core.Models;
 
 namespace Musicefy.Views
 {
     public partial class HomeControl : UserControl
     {
-        public ObservableCollection<AlbumItem> Albums { get; set; }
-        public ObservableCollection<MusicFile> AlbumTracks { get; set; }
-
         private readonly PlaybackService _playback;
-        private AlbumItem _selectedAlbum;
-        private Random _rng = new Random();
+        private readonly MainViewModel _mainViewModel;
 
-        public HomeControl(PlaybackService playback)
+        // Constructor now accepts its dependencies
+        public HomeControl(PlaybackService playback, MainViewModel mainViewModel)
         {
             InitializeComponent();
             _playback = playback;
+            _mainViewModel = mainViewModel;
+            this.DataContext = _mainViewModel; // Set ViewModel as the DataContext
 
-            // Example: pull albums from your library
-            var allTracks = MusicefyApp.Library; // assume you expose your library globally
-            var randomAlbums = allTracks
-                .GroupBy(t => t.Album)
-                .OrderBy(x => _rng.Next())
-                .Take(6)
-                .Select(g => new AlbumItem
-                {
-                    Album = g.Key,
-                    Artist = g.First().Artist,
-                    Cover = string.IsNullOrEmpty(g.First().CoverPath)
-                        ? "pack://application:,,,/Assets/default_cover.png"
-                        : g.First().CoverPath,
-                    Tracks = g.ToList()
-                });
-
-            Albums = new ObservableCollection<AlbumItem>(randomAlbums);
-            AlbumTracks = new ObservableCollection<MusicFile>();
-
-            AlbumsList.ItemsSource = Albums;
-            AlbumTracksList.ItemsSource = AlbumTracks;
+            // Bind the ListBoxes in the XAML to the ViewModel collections
+            ChartsList.ItemsSource = _mainViewModel.BrowseCharts;
+            QuickPicksList.ItemsSource = _mainViewModel.QuickPicks;
+            VideosList.ItemsSource = _mainViewModel.TopMusicVideos;
         }
 
-        private void AlbumsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        // Logic for Quick Picks list double click to play the track
+        private void QuickPicksList_DoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            if (AlbumsList.SelectedItem is AlbumItem album)
+            if (QuickPicksList.SelectedItem is TrackCard selectedTrackCard)
             {
-                _selectedAlbum = album;
-                AlbumTitle.Text = $"{album.Album} — {album.Artist}";
-                AlbumTracks.Clear();
-                foreach (var track in album.Tracks)
-                    AlbumTracks.Add(track);
-
-                AlbumTracksEmpty.Visibility = AlbumTracks.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+                // Convert the TrackCard view model from ViewModel.cs back into a dummy MusicFile core model
+                // for playing, as full conversion logic isn't fully implemented yet.
+                var trackCoreModel = new MusicFile(selectedTrackCard.Title, selectedTrackCard.Artist, EnsureAlbum(""), 0, genre: EnsureGenre(""), duration: TimeSpan.Zero);
+                trackCoreModel.MarkPlayed();
+                _playback.PlayTrack(trackCoreModel);
             }
         }
 
-        private void AlbumTracksList_DoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        // Action for "Play all" button for quick picks
+        private void PlayAllQuickPicks_Click(object sender, RoutedEventArgs e)
         {
-            if (AlbumTracksList.SelectedItem is MusicFile track)
+            if (_mainViewModel.QuickPicks == null || !_mainViewModel.QuickPicks.Any()) return;
+
+            foreach (var trackCard in _mainViewModel.QuickPicks)
             {
-                track.MarkPlayed();
-                _playback.PlayTrack(track);
+                // Create dummy MusicFile core models and add them to the queue
+                var trackCoreModel = new MusicFile(trackCard.Title, trackCard.Artist, EnsureAlbum(""), 0, genre: EnsureGenre(""), duration: TimeSpan.Zero);
+                _playback.EnqueueTrack(trackCoreModel);
+            }
+            
+            // Construct a temporary dummy MusicFile model for the first track in the queue to start playback.
+            var firstTrackCard = _mainViewModel.QuickPicks.FirstOrDefault();
+            if (firstTrackCard != null)
+            {
+                var firstTrackCoreModel = new MusicFile(firstTrackCard.Title, firstTrackCard.Artist, EnsureAlbum(""), 0, genre: EnsureGenre(""), duration: TimeSpan.Zero);
+                _playback.PlayTrack(firstTrackCoreModel);
             }
         }
 
-        private void PlayAlbum_Click(object sender, RoutedEventArgs e)
+        // Action for "More" button for music videos. Navigation logic placeholder.
+        private void MoreVideos_Click(object sender, RoutedEventArgs e)
         {
-            if (_selectedAlbum == null) return;
-            foreach (var track in _selectedAlbum.Tracks)
-                _playback.EnqueueTrack(track);
-            _playback.PlayTrack(_selectedAlbum.Tracks.FirstOrDefault());
+            MessageBox.Show("Navigate to dedicated videos page (not implemented)");
         }
 
-        private void ShuffleAlbum_Click(object sender, RoutedEventArgs e)
-        {
-            if (_selectedAlbum == null) return;
-            var shuffled = _selectedAlbum.Tracks.OrderBy(t => _rng.Next()).ToList();
-            foreach (var track in shuffled)
-                _playback.EnqueueTrack(track);
-            _playback.PlayTrack(shuffled.FirstOrDefault());
-        }
-    }
-
-    public class AlbumItem
-    {
-        public string Album { get; set; }
-        public string Artist { get; set; }
-        public string Cover { get; set; }
-        public System.Collections.Generic.List<MusicFile> Tracks { get; set; }
+        // Helper methods re-used from previous HomeControl.xaml.cs logic
+        private string EnsureAlbum(string album) { return string.IsNullOrWhiteSpace(album) ? "Unknown Album" : album; }
+        private string EnsureGenre(string genre) { return string.IsNullOrWhiteSpace(genre) ? "Unknown Genre" : genre; }
     }
 }
