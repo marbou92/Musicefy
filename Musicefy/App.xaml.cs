@@ -17,16 +17,17 @@ namespace Musicefy
 
             try
             {
-                string savedTheme = Musicefy.Properties.Settings.Default.Theme ?? "Dark|Default.Dark";
+                // Load saved theme (Mode|Palette)
+                string savedTheme = Musicefy.Properties.Settings.Default.Theme ?? "System|Default";
                 ThemeManager.ApplyThemeFromString(savedTheme);
 
-                // Run fade AFTER UI is ready
+                // Animate fade AFTER UI is ready
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
                     ThemeManager.AnimateWindowsFade();
                 }), DispatcherPriority.ApplicationIdle);
 
-                // Start watching for system theme changes
+                // Watch for system theme changes
                 ThemeManager.StartSystemThemeWatcher();
             }
             catch (Exception ex)
@@ -65,7 +66,10 @@ namespace Musicefy
                 File.AppendAllText(logPath,
                     $"[{DateTime.Now}] {ex}\n---------------------------------\n");
             }
-            catch { }
+            catch
+            {
+                // swallow logging errors
+            }
         }
     }
 }
