@@ -1,6 +1,6 @@
 using System.Windows;
-using System.Windows.Media;
 using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace Musicefy.Controls
 {
@@ -8,19 +8,22 @@ namespace Musicefy.Controls
     {
         public ThemeCardControl() => InitializeComponent();
 
-        public string Name
+        // Renamed to avoid conflict with FrameworkElement.Name
+        public string CardName
         {
-            get => (string)GetValue(NameProperty);
-            set => SetValue(NameProperty, value);
+            get => (string)GetValue(CardNameProperty);
+            set => SetValue(CardNameProperty, value);
         }
-        public static readonly DependencyProperty NameProperty =
-            DependencyProperty.Register("Name", typeof(string), typeof(ThemeCardControl));
+
+        public static readonly DependencyProperty CardNameProperty =
+            DependencyProperty.Register("CardName", typeof(string), typeof(ThemeCardControl));
 
         public Brush PreviewBrush
         {
             get => (Brush)GetValue(PreviewBrushProperty);
             set => SetValue(PreviewBrushProperty, value);
         }
+
         public static readonly DependencyProperty PreviewBrushProperty =
             DependencyProperty.Register("PreviewBrush", typeof(Brush), typeof(ThemeCardControl));
 
@@ -29,6 +32,7 @@ namespace Musicefy.Controls
             get => (bool)GetValue(IsSelectedProperty);
             set => SetValue(IsSelectedProperty, value);
         }
+
         public static readonly DependencyProperty IsSelectedProperty =
             DependencyProperty.Register("IsSelected", typeof(bool), typeof(ThemeCardControl),
                 new PropertyMetadata(false, OnSelectedChanged));
