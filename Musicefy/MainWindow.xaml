@@ -46,6 +46,7 @@
                         Click="OpenSettings_Click"/>
             </Grid>
         </Border>
+
         <!-- Main Content Area -->
         <Grid DockPanel.Dock="Top" Margin="12">
             <Grid.ColumnDefinitions>
@@ -125,6 +126,7 @@
                 </Border>
             </Grid>
         </Grid>
+
         <!-- Bottom Player Bar -->
         <Border DockPanel.Dock="Bottom" Background="{DynamicResource SecondaryBackgroundBrush}" Padding="12">
             <Grid>
@@ -169,8 +171,7 @@
                         <TextBlock Grid.Column="0" x:Name="ElapsedText" Text="0:00" FontSize="12" Foreground="Gray"/>
                         <TextBlock Grid.Column="2" x:Name="RemainingText" Text="0:00" FontSize="12" Foreground="Gray" HorizontalAlignment="Right"/>
                     </Grid>
-                </StackPanel>
-
+                
                 <!-- Volume Control -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="Vol" VerticalAlignment="Center" Margin="0,0,6,0"/>
