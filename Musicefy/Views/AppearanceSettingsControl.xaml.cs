@@ -15,14 +15,6 @@ namespace Musicefy.Views
             this.DataContext = _viewModel;
         }
 
-        private void PalettePreview_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button btn && btn.DataContext is ThemePreview preview)
-            {
-                _viewModel.SelectPalette(preview.Name);
-            }
-        }
-
         private void Save_Click(object sender, RoutedEventArgs e)
         {
             _viewModel.Save();
