@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using Musicefy.Services;
 using Musicefy.ViewModels;
 using Musicefy.Core.Models;
@@ -13,62 +14,62 @@ namespace Musicefy.Views
         private readonly PlaybackService _playback;
         private readonly MainViewModel _mainViewModel;
 
-        // Constructor now accepts its dependencies
         public HomeControl(PlaybackService playback, MainViewModel mainViewModel)
         {
             InitializeComponent();
             _playback = playback;
             _mainViewModel = mainViewModel;
-            this.DataContext = _mainViewModel; // Set ViewModel as the DataContext
+            this.DataContext = _mainViewModel;
 
-            // Bind the ListBoxes in the XAML to the ViewModel collections
+            // Bindings are usually handled in XAML, but explicit assignment ensures immediate sync
             ChartsList.ItemsSource = _mainViewModel.BrowseCharts;
             QuickPicksList.ItemsSource = _mainViewModel.QuickPicks;
             VideosList.ItemsSource = _mainViewModel.TopMusicVideos;
         }
 
-        // Logic for Quick Picks list double click to play the track
-        private void QuickPicksList_DoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void QuickPicksList_DoubleClick(object sender, MouseButtonEventArgs e)
         {
-            if (QuickPicksList.SelectedItem is TrackCard selectedTrackCard)
+            if (QuickPicksList.SelectedItem is TrackCard selectedTrack)
             {
-                // Convert the TrackCard view model from ViewModel.cs back into a dummy MusicFile core model
-                // for playing, as full conversion logic isn't fully implemented yet.
-                var trackCoreModel = new MusicFile(selectedTrackCard.Title, selectedTrackCard.Artist, EnsureAlbum(""), 0, genre: EnsureGenre(""), duration: TimeSpan.Zero);
-                trackCoreModel.MarkPlayed();
-                _playback.PlayTrack(trackCoreModel);
+                var track = MapToMusicFile(selectedTrack);
+                track.MarkPlayed();
+                _playback.PlayTrack(track);
             }
         }
 
-        // Action for "Play all" button for quick picks
         private void PlayAllQuickPicks_Click(object sender, RoutedEventArgs e)
         {
             if (_mainViewModel.QuickPicks == null || !_mainViewModel.QuickPicks.Any()) return;
 
             foreach (var trackCard in _mainViewModel.QuickPicks)
             {
-                // Create dummy MusicFile core models and add them to the queue
-                var trackCoreModel = new MusicFile(trackCard.Title, trackCard.Artist, EnsureAlbum(""), 0, genre: EnsureGenre(""), duration: TimeSpan.Zero);
-                _playback.EnqueueTrack(trackCoreModel);
+                _playback.EnqueueTrack(MapToMusicFile(trackCard));
             }
             
-            // Construct a temporary dummy MusicFile model for the first track in the queue to start playback.
-            var firstTrackCard = _mainViewModel.QuickPicks.FirstOrDefault();
-            if (firstTrackCard != null)
+            var first = _mainViewModel.QuickPicks.FirstOrDefault();
+            if (first != null)
             {
-                var firstTrackCoreModel = new MusicFile(firstTrackCard.Title, firstTrackCard.Artist, EnsureAlbum(""), 0, genre: EnsureGenre(""), duration: TimeSpan.Zero);
-                _playback.PlayTrack(firstTrackCoreModel);
+                _playback.PlayTrack(MapToMusicFile(first));
             }
         }
 
-        // Action for "More" button for music videos. Navigation logic placeholder.
         private void MoreVideos_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Navigate to dedicated videos page (not implemented)");
+            // Future: Use a NavigationService instead of MessageBox
+            MessageBox.Show("Navigation to Videos is coming soon!", "Musicefy", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        // Helper methods re-used from previous HomeControl.xaml.cs logic
-        private string EnsureAlbum(string album) { return string.IsNullOrWhiteSpace(album) ? "Unknown Album" : album; }
-        private string EnsureGenre(string genre) { return string.IsNullOrWhiteSpace(genre) ? "Unknown Genre" : genre; }
+        // Centralized mapping logic to avoid repetition
+        private MusicFile MapToMusicFile(TrackCard card)
+        {
+            return new MusicFile(
+                string.IsNullOrWhiteSpace(card.Title) ? "Unknown Track" : card.Title,
+                string.IsNullOrWhiteSpace(card.Artist) ? "Unknown Artist" : card.Artist,
+                "Unknown Album", 
+                0, 
+                genre: "Unknown Genre", 
+                duration: TimeSpan.Zero
+            );
+        }
     }
 }
