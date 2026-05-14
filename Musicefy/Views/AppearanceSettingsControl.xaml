@@ -2,6 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:Musicefy.ViewModels"
+             xmlns:controls="clr-namespace:Musicefy.Controls"
              Background="{DynamicResource BackgroundBrush}"
              Foreground="{DynamicResource ForegroundBrush}">
 
@@ -25,61 +26,22 @@
 
         <!-- Appearance content -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Vertical" Spacing="20">
 
-                <!-- Theme Tabs -->
-                <TabControl SelectedIndex="{Binding SelectedThemeIndex}"
-                            Margin="0,0,0,15">
-                    <TabItem Header="System"/>
-                    <TabItem Header="Light"/>
-                    <TabItem Header="Dark"/>
-                </TabControl>
-
-                <!-- Theme Previews -->
-                <ItemsControl ItemsSource="{Binding ThemePreviews}" Margin="0,0,0,15">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <WrapPanel />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Button Click="PalettePreview_Click"
-                                    Padding="0" Margin="5"
-                                    Width="140" Height="100"
-                                    Background="{Binding BackgroundBrush}">
-                                <Border BorderThickness="1" BorderBrush="White" CornerRadius="4">
-                                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                        <!-- Palette name -->
-                                        <TextBlock Text="{Binding Name}" 
-                                                   FontWeight="Bold" 
-                                                   Foreground="{Binding AccentBrush}" 
-                                                   HorizontalAlignment="Center"/>
-                                        <!-- Live thumbnail preview -->
-                                        <Grid Height="50" Margin="0,5,0,0">
-                                            <Rectangle Fill="{Binding AccentBrush}" RadiusX="4" RadiusY="4"/>
-                                            <TextBlock Text="Aa" 
-                                                       Foreground="{Binding BackgroundBrush}" 
-                                                       FontSize="16" 
-                                                       HorizontalAlignment="Center" 
-                                                       VerticalAlignment="Center"/>
-                                        </Grid>
-                                    </StackPanel>
-                                </Border>
-                            </Button>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                <!-- Theme Mode Selector -->
+                <TextBlock Text="Theme Mode" FontWeight="Bold" Margin="0,0,0,5"/>
+                <controls:ThemeSelectorGroup DataContext="{Binding}" />
 
                 <!-- Pure Dark Mode Toggle -->
                 <CheckBox Content="Enable pure black dark mode" 
                           IsChecked="{Binding PureBlackMode}" 
-                          Margin="0,0,0,10"/>
-                
+                          Margin="0,10,0,0"/>
+
                 <!-- Date Format -->
+                <TextBlock Text="Date Format" FontWeight="Bold" Margin="0,20,0,5"/>
                 <ComboBox ItemsSource="{Binding DateFormats}" 
                           SelectedItem="{Binding SelectedDateFormat}" 
-                          Width="200" Margin="0,10,0,0"/>
+                          Width="200"/>
             </StackPanel>
         </ScrollViewer>
 
