@@ -1,24 +1,21 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- Normal -->
+    <!-- Catppuccin Accent Palette -->
     <LinearGradientBrush x:Key="AccentBrush" StartPoint="0,0" EndPoint="1,1">
         <GradientStop Color="#F5C2E7" Offset="0"/>
         <GradientStop Color="#DDB6F2" Offset="1"/>
     </LinearGradientBrush>
 
-    <!-- Hover -->
     <LinearGradientBrush x:Key="AccentHoverBrush" StartPoint="0,0" EndPoint="1,1">
         <GradientStop Color="#D6B8F7" Offset="0"/>
         <GradientStop Color="#B57EDC" Offset="1"/>
     </LinearGradientBrush>
 
-    <!-- Pressed -->
     <LinearGradientBrush x:Key="AccentPressedBrush" StartPoint="0,0" EndPoint="1,1">
         <GradientStop Color="#9A6FD0" Offset="0"/>
         <GradientStop Color="#7E56B8" Offset="1"/>
     </LinearGradientBrush>
 
-    <!-- Glow -->
     <SolidColorBrush x:Key="AccentGlowBrush" Color="#B57EDC"/>
 </ResourceDictionary>
