@@ -12,10 +12,10 @@
 
     <Window.Resources>
         <SolidColorBrush x:Key="BackgroundBrush" Color="#000000"/>
-        <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#181818"/>
+        <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#121212"/>
         <SolidColorBrush x:Key="SidebarSelectionBrush" Color="#FFFFFF"/>
         <SolidColorBrush x:Key="ForegroundBrush" Color="#FFFFFF"/>
-        <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#AAAAAA"/>
+        <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#B3B3B3"/>
 
         <Geometry x:Key="IconHome">M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z</Geometry>
         <Geometry x:Key="IconSearch">M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z</Geometry>
@@ -25,24 +25,31 @@
         <Style x:Key="SidebarIconButtonStyle" TargetType="ListBoxItem">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Margin" Value="0,15"/>
+            <Setter Property="Margin" Value="0,10"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ListBoxItem">
-                        <Grid Background="{TemplateBinding Background}">
+                        <Grid Background="Transparent" Cursor="Hand" x:Name="RootGrid">
                             <Ellipse x:Name="SelectionIndicator" Fill="{DynamicResource SidebarSelectionBrush}"
-                                     Width="36" Height="36" Visibility="Collapsed" HorizontalAlignment="Center"/>
-                            <Path Data="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}" 
-                                  Fill="{TemplateBinding Foreground}" 
-                                  Width="20" Height="20" 
+                                     Width="42" Height="42" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            
+                            <Path x:Name="IconPath"
+                                  Data="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}" 
+                                  Fill="{DynamicResource SecondaryForegroundBrush}" 
+                                  Width="22" Height="22" 
                                   Stretch="Uniform" 
                                   HorizontalAlignment="Center" 
                                   VerticalAlignment="Center"/>
                         </Grid>
                         <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="IconPath" Property="Fill" Value="White"/>
+                            </Trigger>
                             <Trigger Property="IsSelected" Value="True">
                                 <Setter TargetName="SelectionIndicator" Property="Visibility" Value="Visible"/>
-                                <Setter Property="Foreground" Value="{DynamicResource BackgroundBrush}"/>
+                                <Setter TargetName="IconPath" Property="Fill" Value="Black"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -52,21 +59,27 @@
     </Window.Resources>
 
     <DockPanel LastChildFill="True">
-        <ListBox x:Name="SidebarList" DockPanel.Dock="Left" Width="60" 
-                 Background="{DynamicResource BackgroundBrush}" BorderThickness="0"
-                 ItemContainerStyle="{StaticResource SidebarIconButtonStyle}"
-                 SelectionChanged="Sidebar_SelectionChanged">
-            <ListBoxItem IsSelected="True" ToolTip="Home" Tag="{StaticResource IconHome}"/>
-            <ListBoxItem ToolTip="Search" Tag="{StaticResource IconSearch}"/>
-            <ListBoxItem ToolTip="Library" Tag="{StaticResource IconLibrary}"/>
-            <ListBoxItem x:Name="SettingsItem" ToolTip="Settings" Tag="{StaticResource IconSettings}">
-                <ListBoxItem.Margin>0,200,0,0</ListBoxItem.Margin>
-            </ListBoxItem>
-        </ListBox>
+        <Border DockPanel.Dock="Left" Width="70" Background="{DynamicResource BackgroundBrush}" BorderBrush="#282828" BorderThickness="0,0,1,0">
+            <Grid>
+                <ListBox x:Name="SidebarList" 
+                         VerticalAlignment="Center"
+                         Background="Transparent" 
+                         BorderThickness="0"
+                         ItemContainerStyle="{StaticResource SidebarIconButtonStyle}"
+                         SelectionChanged="Sidebar_SelectionChanged"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         ScrollViewer.VerticalScrollBarVisibility="Disabled">
+                    <ListBoxItem IsSelected="True" ToolTip="Home" Tag="{StaticResource IconHome}"/>
+                    <ListBoxItem ToolTip="Search" Tag="{StaticResource IconSearch}"/>
+                    <ListBoxItem ToolTip="Library" Tag="{StaticResource IconLibrary}"/>
+                    <ListBoxItem x:Name="SettingsItem" ToolTip="Settings" Tag="{StaticResource IconSettings}"/>
+                </ListBox>
+            </Grid>
+        </Border>
 
         <DockPanel>
             <StackPanel DockPanel.Dock="Top" Background="{DynamicResource SecondaryBackgroundBrush}">
-                <TextBlock Text="Musicefy" HorizontalAlignment="Center" FontWeight="Bold" FontSize="20" Margin="0,15,0,15"/>
+                <TextBlock Text="Musicefy" HorizontalAlignment="Center" FontWeight="Bold" FontSize="20" Margin="0,20,0,15" Foreground="White"/>
 
                 <ListBox x:Name="CategoriesList" HorizontalAlignment="Center" BorderThickness="0" Background="Transparent" 
                          Margin="0,0,0,15" ScrollViewer.HorizontalScrollBarVisibility="Hidden">
@@ -77,12 +90,13 @@
                     </ListBox.ItemsPanel>
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="ListBoxItem">
-                            <Setter Property="Background" Value="#33FFFFFF"/>
-                            <Setter Property="Margin" Value="5,0"/>
+                            <Setter Property="Background" Value="#282828"/>
+                            <Setter Property="Foreground" Value="White"/>
+                            <Setter Property="Margin" Value="6,0"/>
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="ListBoxItem">
-                                        <Border Background="{TemplateBinding Background}" CornerRadius="15" Padding="15,5">
+                                        <Border Background="{TemplateBinding Background}" CornerRadius="18" Padding="16,6">
                                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                         </Border>
                                     </ControlTemplate>
@@ -90,18 +104,23 @@
                             </Setter>
                             <Style.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Background" Value="#55FFFFFF"/>
+                                    <Setter Property="Background" Value="#3E3E3E"/>
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="White"/>
+                                    <Setter Property="Foreground" Value="Black"/>
                                 </Trigger>
                             </Style.Triggers>
                         </Style>
                     </ListBox.ItemContainerStyle>
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding Name}" Foreground="{DynamicResource ForegroundBrush}"/>
+                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
             </StackPanel>
+
             <ContentControl x:Name="MainContent"/>
         </DockPanel>
     </DockPanel>
