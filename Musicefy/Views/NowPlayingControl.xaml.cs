@@ -1,6 +1,5 @@
 using System;
 using System.Windows.Controls;
-using System.Windows.Input;
 using Musicefy.Services;
 using Musicefy.Core.Models;
 
@@ -20,19 +19,6 @@ namespace Musicefy.Views
 
             _playback.TrackChanged += OnTrackChanged;
             _playback.ProgressChanged += OnProgressChanged;
-
-            // Enable swipe gesture
-            this.ManipulationMode = ManipulationModes.TranslateY;
-            this.ManipulationDelta += OnManipulationDelta;
-        }
-
-        // Swipe down gesture
-        private void OnManipulationDelta(object sender, ManipulationDeltaEventArgs e)
-        {
-            if (e.DeltaManipulation.Translation.Y > 50) // detect downward swipe
-            {
-                RequestCollapse?.Invoke();
-            }
         }
 
         // Back button click
