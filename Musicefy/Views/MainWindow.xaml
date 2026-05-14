@@ -63,7 +63,6 @@
 
         <DockPanel>
             <StackPanel DockPanel.Dock="Top" Background="{DynamicResource SecondaryBackgroundBrush}" Padding="0,15">
-                <!-- Updated Title -->
                 <TextBlock Text="Musicefy" HorizontalAlignment="Center" FontWeight="Bold" FontSize="20" Margin="0,0,0,15"/>
 
                 <ListBox x:Name="CategoriesList" HorizontalAlignment="Center" BorderThickness="0"
@@ -80,7 +79,7 @@
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="ListBoxItem">
-                                        <!-- Fixed: Padding moved to Border -->
+                                        <!-- Fixed: Padding applied to Border, not ListBoxItem -->
                                         <Border Background="{TemplateBinding Background}" CornerRadius="15" Padding="15,5">
                                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                         </Border>
