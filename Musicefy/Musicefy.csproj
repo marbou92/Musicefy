@@ -23,18 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Themes as Page resources -->
-    <Page Include="Themes\Base.xaml" />
-    <Page Include="Themes\Modes\Dark.xaml" />
-    <Page Include="Themes\Modes\Light.xaml" />
-    <Page Include="Themes\Modes\System.xaml" />
-    <Page Include="Themes\Palettes\Default.xaml" />
-    <Page Include="Themes\Palettes\Catppuccin.xaml" />
-    <Page Include="Themes\Palettes\GreenApple.xaml" />
-    <Page Include="Themes\Palettes\Lavender.xaml" />
-  </ItemGroup>
-
-  <ItemGroup>
     <!-- Assets -->
     <Resource Include="Assets\default_cover.png" />
     <Content Include="Assets\musicefy.ico" />
