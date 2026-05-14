@@ -9,8 +9,8 @@
         Foreground="{DynamicResource ForegroundBrush}">
 
     <Window.Resources>
-        <!-- Sidebar Button Style -->
-        <Style x:Key="SidebarButtonStyle" TargetType="Button">
+        <!-- Sidebar ToggleButton Style with gradient -->
+        <Style x:Key="SidebarButtonStyle" TargetType="ToggleButton">
             <Setter Property="Background" Value="{DynamicResource BackgroundBrush}"/>
             <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
             <Setter Property="BorderBrush" Value="Transparent"/>
@@ -20,7 +20,7 @@
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
-                    <ControlTemplate TargetType="Button">
+                    <ControlTemplate TargetType="ToggleButton">
                         <Border Background="{TemplateBinding Background}" 
                                 CornerRadius="6" 
                                 BorderBrush="{TemplateBinding BorderBrush}" 
@@ -28,16 +28,26 @@
                             <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5"/>
                         </Border>
                         <ControlTemplate.Triggers>
+                            <!-- Hover -->
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter Property="Background" Value="{DynamicResource AccentHoverBrush}"/>
                                 <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
                             </Trigger>
+                            <!-- Pressed -->
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter Property="Background" Value="{DynamicResource AccentPressedBrush}"/>
                                 <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
                             </Trigger>
-                            <Trigger Property="IsKeyboardFocused" Value="True">
-                                <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+                            <!-- Active (Checked) -->
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter Property="Background">
+                                    <Setter.Value>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                            <GradientStop Color="#222222" Offset="0"/>
+                                            <GradientStop Color="#333333" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Setter.Value>
+                                </Setter>
                                 <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -86,41 +96,41 @@
         </Grid.ColumnDefinitions>
 
         <!-- Sidebar -->
-<StackPanel Grid.Column="0" Background="{DynamicResource BackgroundBrush}">
-    <TextBlock Text="Settings" 
-               FontSize="24" 
-               FontWeight="Bold" 
-               Margin="20"
-               Foreground="{DynamicResource ForegroundBrush}"/>
+        <StackPanel Grid.Column="0" Background="{DynamicResource BackgroundBrush}">
+            <TextBlock Text="Settings" 
+                       FontSize="24" 
+                       FontWeight="Bold" 
+                       Margin="20"
+                       Foreground="{DynamicResource ForegroundBrush}"/>
 
-        <!-- Appearance option -->
-    <ToggleButton x:Name="AppearanceButton"
-                  Style="{StaticResource SidebarButtonStyle}" 
-                  Margin="0,0,0,10"
-                  IsChecked="True"
-                  Click="AppearanceButton_Click">
-        <StackPanel Orientation="Horizontal">
-            <TextBlock Text="🎨" FontSize="16" Margin="0,0,8,0"/>
-            <StackPanel>
-                <TextBlock Text="Appearance" FontWeight="Bold"/>
-                <TextBlock Text="Theme, date &amp; time format" FontSize="12"/>
-            </StackPanel>
-        </StackPanel>
-    </ToggleButton>
+            <!-- Appearance option -->
+            <ToggleButton x:Name="AppearanceButton"
+                          Style="{StaticResource SidebarButtonStyle}" 
+                          Margin="0,0,0,10"
+                          IsChecked="True"
+                          Click="AppearanceButton_Click">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="🎨" FontSize="16" Margin="0,0,8,0"/>
+                    <StackPanel>
+                        <TextBlock Text="Appearance" FontWeight="Bold"/>
+                        <TextBlock Text="Theme, date &amp; time format" FontSize="12"/>
+                    </StackPanel>
+                </StackPanel>
+            </ToggleButton>
 
-        <!-- Downloads option -->
-    <ToggleButton x:Name="DownloadsButton"
-                  Style="{StaticResource SidebarButtonStyle}" 
-                  Click="DownloadsButton_Click">
-        <StackPanel Orientation="Horizontal">
-            <TextBlock Text="⬇️" FontSize="16" Margin="0,0,8,0"/>
-            <StackPanel>
-                <TextBlock Text="Downloads" FontWeight="Bold"/>
-                <TextBlock Text="Cache, path &amp; limits" FontSize="12"/>
-            </StackPanel>
+            <!-- Downloads option -->
+            <ToggleButton x:Name="DownloadsButton"
+                          Style="{StaticResource SidebarButtonStyle}" 
+                          Click="DownloadsButton_Click">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="⬇️" FontSize="16" Margin="0,0,8,0"/>
+                    <StackPanel>
+                        <TextBlock Text="Downloads" FontWeight="Bold"/>
+                        <TextBlock Text="Cache, path &amp; limits" FontSize="12"/>
+                    </StackPanel>
+                </StackPanel>
+            </ToggleButton>
         </StackPanel>
-    </ToggleButton>
-</StackPanel>
 
         <!-- Main Content -->
         <Grid Grid.Column="1" Margin="30">
