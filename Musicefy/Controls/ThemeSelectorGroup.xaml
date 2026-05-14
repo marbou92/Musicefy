@@ -10,7 +10,7 @@
         </ItemsControl.ItemsPanel>
         <ItemsControl.ItemTemplate>
             <DataTemplate>
-                <controls:ThemeCardControl Name="{Binding Name}"
+                <controls:ThemeCardControl CardName="{Binding CardName}"
                                            PreviewBrush="{Binding PreviewBrush}"
                                            IsSelected="{Binding IsSelected, Mode=TwoWay}"/>
             </DataTemplate>
