@@ -1,8 +1,10 @@
 using System.IO;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
 using Musicefy.Core.Models;
 using Musicefy.Core.Services;
-using Musicefy.Services; // for ToastService
+using Musicefy.Services; // ToastService
 
 namespace Musicefy.Views
 {
@@ -38,9 +40,65 @@ namespace Musicefy.Views
             Close();
         }
 
+        /// <summary>
+        /// Validate inputs and show inline errors.
+        /// </summary>
+        private bool ValidateInputs(bool isLocal)
+        {
+            bool valid = true;
+
+            ResetValidation(NameTextBox);
+            ResetValidation(UrlTextBox);
+            ResetValidation(UsernameTextBox);
+            ResetValidation(PasswordBox);
+
+            if (string.IsNullOrWhiteSpace(NameTextBox.Text))
+            {
+                ShowValidation(NameTextBox, "Name is required.");
+                valid = false;
+            }
+
+            if (string.IsNullOrWhiteSpace(UrlTextBox.Text))
+            {
+                ShowValidation(UrlTextBox, isLocal ? "Folder path is required." : "Server URL is required.");
+                valid = false;
+            }
+
+            if (!isLocal)
+            {
+                if (string.IsNullOrWhiteSpace(UsernameTextBox.Text))
+                {
+                    ShowValidation(UsernameTextBox, "Username is required.");
+                    valid = false;
+                }
+                if (string.IsNullOrWhiteSpace(PasswordBox.Password))
+                {
+                    ShowValidation(PasswordBox, "Password is required.");
+                    valid = false;
+                }
+            }
+
+            return valid;
+        }
+
+        private void ShowValidation(Control control, string tooltip)
+        {
+            control.BorderBrush = Brushes.Red;
+            control.ToolTip = tooltip;
+        }
+
+        private void ResetValidation(Control control)
+        {
+            control.ClearValue(Border.BorderBrushProperty);
+            control.ToolTip = null;
+        }
+
         private async void TestButton_Click(object sender, RoutedEventArgs e)
         {
-            var type = SourceTypeCombo.SelectedIndex == 1 ? "Local" : "Subsonic";
+            bool isLocal = SourceTypeCombo.SelectedIndex == 1;
+            if (!ValidateInputs(isLocal)) return;
+
+            var type = isLocal ? "Local" : "Subsonic";
 
             var source = new StreamingSource
             {
@@ -53,7 +111,7 @@ namespace Musicefy.Views
 
             try
             {
-                if (type == "Local")
+                if (isLocal)
                 {
                     if (Directory.Exists(source.Url))
                         ToastService.ShowToast("✅ Local folder found!", Brushes.ForestGreen);
@@ -79,7 +137,10 @@ namespace Musicefy.Views
 
         private async void AddButton_Click(object sender, RoutedEventArgs e)
         {
-            var type = SourceTypeCombo.SelectedIndex == 1 ? "Local" : "Subsonic";
+            bool isLocal = SourceTypeCombo.SelectedIndex == 1;
+            if (!ValidateInputs(isLocal)) return;
+
+            var type = isLocal ? "Local" : "Subsonic";
 
             var source = new StreamingSource
             {
