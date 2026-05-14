@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Media;
@@ -84,6 +85,8 @@ namespace Musicefy.ViewModels
         {
             string themeString = $"{GetModeFromIndex(_selectedThemeIndex)}|{GetCurrentPalette()}";
             ThemeManager.SaveTheme(themeString);
+
+            Musicefy.Properties.Settings.Default.Theme = themeString;
             Musicefy.Properties.Settings.Default.DateFormat = _selectedDateFormat;
             Musicefy.Properties.Settings.Default.Save();
         }
@@ -98,10 +101,12 @@ namespace Musicefy.ViewModels
         private string GetModeFromIndex(int index) =>
             index switch { 0 => "System", 1 => "Light", _ => "Dark" };
 
-        private string GetCurrentPalette() =>
-            Musicefy.Properties.Settings.Default.Theme?.Split('|').Length > 1
-                ? Musicefy.Properties.Settings.Default.Theme.Split('|')[1]
-                : "Default";
+        private string GetCurrentPalette()
+        {
+            // Use the selected ThemePreview’s CardName
+            var selected = ThemePreviews.FirstOrDefault(tp => tp.IsSelected);
+            return selected?.CardName ?? "Default";
+        }
 
         private void ApplyTheme()
         {
@@ -112,7 +117,7 @@ namespace Musicefy.ViewModels
             Application.Current.Resources.MergedDictionaries.Add(
                 new ResourceDictionary { Source = new Uri("/Themes/Base.xaml", UriKind.Relative) });
 
-            if (mode.Equals("System", System.StringComparison.OrdinalIgnoreCase))
+            if (mode.Equals("System", StringComparison.OrdinalIgnoreCase))
             {
                 bool isDark = ThemeManager.IsSystemDarkMode();
                 mode = isDark ? "Dark" : "Light";
@@ -129,17 +134,8 @@ namespace Musicefy.ViewModels
                     new ResourceDictionary { Source = new Uri($"/Themes/Modes/{mode}.xaml", UriKind.Relative) });
             }
 
-            if (palette.Equals("Default", System.StringComparison.OrdinalIgnoreCase))
-            {
-                string paletteFile = mode == "Dark" ? "Default.Dark.xaml" : "Default.Light.xaml";
-                Application.Current.Resources.MergedDictionaries.Add(
-                    new ResourceDictionary { Source = new Uri($"/Themes/Palettes/{paletteFile}", UriKind.Relative) });
-            }
-            else
-            {
-                Application.Current.Resources.MergedDictionaries.Add(
-                    new ResourceDictionary { Source = new Uri($"/Themes/Palettes/{palette}.xaml", UriKind.Relative) });
-            }
+            Application.Current.Resources.MergedDictionaries.Add(
+                new ResourceDictionary { Source = new Uri($"/Themes/Palettes/{palette}.xaml", UriKind.Relative) });
 
             RefreshPreviews();
         }
@@ -149,7 +145,7 @@ namespace Musicefy.ViewModels
             ThemePreviews.Clear();
 
             string mode = GetModeFromIndex(_selectedThemeIndex);
-            if (mode.Equals("System", System.StringComparison.OrdinalIgnoreCase))
+            if (mode.Equals("System", StringComparison.OrdinalIgnoreCase))
             {
                 bool isDark = ThemeManager.IsSystemDarkMode();
                 mode = isDark ? "Dark" : "Light";
@@ -160,24 +156,26 @@ namespace Musicefy.ViewModels
             {
                 ThemePreviews.Add(new ThemePreview
                 {
-                    Name = "Default (Pure Black)",
+                    CardName = "Default (Pure Black)",
                     AccentBrush = Brushes.White,
-                    BackgroundBrush = Brushes.Black
+                    BackgroundBrush = Brushes.Black,
+                    IsSelected = true
                 });
             }
             else
             {
                 ThemePreviews.Add(new ThemePreview
                 {
-                    Name = "Default",
+                    CardName = "Default",
                     AccentBrush = mode == "Dark" ? Brushes.White : Brushes.Black,
-                    BackgroundBrush = mode == "Dark" ? Brushes.DarkGray : Brushes.White
+                    BackgroundBrush = mode == "Dark" ? Brushes.DarkGray : Brushes.White,
+                    IsSelected = true
                 });
             }
 
-            ThemePreviews.Add(new ThemePreview { Name = "Catppuccin", AccentBrush = ThemeManager.GetAccentBrush("Catppuccin"), BackgroundBrush = Brushes.Transparent });
-            ThemePreviews.Add(new ThemePreview { Name = "GreenApple", AccentBrush = ThemeManager.GetAccentBrush("GreenApple"), BackgroundBrush = Brushes.Transparent });
-            ThemePreviews.Add(new ThemePreview { Name = "Lavender", AccentBrush = ThemeManager.GetAccentBrush("Lavender"), BackgroundBrush = Brushes.Transparent });
+            ThemePreviews.Add(new ThemePreview { CardName = "Catppuccin", AccentBrush = ThemeManager.GetAccentBrush("Catppuccin"), BackgroundBrush = Brushes.Transparent });
+            ThemePreviews.Add(new ThemePreview { CardName = "GreenApple", AccentBrush = ThemeManager.GetAccentBrush("GreenApple"), BackgroundBrush = Brushes.Transparent });
+            ThemePreviews.Add(new ThemePreview { CardName = "Lavender", AccentBrush = ThemeManager.GetAccentBrush("Lavender"), BackgroundBrush = Brushes.Transparent });
         }
 
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)
@@ -186,8 +184,9 @@ namespace Musicefy.ViewModels
 
     public class ThemePreview
     {
-        public string Name { get; set; }
+        public string CardName { get; set; }   // renamed from Name
         public Brush AccentBrush { get; set; }
         public Brush BackgroundBrush { get; set; }
+        public bool IsSelected { get; set; }   // added for persistence
     }
 }
