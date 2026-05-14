@@ -17,7 +17,7 @@ namespace Musicefy
 
             try
             {
-                string savedTheme = Musicefy.Properties.Settings.Default.Theme ?? "Dark|Default";
+                string savedTheme = Musicefy.Properties.Settings.Default.Theme ?? "Dark|Default.Dark";
                 ThemeManager.ApplyThemeFromString(savedTheme);
 
                 // Run fade AFTER UI is ready
