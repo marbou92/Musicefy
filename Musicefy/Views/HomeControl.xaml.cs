@@ -17,14 +17,15 @@ namespace Musicefy.Views
         public HomeControl(PlaybackService playback, MainViewModel mainViewModel)
         {
             InitializeComponent();
-            _playback = playback;
-            _mainViewModel = mainViewModel;
+            _playback = playback ?? throw new ArgumentNullException(nameof(playback));
+            _mainViewModel = mainViewModel ?? throw new ArgumentNullException(nameof(mainViewModel));
+            
             this.DataContext = _mainViewModel;
 
-            // Bindings are usually handled in XAML, but explicit assignment ensures immediate sync
-            ChartsList.ItemsSource = _mainViewModel.BrowseCharts;
-            QuickPicksList.ItemsSource = _mainViewModel.QuickPicks;
-            VideosList.ItemsSource = _mainViewModel.TopMusicVideos;
+            // Explicit assignment for immediate sync (ensures Echo UI pills appear instantly)
+            if (ChartsList != null) ChartsList.ItemsSource = _mainViewModel.BrowseCharts;
+            if (QuickPicksList != null) QuickPicksList.ItemsSource = _mainViewModel.QuickPicks;
+            if (VideosList != null) VideosList.ItemsSource = _mainViewModel.TopMusicVideos;
         }
 
         private void QuickPicksList_DoubleClick(object sender, MouseButtonEventArgs e)
@@ -32,7 +33,6 @@ namespace Musicefy.Views
             if (QuickPicksList.SelectedItem is TrackCard selectedTrack)
             {
                 var track = MapToMusicFile(selectedTrack);
-                track.MarkPlayed();
                 _playback.PlayTrack(track);
             }
         }
@@ -41,6 +41,7 @@ namespace Musicefy.Views
         {
             if (_mainViewModel.QuickPicks == null || !_mainViewModel.QuickPicks.Any()) return;
 
+            // Clear current queue and add all picks
             foreach (var trackCard in _mainViewModel.QuickPicks)
             {
                 _playback.EnqueueTrack(MapToMusicFile(trackCard));
@@ -55,19 +56,18 @@ namespace Musicefy.Views
 
         private void MoreVideos_Click(object sender, RoutedEventArgs e)
         {
-            // Future: Use a NavigationService instead of MessageBox
-            MessageBox.Show("Navigation to Videos is coming soon!", "Musicefy", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show("Video library integration is coming in the next update!", "Musicefy", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        // Centralized mapping logic to avoid repetition
         private MusicFile MapToMusicFile(TrackCard card)
         {
+            // Maps the UI "TrackCard" to the Core "MusicFile" used by the engine
             return new MusicFile(
-                string.IsNullOrWhiteSpace(card.Title) ? "Unknown Track" : card.Title,
-                string.IsNullOrWhiteSpace(card.Artist) ? "Unknown Artist" : card.Artist,
-                "Unknown Album", 
-                0, 
-                genre: "Unknown Genre", 
+                title: string.IsNullOrWhiteSpace(card.Title) ? "Unknown Track" : card.Title,
+                artist: string.IsNullOrWhiteSpace(card.Artist) ? "Unknown Artist" : card.Artist,
+                album: "Musicefy Discovery", 
+                year: DateTime.Now.Year, 
+                genre: "Discovery", 
                 duration: TimeSpan.Zero
             );
         }
