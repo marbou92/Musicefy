@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using Musicefy.ViewModels;
 
 namespace Musicefy.Views
@@ -24,6 +25,14 @@ namespace Musicefy.Views
         private void Cancel_Click(object sender, RoutedEventArgs e)
         {
             _viewModel.Cancel();
+        }
+
+        private void PaletteCard_Click(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is Border border && border.DataContext is ThemePreview preview)
+            {
+                _viewModel.SelectPalette(preview.CardName);
+            }
         }
     }
 }
