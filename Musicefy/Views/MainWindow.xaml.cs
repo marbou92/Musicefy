@@ -17,27 +17,28 @@ namespace Musicefy
         {
             InitializeComponent();
             
-            // 1. Initialize View Model and set DataContext for the Window
+            // 1. Initialize View Model and set DataContext
             _mainViewModel = new MainViewModel();
             this.DataContext = _mainViewModel;
 
             // 2. Initialize Services
             _playback = new PlaybackService();
 
-            // 3. Load the initial View (Home) on startup
+            // 3. Load initial View
             MainContent.Content = new HomeControl(_playback, _mainViewModel); 
         }
 
-        /// <summary>
-        /// Handles navigation when a sidebar icon is clicked.
-        /// </summary>
         private void Sidebar_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            // Security check to ensure we have a selection
-            if (SidebarList == null || SidebarList.SelectedItem is not ListBoxItem selectedItem)
+            // Fixed: Changed 'is not' to classic null check for C# 8.0 compatibility
+            if (SidebarList == null || SidebarList.SelectedItem == null)
                 return;
 
-            // Special case for Settings which is an explicit named item in XAML
+            ListBoxItem selectedItem = SidebarList.SelectedItem as ListBoxItem;
+            if (selectedItem == null)
+                return;
+
+            // Special case for Settings
             if (selectedItem == SettingsItem)
             {
                 OpenSettings();
@@ -45,7 +46,6 @@ namespace Musicefy
             }
 
             // Navigation logic based on ListBox Index
-            // Index 0: Home, 1: Search, 2: Library
             switch (SidebarList.SelectedIndex)
             {
                 case 0:
@@ -65,25 +65,11 @@ namespace Musicefy
             var win = new SettingsWindow { Owner = this };
             win.ShowDialog();
 
-            // After closing settings, we default back to the Home tab 
-            // so the "Settings" icon doesn't stay highlighted.
-            SidebarList.SelectedIndex = 0;
+            // Reset selection so the settings icon doesn't stay highlighted
+            if (SidebarList != null)
+            {
+                SidebarList.SelectedIndex = 0;
+            }
         }
-
-        /* =========================================================================
-           LEGACY PLAYER CODE (FOR FUTURE REFERENCE)
-           You can re-enable this if you add a 'Now Playing' bar back to the UI.
-        =========================================================================
-        
-        private void OnTrackChanged(Musicefy.Core.Models.MusicFile track)
-        {
-            // Logic for updating UI elements when a song changes
-        }
-
-        private void OnProgressChanged(TimeSpan current, TimeSpan total)
-        {
-            // Logic for updating seek bars
-        }
-        */
     }
 }
