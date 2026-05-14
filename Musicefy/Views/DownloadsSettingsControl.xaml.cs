@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -12,6 +13,7 @@ namespace Musicefy.Views
     {
         private string _downloadsPath;
         private DispatcherTimer _cacheMonitorTimer;
+        private CancellationTokenSource _downloadCts;
 
         public DownloadsSettingsControl()
         {
@@ -92,6 +94,48 @@ namespace Musicefy.Views
             }
         }
 
+        private async void TestDownload_Click(object sender, RoutedEventArgs e)
+        {
+            string testUrl = "https://speed.hetzner.de/100MB.bin"; // sample test file
+            string fileName = "TestDownload.bin";
+
+            DownloadStatusLabel.Text = "Starting download...";
+            CacheProgressBar.Value = 0;
+
+            _downloadCts = new CancellationTokenSource();
+
+            bool success = await DownloadManager.DownloadFileAsync(testUrl, fileName, (percent, bytes) =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    CacheProgressBar.Value = percent;
+                    DownloadStatusLabel.Text = $"Downloading... {percent}% ({bytes / (1024.0 * 1024.0):F2} MB)";
+                });
+            }, _downloadCts.Token);
+
+            if (success)
+            {
+                DownloadStatusLabel.Text = "Download complete.";
+                UpdateCacheStatus();
+            }
+            else
+            {
+                if (_downloadCts.IsCancellationRequested)
+                    DownloadStatusLabel.Text = "Download cancelled.";
+                else
+                    DownloadStatusLabel.Text = "Download failed.";
+            }
+        }
+
+        private void CancelDownload_Click(object sender, RoutedEventArgs e)
+        {
+            if (_downloadCts != null && !_downloadCts.IsCancellationRequested)
+            {
+                _downloadCts.Cancel();
+                ToastService.ShowToast("⚠ Download cancelled by user.", Brushes.Goldenrod);
+            }
+        }
+
         private void OnAppExit(object sender, ExitEventArgs e)
         {
             if (Musicefy.Properties.Settings.Default.AutoClearCache)
@@ -105,13 +149,10 @@ namespace Musicefy.Views
             if (Directory.Exists(path))
             {
                 foreach (var file in Directory.GetFiles(path))
-                {
                     File.Delete(file);
-                }
+
                 foreach (var dir in Directory.GetDirectories(path))
-                {
                     Directory.Delete(dir, true);
-                }
             }
         }
 
@@ -121,7 +162,6 @@ namespace Musicefy.Views
             double sizeMB = size / (1024.0 * 1024.0);
             CacheStatusLabel.Text = $"Cache size: {sizeMB:F2} MB";
 
-            CacheProgressBar.Value = Math.Min(sizeMB, 2000);
             CacheProgressBar.ToolTip = $"Cache size: {sizeMB:F2} MB ({size / (1024.0 * 1024.0 * 1024.0):F2} GB)";
 
             if (sizeMB < 100)
@@ -150,9 +190,7 @@ namespace Musicefy.Views
             try
             {
                 foreach (var file in Directory.GetFiles(path, "*", SearchOption.AllDirectories))
-                {
                     size += new FileInfo(file).Length;
-                }
             }
             catch (Exception ex)
             {
