@@ -1,5 +1,6 @@
 using System;
 using System.Windows;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using Musicefy.Views;
 using Musicefy.Services;
@@ -10,17 +11,16 @@ namespace Musicefy
     public partial class MainWindow : Window
     {
         private readonly PlaybackService _playback;
+        private bool _isExpanded = false;
 
         public MainWindow()
         {
             InitializeComponent();
             _playback = new PlaybackService();
 
-            // Hook events
             _playback.TrackChanged += OnTrackChanged;
             _playback.ProgressChanged += OnProgressChanged;
 
-            // Default landing page
             MainContent.Content = new HomeControl(_playback);
         }
 
@@ -28,12 +28,63 @@ namespace Musicefy
         private void Home_Click(object sender, RoutedEventArgs e) => MainContent.Content = new HomeControl(_playback);
         private void Search_Click(object sender, RoutedEventArgs e) => MainContent.Content = new SearchControl(_playback);
         private void Library_Click(object sender, RoutedEventArgs e) => MainContent.Content = new LibraryControl(_playback);
-        private void NowPlaying_Click(object sender, RoutedEventArgs e) => MainContent.Content = new NowPlayingControl(_playback);
+        private void NowPlaying_Click(object sender, RoutedEventArgs e) => ExpandNowPlaying();
 
         private void OpenSettings_Click(object sender, RoutedEventArgs e)
         {
             var win = new SettingsWindow { Owner = this };
             win.ShowDialog();
+        }
+
+        // Mini Player click → expand/collapse
+        private void MiniPlayer_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (_isExpanded)
+                CollapseNowPlaying();
+            else
+                ExpandNowPlaying();
+        }
+
+        private void ExpandNowPlaying()
+        {
+            var nowPlaying = new NowPlayingControl(_playback);
+            MainContent.Content = nowPlaying;
+
+            var fadeIn = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromMilliseconds(400)));
+            nowPlaying.BeginAnimation(OpacityProperty, fadeIn);
+
+            var slideUp = new ThicknessAnimation
+            {
+                From = new Thickness(0, 100, 0, -100),
+                To = new Thickness(0),
+                Duration = new Duration(TimeSpan.FromMilliseconds(400)),
+                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
+            };
+            nowPlaying.BeginAnimation(MarginProperty, slideUp);
+
+            _isExpanded = true;
+        }
+
+        private void CollapseNowPlaying()
+        {
+            var fadeOut = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromMilliseconds(400)));
+            MainContent.BeginAnimation(OpacityProperty, fadeOut);
+
+            var slideDown = new ThicknessAnimation
+            {
+                From = new Thickness(0),
+                To = new Thickness(0, 100, 0, -100),
+                Duration = new Duration(TimeSpan.FromMilliseconds(400)),
+                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseIn }
+            };
+            MainContent.BeginAnimation(MarginProperty, slideDown);
+
+            // After animation, return to Home
+            fadeOut.Completed += (s, e) =>
+            {
+                MainContent.Content = new HomeControl(_playback);
+                _isExpanded = false;
+            };
         }
 
         // Mini Player updates
@@ -42,10 +93,9 @@ namespace Musicefy
             MiniTitle.Text = track.Title;
             MiniArtist.Text = track.Artist;
 
-            if (!string.IsNullOrEmpty(track.CoverPath))
-                MiniCover.Source = new BitmapImage(new Uri(track.CoverPath, UriKind.RelativeOrAbsolute));
-            else
-                MiniCover.Source = new BitmapImage(new Uri("pack://application:,,,/Assets/default_cover.png"));
+            MiniCover.Source = string.IsNullOrEmpty(track.CoverPath)
+                ? new BitmapImage(new Uri("pack://application:,,,/Assets/default_cover.png"))
+                : new BitmapImage(new Uri(track.CoverPath, UriKind.RelativeOrAbsolute));
 
             MiniProgress.Value = 0;
             MiniProgress.Maximum = track.Duration.TotalSeconds;
@@ -57,7 +107,7 @@ namespace Musicefy
             MiniProgress.Value = current.TotalSeconds;
         }
 
-        // Controls
+        // Playback controls
         private void PlayButton_Click(object sender, RoutedEventArgs e) => _playback.Resume();
         private void PauseButton_Click(object sender, RoutedEventArgs e) => _playback.Pause();
         private void NextButton_Click(object sender, RoutedEventArgs e) => _playback.Next();
