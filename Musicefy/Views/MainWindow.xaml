@@ -62,11 +62,20 @@
         </ListBox>
 
         <DockPanel>
-            <StackPanel DockPanel.Dock="Top" Background="{DynamicResource SecondaryBackgroundBrush}" Padding="0,15">
-                <TextBlock Text="Musicefy" HorizontalAlignment="Center" FontWeight="Bold" FontSize="20" Margin="0,0,0,15"/>
+            <StackPanel DockPanel.Dock="Top" Background="{DynamicResource SecondaryBackgroundBrush}">
+                
+                <TextBlock Text="Musicefy" 
+                           HorizontalAlignment="Center" 
+                           FontWeight="Bold" 
+                           FontSize="20" 
+                           Margin="0,15,0,15"/>
 
-                <ListBox x:Name="CategoriesList" HorizontalAlignment="Center" BorderThickness="0"
-                         Background="Transparent" ScrollViewer.HorizontalScrollBarVisibility="Hidden">
+                <ListBox x:Name="CategoriesList" 
+                         HorizontalAlignment="Center" 
+                         BorderThickness="0"
+                         Background="Transparent" 
+                         Margin="0,0,0,15"
+                         ScrollViewer.HorizontalScrollBarVisibility="Hidden">
                     <ListBox.ItemsPanel>
                         <ItemsPanelTemplate>
                             <StackPanel Orientation="Horizontal"/>
