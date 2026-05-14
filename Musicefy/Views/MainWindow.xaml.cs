@@ -13,31 +13,44 @@ namespace Musicefy
 
         public MainWindow()
         {
-            InitializeComponent();
+            // 1. Initialize data and services FIRST
             _mainViewModel = new MainViewModel();
-            this.DataContext = _mainViewModel;
             _playback = new PlaybackService();
+            
+            // 2. Set DataContext before UI loads
+            this.DataContext = _mainViewModel;
 
-            // Load Home by default
+            // 3. Initialize UI (This will trigger Sidebar_SelectionChanged because of IsSelected="True")
+            InitializeComponent();
+
+            // 4. Set initial content safely
             MainContent.Content = new HomeControl(_playback, _mainViewModel);
         }
 
         private void Sidebar_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (SidebarList?.SelectedItem == null) return;
+            // CRITICAL GUARD: Stop execution if the window is still loading
+            if (_mainViewModel == null || _playback == null || SidebarList?.SelectedItem == null) 
+                return;
 
             if (SidebarList.SelectedItem == SettingsItem)
             {
                 new SettingsWindow { Owner = this }.ShowDialog();
-                SidebarList.SelectedIndex = 0;
+                SidebarList.SelectedIndex = 0; // Reset to Home
                 return;
             }
 
             switch (SidebarList.SelectedIndex)
             {
-                case 0: MainContent.Content = new HomeControl(_playback, _mainViewModel); break;
-                case 1: MainContent.Content = new SearchControl(_playback); break;
-                case 2: MainContent.Content = new LibraryControl(_playback); break;
+                case 0: 
+                    MainContent.Content = new HomeControl(_playback, _mainViewModel); 
+                    break;
+                case 1: 
+                    MainContent.Content = new SearchControl(_playback); 
+                    break;
+                case 2: 
+                    MainContent.Content = new LibraryControl(_playback); 
+                    break;
             }
         }
     }
