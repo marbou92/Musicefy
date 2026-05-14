@@ -26,6 +26,8 @@ namespace Musicefy.Views
             _cacheMonitorTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
             _cacheMonitorTimer.Tick += (s, e) => UpdateCacheStatus();
             _cacheMonitorTimer.Start();
+
+            SetIdleState();
         }
 
         private void LoadSettings()
@@ -104,6 +106,7 @@ namespace Musicefy.Views
             CacheProgressBar.Value = 0;
 
             _downloadCts = new CancellationTokenSource();
+            SetDownloadingState();
 
             bool success = await DownloadManager.DownloadFileAsync(testUrl, fileName, (percent, bytes) =>
             {
@@ -119,18 +122,25 @@ namespace Musicefy.Views
                 DownloadStatusLabel.Text = "Download complete.";
                 _resumeMode = false;
                 UpdateCacheStatus();
+                SetIdleState();
             }
             else
             {
-                if (_downloadCts.IsCancellationRequested)
+                if (_downloadCts.IsCancellationRequested && _resumeMode)
                 {
                     DownloadStatusLabel.Text = "Download paused.";
-                    _resumeMode = true; // allow resume
+                    SetPausedState();
+                }
+                else if (_downloadCts.IsCancellationRequested)
+                {
+                    DownloadStatusLabel.Text = "Download cancelled.";
+                    SetIdleState();
                 }
                 else
                 {
                     DownloadStatusLabel.Text = "Download failed.";
                     _resumeMode = false;
+                    SetIdleState();
                 }
             }
         }
@@ -139,8 +149,10 @@ namespace Musicefy.Views
         {
             if (_downloadCts != null && !_downloadCts.IsCancellationRequested)
             {
+                _resumeMode = true;
                 _downloadCts.Cancel();
                 ToastService.ShowToast("⏸ Download paused.", Brushes.Goldenrod);
+                SetPausedState();
             }
         }
 
@@ -159,6 +171,7 @@ namespace Musicefy.Views
                 _resumeMode = false; // cancel discards partial file
                 _downloadCts.Cancel();
                 ToastService.ShowToast("⚠ Download cancelled by user.", Brushes.OrangeRed);
+                SetIdleState();
             }
         }
 
@@ -223,6 +236,31 @@ namespace Musicefy.Views
                 Console.WriteLine($"Error calculating cache size: {ex.Message}");
             }
             return size;
+        }
+
+        // --- UI State Management ---
+        private void SetIdleState()
+        {
+            TestDownloadButton.IsEnabled = true;
+            PauseDownloadButton.IsEnabled = false;
+            ResumeDownloadButton.IsEnabled = false;
+            CancelDownloadButton.IsEnabled = false;
+        }
+
+        private void SetDownloadingState()
+        {
+            TestDownloadButton.IsEnabled = false;
+            PauseDownloadButton.IsEnabled = true;
+            ResumeDownloadButton.IsEnabled = false;
+            CancelDownloadButton.IsEnabled = true;
+        }
+
+        private void SetPausedState()
+        {
+            TestDownloadButton.IsEnabled = false;
+            PauseDownloadButton.IsEnabled = false;
+            ResumeDownloadButton.IsEnabled = true;
+            CancelDownloadButton.IsEnabled = true;
         }
     }
 }
