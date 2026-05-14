@@ -21,7 +21,6 @@ namespace Musicefy.Views
 
         private void LoadSettings()
         {
-            // Default path: %LOCALAPPDATA%\Musicefy\Downloads
             string appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             _downloadsPath = Musicefy.Properties.Settings.Default.DownloadsPath ??
                              Path.Combine(appData, "Musicefy", "Downloads");
@@ -115,27 +114,17 @@ namespace Musicefy.Views
             double sizeMB = size / (1024.0 * 1024.0);
             CacheStatusLabel.Text = $"Cache size: {sizeMB:F2} MB";
 
-            // Update progress bar (max 2000 MB = 2 GB)
             CacheProgressBar.Value = Math.Min(sizeMB, 2000);
-
-            // Tooltip with exact size
             CacheProgressBar.ToolTip = $"Cache size: {sizeMB:F2} MB ({size / (1024.0 * 1024.0 * 1024.0):F2} GB)";
 
             // Dynamic color gradient
             if (sizeMB < 100)
-            {
                 CacheProgressBar.Foreground = new SolidColorBrush(Colors.LimeGreen);
-            }
             else if (sizeMB < 300)
-            {
                 CacheProgressBar.Foreground = new SolidColorBrush(Colors.Gold);
-            }
             else
-            {
                 CacheProgressBar.Foreground = new SolidColorBrush(Colors.OrangeRed);
-            }
 
-            // Warning popup if cache exceeds 400 MB
             if (sizeMB > 400 && sizeMB < 2000)
             {
                 MessageBox.Show("Warning: Cache size exceeds 400 MB. Consider clearing to free space.",
@@ -144,7 +133,6 @@ namespace Musicefy.Views
                                 MessageBoxImage.Warning);
             }
 
-            // Hard limit at 2 GB
             if (sizeMB >= 2000)
             {
                 MessageBox.Show("Cache limit reached (2 GB). Downloads may be blocked until you clear space.",
