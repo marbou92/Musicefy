@@ -1,31 +1,44 @@
 using System.Collections.ObjectModel;
+using Musicefy.Core.Models;
 
 namespace Musicefy.ViewModels
 {
     public class MainViewModel
     {
-        public ObservableCollection<string> Favourites { get; set; }
-        public ObservableCollection<string> Downloads { get; set; }
-        public ObservableCollection<string> History { get; set; }
+        // Collections of full MusicFile objects
+        public ObservableCollection<MusicFile> Favourites { get; set; }
+        public ObservableCollection<MusicFile> Downloads { get; set; }
+        public ObservableCollection<MusicFile> History { get; set; }
 
-        public string NowPlayingTitle { get; set; }
-        public string NowPlayingArtist { get; set; }
+        // Now Playing track
+        public MusicFile NowPlaying { get; set; }
 
         public MainViewModel()
         {
             // Example data
-            Favourites = new ObservableCollection<string>();
-            Downloads = new ObservableCollection<string>();
-            History = new ObservableCollection<string>
+            Favourites = new ObservableCollection<MusicFile>
             {
-                "Sahiba - Aditya Rikhari",
-                "Ishqa Ve",
-                "Nee Singam Dhan",
-                "Pal Pal (with Talwinder)"
+                new MusicFile("Sahiba", "Aditya Rikhari", "Single", 2024, genre: "Indie", duration: System.TimeSpan.FromMinutes(3.5)),
+                new MusicFile("Ishqa Ve", "Talwinder", "Single", 2023, genre: "Pop", duration: System.TimeSpan.FromMinutes(3))
             };
 
-            NowPlayingTitle = "Sahiba";
-            NowPlayingArtist = "Aditya Rikhari";
+            Downloads = new ObservableCollection<MusicFile>
+            {
+                new MusicFile("Nee Singam Dhan", "Artist X", "Album Y", 2022, genre: "Soundtrack", duration: System.TimeSpan.FromMinutes(4)),
+                new MusicFile("Pal Pal", "Talwinder", "Collab Album", 2023, genre: "Pop", duration: System.TimeSpan.FromMinutes(3.2))
+            };
+
+            History = new ObservableCollection<MusicFile>
+            {
+                new MusicFile("Sahiba", "Aditya Rikhari"),
+                new MusicFile("Ishqa Ve", "Talwinder"),
+                new MusicFile("Nee Singam Dhan", "Artist X"),
+                new MusicFile("Pal Pal (with Talwinder)", "Artist Y")
+            };
+
+            // Set Now Playing
+            NowPlaying = new MusicFile("Sahiba", "Aditya Rikhari", "Single", 2024, genre: "Indie", duration: System.TimeSpan.FromMinutes(3.5));
+            NowPlaying.MarkPlayed(); // increment play count
         }
     }
 }
