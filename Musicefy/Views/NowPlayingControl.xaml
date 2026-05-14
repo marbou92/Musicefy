@@ -21,6 +21,10 @@
             <TextBlock x:Name="Title" FontSize="20" FontWeight="Bold"/>
             <TextBlock x:Name="Artist" Foreground="Gray" FontSize="16"/>
             <TextBlock x:Name="Meta" Foreground="Gray" FontSize="12"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,6,0,0">
+                <TextBlock Text="❤" FontSize="18" Foreground="{Binding IsFavourite, Converter={StaticResource BoolToBrushConverter}}" Margin="6,0"/>
+                <TextBlock x:Name="PlayCount" Foreground="Gray" FontSize="12" Margin="6,0"/>
+            </StackPanel>
         </StackPanel>
 
         <!-- Lyrics -->
