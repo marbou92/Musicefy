@@ -1,7 +1,6 @@
 using System;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media.Imaging;
 using Musicefy.Services;
 using Musicefy.Core.Models;
 
@@ -45,25 +44,9 @@ namespace Musicefy.Views
         // Update UI when track changes
         private void OnTrackChanged(MusicFile track)
         {
-            Title.Text = track.Title;
-            Artist.Text = track.Artist;
-            Meta.Text = $"{track.Album}{(track.Year > 0 ? " • " + track.Year : "")}";
-
-            if (!string.IsNullOrEmpty(track.CoverPath))
-                Cover.Source = new BitmapImage(new Uri(track.CoverPath, UriKind.RelativeOrAbsolute));
-            else
-                Cover.Source = new BitmapImage(new Uri("pack://application:,,,/Assets/default_cover.png"));
-
-            Lyrics.Items.Clear();
-            if (!string.IsNullOrEmpty(track.Lyrics))
-            {
-                foreach (var line in track.Lyrics.Split('\n'))
-                    Lyrics.Items.Add(line);
-            }
-
-            // Update favourite and play count
-            FavouriteIcon.Text = track.IsFavourite ? "❤" : "♡";
-            PlayCount.Text = $"Played {track.PlayCount} times";
+            // Progress slider reset
+            ProgressSlider.Value = 0;
+            ProgressSlider.Maximum = track.Duration.TotalSeconds;
         }
 
         // Update progress slider
@@ -85,7 +68,6 @@ namespace Musicefy.Views
             if (_playback.CurrentTrack != null)
             {
                 _playback.CurrentTrack.ToggleFavourite();
-                FavouriteIcon.Text = _playback.CurrentTrack.IsFavourite ? "❤" : "♡";
             }
         }
     }
