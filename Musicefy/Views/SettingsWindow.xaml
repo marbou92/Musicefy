@@ -1,7 +1,6 @@
 <Window x:Class="Musicefy.Views.SettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="clr-namespace:Musicefy.ViewModels"
         xmlns:views="clr-namespace:Musicefy.Views"
         Title="Settings"
         Height="600" Width="900"
@@ -121,12 +120,26 @@
             <!-- Downloads option -->
             <ToggleButton x:Name="DownloadsButton"
                           Style="{StaticResource SidebarButtonStyle}" 
+                          Margin="0,0,0,10"
                           Click="DownloadsButton_Click">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="⬇️" FontSize="16" Margin="0,0,8,0"/>
                     <StackPanel>
                         <TextBlock Text="Downloads" FontWeight="Bold"/>
                         <TextBlock Text="Cache, path &amp; limits" FontSize="12"/>
+                    </StackPanel>
+                </StackPanel>
+            </ToggleButton>
+
+            <!-- Sources option -->
+            <ToggleButton x:Name="SourcesButton"
+                          Style="{StaticResource SidebarButtonStyle}" 
+                          Click="SourcesButton_Click">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="🔗" FontSize="16" Margin="0,0,8,0"/>
+                    <StackPanel>
+                        <TextBlock Text="Sources" FontWeight="Bold"/>
+                        <TextBlock Text="Streaming connections" FontSize="12"/>
                     </StackPanel>
                 </StackPanel>
             </ToggleButton>
