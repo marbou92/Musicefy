@@ -48,6 +48,7 @@ namespace Musicefy
         private void ExpandNowPlaying()
         {
             var nowPlaying = new NowPlayingControl(_playback);
+            nowPlaying.RequestCollapse += CollapseNowPlaying; // hook collapse event
             MainContent.Content = nowPlaying;
 
             var fadeIn = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromMilliseconds(400)));
@@ -79,7 +80,6 @@ namespace Musicefy
             };
             MainContent.BeginAnimation(MarginProperty, slideDown);
 
-            // After animation, return to Home
             fadeOut.Completed += (s, e) =>
             {
                 MainContent.Content = new HomeControl(_playback);
