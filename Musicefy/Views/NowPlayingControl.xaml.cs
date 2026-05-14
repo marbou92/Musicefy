@@ -60,14 +60,17 @@ namespace Musicefy.Views
                 foreach (var line in track.Lyrics.Split('\n'))
                     Lyrics.Items.Add(line);
             }
+
+            // Update favourite and play count
+            FavouriteIcon.Text = track.IsFavourite ? "❤" : "♡";
+            PlayCount.Text = $"Played {track.PlayCount} times";
         }
 
-        // Update progress (hook to slider if needed)
+        // Update progress slider
         private void OnProgressChanged(TimeSpan current, TimeSpan total)
         {
-            // Example: if you add a progress bar in XAML
-            // ProgressSlider.Maximum = total.TotalSeconds;
-            // ProgressSlider.Value = current.TotalSeconds;
+            ProgressSlider.Maximum = total.TotalSeconds;
+            ProgressSlider.Value = current.TotalSeconds;
         }
 
         // Playback controls
@@ -75,5 +78,15 @@ namespace Musicefy.Views
         private void Pause_Click(object sender, System.Windows.RoutedEventArgs e) => _playback.Pause();
         private void Next_Click(object sender, System.Windows.RoutedEventArgs e) => _playback.Next();
         private void Previous_Click(object sender, System.Windows.RoutedEventArgs e) => _playback.Previous();
+
+        // Toggle favourite
+        private void FavouriteIcon_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (_playback.CurrentTrack != null)
+            {
+                _playback.CurrentTrack.ToggleFavourite();
+                FavouriteIcon.Text = _playback.CurrentTrack.IsFavourite ? "❤" : "♡";
+            }
+        }
     }
 }
