@@ -1,3 +1,4 @@
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -31,7 +32,6 @@ namespace Musicefy.Services
             var grid = window.Content as Grid;
             if (grid == null) return;
 
-            // Overlay container
             if (!(grid.FindName("ToastContainer") is StackPanel container))
             {
                 container = new StackPanel
@@ -46,11 +46,9 @@ namespace Musicefy.Services
 
             container.Children.Add(toast);
 
-            // Fade in
             var fadeIn = new System.Windows.Media.Animation.DoubleAnimation(0, 1, new Duration(TimeSpan.FromMilliseconds(300)));
             toast.BeginAnimation(UIElement.OpacityProperty, fadeIn);
 
-            // Auto remove after duration
             var timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(durationMs) };
             timer.Tick += (s, e) =>
             {
