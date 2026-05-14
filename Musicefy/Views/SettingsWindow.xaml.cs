@@ -20,6 +20,7 @@ namespace Musicefy.Views
         {
             AppearanceButton.IsChecked = true;
             DownloadsButton.IsChecked = false;
+            SourcesButton.IsChecked = false;
             ShowAppearance();
         }
 
@@ -27,7 +28,16 @@ namespace Musicefy.Views
         {
             DownloadsButton.IsChecked = true;
             AppearanceButton.IsChecked = false;
+            SourcesButton.IsChecked = false;
             ShowDownloads();
+        }
+
+        private void SourcesButton_Click(object sender, RoutedEventArgs e)
+        {
+            SourcesButton.IsChecked = true;
+            AppearanceButton.IsChecked = false;
+            DownloadsButton.IsChecked = false;
+            ShowSources();
         }
 
         private void ShowAppearance()
@@ -47,6 +57,12 @@ namespace Musicefy.Views
             AnimateContentChange(control, "Downloads Settings", fromRight: true);
         }
 
+        private void ShowSources()
+        {
+            var control = new SourcesSettingsControl();
+            AnimateContentChange(control, "Sources Settings", fromRight: true);
+        }
+
         /// <summary>
         /// Handles fade + slide animation when swapping content.
         /// </summary>
@@ -54,7 +70,7 @@ namespace Musicefy.Views
         {
             if (SettingsContent.Content is FrameworkElement currentContent)
             {
-                // Fade out + slide left
+                // Fade out + slide
                 var fadeOut = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromMilliseconds(200)));
                 var slideOut = new ThicknessAnimation
                 {
@@ -121,6 +137,11 @@ namespace Musicefy.Views
                 downloadsControl.GetType().GetMethod("Save_Click")?
                     .Invoke(downloadsControl, new object[] { sender, e });
             }
+            else if (SettingsContent.Content is SourcesSettingsControl sourcesControl)
+            {
+                sourcesControl.GetType().GetMethod("Save_Click")?
+                    .Invoke(sourcesControl, new object[] { sender, e });
+            }
         }
 
         private void Cancel_Click(object sender, RoutedEventArgs e)
@@ -134,6 +155,11 @@ namespace Musicefy.Views
             {
                 downloadsControl.GetType().GetMethod("Cancel_Click")?
                     .Invoke(downloadsControl, new object[] { sender, e });
+            }
+            else if (SettingsContent.Content is SourcesSettingsControl sourcesControl)
+            {
+                sourcesControl.GetType().GetMethod("Cancel_Click")?
+                    .Invoke(sourcesControl, new object[] { sender, e });
             }
         }
     }
