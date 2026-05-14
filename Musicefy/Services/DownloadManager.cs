@@ -3,7 +3,6 @@ using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows.Media;
-using Musicefy.Services; // ToastService
 
 namespace Musicefy.Services
 {
@@ -13,11 +12,16 @@ namespace Musicefy.Services
         private const long MaxCacheSizeBytes = 2L * 1024L * 1024L * 1024L; // 2 GB
         private const long WarningThresholdBytes = 400L * 1024L * 1024L; // 400 MB
 
-        public static async Task<bool> DownloadFileAsync(string url, string fileName)
+        /// <summary>
+        /// Downloads a file with progress reporting.
+        /// </summary>
+        /// <param name="url">File URL</param>
+        /// <param name="fileName">Target file name</param>
+        /// <param name="progress">Callback reporting percentage (0-100) and bytes downloaded</param>
+        public static async Task<bool> DownloadFileAsync(string url, string fileName, Action<int, long>? progress = null)
         {
             try
             {
-                // Resolve target path from settings
                 string downloadsPath = Musicefy.Properties.Settings.Default.DownloadsPath;
                 if (string.IsNullOrWhiteSpace(downloadsPath))
                 {
@@ -28,18 +32,15 @@ namespace Musicefy.Services
                 if (!Directory.Exists(downloadsPath))
                     Directory.CreateDirectory(downloadsPath);
 
-                // Check current cache size before starting
                 long currentCacheSize = GetDirectorySize(downloadsPath);
                 if (currentCacheSize >= MaxCacheSizeBytes)
                 {
-                    ToastService.ShowToast("❌ Cache limit reached (2 GB). Downloads are blocked until you clear space.",
-                                           Brushes.OrangeRed);
+                    ToastService.ShowToast("❌ Cache limit reached (2 GB). Downloads blocked until you clear space.", Brushes.OrangeRed);
                     return false;
                 }
                 else if (currentCacheSize > WarningThresholdBytes)
                 {
-                    ToastService.ShowToast("⚠ Cache size exceeds 400 MB. Consider clearing to free space.",
-                                           Brushes.Goldenrod);
+                    ToastService.ShowToast("⚠ Cache size exceeds 400 MB. Consider clearing to free space.", Brushes.Goldenrod);
                 }
 
                 string targetPath = Path.Combine(downloadsPath, fileName);
@@ -49,13 +50,12 @@ namespace Musicefy.Services
                     var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
                     response.EnsureSuccessStatusCode();
 
-                    // Check Content-Length header
+                    long? contentLength = response.Content.Headers.ContentLength;
+
                     if (Musicefy.Properties.Settings.Default.LimitDownloadSize &&
-                        response.Content.Headers.ContentLength.HasValue &&
-                        response.Content.Headers.ContentLength.Value > MaxDownloadSizeBytes)
+                        contentLength.HasValue && contentLength.Value > MaxDownloadSizeBytes)
                     {
-                        ToastService.ShowToast("❌ This file is larger than 500 MB and cannot be downloaded.",
-                                               Brushes.OrangeRed);
+                        ToastService.ShowToast("❌ File larger than 500 MB. Download blocked.", Brushes.OrangeRed);
                         return false;
                     }
 
@@ -70,35 +70,39 @@ namespace Musicefy.Services
                         {
                             totalBytes += read;
 
-                            // Enforce per-file limit
                             if (Musicefy.Properties.Settings.Default.LimitDownloadSize &&
                                 totalBytes > MaxDownloadSizeBytes)
                             {
                                 fs.Close();
                                 File.Delete(targetPath);
-
-                                ToastService.ShowToast("⚠ Download exceeded 500 MB limit and was cancelled.",
-                                                       Brushes.Goldenrod);
+                                ToastService.ShowToast("⚠ Download exceeded 500 MB limit and was cancelled.", Brushes.Goldenrod);
                                 return false;
                             }
 
-                            // Enforce global cache limit
                             if (currentCacheSize + totalBytes > MaxCacheSizeBytes)
                             {
                                 fs.Close();
                                 File.Delete(targetPath);
-
-                                ToastService.ShowToast("❌ Cache limit reached (2 GB). Download cancelled.",
-                                                       Brushes.OrangeRed);
+                                ToastService.ShowToast("❌ Cache limit reached (2 GB). Download cancelled.", Brushes.OrangeRed);
                                 return false;
                             }
 
                             await fs.WriteAsync(buffer, 0, read);
+
+                            // Report progress
+                            if (contentLength.HasValue)
+                            {
+                                int percent = (int)((double)totalBytes / contentLength.Value * 100);
+                                progress?.Invoke(percent, totalBytes);
+                            }
+                            else
+                            {
+                                progress?.Invoke(0, totalBytes); // Unknown length
+                            }
                         }
                     }
                 }
 
-                // Auto-clear cache immediately after download if enabled
                 if (Musicefy.Properties.Settings.Default.AutoClearCache)
                 {
                     ClearCache(downloadsPath);
@@ -122,13 +126,10 @@ namespace Musicefy.Services
                 if (Directory.Exists(downloadsPath))
                 {
                     foreach (var file in Directory.GetFiles(downloadsPath))
-                    {
                         File.Delete(file);
-                    }
+
                     foreach (var dir in Directory.GetDirectories(downloadsPath))
-                    {
                         Directory.Delete(dir, true);
-                    }
                 }
             }
             catch (Exception ex)
@@ -145,9 +146,7 @@ namespace Musicefy.Services
             try
             {
                 foreach (var file in Directory.GetFiles(path, "*", SearchOption.AllDirectories))
-                {
                     size += new FileInfo(file).Length;
-                }
             }
             catch (Exception ex)
             {
