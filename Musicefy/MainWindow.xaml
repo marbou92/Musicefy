@@ -128,36 +128,36 @@
         </Grid>
 
         <!-- Bottom Player Bar -->
-        <Border DockPanel.Dock="Bottom" Background="{DynamicResource SecondaryBackgroundBrush}" Padding="12">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+<Border DockPanel.Dock="Bottom" Background="{DynamicResource SecondaryBackgroundBrush}" Padding="12">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
 
-                <!-- Playback Controls -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal">
-                    <Button x:Name="PreviousButton" Content="⏮" Width="48" Height="40" Margin="4"
-                            Background="{DynamicResource AccentBrush}" Foreground="White"
-                            FontSize="18" FontWeight="Bold" Click="PreviousButton_Click"/>
-                    <Button x:Name="PlayButton" Content="▶" Width="64" Height="40" Margin="4"
-                            Background="{DynamicResource AccentBrush}" Foreground="White"
-                            FontSize="18" FontWeight="Bold" Click="PlayButton_Click"/>
-                    <Button x:Name="PauseButton" Content="⏸" Width="64" Height="40" Margin="4"
-                            Background="{DynamicResource AccentBrush}" Foreground="White"
-                            FontSize="18" FontWeight="Bold" Click="PauseButton_Click"/>
-                    <Button x:Name="NextButton" Content="⏭" Width="48" Height="40" Margin="4"
-                            Background="{DynamicResource AccentBrush}" Foreground="White"
-                            FontSize="18" FontWeight="Bold" Click="NextButton_Click"/>
-                    <Button x:Name="ShuffleButton" Content="🔀" Width="48" Height="40" Margin="4"
-                            Background="{DynamicResource SecondaryBackgroundBrush}" Foreground="{DynamicResource ForegroundBrush}"
-                            FontSize="18" FontWeight="Bold" Click="ShuffleButton_Click"/>
-                    <Button x:Name="RepeatButton" Content="🔁" Width="48" Height="40" Margin="4"
-                            Background="{DynamicResource SecondaryBackgroundBrush}" Foreground="{DynamicResource ForegroundBrush}"
-                            FontSize="18" FontWeight="Bold" Click="RepeatButton_Click"/>
+        <!-- Playback Controls -->
+        <StackPanel Grid.Column="0" Orientation="Horizontal">
+            <Button x:Name="PreviousButton" Content="⏮" Width="48" Height="40" Margin="4"
+                    Background="{DynamicResource AccentBrush}" Foreground="White"
+                    FontSize="18" FontWeight="Bold" Click="PreviousButton_Click"/>
+            <Button x:Name="PlayButton" Content="▶" Width="64" Height="40" Margin="4"
+                    Background="{DynamicResource AccentBrush}" Foreground="White"
+                    FontSize="18" FontWeight="Bold" Click="PlayButton_Click"/>
+            <Button x:Name="PauseButton" Content="⏸" Width="64" Height="40" Margin="4"
+                    Background="{DynamicResource AccentBrush}" Foreground="White"
+                    FontSize="18" FontWeight="Bold" Click="PauseButton_Click"/>
+            <Button x:Name="NextButton" Content="⏭" Width="48" Height="40" Margin="4"
+                    Background="{DynamicResource AccentBrush}" Foreground="White"
+                    FontSize="18" FontWeight="Bold" Click="NextButton_Click"/>
+            <Button x:Name="ShuffleButton" Content="🔀" Width="48" Height="40" Margin="4"
+                    Background="{DynamicResource SecondaryBackgroundBrush}" Foreground="{DynamicResource ForegroundBrush}"
+                    FontSize="18" FontWeight="Bold" Click="ShuffleButton_Click"/>
+            <Button x:Name="RepeatButton" Content="🔁" Width="48" Height="40" Margin="4"
+                    Background="{DynamicResource SecondaryBackgroundBrush}" Foreground="{DynamicResource ForegroundBrush}"
+                    FontSize="18" FontWeight="Bold" Click="RepeatButton_Click"/>
                 </StackPanel>
-
+        
                 <!-- Playback Slider -->
                 <StackPanel Grid.Column="1" Orientation="Vertical" Margin="12,0">
                     <Slider x:Name="PlaybackSlider" Minimum="0" Maximum="100" Value="0" Height="20"
@@ -171,7 +171,8 @@
                         <TextBlock Grid.Column="0" x:Name="ElapsedText" Text="0:00" FontSize="12" Foreground="Gray"/>
                         <TextBlock Grid.Column="2" x:Name="RemainingText" Text="0:00" FontSize="12" Foreground="Gray" HorizontalAlignment="Right"/>
                     </Grid>
-                
+                </StackPanel>
+        
                 <!-- Volume Control -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="Vol" VerticalAlignment="Center" Margin="0,0,6,0"/>
