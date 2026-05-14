@@ -14,17 +14,19 @@ namespace Musicefy.Services
         private const long WarningThresholdBytes = 400L * 1024L * 1024L; // 400 MB
 
         /// <summary>
-        /// Downloads a file with progress reporting and cancellation support.
+        /// Downloads a file with progress reporting, cancellation, and pause/resume support.
         /// </summary>
         /// <param name="url">File URL</param>
         /// <param name="fileName">Target file name</param>
         /// <param name="progress">Callback reporting percentage (0-100) and bytes downloaded</param>
         /// <param name="cancellationToken">Token to cancel download at any time</param>
+        /// <param name="resume">If true, resume from partial file using HTTP Range</param>
         public static async Task<bool> DownloadFileAsync(
             string url,
             string fileName,
             Action<int, long>? progress = null,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default,
+            bool resume = false)
         {
             try
             {
@@ -50,71 +52,75 @@ namespace Musicefy.Services
                 }
 
                 string targetPath = Path.Combine(downloadsPath, fileName);
+                long existingLength = resume && File.Exists(targetPath) ? new FileInfo(targetPath).Length : 0;
 
                 using (var client = new HttpClient())
-                using (var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
                 {
-                    response.EnsureSuccessStatusCode();
+                    if (resume && existingLength > 0)
+                        client.DefaultRequestHeaders.Range = new System.Net.Http.Headers.RangeHeaderValue(existingLength, null);
 
-                    long? contentLength = response.Content.Headers.ContentLength;
-
-                    if (Musicefy.Properties.Settings.Default.LimitDownloadSize &&
-                        contentLength.HasValue && contentLength.Value > MaxDownloadSizeBytes)
+                    using (var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
                     {
-                        ToastService.ShowToast("❌ File larger than 500 MB. Download blocked.", Brushes.OrangeRed);
-                        return false;
-                    }
+                        response.EnsureSuccessStatusCode();
 
-                    using (var stream = await response.Content.ReadAsStreamAsync(cancellationToken))
-                    using (var fs = new FileStream(targetPath, FileMode.Create, FileAccess.Write))
-                    {
-                        byte[] buffer = new byte[81920];
-                        int read;
-                        long totalBytes = 0;
+                        long? contentLength = response.Content.Headers.ContentLength;
+                        long totalLength = (contentLength ?? 0) + existingLength;
 
-                        while ((read = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) > 0)
+                        if (Musicefy.Properties.Settings.Default.LimitDownloadSize &&
+                            totalLength > MaxDownloadSizeBytes)
                         {
-                            totalBytes += read;
+                            ToastService.ShowToast("❌ File larger than 500 MB. Download blocked.", Brushes.OrangeRed);
+                            return false;
+                        }
 
-                            // Cancel mid-download
-                            if (cancellationToken.IsCancellationRequested)
-                            {
-                                fs.Close();
-                                File.Delete(targetPath);
-                                ToastService.ShowToast("⚠ Download cancelled by user.", Brushes.Goldenrod);
-                                return false;
-                            }
+                        using (var stream = await response.Content.ReadAsStreamAsync(cancellationToken))
+                        using (var fs = new FileStream(targetPath, resume ? FileMode.Append : FileMode.Create, FileAccess.Write))
+                        {
+                            byte[] buffer = new byte[81920];
+                            int read;
+                            long totalBytes = existingLength;
 
-                            // Enforce per-file limit
-                            if (Musicefy.Properties.Settings.Default.LimitDownloadSize &&
-                                totalBytes > MaxDownloadSizeBytes)
+                            while ((read = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) > 0)
                             {
-                                fs.Close();
-                                File.Delete(targetPath);
-                                ToastService.ShowToast("⚠ Download exceeded 500 MB limit and was cancelled.", Brushes.Goldenrod);
-                                return false;
-                            }
+                                totalBytes += read;
 
-                            // Enforce global cache limit
-                            if (currentCacheSize + totalBytes > MaxCacheSizeBytes)
-                            {
-                                fs.Close();
-                                File.Delete(targetPath);
-                                ToastService.ShowToast("❌ Cache limit reached (2 GB). Download cancelled.", Brushes.OrangeRed);
-                                return false;
-                            }
+                                if (cancellationToken.IsCancellationRequested)
+                                {
+                                    ToastService.ShowToast("⏸ Download paused.", Brushes.Goldenrod);
+                                    return false;
+                                }
 
-                            await fs.WriteAsync(buffer, 0, read, cancellationToken);
+                                // Enforce per-file limit
+                                if (Musicefy.Properties.Settings.Default.LimitDownloadSize &&
+                                    totalBytes > MaxDownloadSizeBytes)
+                                {
+                                    fs.Close();
+                                    File.Delete(targetPath);
+                                    ToastService.ShowToast("⚠ Download exceeded 500 MB limit and was cancelled.", Brushes.Goldenrod);
+                                    return false;
+                                }
 
-                            // Report progress
-                            if (contentLength.HasValue)
-                            {
-                                int percent = (int)((double)totalBytes / contentLength.Value * 100);
-                                progress?.Invoke(percent, totalBytes);
-                            }
-                            else
-                            {
-                                progress?.Invoke(0, totalBytes); // Unknown length
+                                // Enforce global cache limit
+                                if (currentCacheSize + totalBytes > MaxCacheSizeBytes)
+                                {
+                                    fs.Close();
+                                    File.Delete(targetPath);
+                                    ToastService.ShowToast("❌ Cache limit reached (2 GB). Download cancelled.", Brushes.OrangeRed);
+                                    return false;
+                                }
+
+                                await fs.WriteAsync(buffer, 0, read, cancellationToken);
+
+                                // Report progress
+                                if (totalLength > 0)
+                                {
+                                    int percent = (int)((double)totalBytes / totalLength * 100);
+                                    progress?.Invoke(percent, totalBytes);
+                                }
+                                else
+                                {
+                                    progress?.Invoke(0, totalBytes);
+                                }
                             }
                         }
                     }
@@ -131,7 +137,7 @@ namespace Musicefy.Services
             }
             catch (OperationCanceledException)
             {
-                ToastService.ShowToast("⚠ Download cancelled.", Brushes.Goldenrod);
+                ToastService.ShowToast("⏸ Download paused.", Brushes.Goldenrod);
                 return false;
             }
             catch (Exception ex)
