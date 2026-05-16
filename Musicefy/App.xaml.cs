@@ -12,22 +12,25 @@ namespace Musicefy
         {
             base.OnStartup(e);
 
+            // Bind systemic global fail-safes to handle unhandled runtime vectors gracefully
             this.DispatcherUnhandledException += App_DispatcherUnhandledException;
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
             try
             {
-                // Load saved theme (Mode|Palette)
-                string savedTheme = Musicefy.Properties.Settings.Default.Theme ?? "System|Default";
+                // Unpack your saved user settings token matrix ("Mode|Palette" or default fallback)
+                string savedTheme = Musicefy.Properties.Settings.Default.Theme ?? "Dark|Default";
+                
+                // Rehydrate and apply the theme dictionary state safely before loading UI canvas panels
                 ThemeManager.ApplyThemeFromString(savedTheme);
 
-                // Animate fade AFTER UI is ready
+                // Initialize fade window transitions once the underlying device redraw handles settle idle
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
                     ThemeManager.AnimateWindowsFade();
                 }), DispatcherPriority.ApplicationIdle);
 
-                // Watch for system theme changes
+                // Engage background subsystem watcher routines to map live OS theme modifications
                 ThemeManager.StartSystemThemeWatcher();
             }
             catch (Exception ex)
@@ -63,12 +66,11 @@ namespace Musicefy
             try
             {
                 string logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "crash.log");
-                File.AppendAllText(logPath,
-                    $"[{DateTime.Now}] {ex}\n---------------------------------\n");
+                File.AppendAllText(logPath, $"[{DateTime.Now}] {ex}\n---------------------------------\n");
             }
             catch
             {
-                // swallow logging errors safely
+                // Fail silently to prevent cascade logging deadlocks
             }
         }
     }
