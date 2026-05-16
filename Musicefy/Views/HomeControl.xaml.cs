@@ -22,12 +22,13 @@ namespace Musicefy.Views
             
             this.DataContext = _mainViewModel;
 
-            // Explicit assignment for immediate sync (ensures Echo UI pills appear instantly)
+            // Explicit assignment for fast data hydration
             if (ChartsList != null) ChartsList.ItemsSource = _mainViewModel.BrowseCharts;
             if (QuickPicksList != null) QuickPicksList.ItemsSource = _mainViewModel.QuickPicks;
             if (VideosList != null) VideosList.ItemsSource = _mainViewModel.TopMusicVideos;
         }
 
+        // FIXED: Ensured execution only proceeds if an actual item was clicked
         private void QuickPicksList_DoubleClick(object sender, MouseButtonEventArgs e)
         {
             if (QuickPicksList.SelectedItem is TrackCard selectedTrack)
@@ -41,12 +42,13 @@ namespace Musicefy.Views
         {
             if (_mainViewModel.QuickPicks == null || !_mainViewModel.QuickPicks.Any()) return;
 
-            // Clear current queue and add all picks
+            // Enqueue all items safely
             foreach (var trackCard in _mainViewModel.QuickPicks)
             {
                 _playback.EnqueueTrack(MapToMusicFile(trackCard));
             }
             
+            // Instantly play the first entry
             var first = _mainViewModel.QuickPicks.FirstOrDefault();
             if (first != null)
             {
@@ -56,12 +58,11 @@ namespace Musicefy.Views
 
         private void MoreVideos_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Video library integration is coming in the next update!", "Musicefy", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show("Video engine integration coming in the next core compilation step!", "Musicefy", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private MusicFile MapToMusicFile(TrackCard card)
         {
-            // Maps the UI "TrackCard" to the Core "MusicFile" used by the engine
             return new MusicFile(
                 title: string.IsNullOrWhiteSpace(card.Title) ? "Unknown Track" : card.Title,
                 artist: string.IsNullOrWhiteSpace(card.Artist) ? "Unknown Artist" : card.Artist,
