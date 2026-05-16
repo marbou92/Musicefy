@@ -45,17 +45,17 @@ namespace Musicefy.Views
 
         private void Browse_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new System.Windows.Forms.FolderBrowserDialog
+            using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
             {
-                Description = "Select download folder",
-                SelectedPath = _downloadsPath
-            };
+                dialog.Description = "Select download folder";
+                dialog.SelectedPath = _downloadsPath;
 
-            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-            {
-                _downloadsPath = dialog.SelectedPath;
-                DownloadPathBox.Text = _downloadsPath;
-                UpdateCacheStatus();
+                if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                {
+                    _downloadsPath = dialog.SelectedPath;
+                    DownloadPathBox.Text = _downloadsPath;
+                    UpdateCacheStatus();
+                }
             }
         }
 
@@ -99,11 +99,11 @@ namespace Musicefy.Views
 
         private async void TestDownload_Click(object sender, RoutedEventArgs e)
         {
-            string testUrl = "https://speed.hetzner.de/100MB.bin"; // sample test file
+            string testUrl = "https://speed.hetzner.de/100MB.bin"; 
             string fileName = "TestDownload.bin";
 
             DownloadStatusLabel.Text = _resumeMode ? "Resuming download..." : "Starting download...";
-            CacheProgressBar.Value = 0;
+            if (!_resumeMode) CacheProgressBar.Value = 0;
 
             _downloadCts = new CancellationTokenSource();
             SetDownloadingState();
@@ -131,9 +131,20 @@ namespace Musicefy.Views
                     DownloadStatusLabel.Text = "⏸ Download paused.";
                     SetPausedState();
                 }
-                else if (_downloadCts.IsCancellationRequested)
+                // Check if it was canceled completely and not paused
+                else if (_downloadCts.IsCancellationRequested && !_resumeMode)
                 {
                     DownloadStatusLabel.Text = "⚠ Download cancelled.";
+                    CacheProgressBar.Value = 0;
+                    
+                    // Safely discard the partial download file now that file handles are unlocked
+                    try
+                    {
+                        string partialFile = Path.Combine(_downloadsPath, fileName);
+                        if (File.Exists(partialFile)) File.Delete(partialFile);
+                    }
+                    catch { }
+
                     SetIdleState();
                 }
                 else
@@ -160,7 +171,7 @@ namespace Musicefy.Views
         {
             if (_resumeMode)
             {
-                TestDownload_Click(sender, e); // restart with resume flag
+                TestDownload_Click(sender, e);
             }
         }
 
@@ -168,7 +179,7 @@ namespace Musicefy.Views
         {
             if (_downloadCts != null && !_downloadCts.IsCancellationRequested)
             {
-                _resumeMode = false; // cancel discards partial file
+                _resumeMode = false; 
                 _downloadCts.Cancel();
                 ToastService.ShowToast("⚠ Download cancelled by user.", Brushes.OrangeRed);
                 SetIdleState();
@@ -201,24 +212,23 @@ namespace Musicefy.Views
             double sizeMB = size / (1024.0 * 1024.0);
             CacheStatusLabel.Text = $"Cache size: {sizeMB:F2} MB";
 
+            long warningThresholdBytes = Musicefy.Properties.Settings.Default.CacheWarningThreshold;
+            long globalLimitBytes = Musicefy.Properties.Settings.Default.GlobalCacheLimit;
+
+            double warningThresholdMB = warningThresholdBytes / (1024.0 * 1024.0);
+            double globalLimitMB = globalLimitBytes / (1024.0 * 1024.0);
+
             CacheProgressBar.ToolTip = $"Cache size: {sizeMB:F2} MB ({size / (1024.0 * 1024.0 * 1024.0):F2} GB)";
 
-            if (sizeMB < 100)
-                CacheProgressBar.Foreground = new SolidColorBrush(Colors.LimeGreen);
-            else if (sizeMB < 300)
-                CacheProgressBar.Foreground = new SolidColorBrush(Colors.Gold);
+            // Dynamically alter progress bar colors based on Settings limits
+            if (size < warningThresholdBytes)
+                CacheProgressBar.Foreground = Brushes.LimeGreen;
+            else if (size < globalLimitBytes)
+                CacheProgressBar.Foreground = Brushes.Gold;
             else
-                CacheProgressBar.Foreground = new SolidColorBrush(Colors.OrangeRed);
+                CacheProgressBar.Foreground = Brushes.OrangeRed;
 
-            if (sizeMB > 400 && sizeMB < 2000)
-            {
-                ToastService.ShowToast("⚠ Cache size exceeds 400 MB. Consider clearing to free space.", Brushes.Goldenrod);
-            }
-
-            if (sizeMB >= 2000)
-            {
-                ToastService.ShowToast("❌ Cache limit reached (2 GB). Downloads may be blocked until you clear space.", Brushes.OrangeRed);
-            }
+            // Note: Toasts have been removed from this 5-second recurring loop method to prevent user notification spamming.
         }
 
         private long GetDirectorySize(string path)
@@ -238,14 +248,13 @@ namespace Musicefy.Views
             return size;
         }
 
-        // --- UI State Management with Visual Indicators ---
         private void SetIdleState()
         {
             TestDownloadButton.IsEnabled = true;
             PauseDownloadButton.IsEnabled = false;
             ResumeDownloadButton.IsEnabled = false;
             CancelDownloadButton.IsEnabled = false;
-
+            DownloadStatusLabel.Foreground = Brushes.Private;
             DownloadStatusLabel.Foreground = Brushes.Gray;
         }
 
@@ -255,7 +264,6 @@ namespace Musicefy.Views
             PauseDownloadButton.IsEnabled = true;
             ResumeDownloadButton.IsEnabled = false;
             CancelDownloadButton.IsEnabled = true;
-
             DownloadStatusLabel.Foreground = Brushes.ForestGreen;
         }
 
@@ -265,7 +273,6 @@ namespace Musicefy.Views
             PauseDownloadButton.IsEnabled = false;
             ResumeDownloadButton.IsEnabled = true;
             CancelDownloadButton.IsEnabled = true;
-
             DownloadStatusLabel.Foreground = Brushes.Goldenrod;
         }
     }
