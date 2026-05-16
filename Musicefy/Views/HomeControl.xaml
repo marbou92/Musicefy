@@ -127,7 +127,7 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Column="0" Text="Quick Picks" FontSize="20" FontWeight="ExtraBold" Foreground="White" VerticalAlignment="Center"/>
-                <Button Grid.Column="1" Text="PLAY ALL" Style="{StaticResource HeaderActionButtonStyle}" Click="PlayAllQuickPicks_Click"/>
+                <Button Grid.Column="1" Content="PLAY ALL" Style="{StaticResource HeaderActionButtonStyle}" Click="PlayAllQuickPicks_Click"/>
             </Grid>
             
             <ListBox x:Name="QuickPicksList" 
@@ -149,7 +149,7 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Column="0" Text="Top Music Videos" FontSize="20" FontWeight="ExtraBold" Foreground="White" VerticalAlignment="Center"/>
-                <Button Grid.Column="1" Text="SEE MORE" Style="{StaticResource HeaderActionButtonStyle}" Click="MoreVideos_Click"/>
+                <Button Grid.Column="1" Content="SEE MORE" Style="{StaticResource HeaderActionButtonStyle}" Click="MoreVideos_Click"/>
             </Grid>
             <ListBox x:Name="VideosList" 
                      ItemsSource="{Binding TopMusicVideos}" 
