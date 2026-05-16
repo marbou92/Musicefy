@@ -87,43 +87,48 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="240"/> 
             <ColumnDefinition Width="*"/>   
-        </Grid.ColumnDefinitions> ```
+        </Grid.ColumnDefinitions>
 
-        <Grid Grid.Column="0" Background="{DynamicResource BackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,1,0">
-            <StackPanel Margin="10,20,10,10">
-                <TextBlock Text="Settings" FontSize="22" FontWeight="ExtraBold" Margin="15,0,0,25" Foreground="{DynamicResource TextBrush}"/>
+        <Border Grid.Column="0" 
+                Background="{DynamicResource BackgroundBrush}" 
+                BorderBrush="{DynamicResource BorderBrush}" 
+                BorderThickness="0,0,1,0">
+            <Grid>
+                <StackPanel Margin="10,20,10,10">
+                    <TextBlock Text="Settings" FontSize="22" FontWeight="ExtraBold" Margin="15,0,0,25" Foreground="{DynamicResource TextBrush}"/>
 
-                <RadioButton x:Name="AppearanceButton" Style="{StaticResource SidebarTabStyle}" GroupName="SettingsTabs" IsChecked="True" Click="AppearanceButton_Click">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="🎨" FontSize="16" Margin="0,0,12,0" VerticalAlignment="Center"/>
-                        <StackPanel>
-                            <TextBlock Text="Appearance" FontWeight="Bold" FontSize="13"/>
-                            <TextBlock Text="Theme &amp; palettes" FontSize="11" Foreground="{DynamicResource MutedTextBrush}"/>
+                    <RadioButton x:Name="AppearanceButton" Style="{StaticResource SidebarTabStyle}" GroupName="SettingsTabs" IsChecked="True" Click="AppearanceButton_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🎨" FontSize="16" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                            <StackPanel>
+                                <TextBlock Text="Appearance" FontWeight="Bold" FontSize="13"/>
+                                <TextBlock Text="Theme &amp; palettes" FontSize="11" Foreground="{DynamicResource MutedTextBrush}"/>
+                            </StackPanel>
                         </StackPanel>
-                    </StackPanel>
-                </RadioButton>
+                    </RadioButton>
 
-                <RadioButton x:Name="DownloadsButton" Style="{StaticResource SidebarTabStyle}" GroupName="SettingsTabs" Click="DownloadsButton_Click">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="⬇️" FontSize="16" Margin="0,0,12,0" VerticalAlignment="Center"/>
-                        <StackPanel>
-                            <TextBlock Text="Downloads" FontWeight="Bold" FontSize="13"/>
-                            <TextBlock Text="Cache &amp; limits" FontSize="11" Foreground="{DynamicResource MutedTextBrush}"/>
+                    <RadioButton x:Name="DownloadsButton" Style="{StaticResource SidebarTabStyle}" GroupName="SettingsTabs" Click="DownloadsButton_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="⬇️" FontSize="16" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                            <StackPanel>
+                                <TextBlock Text="Downloads" FontWeight="Bold" FontSize="13"/>
+                                <TextBlock Text="Cache &amp; limits" FontSize="11" Foreground="{DynamicResource MutedTextBrush}"/>
+                            </StackPanel>
                         </StackPanel>
-                    </StackPanel>
-                </RadioButton>
+                    </RadioButton>
 
-                <RadioButton x:Name="SourcesButton" Style="{StaticResource SidebarTabStyle}" GroupName="SettingsTabs" Click="SourcesButton_Click">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="🔗" FontSize="16" Margin="0,0,12,0" VerticalAlignment="Center"/>
-                        <StackPanel>
-                            <TextBlock Text="Sources" FontWeight="Bold" FontSize="13"/>
-                            <TextBlock Text="Streaming connections" FontSize="11" Foreground="{DynamicResource MutedTextBrush}"/>
+                    <RadioButton x:Name="SourcesButton" Style="{StaticResource SidebarTabStyle}" GroupName="SettingsTabs" Click="SourcesButton_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🔗" FontSize="16" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                            <StackPanel>
+                                <TextBlock Text="Sources" FontWeight="Bold" FontSize="13"/>
+                                <TextBlock Text="Streaming connections" FontSize="11" Foreground="{DynamicResource MutedTextBrush}"/>
+                            </StackPanel>
                         </StackPanel>
-                    </StackPanel>
-                </RadioButton>
-            </StackPanel>
-        </Grid>
+                    </RadioButton>
+                </StackPanel>
+            </Grid>
+        </Border>
 
         <Grid Grid.Column="1" Margin="40,30,40,30">
             <Grid.RowDefinitions>
