@@ -1,6 +1,9 @@
+using System;
 using System.Windows;
 using System.Windows.Controls;
-using Musicefy.Services; // Ensure this points to where you saved ThemeManager
+using System.Windows.Input;
+using Musicefy.ViewModels;
+using Musicefy.ViewModels; // Ensure this points to where ThemePreview model resides
 
 namespace Musicefy.Views
 {
@@ -11,22 +14,19 @@ namespace Musicefy.Views
             InitializeComponent();
         }
 
-        private void Theme_Changed(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Captures click inputs on the phone-mockup palette cards to swap app color accents instantly.
+        /// </summary>
+        private void PaletteCard_Click(object sender, MouseButtonEventArgs e)
         {
-            if (sender is RadioButton rb && PaletteBox != null)
+            // Walk the visual tree step to extract the bound data context model item safely
+            if (sender is FrameworkElement element && element.DataContext is ThemePreview clickedPalette)
             {
-                ThemeManager.ApplyTheme(rb.Content.ToString(), PaletteBox.Text);
-            }
-        }
-
-        private void PaletteBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (e.AddedItems.Count > 0 && e.AddedItems[0] is ComboBoxItem item)
-            {
-                // Find out which theme radio button is currently checked
-                string theme = "Dark"; // Fallback
-                
-                ThemeManager.ApplyTheme(theme, item.Content.ToString());
+                if (this.DataContext is AppearanceSettingsViewModel viewModel)
+                {
+                    // Pass selected card name into your MVVM selection engine orchestrator pass
+                    viewModel.SelectPalette(clickedPalette.CardName);
+                }
             }
         }
     }
