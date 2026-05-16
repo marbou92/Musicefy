@@ -33,30 +33,25 @@
         </Style>
 
         <Style x:Key="TransportPathButtonStyle" TargetType="Button">
-          <Setter Property="Background" Value="Transparent"/>
-          <Setter Property="BorderThickness" Value="0"/>
-          <Setter Property="Cursor" Value="Hand"/>
-          <Setter Property="Width" Value="56"/>
-          <Setter Property="Height" Value="56"/>
-          <Setter Property="Template">
-              <Setter.Value>
-                  <ControlTemplate TargetType="Button">
-                      <Border Background="{TemplateBinding Background}" CornerRadius="28">
-                          <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                      </Border>
-                  </ControlTemplate>
-              </Setter.Value>
-          </Setter>
-      </Style>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Width" Value="56"/>
+            <Setter Property="Height" Value="56"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="28">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
 
     <Grid>
-        <Grid.Background>
-            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                <GradientStop Color="Transparent" Offset="0"/>
-                <GradientStop Color="{DynamicResource BorderBrush}" Offset="1"/>
-            </LinearGradientBrush>
-        </Grid.Background>
+        <Border Background="{DynamicResource BorderBrush}" Opacity="0.15" VerticalAlignment="Bottom" Height="350"/>
 
         <Grid Margin="40,24,40,40">
             <Grid.RowDefinitions>
@@ -100,9 +95,7 @@
                             <ControlTemplate TargetType="Button">
                                 <Grid>
                                     <Ellipse x:Name="Circle" Fill="{DynamicResource AccentBrush}"/>
-                                    
                                     <Path x:Name="PlayIcon" Data="M8,5V19L19,12L8,5Z" Fill="White" Width="24" Height="24" Stretch="Uniform" Margin="4,0,0,0"/>
-                                    
                                     <Path x:Name="PauseIcon" Data="M14,19H18V5H14M6,19H10V5H6Z" Fill="White" Width="24" Height="24" Stretch="Uniform" Visibility="Collapsed"/>
                                 </Grid>
                                 <ControlTemplate.Triggers>
