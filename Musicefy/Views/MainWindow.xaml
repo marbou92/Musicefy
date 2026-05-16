@@ -3,15 +3,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Musicefy" Height="760" Width="1280"
         WindowStartupLocation="CenterScreen"
-        Background="#0A0A0A" Foreground="White"
+        Background="{DynamicResource AppBackground}" 
+        Foreground="{DynamicResource AppText}"
         TextElement.FontFamily="Segoe UI Semibold">
 
     <Window.Resources>
-        <SolidColorBrush x:Key="BackgroundBrush" Color="#0A0A0A"/>
-        <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#161616"/>
-        <SolidColorBrush x:Key="AccentBrush" Color="#FFFFFF"/>
-        <SolidColorBrush x:Key="MutedTextBrush" Color="#909090"/>
-
         <Style x:Key="SidebarIconButtonStyle" TargetType="ListBoxItem">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Margin" Value="0,12"/>
@@ -19,18 +15,18 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="ListBoxItem">
                         <Grid x:Name="Root" Background="Transparent" Cursor="Hand">
-                            <Border x:Name="Indicator" Background="White" Width="4" Height="22" 
+                            <Border x:Name="Indicator" Background="{DynamicResource AppAccent}" Width="4" Height="22" 
                                     HorizontalAlignment="Left" CornerRadius="0,4,4,0" Visibility="Collapsed"/>
                             <Path x:Name="IconPath" Data="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}" 
-                                  Fill="#505050" Width="22" Height="22" Stretch="Uniform" Margin="24,0"/>
+                                  Fill="{DynamicResource AppSubText}" Width="22" Height="22" Stretch="Uniform" Margin="24,0"/>
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="IconPath" Property="Fill" Value="#B0B0B0"/>
+                                <Setter TargetName="IconPath" Property="Fill" Value="{DynamicResource AppText}"/>
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
                                 <Setter TargetName="Indicator" Property="Visibility" Value="Visible"/>
-                                <Setter TargetName="IconPath" Property="Fill" Value="White"/>
+                                <Setter TargetName="IconPath" Property="Fill" Value="{DynamicResource AppAccent}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -40,13 +36,13 @@
     </Window.Resources>
 
     <DockPanel>
-        <Border DockPanel.Dock="Left" Width="75" Background="#050505" BorderBrush="#121212" BorderThickness="0,0,1,0">
+        <Border DockPanel.Dock="Left" Width="75" Background="{DynamicResource AppSurface}" BorderBrush="{DynamicResource AppBorder}" BorderThickness="0,0,1,0">
             <StackPanel VerticalAlignment="Center">
                 <ListBox x:Name="SidebarList" Background="Transparent" BorderThickness="0"
                          ItemContainerStyle="{StaticResource SidebarIconButtonStyle}"
                          SelectionChanged="Sidebar_SelectionChanged">
                     <ListBoxItem ToolTip="Home" Tag="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-                    <ListBoxItem ToolTip="Search" Tag="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                    <ListBoxItem ToolTip="Search" Tag="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 14z"/>
                     <ListBoxItem ToolTip="Library" Tag="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
                     <ListBoxItem x:Name="SettingsItem" ToolTip="Settings" Tag="M19.14 12.94c0.04-0.3 0.06-0.61 0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14 0.23-0.41 0.12-0.61l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39 0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4 2.81c-0.04-0.24-0.24-0.41-0.48-0.41h-3.84c-0.24 0-0.43 0.17-0.47 0.41l-0.36 2.54c-0.59 0.24-1.13 0.57-1.62 0.94L5.24 5.33c-0.22-0.07-0.47 0-0.59 0.22L2.74 8.87C2.62 9.08 2.67 9.34 2.85 9.48l2.03 1.58C4.84 11.36 4.81 11.69 4.81 12.01s0.02 0.64 0.07 0.94l-2.03 1.58c-0.18 0.14-0.23 0.41-0.12 0.61l1.92 3.32c0.12 0.22 0.37 0.29 0.59 0.22l2.39-0.96c0.5 0.38 1.03 0.7 1.62 0.94l0.36 2.54c0.05 0.24 0.24 0.41 0.48 0.41h3.84c0.24 0 0.44-0.17 0.47-0.41l0.36-2.54c0.59-0.24 1.13-0.56 1.62-0.94l2.39 0.96c0.22 0.07 0.47 0 0.59-0.22l1.92-3.32c0.12-0.22 0.07-0.47-0.12-0.61L19.14 12.94zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6s3.6 1.62 3.6 3.6S13.98 15.6 12 15.6z"/>
                 </ListBox>
@@ -60,7 +56,7 @@
             </Grid.RowDefinitions>
 
             <StackPanel Grid.Row="0" Margin="25,15">
-                <TextBlock Text="Musicefy" FontSize="20" FontWeight="ExtraBold" Margin="10,10,0,20"/>
+                <TextBlock Text="Musicefy" FontSize="20" FontWeight="ExtraBold" Margin="10,10,0,20" Foreground="{DynamicResource AppText}"/>
                 <ListBox x:Name="CategoriesList" ItemsSource="{Binding HeaderCategories}" 
                          Background="Transparent" BorderThickness="0">
                     <ListBox.ItemsPanel>
@@ -73,13 +69,13 @@
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="ListBoxItem">
-                                        <Border x:Name="Pill" Background="#181818" CornerRadius="18" Padding="18,7" Margin="0,0,12,0" Cursor="Hand">
+                                        <Border x:Name="Pill" Background="{DynamicResource AppSurface}" CornerRadius="18" Padding="18,7" Margin="0,0,12,0" Cursor="Hand">
                                             <ContentPresenter />
                                         </Border>
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsSelected" Value="True">
-                                                <Setter TargetName="Pill" Property="Background" Value="White"/>
-                                                <Setter Property="Foreground" Value="Black"/>
+                                                <Setter TargetName="Pill" Property="Background" Value="{DynamicResource AppText}"/>
+                                                <Setter Property="Foreground" Value="{DynamicResource AppBackground}"/>
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
