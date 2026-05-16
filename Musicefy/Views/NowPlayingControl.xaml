@@ -33,19 +33,21 @@
         </Style>
 
         <Style x:Key="TransportPathButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Width" Value="56"/>
-            <Setter Property="Height" Value="56"/>
-            <Setter Property="Template">
-                <ControlTemplate TargetType="Button">
-                    <Border Background="{TemplateBinding Background}" CornerRadius="28">
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                </ControlTemplate>
-            </Setter>
-        </Style>
+          <Setter Property="Background" Value="Transparent"/>
+          <Setter Property="BorderThickness" Value="0"/>
+          <Setter Property="Cursor" Value="Hand"/>
+          <Setter Property="Width" Value="56"/>
+          <Setter Property="Height" Value="56"/>
+          <Setter Property="Template">
+              <Setter.Value>
+                  <ControlTemplate TargetType="Button">
+                      <Border Background="{TemplateBinding Background}" CornerRadius="28">
+                          <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                      </Border>
+                  </ControlTemplate>
+              </Setter.Value>
+          </Setter>
+      </Style>
     </UserControl.Resources>
 
     <Grid>
