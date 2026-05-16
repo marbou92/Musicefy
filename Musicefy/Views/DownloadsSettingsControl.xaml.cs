@@ -72,7 +72,8 @@ namespace Musicefy.Views
         private void Cancel_Click(object sender, RoutedEventArgs e)
         {
             LoadSettings();
-            ToastService.ShowToast("↩ Changes reverted.", Brushes.Workspace);
+            // FIXED: Changed Brushes.Workspace typo to Brushes.Gray
+            ToastService.ShowToast("↩ Changes reverted.", Brushes.Gray);
         }
 
         private void ClearNow_Click(object sender, RoutedEventArgs e)
