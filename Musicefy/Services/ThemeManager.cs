@@ -16,19 +16,26 @@ namespace Musicefy.Services
         {
             Application.Current.Resources.MergedDictionaries.Clear();
 
-            // Always load base styles first
+            // Inject foundational underlying design rules first
             MergeDictionary("/Themes/Base.xaml");
 
-            // Resolve system mode selection vectors
+            // Process hardware-level environmental tracking vectors
             if (mode.Equals("System", StringComparison.OrdinalIgnoreCase))
             {
                 mode = IsSystemDarkMode() ? "Dark" : "Light";
             }
 
-            // Load mode dictionary surface layer
-            MergeDictionary($"/Themes/Modes/{mode}.xaml");
+            // Route execution flows to handle pure black vs classic gray layouts dynamically
+            if (mode.Equals("DarkPure", StringComparison.OrdinalIgnoreCase))
+            {
+                MergeDictionary("/Themes/Modes/DarkPure.xaml");
+            }
+            else
+            {
+                MergeDictionary($"/Themes/Modes/{mode}.xaml");
+            }
 
-            // Handle palette adaptation mechanics
+            // Resolve palette adaptations cleanly
             if (palette.Equals("Default", StringComparison.OrdinalIgnoreCase))
             {
                 string paletteFile = mode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase)
@@ -57,6 +64,16 @@ namespace Musicefy.Services
             string mode = parts.Length > 0 ? parts[0] : "Dark";
             string palette = parts.Length > 1 ? parts[1] : "Default";
 
+            // FIXED: Automatically maps the persistent config flags on startup if user choice matches pure black
+            if (mode.Equals("DarkPure", StringComparison.OrdinalIgnoreCase))
+            {
+                Musicefy.Properties.Settings.Default.PureBlackMode = true;
+            }
+            else if (mode.Equals("Dark", StringComparison.OrdinalIgnoreCase))
+            {
+                Musicefy.Properties.Settings.Default.PureBlackMode = false;
+            }
+
             ApplyTheme(mode, palette);
         }
 
@@ -77,8 +94,6 @@ namespace Musicefy.Services
         {
             try
             {
-                // This registry key is valid on Windows 10 & 11.
-                // On Windows 7, this fails gracefully and defaults to Dark mode tracking.
                 using (var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"))
                 {
                     if (key?.GetValue("AppsUseLightTheme") is int intVal)
@@ -165,7 +180,6 @@ namespace Musicefy.Services
 
         private static void AnimateButtonGradient(System.Windows.Controls.Button btn, Color toStart, Color toEnd, int durationMs)
         {
-            // FIXED: Added defensive fallback guard to check template layout validation before animating
             if (btn.Template != null && 
                 btn.Template.FindName("AccentStart", btn) is GradientStop start &&
                 btn.Template.FindName("AccentEnd", btn) is GradientStop end)
@@ -201,10 +215,10 @@ namespace Musicefy.Services
                     brush = new LinearGradientBrush(Colors.SkyBlue, Colors.DodgerBlue, 45); 
                     break;
                 case "Catppuccin": 
-                    brush = new SolidColorBrush(Color.FromRgb(245, 194, 231)); // Smooth Catppuccin Pink
+                    brush = new SolidColorBrush(Color.FromRgb(245, 194, 231)); 
                     break;
                 case "GreenApple": 
-                    brush = new SolidColorBrush(Color.FromRgb(29, 185, 84)); // Echo/Spotify Accent Green
+                    brush = new SolidColorBrush(Color.FromRgb(29, 185, 84)); 
                     break;
                 case "Lavender": 
                     brush = new SolidColorBrush(Color.FromRgb(181, 126, 220)); 
@@ -214,7 +228,7 @@ namespace Musicefy.Services
                     break;
             }
 
-            brush.Freeze(); // FIXED: Freezing dynamic preview brush models to boost layout redraw performance
+            brush.Freeze();
             return brush;
         }
 
