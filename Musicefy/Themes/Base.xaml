@@ -3,25 +3,78 @@
 
     <DropShadowEffect x:Key="EchoShadow" BlurRadius="25" ShadowDepth="0" Opacity="0.4" Color="Black"/>
 
-    <Style x:Key="RoundPlayButtonStyle" TargetType="Button">
-        <Setter Property="Background" Value="White"/>
-        <Setter Property="Foreground" Value="Black"/>
+    <Style x:Key="SegmentedTabStyle" TargetType="RadioButton">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="Button">
-                    <Border x:Name="BtnBorder" 
-                            Background="{TemplateBinding Background}" 
-                            CornerRadius="40" 
-                            Width="{TemplateBinding Width}" 
-                            Height="{TemplateBinding Height}">
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <ControlTemplate TargetType="RadioButton">
+                    <Grid>
+                        <Border x:Name="TabBg" Background="{TemplateBinding Background}" CornerRadius="20" Margin="1">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock x:Name="CheckMark" Text="✓ " Visibility="Collapsed" Foreground="{DynamicResource AccentBrush}" FontWeight="Bold"/>
+                                <ContentPresenter x:Name="ContentArea" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="TabBg" Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+                            <Setter TargetName="CheckMark" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="ModernSettingRowStyle" TargetType="CheckBox">
+        <Setter Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+        <Setter Property="Padding" Value="16,14"/>
+        <Setter Property="Margin" Value="0,0,0,12"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <Border Background="{TemplateBinding Background}" 
+                            BorderBrush="{TemplateBinding BorderBrush}" 
+                            BorderThickness="1" 
+                            CornerRadius="14" 
+                            Padding="{TemplateBinding Padding}">
+                        <DockPanel>
+                            <Grid DockPanel.Dock="Right" Width="44" Height="24" VerticalAlignment="Center" Margin="10,0,0,0">
+                                <Border x:Name="SwitchTrack" Background="#252525" CornerRadius="12" BorderThickness="1.5" BorderBrush="{DynamicResource BorderBrush}"/>
+                                <Ellipse x:Name="SwitchKnob" Width="16" Height="16" Fill="#707070" HorizontalAlignment="Left" Margin="4,0,0,0"/>
+                                <TextBlock x:Name="CrossIcon" Text="×" Foreground="#101010" FontSize="14" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="8,-2,0,0"/>
+                            </Grid>
+
+                            <ContentControl x:Name="IconPresenter" DockPanel.Dock="Left" Content="{TemplateBinding Tag}" VerticalAlignment="Center" Margin="0,0,16,0"/>
+
+                            <StackPanel VerticalAlignment="Center">
+                                <ContentPresenter x:Name="TitlePresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" FontWeight="Bold" FontSize="14" Foreground="{TemplateBinding Foreground}"/>
+                            </StackPanel>
+                        </DockPanel>
                     </Border>
                     <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="BtnBorder" Property="Opacity" Value="0.9"/>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="SwitchTrack" Property="Background" Value="{DynamicResource AccentBrush}"/>
+                            <Setter TargetName="SwitchTrack" Property="BorderThickness" Value="0"/>
+                            <Setter TargetName="SwitchKnob" Property="HorizontalAlignment" Value="Right"/>
+                            <Setter TargetName="SwitchKnob" Property="Margin" Value="0,0,4,0"/>
+                            <Setter TargetName="SwitchKnob" Property="Fill" Value="White"/>
+                            <Setter TargetName="CrossIcon" Property="Visibility" Value="Collapsed"/>
                         </Trigger>
-                        <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="BtnBorder" Property="Opacity" Value="0.7"/>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource BorderBrush}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -38,42 +91,12 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border x:Name="border" 
-                            Background="{TemplateBinding Background}" 
-                            CornerRadius="25"
-                            Padding="{TemplateBinding Padding}">
+                    <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="25" Padding="{TemplateBinding Padding}">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="border" Property="Opacity" Value="0.8"/>
-                        </Trigger>
-                        <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Opacity" Value="0.6"/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <Style x:Key="MobileToggleSwitch" TargetType="CheckBox">
-        <Setter Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}"/>
-        <Setter Property="Cursor" Value="Hand"/>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="CheckBox">
-                    <Grid Width="46" Height="26">
-                        <Border x:Name="Pill" Background="{TemplateBinding Background}" CornerRadius="13" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"/>
-                        <Ellipse x:Name="Knob" Width="18" Height="18" Fill="{DynamicResource ForegroundBrush}" HorizontalAlignment="Left" Margin="4,0,0,0"/>
-                    </Grid>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="Pill" Property="Background" Value="{DynamicResource AccentBrush}"/>
-                            <Setter TargetName="Pill" Property="BorderThickness" Value="0"/>
-                            <Setter TargetName="Knob" Property="HorizontalAlignment" Value="Right"/>
-                            <Setter TargetName="Knob" Property="Margin" Value="0,0,4,0"/>
-                            <Setter TargetName="Knob" Property="Fill" Value="White"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -95,5 +118,4 @@
             </Style>
         </Style.Resources>
     </Style>
-
 </ResourceDictionary>
