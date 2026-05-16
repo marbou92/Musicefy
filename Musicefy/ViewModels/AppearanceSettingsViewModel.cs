@@ -18,7 +18,6 @@ namespace Musicefy.ViewModels
 
         public AppearanceSettingsViewModel()
         {
-            // Load saved theme string
             string savedTheme = Musicefy.Properties.Settings.Default.Theme ?? "Dark|Default";
             var parts = savedTheme.Split('|');
             string mode = parts.Length > 0 ? parts[0] : "Dark";
@@ -32,7 +31,7 @@ namespace Musicefy.ViewModels
             };
 
             ThemePreviews = new ObservableCollection<ThemePreview>();
-            RefreshPreviews();
+            RefreshPreviews(palette);
 
             DateFormats = new ObservableCollection<string> { "MM/dd/yyyy", "dd/MM/yyyy", "yyyy-MM-dd" };
             _selectedDateFormat = Musicefy.Properties.Settings.Default.DateFormat ?? DateFormats[0];
@@ -53,8 +52,8 @@ namespace Musicefy.ViewModels
         }
 
         public ObservableCollection<ThemePreview> ThemePreviews { get; }
-
         public ObservableCollection<string> DateFormats { get; }
+
         public string SelectedDateFormat
         {
             get => _selectedDateFormat;
@@ -77,11 +76,8 @@ namespace Musicefy.ViewModels
 
         public void SelectPalette(string paletteName)
         {
-            foreach (var preview in ThemePreviews)
-                preview.IsSelected = preview.CardName.Equals(paletteName, StringComparison.OrdinalIgnoreCase);
-
             ThemeManager.ApplyTheme(GetModeFromIndex(_selectedThemeIndex), paletteName);
-            RefreshPreviews();
+            RefreshPreviews(paletteName);
         }
 
         public void Save()
@@ -97,8 +93,11 @@ namespace Musicefy.ViewModels
         public void Cancel()
         {
             string savedTheme = Musicefy.Properties.Settings.Default.Theme ?? "Dark|Default";
+            var parts = savedTheme.Split('|');
+            string palette = parts.Length > 1 ? parts[1] : "Default";
+
             ThemeManager.ApplyThemeFromString(savedTheme);
-            RefreshPreviews();
+            RefreshPreviews(palette);
         }
 
         private string GetModeFromIndex(int index) =>
@@ -121,8 +120,7 @@ namespace Musicefy.ViewModels
 
             if (mode.Equals("System", StringComparison.OrdinalIgnoreCase))
             {
-                bool isDark = ThemeManager.IsSystemDarkMode();
-                mode = isDark ? "Dark" : "Light";
+                mode = ThemeManager.IsSystemDarkMode() ? "Dark" : "Light";
             }
 
             if (mode == "Dark" && PureBlackMode)
@@ -139,77 +137,71 @@ namespace Musicefy.ViewModels
             Application.Current.Resources.MergedDictionaries.Add(
                 new ResourceDictionary { Source = new Uri($"/Themes/Palettes/{palette}.xaml", UriKind.Relative) });
 
-            RefreshPreviews();
+            RefreshPreviews(palette);
         }
 
-        private void RefreshPreviews()
+        private void RefreshPreviews(string activePalette)
         {
             ThemePreviews.Clear();
 
             string mode = GetModeFromIndex(_selectedThemeIndex);
             if (mode.Equals("System", StringComparison.OrdinalIgnoreCase))
             {
-                bool isDark = ThemeManager.IsSystemDarkMode();
-                mode = isDark ? "Dark" : "Light";
+                mode = ThemeManager.IsSystemDarkMode() ? "Dark" : "Light";
             }
 
-            // Default card
-            if (mode == "Dark" && PureBlackMode)
-            {
-                ThemePreviews.Add(new ThemePreview
-                {
-                    CardName = "Default (Pure Black)",
-                    AccentBrush = ThemeManager.GetAccentBrush("Default"),
-                    BackgroundBrush = Brushes.Black,
-                    IsSelected = true
-                });
-            }
-            else
-            {
-                ThemePreviews.Add(new ThemePreview
-                {
-                    CardName = "Default",
-                    AccentBrush = ThemeManager.GetAccentBrush("Default"),
-                    BackgroundBrush = mode == "Dark" ? Brushes.DarkGray : Brushes.White,
-                    IsSelected = true
-                });
-            }
+            AddPreviewCard("Default", mode, activePalette);
+            AddPreviewCard("Catppuccin", mode, activePalette);
+            AddPreviewCard("GreenApple", mode, activePalette);
+            AddPreviewCard("Lavender", mode, activePalette);
+        }
 
-            // Other palettes
-            ThemePreviews.Add(new ThemePreview
-            {
-                CardName = "Catppuccin",
-                AccentBrush = ThemeManager.GetAccentBrush("Catppuccin"),
-                BackgroundBrush = mode == "Dark" ? Brushes.DarkGray : Brushes.White
-            });
+        private void AddPreviewCard(string paletteName, string mode, string activePalette)
+        {
+            Brush bg = (mode == "Dark" && PureBlackMode && paletteName == "Default") 
+                ? Brushes.Black 
+                : (mode == "Dark" ? Brushes.DarkGray : Brushes.White);
 
             ThemePreviews.Add(new ThemePreview
             {
-                CardName = "GreenApple",
-                AccentBrush = ThemeManager.GetAccentBrush("GreenApple"),
-                BackgroundBrush = mode == "Dark" ? Brushes.DarkGray : Brushes.White
-            });
-
-            ThemePreviews.Add(new ThemePreview
-            {
-                CardName = "Lavender",
-                AccentBrush = ThemeManager.GetAccentBrush("Lavender"),
-                BackgroundBrush = mode == "Dark" ? Brushes.DarkGray : Brushes.White
+                CardName = paletteName,
+                AccentBrush = ThemeManager.GetAccentBrush(paletteName),
+                BackgroundBrush = bg,
+                IsSelected = paletteName.Equals(activePalette, StringComparison.OrdinalIgnoreCase)
             });
         }
 
-        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    public class ThemePreview
+    public class ThemePreview : INotifyPropertyChanged
     {
+        private bool _isSelected;
         public string CardName { get; set; }
         public Brush AccentBrush { get; set; }
         public Brush BackgroundBrush { get; set; }
-        public bool IsSelected { get; set; }
 
-        // Highlight border/glow for selected card
-        public Brush HighlightBrush => IsSelected ? Brushes.DeepSkyBlue : Brushes.Transparent;
+        public bool IsSelected
+        {
+            get => _isSelected;
+            set
+            {
+                if (_isSelected != value)
+                {
+                    _isSelected = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(HighlightBrush));
+                }
+            }
+        }
+
+        public Brush HighlightBrush => IsSelected 
+            ? (Brush)Application.Current.FindResource("AccentBrush") 
+            : Brushes.Transparent;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string name = null)
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 }
