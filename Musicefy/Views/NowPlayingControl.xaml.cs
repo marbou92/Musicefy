@@ -35,7 +35,7 @@ namespace Musicefy.Views
             if (_playback.CurrentTrack != null) OnTrackChanged(_playback.CurrentTrack);
         }
 
-        #region Gesture Interaction Engine
+        #region Gesture Interaction Architecture
         private void OnMouseDown(object sender, MouseButtonEventArgs e)
         {
             _startY = e.GetPosition(this).Y;
@@ -57,7 +57,6 @@ namespace Musicefy.Views
             }
         }
 
-        // FIXED SIGNATURE: Perfectly matches delegate 'MouseButtonEventHandler'
         private void OnMouseUp(object sender, MouseButtonEventArgs e)
         {
             _isDragging = false;
@@ -78,16 +77,15 @@ namespace Musicefy.Views
             }
         }
 
-        // FIXED SIGNATURE: Perfectly matches delegate 'EventHandler<TouchEventArgs>'
         private void OnTouchUp(object sender, TouchEventArgs e) 
         { 
-            // Satisfies touch release registration hooks cleanly
+            // Handles touch input release states safely
         }
         
         private void BackButton_Click(object sender, RoutedEventArgs e) => RequestCollapse?.Invoke();
         #endregion
 
-        #region Processing Engine Triggers
+        #region Playback Synchronizers
         private void OnTrackChanged(MusicFile track)
         {
             if (track == null) return;
@@ -118,8 +116,7 @@ namespace Musicefy.Views
 
         private void SyncPlayPauseControls(bool isPlaying)
         {
-            string token = isPlaying ? "⏸" : "▶";
-            BtnMainPlay.Content = token;
+            BtnMainPlay.Content = isPlaying ? "⏸" : "▶";
         }
 
         private string FormatTimeInterval(TimeSpan ts)
@@ -135,13 +132,11 @@ namespace Musicefy.Views
         private void Next_Click(object sender, RoutedEventArgs e) => _playback.Next();
         private void Previous_Click(object sender, RoutedEventArgs e) => _playback.Previous();
 
-        // FIXED: Added missing tracking method required by XAML Thumb.DragStarted
         private void Slider_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
             _userIsScrubbingSlider = true;
         }
 
-        // FIXED: Added missing tracking method required by XAML Thumb.DragCompleted
         private void Slider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
         {
             _userIsScrubbingSlider = false;
