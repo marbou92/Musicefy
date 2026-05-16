@@ -241,14 +241,15 @@ namespace Musicefy.Views
         }
 
         private void SetIdleState()
-        {
-            TestDownloadButton.IsEnabled = true;
-            PauseDownloadButton.IsEnabled = false;
-            ResumeDownloadButton.IsEnabled = false;
-            CancelDownloadButton.IsEnabled = false;
-            DownloadStatusLabel.Foreground = Brushes.Private;
-            DownloadStatusLabel.Foreground = Brushes.Gray;
-        }
+            {
+                TestDownloadButton.IsEnabled = true;
+                PauseDownloadButton.IsEnabled = false;
+                ResumeDownloadButton.IsEnabled = false;
+                CancelDownloadButton.IsEnabled = false;
+                
+                // FIXED: Removed the accidental Brushes.Private line
+                DownloadStatusLabel.Foreground = Brushes.Gray;
+            }
 
         private void SetDownloadingState()
         {
