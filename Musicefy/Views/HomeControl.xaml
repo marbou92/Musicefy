@@ -20,8 +20,8 @@
         </Style>
 
         <Style x:Key="HeaderActionButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="{DynamicResource AppSurface}"/>
-            <Setter Property="Foreground" Value="{DynamicResource AppSubText}"/>
+            <Setter Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="FontSize" Value="11"/>
             <Setter Property="Padding" Value="14,6"/>
@@ -34,8 +34,8 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="{DynamicResource AppSurfaceHover}"/>
-                                <Setter Property="Foreground" Value="{DynamicResource AppText}"/>
+                                <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource BackgroundBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -44,48 +44,67 @@
         </Style>
 
         <DataTemplate x:Key="ChartCardTemplate">
-            <Border x:Name="CardBorder" Background="{DynamicResource AppSurface}" BorderBrush="{DynamicResource AppBorder}" BorderThickness="1" CornerRadius="20" Margin="0,0,16,0" Width="165" Height="240" Cursor="Hand">
+            <Border x:Name="CardBorder" Background="{DynamicResource SecondaryBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="20" Margin="0,0,16,0" Width="165" Height="240" Cursor="Hand">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="15" ShadowDepth="2" Opacity="0.15" Color="Black"/>
+                </Border.Effect>
                 <StackPanel>
                     <Border CornerRadius="14" Margin="12" Height="140" ClipToBounds="True">
                         <Image Source="{Binding Cover}" Stretch="UniformToFill"/>
                     </Border>
-                    <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="13" Margin="12,2,12,0" TextAlignment="Center" Foreground="{DynamicResource AppText}" TextTrimming="CharacterEllipsis"/>
-                    <TextBlock Text="{Binding Subtitle}" Foreground="{DynamicResource AppSubText}" FontSize="11" TextAlignment="Center" Margin="12,2" TextTrimming="CharacterEllipsis"/>
+                    <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="13" Margin="12,2,12,0" TextAlignment="Center" Foreground="{DynamicResource TextBrush}" TextTrimming="CharacterEllipsis"/>
+                    <TextBlock Text="{Binding Subtitle}" Foreground="{DynamicResource MutedTextBrush}" FontSize="11" TextAlignment="Center" Margin="12,2" TextTrimming="CharacterEllipsis"/>
                 </StackPanel>
             </Border>
             <DataTemplate.Triggers>
                 <Trigger Property="IsMouseOver" SourceName="CardBorder" Value="True">
-                    <Setter TargetName="CardBorder" Property="Background" Value="{DynamicResource AppSurfaceHover}"/>
+                    <Setter TargetName="CardBorder" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
                 </Trigger>
             </DataTemplate.Triggers>
         </DataTemplate>
 
         <DataTemplate x:Key="TrackCardTemplate">
-            <Border x:Name="CardBorder" Background="{DynamicResource AppSurface}" BorderBrush="{DynamicResource AppBorder}" BorderThickness="1" CornerRadius="14" Margin="6" Padding="10" Width="280" Cursor="Hand">
+            <Border x:Name="CardBorder" Background="{DynamicResource SecondaryBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="14" Margin="6" Padding="10" Width="280" Cursor="Hand">
                 <DockPanel>
                     <Border CornerRadius="8" Width="44" Height="44" ClipToBounds="True" DockPanel.Dock="Left">
                         <Image Source="{Binding Cover}" Stretch="UniformToFill"/>
                     </Border>
                     <StackPanel VerticalAlignment="Center" Margin="12,0,0,0">
-                        <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource AppText}" TextTrimming="CharacterEllipsis"/>
-                        <TextBlock Text="{Binding Artist}" Foreground="{DynamicResource AppSubText}" FontSize="11" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource TextBrush}" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="{Binding Artist}" Foreground="{DynamicResource MutedTextBrush}" FontSize="11" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
                     </StackPanel>
                 </DockPanel>
             </Border>
             <DataTemplate.Triggers>
                 <Trigger Property="IsMouseOver" SourceName="CardBorder" Value="True">
-                    <Setter TargetName="CardBorder" Property="Background" Value="{DynamicResource AppSurfaceHover}"/>
+                    <Setter TargetName="CardBorder" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
                 </Trigger>
             </DataTemplate.Triggers>
         </DataTemplate>
-        
-        </UserControl.Resources>
+
+        <DataTemplate x:Key="VideoCardTemplate">
+            <Border x:Name="CardBorder" Background="{DynamicResource SecondaryBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="16" Margin="0,0,16,0" Width="240" Height="175" Cursor="Hand">
+                <StackPanel>
+                    <Border CornerRadius="10" Margin="10" Height="115" ClipToBounds="True">
+                        <Image Source="{Binding Cover}" Stretch="UniformToFill"/>
+                    </Border>
+                    <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="13" Margin="12,0" Foreground="{DynamicResource TextBrush}" TextTrimming="CharacterEllipsis"/>
+                    <TextBlock Text="{Binding Channel}" Foreground="{DynamicResource MutedTextBrush}" FontSize="11" Margin="12,2" TextTrimming="CharacterEllipsis"/>
+                </StackPanel>
+            </Border>
+            <DataTemplate.Triggers>
+                <Trigger Property="IsMouseOver" SourceName="CardBorder" Value="True">
+                    <Setter TargetName="CardBorder" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                </Trigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+    </UserControl.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled">
         <StackPanel Margin="25,10,25,25">
             
             <Grid Margin="6,0,0,15">
-                <TextBlock Text="Charts for you" FontSize="20" FontWeight="ExtraBold" Foreground="{DynamicResource AppText}" VerticalAlignment="Center"/>
+                <TextBlock Text="Charts for you" FontSize="20" FontWeight="ExtraBold" Foreground="{DynamicResource TextBrush}" VerticalAlignment="Center"/>
             </Grid>
             <ListBox x:Name="ChartsList" 
                      ItemsSource="{Binding BrowseCharts}" 
@@ -104,7 +123,7 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="Quick Picks" FontSize="20" FontWeight="ExtraBold" Foreground="{DynamicResource AppText}" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="0" Text="Quick Picks" FontSize="20" FontWeight="ExtraBold" Foreground="{DynamicResource TextBrush}" VerticalAlignment="Center"/>
                 <Button Grid.Column="1" Content="PLAY ALL" Style="{StaticResource HeaderActionButtonStyle}" Click="PlayAllQuickPicks_Click"/>
             </Grid>
             
@@ -126,7 +145,7 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="Top Music Videos" FontSize="20" FontWeight="ExtraBold" Foreground="{DynamicResource AppText}" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="0" Text="Top Music Videos" FontSize="20" FontWeight="ExtraBold" Foreground="{DynamicResource TextBrush}" VerticalAlignment="Center"/>
                 <Button Grid.Column="1" Content="SEE MORE" Style="{StaticResource HeaderActionButtonStyle}" Click="MoreVideos_Click"/>
             </Grid>
             <ListBox x:Name="VideosList" 
