@@ -5,15 +5,17 @@
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
         <Setter Property="Height" Value="45"/>
-        <Setter Property="Margin" Value="5,2"/>
+        <Setter Property="Margin" Value="10,4"/>
+        <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ToggleButton">
-                    <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="8">
+                    <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="10">
                         <Grid>
-                            <Rectangle x:Name="Indicator" HorizontalAlignment="Left" Width="4" Height="20" 
-                                       Fill="{DynamicResource AccentBrush}" Visibility="Hidden" Margin="2,0"/>
-                            <ContentPresenter Margin="15,0" VerticalAlignment="Center"/>
+                            <Rectangle x:Name="Indicator" HorizontalAlignment="Left" Width="4" Height="24" 
+                                       Fill="{DynamicResource AccentBrush}" Visibility="Hidden" Margin="0,0,0,0" RadiusX="2" RadiusY="2"/>
+                            
+                            <ContentPresenter Margin="20,0" VerticalAlignment="Center"/>
                         </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
