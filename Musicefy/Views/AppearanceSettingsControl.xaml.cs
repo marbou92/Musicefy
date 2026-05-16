@@ -2,7 +2,6 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Musicefy.ViewModels;
 using Musicefy.ViewModels; // Ensure this points to where ThemePreview model resides
 
 namespace Musicefy.Views
