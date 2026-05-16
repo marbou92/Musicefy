@@ -15,6 +15,7 @@ namespace Musicefy.Views
         private double _startY;
         private bool _isDragging = false;
         private bool _userIsScrubbingSlider = false;
+        private bool _showingLyrics = false;
 
         public NowPlayingControl(PlaybackService playback)
         {
@@ -35,7 +36,7 @@ namespace Musicefy.Views
             if (_playback.CurrentTrack != null) OnTrackChanged(_playback.CurrentTrack);
         }
 
-        #region Gesture Interaction Engine
+        #region Gesture Interaction Architecture
         private void OnMouseDown(object sender, MouseButtonEventArgs e)
         {
             _startY = e.GetPosition(this).Y;
@@ -85,7 +86,7 @@ namespace Musicefy.Views
         private void BackButton_Click(object sender, RoutedEventArgs e) => RequestCollapse?.Invoke();
         #endregion
 
-        #region Processing Engine Triggers
+        #region Playback Synchronizers
         private void OnTrackChanged(MusicFile track)
         {
             if (track == null) return;
@@ -116,7 +117,7 @@ namespace Musicefy.Views
 
         private void SyncPlayPauseControls(bool isPlaying)
         {
-            // uses basic strings to trigger path visibility in XAML
+            // Uses basic strings to trigger cross-platform path templates in XAML
             BtnMainPlay.Content = isPlaying ? "⏸" : "▶";
         }
 
@@ -142,6 +143,32 @@ namespace Musicefy.Views
         {
             _userIsScrubbingSlider = false;
             _playback.Seek(TimeSpan.FromSeconds(ProgressSlider.Value));
+        }
+        #endregion
+
+        #region Interactive View Swappers
+        private void BtnToggleLyrics_Click(object sender, RoutedEventArgs e)
+        {
+            _showingLyrics = !_showingLyrics;
+
+            if (_showingLyrics)
+            {
+                // Swap view visibility layers to reveal live lyrics tracks
+                QueuePanelContainer.Visibility = Visibility.Collapsed;
+                LyricsPanelContainer.Visibility = Visibility.Visible;
+                
+                // Active highlight the vector button using live runtime theme palette allocations
+                BtnToggleLyrics.Foreground = (System.Windows.Media.Brush)Application.Current.FindResource("AccentBrush");
+            }
+            else
+            {
+                // Collapse back down to render standard upcoming track layouts
+                QueuePanelContainer.Visibility = Visibility.Visible;
+                LyricsPanelContainer.Visibility = Visibility.Collapsed;
+                
+                // Reset color assignment values to let styles fallback to standard muted design colors
+                BtnToggleLyrics.ClearValue(Button.ForegroundProperty);
+            }
         }
         #endregion
     }
