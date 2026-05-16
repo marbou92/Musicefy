@@ -72,7 +72,7 @@ namespace Musicefy.Views
         private void Cancel_Click(object sender, RoutedEventArgs e)
         {
             LoadSettings();
-            ToastService.ShowToast("↩ Changes reverted.", Brushes.Gray);
+            ToastService.ShowToast("↩ Changes reverted.", Brushes.Workspace);
         }
 
         private void ClearNow_Click(object sender, RoutedEventArgs e)
@@ -102,7 +102,7 @@ namespace Musicefy.Views
             string testUrl = "https://speed.hetzner.de/100MB.bin"; 
             string fileName = "TestDownload.bin";
 
-            DownloadStatusLabel.Text = _resumeMode ? "Resuming download..." : "Starting download...";
+            DownloadStatusLabel.Text = _resumeMode ? "Resuming..." : "Starting...";
             if (!_resumeMode) CacheProgressBar.Value = 0;
 
             _downloadCts = new CancellationTokenSource();
@@ -119,7 +119,7 @@ namespace Musicefy.Views
 
             if (success)
             {
-                DownloadStatusLabel.Text = "✅ Download complete.";
+                DownloadStatusLabel.Text = "Complete";
                 _resumeMode = false;
                 UpdateCacheStatus();
                 SetIdleState();
@@ -128,12 +128,12 @@ namespace Musicefy.Views
             {
                 if (_downloadCts.IsCancellationRequested && _resumeMode)
                 {
-                    DownloadStatusLabel.Text = "⏸ Download paused.";
+                    DownloadStatusLabel.Text = "Paused";
                     SetPausedState();
                 }
                 else if (_downloadCts.IsCancellationRequested && !_resumeMode)
                 {
-                    DownloadStatusLabel.Text = "⚠ Download cancelled.";
+                    DownloadStatusLabel.Text = "Cancelled";
                     CacheProgressBar.Value = 0;
                     
                     try
@@ -147,7 +147,7 @@ namespace Musicefy.Views
                 }
                 else
                 {
-                    DownloadStatusLabel.Text = "❌ Download failed.";
+                    DownloadStatusLabel.Text = "Failed";
                     _resumeMode = false;
                     SetIdleState();
                 }
@@ -241,15 +241,13 @@ namespace Musicefy.Views
         }
 
         private void SetIdleState()
-            {
-                TestDownloadButton.IsEnabled = true;
-                PauseDownloadButton.IsEnabled = false;
-                ResumeDownloadButton.IsEnabled = false;
-                CancelDownloadButton.IsEnabled = false;
-                
-                // FIXED: Removed the accidental Brushes.Private line
-                DownloadStatusLabel.Foreground = Brushes.Gray;
-            }
+        {
+            TestDownloadButton.IsEnabled = true;
+            PauseDownloadButton.IsEnabled = false;
+            ResumeDownloadButton.IsEnabled = false;
+            CancelDownloadButton.IsEnabled = false;
+            DownloadStatusLabel.Foreground = Brushes.Gray;
+        }
 
         private void SetDownloadingState()
         {
