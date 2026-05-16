@@ -3,63 +3,53 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Settings"
         Height="600" Width="900"
-        Background="{DynamicResource BackgroundBrush}"
-        Foreground="{DynamicResource ForegroundBrush}">
+        WindowStartupLocation="CenterOwner"
+        Background="#0E0E0E"
+        Foreground="White">
 
     <Window.Resources>
-        <!-- Sidebar ToggleButton Style -->
-        <Style x:Key="SidebarButtonStyle" TargetType="ToggleButton">
-            <Setter Property="Background" Value="{DynamicResource BackgroundBrush}"/>
-            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
-            <Setter Property="BorderBrush" Value="Transparent"/>
+        <Style x:Key="SidebarTabStyle" TargetType="RadioButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#A0A0A0"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="10"/>
-            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
-                    <ControlTemplate TargetType="ToggleButton">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="6">
-                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5"/>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="TabBorder" Background="{TemplateBinding Background}" CornerRadius="8" Margin="8,2" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="{DynamicResource AccentHoverBrush}"/>
-                                <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter Property="Background" Value="{DynamicResource AccentPressedBrush}"/>
-                                <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
-                            </Trigger>
-                            <Trigger Property="IsChecked" Value="True">
-                                <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+                                <Setter TargetName="TabBorder" Property="Background" Value="#1A1A1A"/>
                                 <Setter Property="Foreground" Value="White"/>
                             </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="TabBorder" Property="Background" Value="#222222"/>
+                                <Setter Property="Foreground" Value="#1DB954"/> </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
 
-        <!-- Primary Button Style -->
-        <Style x:Key="PrimaryButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+        <Style x:Key="ActionButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#181818"/>
             <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderBrush" Value="Transparent"/>
-            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="20,8"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="6">
+                        <Border x:Name="BtnBorder" Background="{TemplateBinding Background}" CornerRadius="18" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="{DynamicResource AccentHoverBrush}"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter Property="Background" Value="{DynamicResource AccentPressedBrush}"/>
+                                <Setter TargetName="BtnBorder" Value="Background" Value="#252525"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -70,74 +60,70 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="220"/> <!-- Sidebar -->
-            <ColumnDefinition Width="*"/>   <!-- Content -->
-        </Grid.ColumnDefinitions>
+            <ColumnDefinition Width="240"/> <ColumnDefinition Width="*"/>   </Grid.ColumnDefinitions>
 
-        <!-- Sidebar -->
-        <StackPanel Grid.Column="0" Background="{DynamicResource SecondaryBackgroundBrush}">
-            <TextBlock Text="Settings" FontSize="24" FontWeight="Bold" Margin="20"/>
+        <Grid Grid.Column="0" Background="#050505">
+            <StackPanel Margin="10,20,10,10">
+                <TextBlock Text="Settings" FontSize="22" FontWeight="ExtraBold" Margin="15,0,0,25" Foreground="White"/>
 
-            <ToggleButton x:Name="AppearanceButton"
-                          Style="{StaticResource SidebarButtonStyle}" 
-                          Margin="0,0,0,10"
-                          IsChecked="True"
-                          Click="AppearanceButton_Click">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="🎨" FontSize="16" Margin="0,0,8,0"/>
-                    <StackPanel>
-                        <TextBlock Text="Appearance" FontWeight="Bold"/>
-                        <TextBlock Text="Theme &amp; palettes" FontSize="12"/>
+                <RadioButton x:Name="AppearanceButton"
+                             Style="{StaticResource SidebarTabStyle}" 
+                             GroupName="SettingsTabs"
+                             IsChecked="True"
+                             Click="AppearanceButton_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="🎨" FontSize="16" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                        <StackPanel>
+                            <TextBlock Text="Appearance" FontWeight="Bold" FontSize="13"/>
+                            <TextBlock Text="Theme &amp; palettes" FontSize="11" Foreground="Gray"/>
+                        </StackPanel>
                     </StackPanel>
-                </StackPanel>
-            </ToggleButton>
+                </RadioButton>
 
-            <ToggleButton x:Name="DownloadsButton"
-                          Style="{StaticResource SidebarButtonStyle}" 
-                          Margin="0,0,0,10"
-                          Click="DownloadsButton_Click">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="⬇️" FontSize="16" Margin="0,0,8,0"/>
-                    <StackPanel>
-                        <TextBlock Text="Downloads" FontWeight="Bold"/>
-                        <TextBlock Text="Cache &amp; limits" FontSize="12"/>
+                <RadioButton x:Name="DownloadsButton"
+                             Style="{StaticResource SidebarTabStyle}" 
+                             GroupName="SettingsTabs"
+                             Click="DownloadsButton_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="⬇️" FontSize="16" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                        <StackPanel>
+                            <TextBlock Text="Downloads" FontWeight="Bold" FontSize="13"/>
+                            <TextBlock Text="Cache &amp; limits" FontSize="11" Foreground="Gray"/>
+                        </StackPanel>
                     </StackPanel>
-                </StackPanel>
-            </ToggleButton>
+                </RadioButton>
 
-            <ToggleButton x:Name="SourcesButton"
-                          Style="{StaticResource SidebarButtonStyle}" 
-                          Click="SourcesButton_Click">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="🔗" FontSize="16" Margin="0,0,8,0"/>
-                    <StackPanel>
-                        <TextBlock Text="Sources" FontWeight="Bold"/>
-                        <TextBlock Text="Streaming connections" FontSize="12"/>
+                <RadioButton x:Name="SourcesButton"
+                             Style="{StaticResource SidebarTabStyle}" 
+                             GroupName="SettingsTabs"
+                             Click="SourcesButton_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="🔗" FontSize="16" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                        <StackPanel>
+                            <TextBlock Text="Sources" FontWeight="Bold" FontSize="13"/>
+                            <TextBlock Text="Streaming connections" FontSize="11" Foreground="Gray"/>
+                        </StackPanel>
                     </StackPanel>
-                </StackPanel>
-            </ToggleButton>
-        </StackPanel>
+                </RadioButton>
+            </StackPanel>
+        </Grid>
 
-        <!-- Main Content -->
-        <Grid Grid.Column="1" Margin="30">
+        <Grid Grid.Column="1" Margin="40,30,40,30">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- Title -->
             <TextBlock Grid.Row="0" x:Name="SectionTitle"
                        Text="Appearance Settings" 
-                       FontSize="22" FontWeight="Bold" Margin="0,0,0,20"/>
+                       FontSize="24" FontWeight="ExtraBold" Margin="0,0,0,25"/>
 
-            <!-- Dynamic Content Area -->
             <ContentControl x:Name="SettingsContent" Grid.Row="1"/>
 
-            <!-- Buttons -->
             <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
-                <Button Content="Cancel" Width="100" Margin="0,0,10,0" Style="{StaticResource PrimaryButtonStyle}" Click="Cancel_Click"/>
-                <Button Content="Save" Width="100" Style="{StaticResource PrimaryButtonStyle}" Click="Save_Click"/>
+                <Button Content="Cancel" Width="110" Margin="0,0,12,0" Style="{StaticResource ActionButtonStyle}" Click="Cancel_Click"/>
+                <Button Content="Save" Width="110" Style="{StaticResource ActionButtonStyle}" Background="#1DB954" Click="Save_Click"/>
             </StackPanel>
         </Grid>
     </Grid>
