@@ -11,7 +11,7 @@ namespace Musicefy.Services
     {
         public static void ShowToast(string message, Brush background, int durationMs = 3000)
         {
-            // FIXED: Wrapped the window/grid resolution steps inside a Dispatcher invocation pass
+            // Wrapped the window/grid resolution steps inside a Dispatcher invocation pass
             // This safely allows downloads background workers threads to throw toasts without crashing
             Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
@@ -30,8 +30,8 @@ namespace Musicefy.Services
                     MaxWidth = 350,
                     Child = new TextBlock
                     {
-                        Text = message,
-                        StringFormat = "   {0}",
+                        // FIXED: Replaced invalid StringFormat with direct string concatenation
+                        Text = "   " + message,
                         Foreground = Brushes.White,
                         FontSize = 13,
                         FontWeight = FontWeights.Bold,
