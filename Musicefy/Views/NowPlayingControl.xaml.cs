@@ -35,7 +35,7 @@ namespace Musicefy.Views
             if (_playback.CurrentTrack != null) OnTrackChanged(_playback.CurrentTrack);
         }
 
-        #region Gesture Interaction Architecture
+        #region Gesture Interaction Engine
         private void OnMouseDown(object sender, MouseButtonEventArgs e)
         {
             _startY = e.GetPosition(this).Y;
@@ -85,7 +85,7 @@ namespace Musicefy.Views
         private void BackButton_Click(object sender, RoutedEventArgs e) => RequestCollapse?.Invoke();
         #endregion
 
-        #region Playback Synchronizers
+        #region Processing Engine Triggers
         private void OnTrackChanged(MusicFile track)
         {
             if (track == null) return;
@@ -116,8 +116,7 @@ namespace Musicefy.Views
 
         private void SyncPlayPauseControls(bool isPlaying)
         {
-            // FIXED: Uses basic text strings instead of emojis. This matches your new 
-            // Windows 7 vector style Triggers so the UI can swap path paths seamlessly!
+            // uses basic strings to trigger path visibility in XAML
             BtnMainPlay.Content = isPlaying ? "⏸" : "▶";
         }
 
