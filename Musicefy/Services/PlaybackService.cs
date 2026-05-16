@@ -21,13 +21,13 @@ namespace Musicefy.Services
 
         public event Action<MusicFile> TrackChanged;
         public event Action<TimeSpan, TimeSpan> ProgressChanged;
+        public event Action<bool> PlaybackStateChanged;
 
         private int _currentQueueIndex = -1;
 
-        /// <summary>
-        /// Exposes the currently loaded MusicFile for binding/UI.
-        /// </summary>
         public MusicFile CurrentAudioFile { get; private set; }
+        public MusicFile CurrentTrack => CurrentAudioFile;
+        public bool IsPlaying => _waveOut != null && _waveOut.PlaybackState == PlaybackState.Playing;
 
         public PlaybackService()
         {
@@ -57,9 +57,10 @@ namespace Musicefy.Services
                 _waveOut.Play();
                 _waveOut.PlaybackStopped += WaveOut_PlaybackStopped;
 
-                CurrentAudioFile = track; // ✅ set current track
+                CurrentAudioFile = track; 
                 _timer.Start();
                 TrackChanged?.Invoke(track);
+                PlaybackStateChanged?.Invoke(true);
             }
             catch (Exception ex)
             {
@@ -79,7 +80,8 @@ namespace Musicefy.Services
             }
             _audioFile?.Dispose();
             _audioFile = null;
-            CurrentAudioFile = null; // ✅ clear current track
+            CurrentAudioFile = null; 
+            PlaybackStateChanged?.Invoke(false);
         }
 
         private void WaveOut_PlaybackStopped(object sender, StoppedEventArgs e)
@@ -93,6 +95,10 @@ namespace Musicefy.Services
             {
                 Next();
             }
+            else
+            {
+                PlaybackStateChanged?.Invoke(false);
+            }
         }
 
         private void Timer_Tick(object sender, EventArgs e)
@@ -101,12 +107,24 @@ namespace Musicefy.Services
             ProgressChanged?.Invoke(_audioFile.CurrentTime, _audioFile.TotalTime);
         }
 
-        public void Pause() => _waveOut?.Pause();
-        public void Resume() => _waveOut?.Play();
+        public void Pause()
+        {
+            if (_waveOut != null && _waveOut.PlaybackState == PlaybackState.Playing)
+            {
+                _waveOut.Pause();
+                PlaybackStateChanged?.Invoke(false);
+            }
+        }
 
-        /// <summary>
-        /// Seek to a specific position in the current track.
-        /// </summary>
+        public void Resume()
+        {
+            if (_waveOut != null && _waveOut.PlaybackState != PlaybackState.Playing)
+            {
+                _waveOut.Play();
+                PlaybackStateChanged?.Invoke(true);
+            }
+        }
+
         public void Seek(TimeSpan position)
         {
             if (_audioFile != null)
