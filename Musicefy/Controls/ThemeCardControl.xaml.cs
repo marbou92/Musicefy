@@ -8,7 +8,6 @@ namespace Musicefy.Controls
     {
         public ThemeCardControl() => InitializeComponent();
 
-        // Renamed to avoid conflict with FrameworkElement.Name
         public string CardName
         {
             get => (string)GetValue(CardNameProperty);
@@ -40,8 +39,10 @@ namespace Musicefy.Controls
         private static void OnSelectedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var card = (ThemeCardControl)d;
-            card.CheckMark.Visibility = (bool)e.NewValue ? Visibility.Visible : Visibility.Collapsed;
-            card.CardBorder.BorderBrush = (bool)e.NewValue
+            bool selected = (bool)e.NewValue;
+            
+            card.CheckMark.Visibility = selected ? Visibility.Visible : Visibility.Collapsed;
+            card.CardBorder.BorderBrush = selected
                 ? (Brush)Application.Current.FindResource("AccentBrush")
                 : Brushes.Transparent;
         }
