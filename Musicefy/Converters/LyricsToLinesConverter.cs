@@ -10,9 +10,10 @@ namespace Musicefy.Converters
         {
             string lyrics = value as string;
             if (string.IsNullOrEmpty(lyrics))
-                return null;
+                return new string[] { "", "🎵 Instrumental 🎵", "" };
 
-            return lyrics.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            // Splits on both carriage returns and raw newlines safely
+            return lyrics.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
