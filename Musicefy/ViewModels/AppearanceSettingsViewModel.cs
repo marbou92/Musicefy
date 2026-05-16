@@ -15,14 +15,19 @@ namespace Musicefy.ViewModels
 
         private int _selectedThemeIndex;
         private string _selectedDateFormat;
+        private bool _isSuppressingThemeApplication = false; 
 
         public AppearanceSettingsViewModel()
         {
+            // 1. Enter initialization suppression mode to prevent event loop race conditions
+            _isSuppressingThemeApplication = true;
+
             string savedTheme = Musicefy.Properties.Settings.Default.Theme ?? "Dark|Default";
             var parts = savedTheme.Split('|');
             string mode = parts.Length > 0 ? parts[0] : "Dark";
             string palette = parts.Length > 1 ? parts[1] : "Default";
 
+            // Map index states strictly to mirror saved user configuration strings
             _selectedThemeIndex = mode switch
             {
                 "System" => 0,
@@ -31,10 +36,14 @@ namespace Musicefy.ViewModels
             };
 
             ThemePreviews = new ObservableCollection<ThemePreview>();
-            RefreshPreviews(palette);
-
             DateFormats = new ObservableCollection<string> { "MM/dd/yyyy", "dd/MM/yyyy", "yyyy-MM-dd" };
             _selectedDateFormat = Musicefy.Properties.Settings.Default.DateFormat ?? DateFormats[0];
+
+            // 2. Hydrate the initial collection layout previews matching the active state safely
+            RefreshPreviews(palette);
+
+            // 3. Initialization complete. Lift suppression safely before interactions trigger.
+            _isSuppressingThemeApplication = false;
         }
 
         public int SelectedThemeIndex
@@ -46,7 +55,7 @@ namespace Musicefy.ViewModels
                 {
                     _selectedThemeIndex = value;
                     OnPropertyChanged();
-                    ApplyTheme();
+                    if (!_isSuppressingThemeApplication) ApplyTheme();
                 }
             }
         }
@@ -69,12 +78,11 @@ namespace Musicefy.ViewModels
                 {
                     Musicefy.Properties.Settings.Default.PureBlackMode = value;
                     OnPropertyChanged();
-                    ApplyTheme();
+                    if (!_isSuppressingThemeApplication) ApplyTheme();
                 }
             }
         }
 
-        // ADD THIS PROPERTY TO AppearanceSettingsViewModel.cs
         public ThemePreview SelectedPalettePreview
         {
             get => ThemePreviews.FirstOrDefault(p => p.IsSelected);
@@ -114,8 +122,12 @@ namespace Musicefy.ViewModels
             RefreshPreviews(palette);
         }
 
-        private string GetModeFromIndex(int index) =>
-            index switch { 0 => "System", 1 => "Light", _ => "Dark" };
+        private string GetModeFromIndex(int index)
+        {
+            if (index == 0) return "System";
+            if (index == 1) return "Light";
+            return PureBlackMode ? "DarkPure" : "Dark";
+        }
 
         private string GetCurrentPalette()
         {
@@ -128,29 +140,8 @@ namespace Musicefy.ViewModels
             string mode = GetModeFromIndex(_selectedThemeIndex);
             string palette = GetCurrentPalette();
 
-            Application.Current.Resources.MergedDictionaries.Clear();
-            Application.Current.Resources.MergedDictionaries.Add(
-                new ResourceDictionary { Source = new Uri("/Themes/Base.xaml", UriKind.Relative) });
-
-            if (mode.Equals("System", StringComparison.OrdinalIgnoreCase))
-            {
-                mode = ThemeManager.IsSystemDarkMode() ? "Dark" : "Light";
-            }
-
-            if (mode == "Dark" && PureBlackMode)
-            {
-                Application.Current.Resources.MergedDictionaries.Add(
-                    new ResourceDictionary { Source = new Uri("/Themes/Modes/DarkPure.xaml", UriKind.Relative) });
-            }
-            else
-            {
-                Application.Current.Resources.MergedDictionaries.Add(
-                    new ResourceDictionary { Source = new Uri($"/Themes/Modes/{mode}.xaml", UriKind.Relative) });
-            }
-
-            Application.Current.Resources.MergedDictionaries.Add(
-                new ResourceDictionary { Source = new Uri($"/Themes/Palettes/{palette}.xaml", UriKind.Relative) });
-
+            // Refactored to let your central theme orchestrator coordinate modifications safely
+            ThemeManager.ApplyTheme(mode, palette);
             RefreshPreviews(palette);
         }
 
@@ -172,9 +163,20 @@ namespace Musicefy.ViewModels
 
         private void AddPreviewCard(string paletteName, string mode, string activePalette)
         {
-            Brush bg = (mode == "Dark" && PureBlackMode && paletteName == "Default") 
-                ? Brushes.Black 
-                : (mode == "Dark" ? Brushes.DarkGray : Brushes.White);
+            // FIXED: Dynamically matches true background colors across all layout combinations
+            Brush bg;
+            if (mode.Equals("Light", StringComparison.OrdinalIgnoreCase))
+            {
+                bg = Brushes.White;
+            }
+            else if (mode.Equals("DarkPure", StringComparison.OrdinalIgnoreCase))
+            {
+                bg = Brushes.Black;
+            }
+            else
+            {
+                bg = new SolidColorBrush(Color.FromRgb(36, 36, 36)); // Comfort gray layer fallback
+            }
 
             ThemePreviews.Add(new ThemePreview
             {
