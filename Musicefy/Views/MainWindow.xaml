@@ -36,63 +36,83 @@
         </Style>
     </Window.Resources>
 
-    <DockPanel>
-        <Border DockPanel.Dock="Left" Width="75" Background="{DynamicResource SecondaryBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,1,0">
-            <StackPanel VerticalAlignment="Center">
-                <ListBox x:Name="SidebarList" Background="Transparent" BorderThickness="0"
-                         ItemContainerStyle="{StaticResource SidebarIconButtonStyle}"
-                         SelectionChanged="Sidebar_SelectionChanged">
-                    <ListBoxItem ToolTip="Home" Tag="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-                    <ListBoxItem ToolTip="Search" Tag="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-                    <ListBoxItem ToolTip="Library" Tag="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
-                    <ListBoxItem x:Name="SettingsItem" ToolTip="Settings" Tag="M19.14 12.94c0.04-0.3 0.06-0.61 0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14 0.23-0.41 0.12-0.61l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39 0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4 2.81c-0.04-0.24-0.24-0.41-0.48-0.41h-3.84c-0.24 0-0.43 0.17-0.47 0.41l-0.36 2.54c-0.59 0.24-1.13 0.57-1.62 0.94L5.24 5.33c-0.22-0.07-0.47 0-0.59 0.22L2.74 8.87C2.62 9.08 2.67 9.34 2.85 9.48l2.03 1.58C4.84 11.36 4.81 11.69 4.81 12.01s0.02 0.64 0.07 0.94l-2.03 1.58c-0.18 0.14-0.23 0.41-0.12 0.61l1.92 3.32c0.12 0.22 0.37 0.29 0.59 0.22l2.39-0.96c0.5 0.38 1.03 0.7 1.62 0.94l0.36 2.54c0.05 0.24 0.24 0.41 0.48 0.41h3.84c0.24 0 0.44-0.17 0.47-0.41l0.36-2.54c0.59-0.24 1.13-0.56 1.62-0.94l2.39 0.96c0.22 0.07 0.47 0 0.59-0.22l1.92-3.32c0.12-0.22 0.07-0.47-0.12-0.61L19.14 12.94zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6s3.6 1.62 3.6 3.6S13.98 15.6 12 15.6z"/>
-                </ListBox>
-            </StackPanel>
-        </Border>
+    <Grid>
+        <DockPanel>
+            <Border DockPanel.Dock="Left" Width="75" Background="{DynamicResource SecondaryBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,1,0">
+                <StackPanel VerticalAlignment="Center">
+                    <ListBox x:Name="SidebarList" Background="Transparent" BorderThickness="0"
+                             ItemContainerStyle="{StaticResource SidebarIconButtonStyle}"
+                             SelectionChanged="Sidebar_SelectionChanged">
+                        <ListBoxItem ToolTip="Home" Tag="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                        <ListBoxItem ToolTip="Search" Tag="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                        <ListBoxItem ToolTip="Library" Tag="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                        <ListBoxItem x:Name="SettingsItem" ToolTip="Settings" Tag="M19.14 12.94c0.04-0.3 0.06-0.61 0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14 0.23-0.41 0.12-0.61l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39 0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4 2.81c-0.04-0.24-0.24-0.41-0.48-0.41h-3.84c-0.24 0-0.43 0.17-0.47 0.41l-0.36 2.54c-0.59 0.24-1.13 0.57-1.62 0.94L5.24 5.33c-0.22-0.07-0.47 0-0.59 0.22L2.74 8.87C2.62 9.08 2.67 9.34 2.85 9.48l2.03 1.58C4.84 11.36 4.81 11.69 4.81 12.01s0.02 0.64 0.07 0.94l-2.03 1.58c-0.18 0.14-0.23 0.41-0.12 0.61l1.92 3.32c0.12 0.22 0.37 0.29 0.59 0.22l2.39-0.96c0.5 0.38 1.03 0.7 1.62 0.94l0.36 2.54c0.05 0.24 0.24 0.41 0.48 0.41h3.84c0.24 0 0.44-0.17 0.47-0.41l0.36-2.54c0.59-0.24 1.13-0.56 1.62-0.94l2.39 0.96c0.22 0.07 0.47 0 0.59-0.22l1.92-3.32c0.12-0.22 0.07-0.47-0.12-0.61L19.14 12.94zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6s3.6 1.62 3.6 3.6S13.98 15.6 12 15.6z"/>
+                    </ListBox>
+                </StackPanel>
+            </Border>
 
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
 
-            <StackPanel Grid.Row="0" Margin="25,15">
-                <TextBlock Text="Musicefy" FontSize="20" FontWeight="ExtraBold" Margin="10,10,0,20" Foreground="{DynamicResource TextBrush}"/>
-                <ListBox x:Name="CategoriesList" ItemsSource="{Binding HeaderCategories}" 
-                         Background="Transparent" BorderThickness="0">
-                    <ListBox.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Orientation="Horizontal"/>
-                        </ItemsPanelTemplate>
-                    </ListBox.ItemsPanel>
-                    <ListBox.ItemContainerStyle>
-                        <Style TargetType="ListBoxItem">
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="ListBoxItem">
-                                        <Border x:Name="Pill" Background="{DynamicResource SecondaryBackgroundBrush}" CornerRadius="18" Padding="18,7" Margin="0,0,12,0" Cursor="Hand">
-                                            <ContentPresenter />
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsSelected" Value="True">
-                                                <Setter TargetName="Pill" Property="Background" Value="{DynamicResource AccentBrush}"/>
-                                                <Setter Property="Foreground" Value="{DynamicResource BackgroundBrush}"/>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </ListBox.ItemContainerStyle>
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="Bold"/>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </StackPanel>
+                <StackPanel Grid.Row="0" Margin="25,15,25,0">
+                    <TextBlock Text="Musicefy" FontSize="20" FontWeight="ExtraBold" Margin="10,10,0,10" Foreground="{DynamicResource TextBrush}"/>
+                </StackPanel>
 
-            <ContentControl x:Name="MainContent" Grid.Row="1"/>
+                <ContentControl x:Name="MainContent" Grid.Row="1"/>
+            </Grid>
+        </DockPanel>
+
+        <Grid VerticalAlignment="Bottom" HorizontalAlignment="Stretch">
+            
+            <Border x:Name="MiniPlayerBar"
+                    Height="64" 
+                    Width="520"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Bottom"
+                    Margin="0,0,0,24"
+                    Background="#120606" 
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="32"
+                    Cursor="Hand"
+                    MouseLeftButtonUp="MiniPlayerBar_Click">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="25" ShadowDepth="4" Opacity="0.5" Color="Black"/>
+                </Border.Effect>
+                
+                <Grid Margin="6,0,16,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Width="52" Height="52" CornerRadius="26" ClipToBounds="True" Background="#1A1A1A" VerticalAlignment="Center">
+                        <Image Source="{Binding NowPlaying.CoverPath, FallbackValue='pack://application:,,,/Assets/default_cover.png'}" Stretch="UniformToFill"/>
+                    </Border>
+
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="14,0,16,0">
+                        <TextBlock Text="{Binding NowPlaying.Title, FallbackValue='Not Playing'}" FontWeight="Bold" FontSize="14" Foreground="#FFFFFF" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="{Binding NowPlaying.Artist, FallbackValue='Unknown Artist'}" FontSize="12" Foreground="#A0A0A0" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button Content="⏮" Width="36" Height="36" FontSize="14" Background="Transparent" BorderThickness="0" Foreground="#FFFFFF" Cursor="Hand" Click="MiniPrevious_Click"/>
+                        <Button x:Name="BtnMiniPlay" Content="▶" Width="40" Height="40" FontSize="18" Margin="6,0,6,0" Background="Transparent" BorderThickness="0" Foreground="#FFFFFF" Cursor="Hand" Click="MiniPlay_Click"/>
+                        <Button Content="⏭" Width="36" Height="36" FontSize="14" Background="Transparent" BorderThickness="0" Foreground="#FFFFFF" Cursor="Hand" Click="MiniNext_Click"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <Grid x:Name="FullNowPlayingContainer" Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=Window}}" VerticalAlignment="Bottom" Visibility="Collapsed">
+                <Grid.RenderTransform>
+                    <TranslateTransform x:Name="FullPanelTransform"/>
+                </Grid.RenderTransform>
+                <ContentControl x:Name="NowPlayingPresenter"/>
+            </Grid>
         </Grid>
-    </DockPanel>
+    </Grid>
 </Window>
