@@ -86,8 +86,8 @@
             <Grid Margin="8,0,16,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
-                    <Grid.ColumnDefinition Width="*"/>
-                    <Grid.ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
         
                 <Border Grid.Column="0" Width="52" Height="52" CornerRadius="26" ClipToBounds="True" Background="{DynamicResource BackgroundBrush}" VerticalAlignment="Center">
