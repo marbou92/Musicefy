@@ -85,9 +85,9 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <Grid.ColumnDefinition Width="240"/>
-            <Grid.ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
+            <ColumnDefinition Width="240"/> 
+            <ColumnDefinition Width="*"/>   
+        </Grid.ColumnDefinitions> ```
 
         <Grid Grid.Column="0" Background="{DynamicResource BackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,1,0">
             <StackPanel Margin="10,20,10,10">
