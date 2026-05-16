@@ -9,9 +9,7 @@ namespace Musicefy.Services
 {
     public static class DownloadManager
     {
-        private const long MaxDownloadSizeBytes = 500L * 1024L * 1024L; // 500 MB
-        private const long MaxCacheSizeBytes = 2L * 1024L * 1024L * 1024L; // 2 GB
-        private const long WarningThresholdBytes = 400L * 1024L * 1024L; // 400 MB
+        private const long MaxDownloadSizeBytes = 500L * 1024L * 1024L; // 500 MB hard limit per-file toggle
 
         /// <summary>
         /// Downloads a file with progress reporting, cancellation, and pause/resume support.
@@ -35,15 +33,19 @@ namespace Musicefy.Services
                 if (!Directory.Exists(downloadsPath))
                     Directory.CreateDirectory(downloadsPath);
 
+                // Fetch real limits dynamically from configuration settings instead of constants
+                long maxCacheSizeBytes = Musicefy.Properties.Settings.Default.GlobalCacheLimit;
+                long warningThresholdBytes = Musicefy.Properties.Settings.Default.CacheWarningThreshold;
+
                 long currentCacheSize = GetDirectorySize(downloadsPath);
-                if (currentCacheSize >= MaxCacheSizeBytes)
+                if (currentCacheSize >= maxCacheSizeBytes)
                 {
-                    ToastService.ShowToast("❌ Cache limit reached (2 GB). Downloads blocked until you clear space.", Brushes.OrangeRed);
+                    ToastService.ShowToast($"❌ Cache limit reached ({maxCacheSizeBytes / (1024.0 * 1024.0 * 1024.0):F0} GB). Downloads blocked until space is cleared.", Brushes.OrangeRed);
                     return false;
                 }
-                else if (currentCacheSize > WarningThresholdBytes)
+                else if (currentCacheSize > warningThresholdBytes)
                 {
-                    ToastService.ShowToast("⚠ Cache size exceeds 400 MB. Consider clearing to free space.", Brushes.Goldenrod);
+                    ToastService.ShowToast($"⚠ Cache size exceeds user threshold ({warningThresholdBytes / (1024.0 * 1024.0):F0} MB).", Brushes.Goldenrod);
                 }
 
                 string targetPath = Path.Combine(downloadsPath, fileName);
@@ -61,14 +63,12 @@ namespace Musicefy.Services
                         long? contentLength = response.Content.Headers.ContentLength;
                         long totalLength = (contentLength ?? 0) + existingLength;
 
-                        if (Musicefy.Properties.Settings.Default.LimitDownloadSize &&
-                            totalLength > MaxDownloadSizeBytes)
+                        if (Musicefy.Properties.Settings.Default.LimitDownloadSize && totalLength > MaxDownloadSizeBytes)
                         {
                             ToastService.ShowToast("❌ File larger than 500 MB. Download blocked.", Brushes.OrangeRed);
                             return false;
                         }
 
-                        // net472 only supports parameterless ReadAsStreamAsync
                         using (var stream = await response.Content.ReadAsStreamAsync())
                         using (var fs = new FileStream(targetPath, resume ? FileMode.Append : FileMode.Create, FileAccess.Write))
                         {
@@ -76,19 +76,13 @@ namespace Musicefy.Services
                             int read;
                             long totalBytes = existingLength;
 
+                            // OperationCanceledException handles cleanup gracefully via native stream interception
                             while ((read = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) > 0)
                             {
                                 totalBytes += read;
 
-                                if (cancellationToken.IsCancellationRequested)
-                                {
-                                    ToastService.ShowToast("⏸ Download paused.", Brushes.Goldenrod);
-                                    return false;
-                                }
-
                                 // Enforce per-file limit
-                                if (Musicefy.Properties.Settings.Default.LimitDownloadSize &&
-                                    totalBytes > MaxDownloadSizeBytes)
+                                if (Musicefy.Properties.Settings.Default.LimitDownloadSize && totalBytes > MaxDownloadSizeBytes)
                                 {
                                     fs.Close();
                                     File.Delete(targetPath);
@@ -97,17 +91,16 @@ namespace Musicefy.Services
                                 }
 
                                 // Enforce global cache limit
-                                if (currentCacheSize + totalBytes > MaxCacheSizeBytes)
+                                if (currentCacheSize + totalBytes > maxCacheSizeBytes)
                                 {
                                     fs.Close();
                                     File.Delete(targetPath);
-                                    ToastService.ShowToast("❌ Cache limit reached (2 GB). Download cancelled.", Brushes.OrangeRed);
+                                    ToastService.ShowToast("❌ Global cache limit reached. Download cancelled.", Brushes.OrangeRed);
                                     return false;
                                 }
 
                                 await fs.WriteAsync(buffer, 0, read, cancellationToken);
 
-                                // Report progress
                                 if (totalLength > 0)
                                 {
                                     int percent = (int)((double)totalBytes / totalLength * 100);
@@ -127,13 +120,16 @@ namespace Musicefy.Services
                     ClearCache(downloadsPath);
                     ToastService.ShowToast("🗑 Cache auto-cleared after download.", Brushes.Gray);
                 }
+                else
+                {
+                    ToastService.ShowToast("✅ Download completed successfully.", Brushes.ForestGreen);
+                }
 
-                ToastService.ShowToast("✅ Download completed successfully.", Brushes.ForestGreen);
                 return true;
             }
             catch (OperationCanceledException)
             {
-                ToastService.ShowToast("⏸ Download paused.", Brushes.Goldenrod);
+                // Let the UI Controller show the appropriate localized notification status safely
                 return false;
             }
             catch (Exception ex)
