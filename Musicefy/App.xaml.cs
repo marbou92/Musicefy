@@ -68,7 +68,7 @@ namespace Musicefy
             }
             catch
             {
-                // swallow logging errors
+                // swallow logging errors safely
             }
         }
     }
