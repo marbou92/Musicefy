@@ -85,7 +85,7 @@
         <StackPanel Margin="25,10,25,25">
             
             <Grid Margin="6,0,0,15">
-                <TextBlock Text="Charts for you" FontSize="20" FontWeight="ExtraBold" Foreground="White" VerticalAlignment="Center"/>
+                <TextBlock Text="Charts for you" FontSize="20" FontWeight="ExtraBold" Foreground="{DynamicResource AppText}" VerticalAlignment="Center"/>
             </Grid>
             <ListBox x:Name="ChartsList" 
                      ItemsSource="{Binding BrowseCharts}" 
@@ -104,7 +104,7 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="Quick Picks" FontSize="20" FontWeight="ExtraBold" Foreground="White" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="0" Text="Quick Picks" FontSize="20" FontWeight="ExtraBold" Foreground="{DynamicResource AppText}" VerticalAlignment="Center"/>
                 <Button Grid.Column="1" Content="PLAY ALL" Style="{StaticResource HeaderActionButtonStyle}" Click="PlayAllQuickPicks_Click"/>
             </Grid>
             
@@ -126,7 +126,7 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="Top Music Videos" FontSize="20" FontWeight="ExtraBold" Foreground="White" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="0" Text="Top Music Videos" FontSize="20" FontWeight="ExtraBold" Foreground="{DynamicResource AppText}" VerticalAlignment="Center"/>
                 <Button Grid.Column="1" Content="SEE MORE" Style="{StaticResource HeaderActionButtonStyle}" Click="MoreVideos_Click"/>
             </Grid>
             <ListBox x:Name="VideosList" 
