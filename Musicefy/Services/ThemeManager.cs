@@ -19,16 +19,16 @@ namespace Musicefy.Services
             // Always load base styles first
             MergeDictionary("/Themes/Base.xaml");
 
-            // Resolve system mode
+            // Resolve system mode selection vectors
             if (mode.Equals("System", StringComparison.OrdinalIgnoreCase))
             {
                 mode = IsSystemDarkMode() ? "Dark" : "Light";
             }
 
-            // Load mode dictionary
+            // Load mode dictionary surface layer
             MergeDictionary($"/Themes/Modes/{mode}.xaml");
 
-            // Handle palette adaptation
+            // Handle palette adaptation mechanics
             if (palette.Equals("Default", StringComparison.OrdinalIgnoreCase))
             {
                 string paletteFile = mode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase)
@@ -77,8 +77,8 @@ namespace Musicefy.Services
         {
             try
             {
-                // Note: This key only exists on Windows 10 and 11. 
-                // On Windows 7, this will safely fail and return true (Dark fallback).
+                // This registry key is valid on Windows 10 & 11.
+                // On Windows 7, this fails gracefully and defaults to Dark mode tracking.
                 using (var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"))
                 {
                     if (key?.GetValue("AppsUseLightTheme") is int intVal)
@@ -87,7 +87,6 @@ namespace Musicefy.Services
             }
             catch { }
             
-            // Fallback to Dark mode for Windows 7/8 where the registry key doesn't exist
             return true;
         }
 
@@ -166,7 +165,9 @@ namespace Musicefy.Services
 
         private static void AnimateButtonGradient(System.Windows.Controls.Button btn, Color toStart, Color toEnd, int durationMs)
         {
-            if (btn.Template.FindName("AccentStart", btn) is GradientStop start &&
+            // FIXED: Added defensive fallback guard to check template layout validation before animating
+            if (btn.Template != null && 
+                btn.Template.FindName("AccentStart", btn) is GradientStop start &&
                 btn.Template.FindName("AccentEnd", btn) is GradientStop end)
             {
                 var anim1 = new ColorAnimation(toStart, TimeSpan.FromMilliseconds(durationMs));
@@ -193,14 +194,28 @@ namespace Musicefy.Services
 
         public static Brush GetAccentBrush(string name)
         {
+            Brush brush;
             switch (name)
             {
-                case "Default": return new LinearGradientBrush(Colors.SkyBlue, Colors.DodgerBlue, 45);
-                case "Catppuccin": return Brushes.MediumOrchid;
-                case "GreenApple": return Brushes.MediumSeaGreen;
-                case "Lavender": return Brushes.MediumPurple;
-                default: return Brushes.Gray;
+                case "Default": 
+                    brush = new LinearGradientBrush(Colors.SkyBlue, Colors.DodgerBlue, 45); 
+                    break;
+                case "Catppuccin": 
+                    brush = new SolidColorBrush(Color.FromRgb(245, 194, 231)); // Smooth Catppuccin Pink
+                    break;
+                case "GreenApple": 
+                    brush = new SolidColorBrush(Color.FromRgb(29, 185, 84)); // Echo/Spotify Accent Green
+                    break;
+                case "Lavender": 
+                    brush = new SolidColorBrush(Color.FromRgb(181, 126, 220)); 
+                    break;
+                default: 
+                    brush = Brushes.Gray; 
+                    break;
             }
+
+            brush.Freeze(); // FIXED: Freezing dynamic preview brush models to boost layout redraw performance
+            return brush;
         }
 
         private static void MergeDictionary(string path)
