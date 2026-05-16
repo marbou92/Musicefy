@@ -6,20 +6,18 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <!-- Default mode -->
                 <ResourceDictionary Source="Themes/Modes/System.xaml"/>
-                <!-- Default palette -->
                 <ResourceDictionary Source="Themes/Palettes/Default.xaml"/>
-                <!-- Base animations + styles -->
                 <ResourceDictionary Source="Themes/Base.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
-            <!-- Global converters -->
             <conv:ThemeThumbnailConverter x:Key="ThemeThumbnailConverter"/>
             <conv:ThemePreviewConverter x:Key="ThemePreviewConverter"/>
             <conv:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
             <conv:PathToImageConverter x:Key="PathToImageConverter"/>
             <conv:LyricsToLinesConverter x:Key="LyricsToLinesConverter"/>
+            
+            <conv:IndexToBoolConverter x:Key="IndexToBoolConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
