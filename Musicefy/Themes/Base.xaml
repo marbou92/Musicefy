@@ -57,6 +57,30 @@
         </Setter>
     </Style>
 
+    <Style x:Key="MobileToggleSwitch" TargetType="CheckBox">
+        <Setter Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <Grid Width="46" Height="26">
+                        <Border x:Name="Pill" Background="{TemplateBinding Background}" CornerRadius="13" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"/>
+                        <Ellipse x:Name="Knob" Width="18" Height="18" Fill="{DynamicResource ForegroundBrush}" HorizontalAlignment="Left" Margin="4,0,0,0"/>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Pill" Property="Background" Value="{DynamicResource AccentBrush}"/>
+                            <Setter TargetName="Pill" Property="BorderThickness" Value="0"/>
+                            <Setter TargetName="Knob" Property="HorizontalAlignment" Value="Right"/>
+                            <Setter TargetName="Knob" Property="Margin" Value="0,0,4,0"/>
+                            <Setter TargetName="Knob" Property="Fill" Value="White"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style TargetType="Slider">
         <Setter Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}"/>
         <Style.Resources>
