@@ -5,7 +5,7 @@
         Height="650" Width="950"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource BackgroundBrush}"
-        Foreground="{DynamicResource TextBrush}">
+        Foreground="{DynamicResource ForegroundBrush}">
 
     <Window.Resources>
         <Style x:Key="SegmentedTabStyle" TargetType="RadioButton">
@@ -47,7 +47,7 @@
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}"/>
-                                <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
                                 <Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}"/>
@@ -61,7 +61,7 @@
 
         <Style x:Key="ActionButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Padding" Value="22,8"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -74,7 +74,7 @@
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="BtnBorder" Property="Background" Value="{DynamicResource AccentBrush}"/>
-                                <Setter Property="Foreground" Value="{DynamicResource BackgroundBrush}"/>
+                                <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -95,7 +95,7 @@
                 BorderThickness="0,0,1,0">
             <Grid>
                 <StackPanel Margin="10,20,10,10">
-                    <TextBlock Text="Settings" FontSize="22" FontWeight="ExtraBold" Margin="15,0,0,25" Foreground="{DynamicResource TextBrush}"/>
+                    <TextBlock Text="Settings" FontSize="22" FontWeight="ExtraBold" Margin="15,0,0,25" Foreground="{DynamicResource ForegroundBrush}"/>
 
                     <RadioButton x:Name="AppearanceButton" Style="{StaticResource SidebarTabStyle}" GroupName="SettingsTabs" IsChecked="True" Click="AppearanceButton_Click">
                         <StackPanel Orientation="Horizontal">
@@ -137,13 +137,13 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0" x:Name="SectionTitle" Text="Appearance Settings" FontSize="24" FontWeight="ExtraBold" Margin="0,0,0,25" Foreground="{DynamicResource TextBrush}"/>
+            <TextBlock Grid.Row="0" x:Name="SectionTitle" Text="Appearance Settings" FontSize="24" FontWeight="ExtraBold" Margin="0,0,0,25" Foreground="{DynamicResource ForegroundBrush}"/>
 
             <ContentControl x:Name="SettingsContent" Grid.Row="1"/>
 
             <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
                 <Button Content="Cancel" Width="110" Margin="0,0,12,0" Style="{StaticResource ActionButtonStyle}" Click="Cancel_Click"/>
-                <Button Content="Save" Width="110" Style="{StaticResource ActionButtonStyle}" Background="{DynamicResource AccentBrush}" Foreground="{DynamicResource BackgroundBrush}" Click="Save_Click"/>
+                <Button Content="Save" Width="110" Style="{StaticResource ActionButtonStyle}" Background="{DynamicResource AccentBrush}" Foreground="White" Click="Save_Click"/>
             </StackPanel>
         </Grid>
     </Grid>
