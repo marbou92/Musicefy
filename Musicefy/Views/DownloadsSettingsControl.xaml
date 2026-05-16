@@ -1,6 +1,6 @@
 <UserControl x:Class="Musicefy.Views.DownloadsSettingsControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml"
              Background="{DynamicResource BackgroundBrush}"
              Foreground="{DynamicResource ForegroundBrush}">
 
@@ -11,25 +11,21 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Title -->
         <TextBlock Grid.Row="0"
                    Text="Downloads Settings"
                    FontSize="22"
                    FontWeight="Bold"
                    Margin="0,0,0,15"/>
 
-        <!-- Content -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel Orientation="Vertical">
 
-                <!-- Download Path -->
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,20">
                     <TextBlock Text="Download path:" VerticalAlignment="Center" Margin="0,0,10,0"/>
                     <TextBox x:Name="DownloadPathBox" Width="400" IsReadOnly="True"/>
                     <Button Content="Browse..." Margin="10,0,0,0" Click="Browse_Click"/>
                 </StackPanel>
 
-                <!-- Toggles -->
                 <CheckBox x:Name="AutoClearCacheBox"
                           Content="Auto-clear cache on exit"
                           Style="{StaticResource ToggleSettingStyle}"
@@ -39,7 +35,6 @@
                           Style="{StaticResource ToggleSettingStyle}"
                           Margin="0,0,0,20"/>
 
-                <!-- Cache status card -->
                 <Border CornerRadius="6" Padding="10"
                         Background="{DynamicResource SecondaryBackgroundBrush}"
                         Margin="0,0,0,20">
@@ -91,7 +86,6 @@
             </StackPanel>
         </ScrollViewer>
 
-        <!-- Buttons -->
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
             <Button Content="Cancel" Width="100" Margin="0,0,10,0" Click="Cancel_Click"/>
             <Button Content="Save" Width="100" Background="{DynamicResource AccentBrush}" Foreground="White" Click="Save_Click"/>
