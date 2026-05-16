@@ -74,6 +74,20 @@ namespace Musicefy.ViewModels
             }
         }
 
+        // ADD THIS PROPERTY TO AppearanceSettingsViewModel.cs
+        public ThemePreview SelectedPalettePreview
+        {
+            get => ThemePreviews.FirstOrDefault(p => p.IsSelected);
+            set
+            {
+                if (value != null && !value.IsSelected)
+                {
+                    SelectPalette(value.CardName);
+                    OnPropertyChanged();
+                }
+            }
+        }
+        
         public void SelectPalette(string paletteName)
         {
             ThemeManager.ApplyTheme(GetModeFromIndex(_selectedThemeIndex), paletteName);
