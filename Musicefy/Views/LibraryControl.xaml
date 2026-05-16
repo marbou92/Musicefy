@@ -1,4 +1,4 @@
-<UserControl x:Class="Musicefy.Views.LibraryView"
+<UserControl x:Class="Musicefy.Views.LibraryControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Background="Transparent">
@@ -8,7 +8,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row0 HeaderElement Margin="0,0,0,30">
+        <Grid Grid.Row="0" Margin="0,0,0,30">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
                 <Button x:Name="BtnBack" 
                         Content="←" 
