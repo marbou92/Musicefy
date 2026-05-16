@@ -111,7 +111,6 @@ namespace Musicefy.Views
             }
         }
 
-        // FIXED: Using type checking contract interfaces instead of slow reflection lookups
         private void Save_Click(object sender, RoutedEventArgs e)
         {
             if (SettingsContent.Content is ISettingsControl settingsControl)
