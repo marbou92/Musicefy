@@ -21,7 +21,9 @@ namespace Musicefy
             _playback = new PlaybackService();
             
             this.DataContext = _mainViewModel;
-
+            
+            Musicefy.Services.ThemeManager.ApplyTheme("Dark", "Default");
+            
             // 2. Load the UI components
             InitializeComponent();
 
