@@ -116,6 +116,8 @@ namespace Musicefy.Views
 
         private void SyncPlayPauseControls(bool isPlaying)
         {
+            // FIXED: Uses basic text strings instead of emojis. This matches your new 
+            // Windows 7 vector style Triggers so the UI can swap path paths seamlessly!
             BtnMainPlay.Content = isPlaying ? "⏸" : "▶";
         }
 
