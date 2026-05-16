@@ -25,13 +25,6 @@ namespace Musicefy.ViewModels
 
         public MainViewModel()
         {
-            HeaderCategories = new ObservableCollection<CategoryItem> {
-                new CategoryItem { Name = "Energize" }, 
-                new CategoryItem { Name = "Relax" }, 
-                new CategoryItem { Name = "Focus" }, 
-                new CategoryItem { Name = "Romance" }
-            };
-
             var placeholder = new BitmapImage(new Uri("pack://application:,,,/Assets/default_cover.png"));
 
             BrowseCharts = new ObservableCollection<ChartCard> {
