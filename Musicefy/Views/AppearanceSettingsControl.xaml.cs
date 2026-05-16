@@ -1,49 +1,32 @@
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
-using Musicefy.Core.Interfaces;
-using Musicefy.ViewModels;
+using Musicefy.Services; // Ensure this points to where you saved ThemeManager
 
 namespace Musicefy.Views
 {
-    public partial class AppearanceSettingsControl : UserControl, ISettingsControl
+    public partial class AppearanceSettingsControl : UserControl
     {
-        private readonly AppearanceSettingsViewModel _viewModel;
-
         public AppearanceSettingsControl()
         {
             InitializeComponent();
-            _viewModel = new AppearanceSettingsViewModel();
-            this.DataContext = _viewModel;
         }
 
-        // ISettingsControl Implementation
-        public void Save()
+        private void Theme_Changed(object sender, RoutedEventArgs e)
         {
-            _viewModel.Save();
-        }
-
-        public void Cancel()
-        {
-            _viewModel.Cancel();
-        }
-
-        private void Save_Click(object sender, RoutedEventArgs e)
-        {
-            Save();
-            MessageBox.Show("Appearance settings saved.", "Musicefy", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void Cancel_Click(object sender, RoutedEventArgs e)
-        {
-            Cancel();
-        }
-
-        private void PaletteCard_Click(object sender, MouseButtonEventArgs e)
-        {
-            if (sender is FrameworkElement element && element.DataContext is ThemePreview preview)
+            if (sender is RadioButton rb && PaletteBox != null)
             {
-                _viewModel.SelectPalette(preview.CardName);
+                ThemeManager.ApplyTheme(rb.Content.ToString(), PaletteBox.Text);
+            }
+        }
+
+        private void PaletteBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.AddedItems.Count > 0 && e.AddedItems[0] is ComboBoxItem item)
+            {
+                // Find out which theme radio button is currently checked
+                string theme = "Dark"; // Fallback
+                
+                ThemeManager.ApplyTheme(theme, item.Content.ToString());
             }
         }
     }
