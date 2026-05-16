@@ -1,0 +1,114 @@
+<Window x:Class="Musicefy.Views.CreatePlaylistWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="New Playlist" 
+        Height="220" Width="420"
+        WindowStyle="None" 
+        AllowsTransparency="True" 
+        Background="Transparent"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False">
+
+    <Window.Resources>
+        <Style x:Key="ModernTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+            <Setter Property="CaretBrush" Value="{DynamicResource TextBrush}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="12,0,12,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Grid>
+                            <Border Background="{DynamicResource SecondaryBackgroundBrush}" 
+                                    BorderBrush="{DynamicResource BorderBrush}" 
+                                    BorderThickness="1" 
+                                    CornerRadius="8"/>
+                            
+                            <TextBlock x:Name="TxtPlaceholder"
+                                       Text="Give your playlist a name..."
+                                       Foreground="{DynamicResource MutedTextBrush}"
+                                       Style="{StaticResource BaseTextBlockStyle}"
+                                       FontSize="14"
+                                       VerticalAlignment="Center"
+                                       Margin="14,0,0,0"
+                                       IsHitTestVisible="False"
+                                       Visibility="Collapsed"/>
+                            
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="2,0,2,0"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="Text" Value="">
+                                <Setter TargetName="TxtPlaceholder" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    
+    <Border Background="{DynamicResource BackgroundBrush}" 
+            BorderBrush="{DynamicResource BorderBrush}" 
+            BorderThickness="1.5" 
+            CornerRadius="16"
+            MouseLeftButtonDown="Border_MouseLeftButtonDown">
+        
+        <Grid Margin="24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" 
+                       Text="New Playlist" 
+                       FontSize="20" 
+                       FontWeight="Bold" 
+                       Foreground="{DynamicResource TextBrush}"
+                       Margin="2,0,0,16"/>
+
+            <TextBox Grid.Row="1" 
+                     x:Name="TxtPlaylistName"
+                     Style="{StaticResource ModernTextBoxStyle}"
+                     Height="42"
+                     VerticalAlignment="Top"
+                     KeyDown="TxtPlaylistName_KeyDown"/>
+
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+                <Button Content="Cancel" 
+                        Width="90" Height="36" 
+                        Margin="0,0,10,0" 
+                        Cursor="Hand"
+                        Click="BtnCancel_Click">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="Transparent" CornerRadius="18">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                                  TextElement.Foreground="{DynamicResource MutedTextBrush}" 
+                                                  TextElement.FontWeight="SemiBold"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+
+                <Button Content="Create" 
+                        Width="100" Height="36" 
+                        Cursor="Hand"
+                        Click="BtnCreate_Click">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{DynamicResource AccentBrush}" CornerRadius="18">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                                  TextElement.Foreground="White" 
+                                                  TextElement.FontWeight="Bold"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>
