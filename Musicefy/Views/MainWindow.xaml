@@ -68,44 +68,65 @@
         <Grid VerticalAlignment="Bottom" HorizontalAlignment="Stretch">
             
             <Border x:Name="MiniPlayerBar"
-                    Height="64" 
-                    Width="520"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Bottom"
-                    Margin="0,0,0,24"
-                    Background="#120606" 
-                    BorderBrush="{DynamicResource BorderBrush}"
-                    BorderThickness="1"
-                    CornerRadius="32"
-                    Cursor="Hand"
-                    MouseLeftButtonUp="MiniPlayerBar_Click">
-                <Border.Effect>
-                    <DropShadowEffect BlurRadius="25" ShadowDepth="4" Opacity="0.5" Color="Black"/>
-                </Border.Effect>
-                
-                <Grid Margin="6,0,16,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-
-                    <Border Grid.Column="0" Width="52" Height="52" CornerRadius="26" ClipToBounds="True" Background="#1A1A1A" VerticalAlignment="Center">
-                        <Image Source="{Binding NowPlaying.CoverPath, FallbackValue='pack://application:,,,/Assets/default_cover.png'}" Stretch="UniformToFill"/>
-                    </Border>
-
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="14,0,16,0">
-                        <TextBlock Text="{Binding NowPlaying.Title, FallbackValue='Not Playing'}" FontWeight="Bold" FontSize="14" Foreground="#FFFFFF" TextTrimming="CharacterEllipsis"/>
-                        <TextBlock Text="{Binding NowPlaying.Artist, FallbackValue='Unknown Artist'}" FontSize="12" Foreground="#A0A0A0" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
-                    </StackPanel>
-
-                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Button Content="⏮" Width="36" Height="36" FontSize="14" Background="Transparent" BorderThickness="0" Foreground="#FFFFFF" Cursor="Hand" Click="MiniPrevious_Click"/>
-                        <Button x:Name="BtnMiniPlay" Content="▶" Width="40" Height="40" FontSize="18" Margin="6,0,6,0" Background="Transparent" BorderThickness="0" Foreground="#FFFFFF" Cursor="Hand" Click="MiniPlay_Click"/>
-                        <Button Content="⏭" Width="36" Height="36" FontSize="14" Background="Transparent" BorderThickness="0" Foreground="#FFFFFF" Cursor="Hand" Click="MiniNext_Click"/>
-                    </StackPanel>
-                </Grid>
-            </Border>
+                Height="68" 
+                Width="540"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Bottom"
+                Margin="0,0,0,24"
+                Background="{DynamicResource SecondaryBackgroundBrush}" 
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="1"
+                CornerRadius="34"
+                Cursor="Hand"
+                MouseLeftButtonUp="MiniPlayerBar_Click">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="30" ShadowDepth="5" Opacity="0.35" Color="Black"/>
+            </Border.Effect>
+            
+            <Grid Margin="8,0,16,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <Grid.ColumnDefinition Width="*"/>
+                    <Grid.ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+        
+                <Border Grid.Column="0" Width="52" Height="52" CornerRadius="26" ClipToBounds="True" Background="{DynamicResource BackgroundBrush}" VerticalAlignment="Center">
+                    <Image Source="{Binding NowPlaying.CoverPath, FallbackValue='pack://application:,,,/Assets/default_cover.png'}" Stretch="UniformToFill"/>
+                </Border>
+        
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="14,0,16,0">
+                    <TextBlock Text="{Binding NowPlaying.Title, FallbackValue='Not Playing'}" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource TextBrush}" TextTrimming="CharacterEllipsis"/>
+                    <TextBlock Text="{Binding NowPlaying.Artist, FallbackValue='Unknown Artist'}" FontSize="12" Foreground="{DynamicResource MutedTextBrush}" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
+                </StackPanel>
+        
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Width="36" Height="36" Background="Transparent" BorderThickness="0" Cursor="Hand" Click="MiniPrevious_Click">
+                        <Path Data="M6,18V6H8V18H6M9.5,12L18,6V18L9.5,12Z" Fill="{DynamicResource TextBrush}" Width="13" Height="13" Stretch="Uniform"/>
+                    </Button>
+                    
+                    <Button x:Name="BtnMiniPlay" Content="▶" Width="42" Height="42" Background="Transparent" BorderThickness="0" Cursor="Hand" Click="MiniPlay_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Grid Background="Transparent">
+                                    <Path x:Name="MiniPlayIcon" Data="M8,5V19L19,12L8,5Z" Fill="{DynamicResource AccentBrush}" Width="15" Height="15" Stretch="Uniform"/>
+                                    <Path x:Name="MiniPauseIcon" Data="M14,19H18V5H14M6,19H10V5H6Z" Fill="{DynamicResource AccentBrush}" Width="15" Height="15" Stretch="Uniform" Visibility="Collapsed"/>
+                                </Grid>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="Content" Value="⏸">
+                                        <Setter TargetName="MiniPlayIcon" Property="Visibility" Value="Collapsed"/>
+                                        <Setter TargetName="MiniPauseIcon" Property="Visibility" Value="Visible"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                    
+                    <Button Width="36" Height="36" Background="Transparent" BorderThickness="0" Cursor="Hand" Click="MiniNext_Click">
+                        <Path Data="M16,18H18V6H16M6,18L14.5,12L6,6V18Z" Fill="{DynamicResource TextBrush}" Width="13" Height="13" Stretch="Uniform"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
 
             <Grid x:Name="FullNowPlayingContainer" Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=Window}}" VerticalAlignment="Bottom" Visibility="Collapsed">
                 <Grid.RenderTransform>
