@@ -1,6 +1,8 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Animation;
 using Musicefy.Views;
 using Musicefy.Services;
@@ -12,50 +14,50 @@ namespace Musicefy
     {
         private readonly PlaybackService _playback;
         private readonly MainViewModel _mainViewModel;
+        private NowPlayingControl _nowPlayingView;
         private bool _isInitializing = true;
 
         public MainWindow()
         {
-            // 1. Initialize data and services FIRST
+            // Initialize Core Data Layers First
             _mainViewModel = new MainViewModel();
             _playback = new PlaybackService();
             
             this.DataContext = _mainViewModel;
             
-            Musicefy.Services.ThemeManager.ApplyTheme("Dark", "Default");
-            
-            // 2. Load the UI components
+            // Render Initial Core Visual Component Layout Trees
             InitializeComponent();
 
-            // 3. Mark initialization as complete
             _isInitializing = false;
 
-            // 4. Manually trigger initial view to avoid early trigger crash
+            // Seed initial fallback focus index
             SidebarList.SelectedIndex = 0;
+
+            // Hook Core Player Service events to keep the tiny mini-player bar buttons updated automatically
+            _playback.PlaybackStateChanged += OnPlaybackStateChanged;
         }
 
         private void Sidebar_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            // CRITICAL GUARD: Stop if UI is still being built or services are missing
             if (_isInitializing || MainContent == null || _mainViewModel == null || _playback == null) 
                 return;
 
             if (SidebarList.SelectedItem == null) return;
 
-            // Handle Settings
+            // Modal Settings Hook Intercept Router
             if (SidebarList.SelectedItem == SettingsItem)
             {
                 new SettingsWindow { Owner = this }.ShowDialog();
-                SidebarList.SelectedIndex = 0; // Return focus to Home
+                SidebarList.SelectedIndex = 0; 
                 return;
             }
 
-            // Create the next view based on index
             UserControl nextView = null;
             switch (SidebarList.SelectedIndex)
             {
                 case 0: nextView = new HomeControl(_playback, _mainViewModel); break;
                 case 1: nextView = new SearchControl(_playback); break;
+                // FIXED PARAMS: Instantiated with the dynamic constructor framework pass
                 case 2: nextView = new LibraryControl(_playback); break;
             }
 
@@ -65,9 +67,6 @@ namespace Musicefy
             }
         }
 
-        /// <summary>
-        /// Adds a smooth Echo-style fade transition between pages
-        /// </summary>
         private void NavigateWithFade(UserControl newContent)
         {
             DoubleAnimation fadeOut = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(150));
@@ -79,5 +78,62 @@ namespace Musicefy
             };
             MainContent.BeginAnimation(OpacityProperty, fadeOut);
         }
+
+        #region Mini-Player Pipeline Slide Controllers
+        private void MiniPlayerBar_Click(object sender, MouseButtonEventArgs e)
+        {
+            if (_nowPlayingView == null)
+            {
+                _nowPlayingView = new NowPlayingControl(_playback);
+                _nowPlayingView.RequestCollapse += CollapseFullNowPlayingPanel;
+                NowPlayingPresenter.Content = _nowPlayingView;
+            }
+
+            // Reveal hidden full expanded overlay frame wrapper
+            FullNowPlayingContainer.Visibility = Visibility.Visible;
+            MiniPlayerBar.Visibility = Visibility.Collapsed;
+            
+            // Execute premium circular slide ease transitions up the view axis
+            FullPanelTransform.Y = this.ActualHeight;
+            var slideUpAnim = new DoubleAnimation(this.ActualHeight, 0, TimeSpan.FromMilliseconds(450))
+            {
+                EasingFunction = new CircleEase { EasingMode = EasingMode.EaseOut }
+            };
+            FullPanelTransform.BeginAnimation(TranslateTransform.YProperty, slideUpAnim);
+        }
+
+        private void CollapseFullNowPlayingPanel()
+        {
+            var slideDownAnim = new DoubleAnimation(0, this.ActualHeight, TimeSpan.FromMilliseconds(400))
+            {
+                EasingFunction = new CircleEase { EasingMode = EasingMode.EaseIn }
+            };
+
+            slideDownAnim.Completed += (s, e) =>
+            {
+                FullNowPlayingContainer.Visibility = Visibility.Collapsed;
+                MiniPlayerBar.Visibility = Visibility.Visible;
+            };
+
+            FullPanelTransform.BeginAnimation(TranslateTransform.YProperty, slideDownAnim);
+        }
+
+        private void OnPlaybackStateChanged(bool isPlaying)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                BtnMiniPlay.Content = isPlaying ? "⏸" : "▶";
+            });
+        }
+
+        private void MiniPlay_Click(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true; // Stop event escalation from firing the parent slide container maximize logic
+            if (_playback.IsPlaying) _playback.Pause(); else _playback.Resume();
+        }
+
+        private void MiniPrevious_Click(object sender, RoutedEventArgs e) { e.Handled = true; _playback.Previous(); }
+        private void MiniNext_Click(object sender, RoutedEventArgs e) { e.Handled = true; _playback.Next(); }
+        #endregion
     }
 }
