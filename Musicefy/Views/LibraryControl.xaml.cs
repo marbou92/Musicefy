@@ -22,13 +22,13 @@ namespace Musicefy.Views
         private const string IconFolder = "M10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6H12L10,4Z";
         private const string IconMusicDisc = "M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9Z";
 
-        public LibraryControl()
+        public LibraryControl(object optionalDependency = null) 
         {
             InitializeComponent();
             LoadRootLibraryLayout();
             LibraryItemsControl.ItemsSource = DisplayItems;
         }
-
+        
         private void LoadRootLibraryLayout()
         {
             RootLibraryItems.Clear();
