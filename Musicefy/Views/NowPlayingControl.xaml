@@ -66,21 +66,21 @@
             </Grid>
 
             <StackPanel Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center">
-                <Border CornerRadius="24" Width="320" Height="320" ClipToBounds="True" Background="{DynamicResource SecondaryBackgroundBrush}">
+                <Border CornerRadius="24" Width="320" Height="320" ClipToBounds="True" Background="#101010">
                     <Border.Effect>
-                        <DropShadowEffect BlurRadius="50" ShadowDepth="12" Opacity="0.3" Color="Black"/>
+                        <DropShadowEffect BlurRadius="40" ShadowDepth="8" Opacity="0.6" Color="Black"/>
                     </Border.Effect>
                     <Image Source="{Binding NowPlaying.CoverPath, FallbackValue='pack://application:,,,/Assets/default_cover.png'}" Stretch="UniformToFill"/>
                 </Border>
                 
-                <TextBlock Text="{Binding NowPlaying.Title, FallbackValue='Not Playing'}" FontSize="26" FontWeight="Bold" Foreground="{DynamicResource TextBrush}" HorizontalAlignment="Center" Margin="0,32,0,6" TextTrimming="CharacterEllipsis" MaxWidth="400"/>
-                <TextBlock Text="{Binding NowPlaying.Artist, FallbackValue='Unknown Artist'}" FontSize="15" Foreground="{DynamicResource MutedTextBrush}" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="400"/>
+                <TextBlock Text="{Binding NowPlaying.Title, FallbackValue='Not Playing'}" FontSize="28" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center" Margin="0,36,0,6" TextTrimming="CharacterEllipsis" MaxWidth="400"/>
+                <TextBlock Text="{Binding NowPlaying.Artist, FallbackValue='Unknown Artist'}" FontSize="16" Foreground="{DynamicResource MutedTextBrush}" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="400"/>
             </StackPanel>
 
-            <StackPanel Grid.Row="2" MaxWidth="460" HorizontalAlignment="Stretch" Margin="0,0,0,20">
+            <StackPanel Grid.Row="2" MaxWidth="500" HorizontalAlignment="Stretch" Margin="0,0,0,20">
                 <Slider x:Name="ProgressSlider" Minimum="0" Maximum="100" Style="{StaticResource {x:Type Slider}}" Thumb.DragStarted="Slider_DragStarted" Thumb.DragCompleted="Slider_DragCompleted"/>
                 
-                <Grid Margin="2,8,2,24">
+                <Grid Margin="4,8,4,30">
                     <TextBlock x:Name="TxtCurrentTime" Text="0:00" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" HorizontalAlignment="Left" FontWeight="Medium"/>
                     <TextBlock x:Name="TxtTotalTime" Text="0:00" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" HorizontalAlignment="Right" FontWeight="Medium"/>
                 </Grid>
