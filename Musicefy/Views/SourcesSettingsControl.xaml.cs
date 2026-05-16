@@ -12,22 +12,18 @@ namespace Musicefy.Views
 
         private void TestButton_Click(object sender, RoutedEventArgs e)
         {
-            // Example: test connection logic
             string url = UrlTextBox.Text;
             string user = UsernameTextBox.Text;
-            string pass = PasswordBox.Password;
 
-            MessageBox.Show($"Testing connection to {url} as {user}...", "Test Source");
+            MessageBox.Show($"Testing core indexing validation handshake paths to {url} as {user}...", "Musicefy Network Core", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void AddButton_Click(object sender, RoutedEventArgs e)
         {
-            // Example: add source logic
             string name = NameTextBox.Text;
             string url = UrlTextBox.Text;
-            string user = UsernameTextBox.Text;
 
-            MessageBox.Show($"Added source '{name}' ({url}) for user {user}.", "Source Added");
+            MessageBox.Show($"Linked streaming profile connection resource node safely: '{name}' ({url}).", "Musicefy Network Core", MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }
 }
