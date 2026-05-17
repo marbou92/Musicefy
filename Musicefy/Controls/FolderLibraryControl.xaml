@@ -39,21 +39,21 @@
             <ListView.View>
                 <GridView>
                     <GridView.ColumnHeaderContainerStyle>
-                        <Style TargetType="GridViewColumnHeader">
-                            <Setter Property="Background" Value="Transparent"/>
-                            <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}"/>
-                            <Setter Property="BorderThickness" Value="0"/>
-                            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-                            <Setter Property="Padding" Value="16,8"/>
-                            <Setter Property="FontSize" Value="12"/>
-                            <Setter Property="FontWeight="Bold"/>
-                            <Style.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </GridView.ColumnHeaderContainerStyle>
+                      <Style TargetType="GridViewColumnHeader">
+                          <Setter Property="Background" Value="Transparent"/>
+                          <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}"/>
+                          <Setter Property="BorderThickness" Value="0"/>
+                          <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                          <Setter Property="Padding" Value="16,8"/>
+                          <Setter Property="FontSize" Value="12"/>
+                          <Setter Property="FontWeight" Value="Bold"/>
+                          <Style.Triggers>
+                              <Trigger Property="IsMouseOver" Value="True">
+                                  <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                              </Trigger>
+                          </Style.Triggers>
+                      </Style>
+                  </GridView.ColumnHeaderContainerStyle>
                     
                     <GridViewColumn Header="TITLE" Width="360">
                         <GridViewColumn.CellTemplate>
