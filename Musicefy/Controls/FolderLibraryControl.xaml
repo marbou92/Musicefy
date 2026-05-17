@@ -104,7 +104,7 @@
         <DataTemplate x:Key="AudioListTemplate">
             <Grid Height="36">
                 <Grid.ColumnDefinitions>
-                    <GridDefinition Width="420"/>
+                    <ColumnDefinition Width="420"/>
                     <ColumnDefinition Width="220"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
@@ -149,6 +149,9 @@
                                     <Setter TargetName="BtnBg" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
                                     <Setter TargetName="ArrowPath" Property="Fill" Value="{DynamicResource AccentBrush}"/>
                                     <Setter TargetName="ArrowPath" Property="Opacity" Value="1"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="BtnBg" Property="Opacity" Value="0.7"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
