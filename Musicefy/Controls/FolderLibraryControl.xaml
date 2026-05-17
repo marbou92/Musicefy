@@ -91,7 +91,27 @@
 
         <Grid Grid.Row="0" Margin="0,0,0,20">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
-                <Button x:Name="BtnFolderBack" Content="←" FontSize="16" FontWeight="Bold" Margin="0,0,12,0" Width="38" Height="38" Style="{StaticResource LayoutPillToggleStyle}" Visibility="Collapsed" Click="BtnFolderBack_Click"/>
+                <Button x:Name="BtnFolderBack" Margin="0,0,14,0" Width="38" Height="38" Visibility="Collapsed" Click="BtnFolderBack_Click">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Grid>
+                                <Border x:Name="BtnBg" Background="{DynamicResource SecondaryBackgroundBrush}" CornerRadius="19" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" SnapsToDevicePixels="True"/>
+                                <Path x:Name="ArrowPath" Data="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" Fill="{DynamicResource TextBrush}" Width="16" Height="16" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.85"/>
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="BtnBg" Property="Background" Value vulnerability="{DynamicResource BorderBrush}"/>
+                                    <Setter TargetName="BtnBg" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                                    <Setter TargetName="ArrowPath" Property="Fill" Value="{DynamicResource AccentBrush}"/>
+                                    <Setter TargetName="ArrowPath" Property="Opacity" Value="1"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="BtnBg" Property="Opacity" Value="0.7"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
                 
                 <Button x:Name="BtnAddFolder" Style="{StaticResource EchoActionButtonStyle}" Margin="0,0,10,0" Click="BtnAddFolder_Click">
                     <StackPanel Orientation="Horizontal">
@@ -229,9 +249,10 @@
                                         <Border Background="{DynamicResource SecondaryBackgroundBrush}" Height="144" CornerRadius="14" ClipToBounds="True" Margin="0,0,0,12" SnapsToDevicePixels="True">
                                             <Grid>
                                                 <Grid x:Name="GridFolderContainer" Visibility="Collapsed">
-                                                    <Border Background="{DynamicResource BorderBrush}" Opacity="0.1"/>
-                                                    <Path Data="M2,6A2,2 0 0,1 4,4H10L12,6H20A2,2 0 0,1 22,8V18A2,2 0 0,1 20,20H4A2,2 0 0,1 2,18V6Z" Fill="{DynamicResource AccentBrush}" Width="78" Height="78" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.3"/>
-                                                    <Path Data="M6,10H8V14H6V10M10,6H12V18H10V6M14,9H16V15H14V9M18,11H20V13H18V11Z" Fill="{DynamicResource TextBrush}" Width="24" Height="24" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.8"/>
+                                                    <Border Background="{DynamicResource BorderBrush}" Opacity="0.08"/>
+                                                    <Path Data="M6,6H11L13,8H19A1.5,1.5 0 0,1 20.5,9.5V11H4V8A2,2 0 0,1 6,6Z" Fill="{DynamicResource AccentBrush}" Width="66" Height="66" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,8,12" Opacity="0.2"/>
+                                                    <Path Data="M4,7H10L12,9H20A2,2 0 0,1 22,11V19A2,2 0 0,1 20,21H4A2,2 0 0,1 2,19V9A2,2 0 0,1 4,7Z" Fill="{DynamicResource AccentBrush}" Width="82" Height="82" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.35"/>
+                                                    <Path Data="M5,10H7V14H5V10M9,6H11V18H9V6M13,9H15V15H13V9M17,11H19V13H17V11Z" Fill="{DynamicResource TextBrush}" Width="22" Height="22" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,4,0,0" Opacity="0.85"/>
                                                 </Grid>
 
                                                 <Grid x:Name="GridAudioContainer" Visibility="Visible">
@@ -245,6 +266,12 @@
                                         <TextBlock Text="{Binding Title}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextBrush}" TextTrimming="CharacterEllipsis" Margin="2,0,0,2"/>
                                         <TextBlock Text="{Binding Artist}" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" TextTrimming="CharacterEllipsis" Margin="2,0,0,0"/>
                                     </StackPanel>
+                                    <Button.Triggers>
+                                        <DataTrigger Binding="{Binding SourceType}" Value="FolderItem">
+                                            <Setter TargetName="GridAudioContainer" Property="Visibility" Value="Collapsed"/>
+                                            <Setter TargetName="GridFolderContainer" Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Button.Triggers>
                                 </Button>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
