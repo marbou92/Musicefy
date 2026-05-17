@@ -22,8 +22,6 @@ namespace Musicefy.Controls
         public void InitializeDataStream(IEnumerable<MusicFile> tracks, PlaybackService playbackService)
         {
             _playbackService = playbackService;
-            
-            // Sync the tracks over across both custom UI presentations panels smoothly
             FolderSongsListView.ItemsSource = tracks;
             FolderSongsItemsControl.ItemsSource = tracks;
         }
@@ -34,20 +32,18 @@ namespace Musicefy.Controls
 
             if (_isGridViewActive)
             {
-                // Switch Viewport layers over to Card Matrix mode
-                FolderSongsListView.Visibility = Visibility.Collapsed;
-                FolderSongsGridScrollViewer.Visibility = Visibility.Visible;
+                // FIXED: Swapped out old names for the optimized container elements
+                ListViewContainer.Visibility = Visibility.Collapsed;
+                GridViewContainer.Visibility = Visibility.Visible;
 
-                // Update vector shape tokens into rows format bars geometry format
                 ToggleIconPath.Data = Geometry.Parse("M3,5H21V7H3V5M3,11H21V13H3V11M3,17H21V19H3V17Z");
             }
             else
             {
-                // Restore standard timeline track listing structure view
-                FolderSongsGridScrollViewer.Visibility = Visibility.Collapsed;
-                FolderSongsListView.Visibility = Visibility.Visible;
+                // FIXED: Swapped out old names for the optimized container elements
+                GridViewContainer.Visibility = Visibility.Collapsed;
+                ListViewContainer.Visibility = Visibility.Visible;
 
-                // Restore default grid vector definitions path 
                 ToggleIconPath.Data = Geometry.Parse("M4,11H7V5H4V11M4,18H7V12H4V18M8,11H11V5H8V11M8,18H11V12H8V18M12,11H15V5H12V11M12,18H15V12H12V18M16,11H19V5H16V11M16,18H19V12H16V18Z");
             }
         }
