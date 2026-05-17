@@ -144,7 +144,7 @@ namespace Musicefy.Controls
                     _currentLevelItemsCollection.Add(new MusicFile
                     {
                         Title = Path.GetFileName(subDir),
-                        Artist = "Folder",
+                        Artist = "Folder Container",
                         SourceType = "FolderItem",
                         FilePath = subDir,
                         SourceUri = subDir
@@ -197,14 +197,15 @@ namespace Musicefy.Controls
                             FilePath = file,
                             SourceUri = file,
                             Duration = trackDuration,
-                            CoverPath = detectedArtworkPath
+                            CoverPath = detectedArtworkPath,
+                            SourceType = "AudioItem"
                         });
                     }
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Directory mapping exploration failed: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Traversing file paths error: {ex.Message}");
             }
 
             UpdateUiCollectionBindingStates(_currentLevelItemsCollection);
@@ -216,14 +217,15 @@ namespace Musicefy.Controls
             var targetTransform = _isGridViewActive ? GridTranslate : ListTranslate;
 
             targetElement.Opacity = 0;
-            targetTransform.Y = 30;
+            targetTransform.Y = 24;
 
-            var fadeAnim = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromMilliseconds(380)))
+            // FIXED CUBIC MOTIONS: Massless velocity curve equations deliver pure smooth renders
+            var fadeAnim = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromMilliseconds(350)))
             {
                 EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
             };
 
-            var slideAnim = new DoubleAnimation(30, 0, new Duration(TimeSpan.FromMilliseconds(420)))
+            var slideAnim = new DoubleAnimation(24, 0, new Duration(TimeSpan.FromMilliseconds(400)))
             {
                 EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
             };
