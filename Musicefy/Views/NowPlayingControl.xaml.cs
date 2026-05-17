@@ -1,4 +1,7 @@
+// File Path: Musicefy/Views/NowPlayingControl.xaml.cs
 using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -8,7 +11,7 @@ using Musicefy.Core.Models;
 
 namespace Musicefy.Views
 {
-    public partial class NowPlayingControl : UserControl
+    public partial class NowPlayingControl : UserControl, INotifyPropertyChanged
     {
         private readonly PlaybackService _playback;
         public event Action RequestCollapse;
@@ -20,16 +23,27 @@ namespace Musicefy.Views
         private enum RightViewMode { None, Lyrics, Queue }
         private RightViewMode _currentMode = RightViewMode.None;
 
+        // Expose the current track safely for UI Bindings
+        public MusicFile NowPlaying => _playback?.CurrentTrack;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
         public NowPlayingControl(PlaybackService playback)
         {
             InitializeComponent();
             _playback = playback;
+            
+            // Explicitly set the DataContext to this code-behind instance
+            this.DataContext = this;
 
             _playback.TrackChanged += OnTrackChanged;
             _playback.ProgressChanged += OnProgressChanged;
             _playback.PlaybackStateChanged += OnPlaybackStateChanged;
 
-            // Wire up the size adaptive display engine interface link hooks
             this.SizeChanged += OnControlSizeChanged;
 
             this.Unloaded += (s, e) => {
@@ -43,10 +57,9 @@ namespace Musicefy.Views
             if (_playback.CurrentTrack != null) OnTrackChanged(_playback.CurrentTrack);
         }
 
-        private void OnControlSizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            ApplyLayoutCalculations();
-        }
+        private void OnControlSizeChanged(object sender, SizeChangedEventArgs e) => ApplyLayoutCalculations();
+        private void BtnToggleLyrics_Click(object sender, RoutedEventArgs e) => UpdateLayoutState(RightViewMode.Lyrics);
+        private void BtnToggleQueue_Click(object sender, RoutedEventArgs e) => UpdateLayoutState(RightViewMode.Queue);
 
         private void UpdateLayoutState(RightViewMode targetMode)
         {
@@ -54,13 +67,8 @@ namespace Musicefy.Views
             ApplyLayoutCalculations();
         }
 
-        /// <summary>
-        /// Dynamic Viewport Processing Engine (Echo Engine Layout State Machine)
-        /// Balances wide multi-pane structural environments or pivots into full bleed overlays on small window widths.
-        /// </summary>
         private void ApplyLayoutCalculations()
         {
-            // Clean vector layouts reset step
             LyricsPanelContainer.Visibility = Visibility.Collapsed;
             QueuePanelContainer.Visibility = Visibility.Collapsed;
             QueueIcon.Fill = (Brush)FindResource("MutedTextBrush");
@@ -68,15 +76,11 @@ namespace Musicefy.Views
 
             if (_currentMode == RightViewMode.None)
             {
-                // Baseline Centralization Layout Rule Engine
                 LeftPlayerColumn.Width = new GridLength(1, GridUnitType.Star);
                 RightPanelColumn.Width = new GridLength(0);
                 RightPanelRoot.Visibility = Visibility.Collapsed;
-                
                 PlayerDeckRoot.Visibility = Visibility.Visible;
                 PlayerDeckRoot.HorizontalAlignment = HorizontalAlignment.Center;
-                
-                // Allow elements to dynamically recover standard design proportions
                 CoverArtBorder.Height = double.NaN; 
             }
             else
@@ -84,10 +88,8 @@ namespace Musicefy.Views
                 RightPanelRoot.Visibility = Visibility.Visible;
                 Brush activeAccent = (Brush)FindResource("AccentBrush");
 
-                // Check Width Threshold Rules for Adaptive Sizing (Pivots around 840 units width standard)
                 if (this.ActualWidth < 840)
                 {
-                    // Small/Compact Window View Mode Matrix: Suppress Primary Controls to Give Focus to Data Context Track Views
                     LeftPlayerColumn.Width = new GridLength(0);
                     RightPanelColumn.Width = new GridLength(1, GridUnitType.Star);
                     PlayerDeckRoot.Visibility = Visibility.Collapsed;
@@ -95,7 +97,6 @@ namespace Musicefy.Views
                 }
                 else
                 {
-                    // Premium Asymmetric Side Window Split Canvas
                     LeftPlayerColumn.Width = new GridLength(4.5, GridUnitType.Star);
                     RightPanelColumn.Width = new GridLength(5.5, GridUnitType.Star);
                     PlayerDeckRoot.Visibility = Visibility.Visible;
@@ -116,9 +117,6 @@ namespace Musicefy.Views
                 }
             }
         }
-
-        private void BtnToggleLyrics_Click(object sender, RoutedEventArgs e) => UpdateLayoutState(RightViewMode.Lyrics);
-        private void BtnToggleQueue_Click(object sender, RoutedEventArgs e) => UpdateLayoutState(RightViewMode.Queue);
 
         #region Spatial User Input Gesture Recognition
         private void OnMouseDown(object sender, MouseButtonEventArgs e)
@@ -167,6 +165,9 @@ namespace Musicefy.Views
             if (track == null) return;
             Dispatcher.Invoke(() =>
             {
+                // Push update warnings down to the XAML parsing layer
+                OnPropertyChanged(nameof(NowPlaying));
+
                 ProgressSlider.Value = 0;
                 ProgressSlider.Maximum = track.Duration.TotalSeconds > 0 ? track.Duration.TotalSeconds : 100;
                 TxtTotalTime.Text = FormatTimeInterval(track.Duration);
