@@ -63,21 +63,23 @@ namespace Musicefy.Controls
 
         private async void BtnAddFolder_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new Microsoft.Win32.OpenFileDialog
+            // FIXED: Using Windows Forms FolderBrowserDialog to provide a true directory picker interface
+            using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
             {
-                ValidateNames = false,
-                CheckFileExists = false,
-                CheckPathExists = true,
-                FileName = "Select Music Library Target Folder"
-            };
+                dialog.Description = "Select Music Library Target Folder Collection";
+                dialog.ShowNewFolderButton = false;
+                
+                // Seed initial tracking layout back to standard system music pathways
+                dialog.SelectedPath = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
 
-            if (dialog.ShowDialog() == true)
-            {
-                string folderPath = Path.GetDirectoryName(dialog.FileName);
-                if (!string.IsNullOrEmpty(folderPath) && Directory.Exists(folderPath))
+                if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
-                    _lastActiveDirectoryPath = folderPath;
-                    await ExecuteBackgroundFolderScanAsync(folderPath);
+                    string folderPath = dialog.SelectedPath;
+                    if (!string.IsNullOrEmpty(folderPath) && Directory.Exists(folderPath))
+                    {
+                        _lastActiveDirectoryPath = folderPath;
+                        await ExecuteBackgroundFolderScanAsync(folderPath);
+                    }
                 }
             }
         }
@@ -210,7 +212,6 @@ namespace Musicefy.Controls
         {
             _isGridViewActive = !_isGridViewActive;
             
-            // Switch layout types natively without shifting state metrics variables 
             if (_isGridViewActive)
             {
                 ListViewContainer.Visibility = Visibility.Collapsed;
