@@ -376,7 +376,6 @@ namespace Musicefy.Controls
         }
     }
 
-    // FIXED: Appended back the missing local settings wrapper class definition
     public class LibraryControlSettings : System.Configuration.ApplicationSettingsBase
     {
         private static LibraryControlSettings defaultInstance = ((LibraryControlSettings)(System.Configuration.ApplicationSettingsBase.Synchronized(new LibraryControlSettings())));
