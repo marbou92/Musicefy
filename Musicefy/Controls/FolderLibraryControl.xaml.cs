@@ -18,14 +18,34 @@ namespace Musicefy.Controls
     public partial class FolderLibraryControl : UserControl
     {
         private PlaybackService _playbackService;
-        
-        // FIXED: Grid View initialized to true out-of-the-box by default layout rules
         private bool _isGridViewActive = true;
         private string _lastActiveDirectoryPath = null;
 
         public FolderLibraryControl()
         {
             InitializeComponent();
+            
+            // PERSISTENCE ENGINE: Automatically reload the saved folder path when the user enters this tab
+            Loaded += FolderLibraryControl_Loaded;
+        }
+
+        private async void FolderLibraryControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Pull the saved file path string directly out of application setting properties configuration
+                string savedPath = LibraryControlSettings.Default.LastSelectedFolderPath;
+                
+                if (!string.IsNullOrEmpty(savedPath) && Directory.Exists(savedPath))
+                {
+                    _lastActiveDirectoryPath = savedPath;
+                    await ExecuteBackgroundFolderScanAsync(savedPath);
+                }
+            }
+            catch
+            {
+                // Fallback gracefully if configuration namespaces are still initializing on boot
+            }
         }
 
         public void InitializeDataStream(IEnumerable<MusicFile> tracks, PlaybackService playbackService)
@@ -67,7 +87,7 @@ namespace Musicefy.Controls
         {
             using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
             {
-                dialog.Description = "Select Music Library Target Folder (Subfolders will be automatically included)";
+                dialog.Description = "Select Music Library Target Folder (All nested inner subfolders will be safely included)";
                 dialog.ShowNewFolderButton = false;
                 dialog.SelectedPath = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
 
@@ -77,6 +97,15 @@ namespace Musicefy.Controls
                     if (!string.IsNullOrEmpty(folderPath) && Directory.Exists(folderPath))
                     {
                         _lastActiveDirectoryPath = folderPath;
+
+                        // PERSISTENCE ENGINE: Save the folder path to settings storage immediately
+                        try
+                        {
+                            LibraryControlSettings.Default.LastSelectedFolderPath = folderPath;
+                            LibraryControlSettings.Default.Save();
+                        }
+                        catch { }
+
                         await ExecuteBackgroundFolderScanAsync(folderPath);
                     }
                 }
@@ -98,23 +127,22 @@ namespace Musicefy.Controls
         private async Task ExecuteBackgroundFolderScanAsync(string directoryPath)
         {
             string targetFolderName = Path.GetFileName(directoryPath);
-            TriggerEchoToastMessage($"Scanning '{targetFolderName}' and subfolders...");
+            TriggerEchoToastMessage($"Scanning '{targetFolderName}' and subfolders safely...");
 
             List<MusicFile> scannedResults = await Task.Run(() =>
             {
                 var scannedTracks = new List<MusicFile>();
+                var filesToProcess = new List<string>();
+
                 try
                 {
-                    string[] extensions = { "*.mp3", "*.wav", "*.flac", "*.m4a" };
-                    
-                    // FIXED: Switched file crawling from single folder level to recursive deep tree scans
-                    var discoveredFiles = extensions.SelectMany(ext => 
-                        Directory.GetFiles(directoryPath, ext, SearchOption.AllDirectories)).ToList();
+                    // FIXED: Safe recursive directory tracking loop bypasses locked system files without crashing out the app loop
+                    SafeRecursiveFileSearch(directoryPath, filesToProcess);
 
                     string artworkCacheFolder = Path.Combine(Path.GetTempPath(), "MusicefyArtworkCache");
                     if (!Directory.Exists(artworkCacheFolder)) Directory.CreateDirectory(artworkCacheFolder);
 
-                    foreach (string file in discoveredFiles)
+                    foreach (string file in filesToProcess)
                     {
                         string fallbackName = Path.GetFileNameWithoutExtension(file);
                         string trackTitle = fallbackName;
@@ -175,7 +203,7 @@ namespace Musicefy.Controls
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Deep background scanning failed: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"Deep scanning failed: {ex.Message}");
                 }
 
                 return scannedTracks;
@@ -183,6 +211,45 @@ namespace Musicefy.Controls
 
             UpdateUiCollectionBindingStates(scannedResults);
             TriggerEchoToastMessage($"Successfully indexed {scannedResults.Count} tracks.");
+        }
+
+        /// <summary>
+        /// FIXED: Safely crawls subdirectories, catching and skipping restricted system paths effortlessly.
+        /// </summary>
+        private void SafeRecursiveFileSearch(string rootDirectory, List<string> accumulatedFiles)
+        {
+            string[] audioExtensions = { ".mp3", ".wav", ".flac", ".m4a" };
+
+            try
+            {
+                // Grabs audio files in the current folder tier
+                foreach (string file in Directory.GetFiles(rootDirectory))
+                {
+                    string ext = Path.GetExtension(file).ToLower();
+                    if (audioExtensions.Contains(ext))
+                    {
+                        accumulatedFiles.Add(file);
+                    }
+                }
+
+                // Recursively drill down into subdirectories while safely bypassing access violation errors
+                foreach (string directory in Directory.GetDirectories(rootDirectory))
+                {
+                    // Skip hidden Windows directory nodes like AppData or system data structures
+                    var dirInfo = new DirectoryInfo(directory);
+                    if ((dirInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden) continue;
+
+                    SafeRecursiveFileSearch(directory, accumulatedFiles);
+                }
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // Gracefully skips hidden system folders without breaking the rest of the directory tree scan
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Directory skip block: {ex.Message}");
+            }
         }
 
         private void TriggerEchoToastMessage(string msg)
@@ -255,6 +322,25 @@ namespace Musicefy.Controls
                 }
                 _playbackService.PlayTrack(track);
             }
+        }
+    }
+
+    /// <summary>
+    /// Lightweight Application Setting Wrapper to seamlessly save folder path strings onto local hard drive storage.
+    /// </summary>
+    public class LibraryControlSettings : System.Configuration.ApplicationSettingsBase
+    {
+        private static LibraryControlSettings defaultInstance = ((LibraryControlSettings)(System.Configuration.ApplicationSettingsBase.Synchronized(new LibraryControlSettings())));
+
+        public static LibraryControlSettings Default => defaultInstance;
+
+        [System.Configuration.UserScopedSettingAttribute()]
+        [System.Configuration.DebuggerNonUserCodeAttribute()]
+        [System.Configuration.DefaultSettingValueAttribute("")]
+        public string LastSelectedFolderPath
+        {
+            get => ((string)(this["LastSelectedFolderPath"]));
+            set => this["LastSelectedFolderPath"] = value;
         }
     }
 }
