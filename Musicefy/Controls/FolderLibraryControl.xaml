@@ -165,7 +165,6 @@
                           Foreground="{DynamicResource TextBrush}"
                           ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                           ScrollViewer.VerticalScrollBarVisibility="Auto"
-                          Style="{DynamicResource EchoScrollViewerStyle}"
                           MouseDoubleClick="OnSongDoubleClicked"
                           Padding="0,4">
                     <ListView.ItemContainerStyle>
