@@ -35,8 +35,10 @@ namespace Musicefy.Controls
             if (!string.IsNullOrEmpty(savedPath) && Directory.Exists(savedPath))
             {
                 _rootLibraryPath = savedPath;
-                BtnClearFolder.Visibility = Visibility.Visible; // Show clear button if path exists
-                NavigateToTargetDirectoryFolder(savedPath);
+                BtnClearFolder.Visibility = Visibility.Visible;
+                
+                // FIXED: Displays the actual root link container card out-of-the-box instead of diving inside automatically
+                RenderRootLibraryHubView();
             }
             else
             {
@@ -50,7 +52,14 @@ namespace Musicefy.Controls
             _playbackService = playbackService;
             if (!string.IsNullOrEmpty(_rootLibraryPath))
             {
-                NavigateToTargetDirectoryFolder(_currentBrowsingDirectoryPath ?? _rootLibraryPath);
+                if (string.IsNullOrEmpty(_currentBrowsingDirectoryPath))
+                {
+                    RenderRootLibraryHubView();
+                }
+                else
+                {
+                    NavigateToTargetDirectoryFolder(_currentBrowsingDirectoryPath);
+                }
             }
         }
 
@@ -83,19 +92,43 @@ namespace Musicefy.Controls
             FolderSongsItemsControl.ItemsSource = trackList;
         }
 
+        /// <summary>
+        /// Renders the root linked folder node as a distinct, actionable explorer access link
+        /// </summary>
+        private void RenderRootLibraryHubView()
+        {
+            _currentBrowsingDirectoryPath = null;
+            BtnFolderBack.Visibility = Visibility.Collapsed; // Root layer hides back navigation arrow
+            _currentLevelItemsCollection.Clear();
+
+            if (!string.IsNullOrEmpty(_rootLibraryPath) && Directory.Exists(_rootLibraryPath))
+            {
+                _currentLevelItemsCollection.Add(new MusicFile
+                {
+                    Title = Path.GetFileName(_rootLibraryPath),
+                    Artist = "Root Library Storage Path Link",
+                    SourceType = "FolderItem",
+                    FilePath = _rootLibraryPath,
+                    SourceUri = _rootLibraryPath
+                });
+            }
+
+            RenderExplorerViewDeck();
+        }
+
         private void NavigateToTargetDirectoryFolder(string targetPath)
         {
             if (!Directory.Exists(targetPath)) return;
             _currentBrowsingDirectoryPath = targetPath;
 
-            BtnFolderBack.Visibility = (targetPath.Equals(_rootLibraryPath, StringComparison.OrdinalIgnoreCase)) 
-                ? Visibility.Collapsed : Visibility.Visible;
+            // FIXED: Back button calculation loops to allow clean ascending traces up folder hierarchies
+            BtnFolderBack.Visibility = Visibility.Visible;
 
             _currentLevelItemsCollection.Clear();
 
             try
             {
-                // 1. Fetch subdirectories
+                // 1. Map lower child directories
                 foreach (string subDir in Directory.GetDirectories(targetPath))
                 {
                     var dirInfo = new DirectoryInfo(subDir);
@@ -104,26 +137,24 @@ namespace Musicefy.Controls
                     _currentLevelItemsCollection.Add(new MusicFile
                     {
                         Title = Path.GetFileName(subDir),
-                        Artist = "Subfolder",
-                        SourceType = "FolderItem", // XAML trigger token flag
+                        Artist = "Subfolder Collection",
+                        SourceType = "FolderItem",
                         FilePath = subDir,
                         SourceUri = subDir
                     });
                 }
 
-                // 2. Fetch audio files and resolve artwork paths
-                string[] validExtensions = { ".mp3", "*.wav", ".flac", ".m4a" };
+                // 2. Fetch tracks and resolve extracted album artwork paths
+                string[] validExtensions = { ".mp3", ".wav", ".flac", ".m4a" };
                 string artworkCacheFolder = Path.Combine(Path.GetTempPath(), "MusicefyArtworkCache");
 
                 foreach (string file in Directory.GetFiles(targetPath))
                 {
-                    string ext = Path.GetExtension(file).ToLower();
-                    if (ext == ".mp3" || ext == ".wav" || ext == ".flac" || ext == ".m4a")
+                    if (validExtensions.Contains(Path.GetExtension(file).ToLower()))
                     {
                         string cleanTitle = Path.GetFileNameWithoutExtension(file);
                         string detectedArtworkPath = null;
 
-                        // Check if an artwork file has already been cached for this track hash code
                         string possibleCacheFile = Path.Combine(artworkCacheFolder, "cover_" + Math.Abs(file.GetHashCode()).ToString() + ".jpg");
                         if (File.Exists(possibleCacheFile))
                         {
@@ -137,14 +168,14 @@ namespace Musicefy.Controls
                             SourceType = "AudioItem",
                             FilePath = file,
                             SourceUri = file,
-                            CoverPath = detectedArtworkPath // Feeds explicit disk path strings directly into XAML data templates
+                            CoverPath = detectedArtworkPath
                         });
                     }
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Directory exploration sweep failed: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Folder mapping traversal failure: {ex.Message}");
             }
 
             RenderExplorerViewDeck();
@@ -170,13 +201,12 @@ namespace Musicefy.Controls
                     LibraryControlSettings.Default.LastSelectedFolderPath = _rootLibraryPath;
                     LibraryControlSettings.Default.Save();
 
-                    NavigateToTargetDirectoryFolder(_rootLibraryPath);
+                    RenderRootLibraryHubView();
                     TriggerEchoToastMessage("Linked root folder successfully.");
                 }
             }
         }
 
-        // NEW: Clear configuration database registries on demand instantly
         private void BtnClearFolder_Click(object sender, RoutedEventArgs e)
         {
             _rootLibraryPath = null;
@@ -193,14 +223,32 @@ namespace Musicefy.Controls
             TriggerEchoToastMessage("Cleared target folder registry memory successfully.");
         }
 
+        // FIXED: Re-engineered click logic to back trace paths or drop cleanly into the Root hub presentation deck
         private void BtnFolderBack_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrEmpty(_currentBrowsingDirectoryPath) || _currentBrowsingDirectoryPath.Equals(_rootLibraryPath, StringComparison.OrdinalIgnoreCase)) return;
+            if (string.IsNullOrEmpty(_currentBrowsingDirectoryPath)) return;
+
+            if (_currentBrowsingDirectoryPath.Equals(_rootLibraryPath, StringComparison.OrdinalIgnoreCase))
+            {
+                RenderRootLibraryHubView();
+                return;
+            }
 
             string parentPath = Path.GetDirectoryName(_currentBrowsingDirectoryPath);
             if (!string.IsNullOrEmpty(parentPath) && Directory.Exists(parentPath))
             {
-                NavigateToTargetDirectoryFolder(parentPath);
+                if (parentPath.Equals(Path.GetDirectoryName(_rootLibraryPath), StringComparison.OrdinalIgnoreCase))
+                {
+                    RenderRootLibraryHubView();
+                }
+                else
+                {
+                    NavigateToTargetDirectoryFolder(parentPath);
+                }
+            }
+            else
+            {
+                RenderRootLibraryHubView();
             }
         }
 
@@ -210,6 +258,11 @@ namespace Musicefy.Controls
             {
                 NavigateToTargetDirectoryFolder(_currentBrowsingDirectoryPath);
                 TriggerEchoToastMessage("Refreshed layout tree channels mapping.");
+            }
+            else if (!string.IsNullOrEmpty(_rootLibraryPath))
+            {
+                RenderRootLibraryHubView();
+                TriggerEchoToastMessage("Refreshed root catalog deck.");
             }
         }
 
