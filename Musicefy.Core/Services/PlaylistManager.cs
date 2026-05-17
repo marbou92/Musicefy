@@ -10,7 +10,7 @@ namespace Musicefy.Core.Services
     {
         private List<MusicFile> _tracks = new List<MusicFile>();
         private int _currentIndex = -1;
-        private readonly Random _rnd = new Random(); // ✅ consistent random
+        private readonly Random _rnd = new Random(); 
 
         public bool ShuffleEnabled { get; set; } = false;
         public bool RepeatEnabled { get; set; } = false;
@@ -27,7 +27,7 @@ namespace Musicefy.Core.Services
 
             foreach (var file in files)
             {
-                if (_tracks.Any(t => t.FilePath == file)) continue; // ✅ prevent duplicates
+                if (_tracks.Any(t => t.FilePath == file)) continue; 
 
                 var track = new MusicFile
                 {
@@ -78,7 +78,7 @@ namespace Musicefy.Core.Services
                     if (RepeatEnabled)
                         _currentIndex = 0;
                     else
-                        return null; // ✅ signal end of playlist
+                        return null; 
                 }
             }
 
@@ -95,7 +95,7 @@ namespace Musicefy.Core.Services
                 if (RepeatEnabled)
                     _currentIndex = _tracks.Count - 1;
                 else
-                    return null; // ✅ signal start of playlist
+                    return null; 
             }
 
             return _tracks[_currentIndex];
