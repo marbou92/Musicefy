@@ -100,7 +100,7 @@
                             </Grid>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="BtnBg" Property="Background" Value vulnerability="{DynamicResource BorderBrush}"/>
+                                    <Setter TargetName="BtnBg" Property="Background" Value="{DynamicResource BorderBrush}"/>
                                     <Setter TargetName="BtnBg" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
                                     <Setter TargetName="ArrowPath" Property="Fill" Value="{DynamicResource AccentBrush}"/>
                                     <Setter TargetName="ArrowPath" Property="Opacity" Value="1"/>
