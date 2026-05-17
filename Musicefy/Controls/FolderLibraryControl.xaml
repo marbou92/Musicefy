@@ -169,7 +169,7 @@
                                                 <Setter TargetName="RowBorder" Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
                                             </Trigger>
                                             <Trigger Property="IsSelected" Value="True">
-                                                <Border TargetName="RowBorder" Property="Background" Value="{DynamicResource BorderBrush}"/>
+                                                <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource BorderBrush}"/>
                                                 <Setter TargetName="RowBorder" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
                                             </Trigger>
                                         </ControlTemplate.Triggers>
