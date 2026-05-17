@@ -110,7 +110,7 @@ namespace Musicefy.Controls
                 _currentLevelItemsCollection.Add(new MusicFile
                 {
                     Title = Path.GetFileName(_rootLibraryPath),
-                    Artist = "Root Library Storage Path Link",
+                    Artist = "Root Hub Folder Link",
                     SourceType = "FolderItem",
                     FilePath = _rootLibraryPath,
                     SourceUri = _rootLibraryPath
@@ -136,6 +136,7 @@ namespace Musicefy.Controls
 
             try
             {
+                // 1. Fetch inner subdirectories
                 foreach (string subDir in Directory.GetDirectories(targetPath))
                 {
                     var dirInfo = new DirectoryInfo(subDir);
@@ -144,13 +145,14 @@ namespace Musicefy.Controls
                     _currentLevelItemsCollection.Add(new MusicFile
                     {
                         Title = Path.GetFileName(subDir),
-                        Artist = "Subfolder Collection",
+                        Artist = "Folder",
                         SourceType = "FolderItem",
                         FilePath = subDir,
                         SourceUri = subDir
                     });
                 }
 
+                // 2. Fetch tracks and fully parse metadata info + duration lengths
                 string[] validExtensions = { ".mp3", ".wav", ".flac", ".m4a" };
                 string artworkCacheFolder = Path.Combine(Path.GetTempPath(), "MusicefyArtworkCache");
 
@@ -159,21 +161,45 @@ namespace Musicefy.Controls
                     if (validExtensions.Contains(Path.GetExtension(file).ToLower()))
                     {
                         string cleanTitle = Path.GetFileNameWithoutExtension(file);
+                        string trackArtist = "Unknown Artist";
+                        string trackAlbum = "Local Stream Layer";
                         string detectedArtworkPath = null;
+                        TimeSpan trackDuration = TimeSpan.Zero;
 
-                        string possibleCacheFile = Path.Combine(artworkCacheFolder, "cover_" + Math.Abs(file.GetHashCode()).ToString() + ".jpg");
-                        if (File.Exists(possibleCacheFile))
+                        try
                         {
-                            detectedArtworkPath = possibleCacheFile;
+                            using (var reader = new NAudio.Wave.AudioFileReader(file))
+                            {
+                                trackDuration = reader.TotalTime;
+                            }
+
+                            using (var tagContainer = TagLib.File.Create(file))
+                            {
+                                if (tagContainer.Tag != null)
+                                {
+                                    // FIXED: Extracted metadata gets map routed onto the lists collection context streams
+                                    if (!string.IsNullOrEmpty(tagContainer.Tag.Title)) cleanTitle = tagContainer.Tag.Title;
+                                    if (!string.IsNullOrEmpty(tagContainer.Tag.FirstPerformer)) trackArtist = tagContainer.Tag.FirstPerformer;
+                                    if (!string.IsNullOrEmpty(tagContainer.Tag.Album)) trackAlbum = tagContainer.Tag.Album;
+
+                                    string possibleCacheFile = Path.Combine(artworkCacheFolder, "cover_" + Math.Abs(file.GetHashCode()).ToString() + ".jpg");
+                                    if (File.Exists(possibleCacheFile))
+                                    {
+                                        detectedArtworkPath = possibleCacheFile;
+                                    }
+                                }
+                            }
                         }
+                        catch { }
 
                         _currentLevelItemsCollection.Add(new MusicFile
                         {
                             Title = Regex.Replace(cleanTitle, @"[\x00-\x1F\x7F-\x9F]", "").Trim(),
-                            Artist = "Local Audio",
-                            SourceType = "AudioItem",
+                            Artist = Regex.Replace(trackArtist, @"[\x00-\x1F\x7F-\x9F]", "").Trim(),
+                            Album = trackAlbum,
                             FilePath = file,
                             SourceUri = file,
+                            Duration = trackDuration, // Safely locks explicit structural lengths
                             CoverPath = detectedArtworkPath
                         });
                     }
@@ -181,22 +207,19 @@ namespace Musicefy.Controls
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Directory mapping exploration failed: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Explorer indexation failure: {ex.Message}");
             }
 
             UpdateUiCollectionBindingStates(_currentLevelItemsCollection);
         }
 
-        /// <summary>
-        /// OPTIMIZED SMOOTH ANIMATION: Implements low-mass Cubic Easing curves to remove interface stiffness completely.
-        /// </summary>
         private void TriggerFluidLayoutEntranceAnimation()
         {
             var targetElement = _isGridViewActive ? (UIElement)GridViewContainer : (UIElement)ListViewContainer;
             var targetTransform = _isGridViewActive ? GridTranslate : ListTranslate;
 
             targetElement.Opacity = 0;
-            targetTransform.Y = 30; // Spacious lower displacement delta for fluid sweeps
+            targetTransform.Y = 30;
 
             var fadeAnim = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromMilliseconds(380)))
             {
@@ -353,21 +376,6 @@ namespace Musicefy.Controls
 
             ToastTranslation.BeginAnimation(TranslateTransform.YProperty, slideDown);
             ToastTranslation.BeginAnimation(TranslateTransform.YProperty, slideUp);
-        }
-    }
-
-    public class LibraryControlSettings : System.Configuration.ApplicationSettingsBase
-    {
-        private static LibraryControlSettings defaultInstance = ((LibraryControlSettings)(System.Configuration.ApplicationSettingsBase.Synchronized(new LibraryControlSettings())));
-        public static LibraryControlSettings Default => defaultInstance;
-
-        [System.Configuration.UserScopedSettingAttribute()]
-        [System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [System.Configuration.DefaultSettingValueAttribute("")]
-        public string LastSelectedFolderPath
-        {
-            get => ((string)(this["LastSelectedFolderPath"]));
-            set => this["LastSelectedFolderPath"] = value;
         }
     }
 }
