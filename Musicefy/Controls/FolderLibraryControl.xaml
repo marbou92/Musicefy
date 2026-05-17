@@ -165,6 +165,7 @@
                           Foreground="{DynamicResource TextBrush}"
                           ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                           ScrollViewer.VerticalScrollBarVisibility="Auto"
+                          ScrollViewer.Style="{DynamicResource EchoScrollViewerStyle}"
                           MouseDoubleClick="OnSongDoubleClicked"
                           Padding="0,4">
                     <ListView.ItemContainerStyle>
@@ -237,7 +238,7 @@
                 <Grid.RenderTransform>
                     <TranslateTransform x:Name="GridTranslate" Y="0"/>
                 </Grid.RenderTransform>
-                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Style="{DynamicResource EchoScrollViewerStyle}">
                     <ItemsControl x:Name="FolderSongsItemsControl">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
