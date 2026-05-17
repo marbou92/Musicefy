@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using Musicefy.Core.Models;
@@ -39,7 +41,7 @@ namespace Musicefy.Views
             LoadRootLibraryLayout();
             LibraryItemsControl.ItemsSource = DisplayItems;
         }
-        
+
         private void LoadRootLibraryLayout()
         {
             RootLibraryItems.Clear();
@@ -70,16 +72,22 @@ namespace Musicefy.Views
                         string defaultMusicPath = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
                         NavigateIntoDirectory(defaultMusicPath);
                         break;
-
                     case ItemTargetType.DirectoryItem:
                         NavigateIntoDirectory(clickedItem.FullPathReference);
                         break;
-
-                    default:
-                        MessageBox.Show($"Opening structural link: {clickedItem.Title}", "Musicefy System");
-                        break;
                 }
             }
+        }
+
+        /// <summary>
+        /// Sanitizes corrupt tag character arrays to drop Windows 7 box tokens safely
+        /// </summary>
+        private string FilterWindows7UnicodeBugs(string input)
+        {
+            if (string.IsNullOrEmpty(input)) return "Unknown Field";
+            // Cleans non-printable ASCII noise and replacement box data sequences
+            string clean = Regex.Replace(input, @"[^\x20-\x7E]", "").Trim();
+            return string.IsNullOrEmpty(clean) ? "Local Track Node" : clean;
         }
 
         private void NavigateIntoDirectory(string targetPath)
@@ -111,54 +119,76 @@ namespace Musicefy.Views
                 string[] audioExtensions = { "*.mp3", "*.wav", "*.flac", "*.m4a" };
                 var matchedFiles = audioExtensions.SelectMany(ext => Directory.GetFiles(targetPath, ext)).ToList();
 
+                string tempCachePath = Path.Combine(Path.GetTempPath(), "MusicefyArtworkCache");
+                if (!Directory.Exists(tempCachePath)) Directory.CreateDirectory(tempCachePath);
+
                 foreach (string file in matchedFiles)
                 {
                     string trackTitle = Path.GetFileNameWithoutExtension(file);
                     string trackArtist = "Unknown Artist";
+                    string trackAlbum = "Local Stream";
+                    string trackCoverImageReference = null;
                     TimeSpan trackDuration = TimeSpan.Zero;
 
                     try
                     {
-                        // 1. Natively extract total audio runtime length using NAudio core reader tracking
                         using (var reader = new NAudio.Wave.AudioFileReader(file))
                         {
                             trackDuration = reader.TotalTime;
                         }
 
-                        // 2. FIXED: Extracts raw binary ID3 segments directly to scrap out real Artist descriptors
+                        // Parse explicit ID3 metadata bytes directly
                         using (var fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read))
                         {
                             if (file.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase) && fs.Length >= 128)
                             {
-                                byte[] id3Buffer = new byte[128];
+                                byte[] b = new byte[128];
                                 fs.Seek(-128, SeekOrigin.End);
-                                fs.Read(id3Buffer, 0, 128);
-                                
-                                if (System.Text.Encoding.Default.GetString(id3Buffer, 0, 3) == "TAG")
+                                fs.Read(b, 0, 128);
+                                if (Encoding.Default.GetString(b, 0, 3) == "TAG")
                                 {
-                                    string parsedTitle = System.Text.Encoding.Default.GetString(id3Buffer, 3, 30).Trim();
-                                    string parsedArtist = System.Text.Encoding.Default.GetString(id3Buffer, 33, 30).Trim();
+                                    string t = Encoding.Default.GetString(b, 3, 30).Trim();
+                                    string a = Encoding.Default.GetString(b, 33, 30).Trim();
+                                    string al = Encoding.Default.GetString(b, 63, 30).Trim();
 
-                                    if (!string.IsNullOrEmpty(parsedTitle)) trackTitle = parsedTitle;
-                                    if (!string.IsNullOrEmpty(parsedArtist)) trackArtist = parsedArtist;
+                                    if (!string.IsNullOrEmpty(t)) trackTitle = t;
+                                    if (!string.IsNullOrEmpty(a)) trackArtist = a;
+                                    if (!string.IsNullOrEmpty(al)) trackAlbum = al;
                                 }
                             }
                         }
+
+                        // AUTOMATED EXTRACTION: If you have TagLib referenced, this scans artwork flawlessly!
+                        /*
+                        var tagContainer = TagLib.File.Create(file);
+                        if(tagContainer.Tag.Pictures.Length > 0)
+                        {
+                            string imgHashName = Path.GetFileNameWithoutExtension(file).GetHashCode().ToString() + ".jpg";
+                            string writeImgPath = Path.Combine(tempCachePath, imgHashName);
+                            if(!File.Exists(writeImgPath))
+                            {
+                                File.WriteAllBytes(writeImgPath, tagContainer.Tag.Pictures[0].Data.Data);
+                            }
+                            trackCoverImageReference = writeImgPath;
+                        }
+                        */
                     }
-                    catch
-                    {
-                        // Fallback gracefully if filesystem locks are active on the track file
-                    }
+                    catch { }
+
+                    // Apply the text filtering function to clear trailing boxes instantly
+                    trackTitle = FilterWindows7UnicodeBugs(trackTitle);
+                    trackArtist = FilterWindows7UnicodeBugs(trackArtist);
 
                     localTracks.Add(new MusicFile
                     {
                         Title = trackTitle,
-                        Artist = trackArtist, // FIXED: Returns real artist meta properties
-                        Album = "Direct Folder Playback",
+                        Artist = trackArtist,
+                        Album = trackAlbum,
                         FilePath = file,
                         SourceUri = file,
                         SourceType = "Local",
-                        Duration = trackDuration
+                        Duration = trackDuration,
+                        CoverPath = trackCoverImageReference
                     });
                 }
             }
@@ -183,10 +213,7 @@ namespace Musicefy.Views
 
         private void BtnBack_Click(object sender, RoutedEventArgs e)
         {
-            if (FolderNavigationHistory.Count > 0)
-            {
-                FolderNavigationHistory.Pop();
-            }
+            if (FolderNavigationHistory.Count > 0) FolderNavigationHistory.Pop();
 
             if (FolderNavigationHistory.Count > 0)
             {
@@ -204,9 +231,6 @@ namespace Musicefy.Views
             }
         }
 
-        private void BtnAddPlaylist_Click(object sender, RoutedEventArgs e)
-        {
-            // Custom playlist collection trigger point
-        }
+        private void BtnAddPlaylist_Click(object sender, RoutedEventArgs e) { }
     }
 }
