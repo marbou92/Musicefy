@@ -5,7 +5,8 @@
         Height="650" Width="950"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource BackgroundBrush}"
-        Foreground="{DynamicResource ForegroundBrush}">
+        Foreground="{DynamicResource ForegroundBrush}"
+        Style="{StaticResource EchoCustomWindowStyle}"> ```
 
     <Window.Resources>
         <Style x:Key="SegmentedTabStyle" TargetType="RadioButton">
