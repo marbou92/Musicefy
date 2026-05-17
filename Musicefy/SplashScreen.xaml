@@ -34,14 +34,18 @@
                     </Image>
                 </Grid>
 
-                <TextBlock x:Name="TxtBrandTitle" Text="Musicefy" FontSize="36" FontWeight="Bold" 
-                           Foreground="White" HorizontalAlignment="Center"
-                           FontFamily="Segoe UI" LetterSpacing="1">
-                    <TextBlock.Effect>
-                        <DropShadowEffect BlurRadius="8" Opacity="0.3" ShadowDepth="2" Color="Black"/>
-                    </TextBlock.Effect>
-                </TextBlock>
-
+                <TextBlock x:Name="TxtBrandTitle" 
+                   Text="Musicefy" 
+                   FontSize="36" 
+                   FontWeight="Bold" 
+                   Foreground="White" 
+                   HorizontalAlignment="Center"
+                   FontFamily="Segoe UI" 
+                   CharacterSpacing="100">
+            <TextBlock.Effect>
+                <DropShadowEffect BlurRadius="8" Opacity="0.3" ShadowDepth="2" Color="Black"/>
+            </TextBlock.Effect>
+        </TextBlock>
                 <TextBlock x:Name="TxtSubMarker" Text="INITIALIZING AUDIO ENGINE" FontSize="10" FontWeight="Bold" 
                            Foreground="#6A6A6A" Margin="0,16,0,0" CharacterSpacing="150"
                            HorizontalAlignment="Center"/>
