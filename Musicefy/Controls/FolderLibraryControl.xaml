@@ -169,7 +169,7 @@
                                                 <Setter TargetName="RowBorder" Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
                                             </Trigger>
                                             <Trigger Property="IsSelected" Value="True">
-                                                <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource BorderBrush}"/>
+                                                <Border TargetName="RowBorder" Property="Background" Value="{DynamicResource BorderBrush}"/>
                                                 <Setter TargetName="RowBorder" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
                                             </Trigger>
                                         </ControlTemplate.Triggers>
@@ -230,7 +230,7 @@
                             <GridViewColumn Header="ARTIST" Width="220">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock SourceUpdated="True" Text="{Binding Artist, TargetNullValue='Unknown Artist'}" FontSize="13" Foreground="{DynamicResource MutedTextBrush}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding Artist, TargetNullValue='Unknown Artist'}" FontSize="13" Foreground="{DynamicResource MutedTextBrush}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
