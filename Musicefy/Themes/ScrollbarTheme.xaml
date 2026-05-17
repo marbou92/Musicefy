@@ -85,24 +85,14 @@
                         
                         <ScrollBar x:Name="PART_VerticalScrollBar" 
                                    Grid.Column="1" Grid.Row="0" 
-                                   AutomationProperties.AutomationId="VerticalScrollBar" 
                                    Cursor="Arrow" 
-                                   Maximum="{TemplateBinding ScrollableHeight}" 
-                                   Minimum="0" 
-                                   Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}" 
-                                   Value="{TemplateBinding VerticalOffset}" 
-                                   ViewportSize="{TemplateBinding ViewportHeight}"/>
+                                   Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"/>
                         
                         <ScrollBar x:Name="PART_HorizontalScrollBar" 
                                    Grid.Column="0" Grid.Row="1" 
-                                   AutomationProperties.AutomationId="HorizontalScrollBar" 
                                    Cursor="Arrow" 
-                                   Maximum="{TemplateBinding ScrollableWidth}" 
-                                   Minimum="0" 
                                    Orientation="Horizontal" 
-                                   Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}" 
-                                   Value="{TemplateBinding HorizontalOffset}" 
-                                   ViewportSize="{TemplateBinding ViewportWidth}"/>
+                                   Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"/>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
