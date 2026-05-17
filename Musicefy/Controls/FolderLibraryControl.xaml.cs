@@ -136,7 +136,6 @@ namespace Musicefy.Controls
 
             try
             {
-                // 1. Fetch inner subdirectories
                 foreach (string subDir in Directory.GetDirectories(targetPath))
                 {
                     var dirInfo = new DirectoryInfo(subDir);
@@ -152,7 +151,6 @@ namespace Musicefy.Controls
                     });
                 }
 
-                // 2. Fetch tracks and fully parse metadata info + duration lengths
                 string[] validExtensions = { ".mp3", ".wav", ".flac", ".m4a" };
                 string artworkCacheFolder = Path.Combine(Path.GetTempPath(), "MusicefyArtworkCache");
 
@@ -177,7 +175,6 @@ namespace Musicefy.Controls
                             {
                                 if (tagContainer.Tag != null)
                                 {
-                                    // FIXED: Extracted metadata gets map routed onto the lists collection context streams
                                     if (!string.IsNullOrEmpty(tagContainer.Tag.Title)) cleanTitle = tagContainer.Tag.Title;
                                     if (!string.IsNullOrEmpty(tagContainer.Tag.FirstPerformer)) trackArtist = tagContainer.Tag.FirstPerformer;
                                     if (!string.IsNullOrEmpty(tagContainer.Tag.Album)) trackAlbum = tagContainer.Tag.Album;
@@ -199,7 +196,7 @@ namespace Musicefy.Controls
                             Album = trackAlbum,
                             FilePath = file,
                             SourceUri = file,
-                            Duration = trackDuration, // Safely locks explicit structural lengths
+                            Duration = trackDuration,
                             CoverPath = detectedArtworkPath
                         });
                     }
@@ -207,7 +204,7 @@ namespace Musicefy.Controls
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Explorer indexation failure: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Directory mapping exploration failed: {ex.Message}");
             }
 
             UpdateUiCollectionBindingStates(_currentLevelItemsCollection);
@@ -376,6 +373,22 @@ namespace Musicefy.Controls
 
             ToastTranslation.BeginAnimation(TranslateTransform.YProperty, slideDown);
             ToastTranslation.BeginAnimation(TranslateTransform.YProperty, slideUp);
+        }
+    }
+
+    // FIXED: Appended back the missing local settings wrapper class definition
+    public class LibraryControlSettings : System.Configuration.ApplicationSettingsBase
+    {
+        private static LibraryControlSettings defaultInstance = ((LibraryControlSettings)(System.Configuration.ApplicationSettingsBase.Synchronized(new LibraryControlSettings())));
+        public static LibraryControlSettings Default => defaultInstance;
+
+        [System.Configuration.UserScopedSettingAttribute()]
+        [System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [System.Configuration.DefaultSettingValueAttribute("")]
+        public string LastSelectedFolderPath
+        {
+            get => ((string)(this["LastSelectedFolderPath"]));
+            set => this["LastSelectedFolderPath"] = value;
         }
     }
 }
