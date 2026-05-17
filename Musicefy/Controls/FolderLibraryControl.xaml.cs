@@ -90,19 +90,15 @@ namespace Musicefy.Controls
             }
             else
             {
-                TriggerEchoToastMessage("No target active folder linked to trigger refresh scanner.");
+                TriggerEchoToastMessage("No active folder linked to refresh scanner.");
             }
         }
 
-        /// <summary>
-        /// Runs high-volume drive storage file system parsing routines inside isolated task worker threads.
-        /// </summary>
         private async Task ExecuteBackgroundFolderScanAsync(string directoryPath)
         {
             string targetFolderName = Path.GetFileName(directoryPath);
             TriggerEchoToastMessage($"Scanning '{targetFolderName}' for songs...");
 
-            // Run execution completely clear of the UI thread context
             List<MusicFile> scannedResults = await Task.Run(() =>
             {
                 var scannedTracks = new List<MusicFile>();
@@ -154,7 +150,6 @@ namespace Musicefy.Controls
                         }
                         catch { trackTitle = fallbackName; }
 
-                        // Sanitize string references to strip Windows 7 text boxes
                         trackTitle = Regex.Replace(trackTitle, @"[\x00-\x1F\x7F-\x9F]", "").Trim();
                         trackArtist = Regex.Replace(trackArtist, @"[\x00-\x1F\x7F-\x9F]", "").Trim();
 
@@ -182,20 +177,15 @@ namespace Musicefy.Controls
                 return scannedTracks;
             });
 
-            // Update UI collections cleanly on completion
             UpdateUiCollectionBindingStates(scannedResults);
             TriggerEchoToastMessage($"Successfully indexed {scannedResults.Count} tracks.");
         }
 
-        /// <summary>
-        /// Premium Dropdown Overlay Animator Panel Control Routine
-        /// </summary>
         private void TriggerEchoToastMessage(string msg)
         {
             TxtToastMessage.Text = msg;
             ToastNotificationCard.Visibility = Visibility.Visible;
 
-            // Fluid exponential drop-down acceleration curves
             var slideDown = new DoubleAnimation(-40, 12, TimeSpan.FromMilliseconds(400))
             {
                 EasingFunction = new CircleEase { EasingMode = EasingMode.EaseOut }
@@ -213,15 +203,26 @@ namespace Musicefy.Controls
             };
 
             ToastTranslation.BeginAnimation(TranslateTransform.YProperty, slideDown);
-            // Queue up the slide-away collapse animation sequence link automatically
             ToastTranslation.BeginAnimation(TranslateTransform.YProperty, slideUp);
         }
 
-        #region Nav View Conversions Controllers 
         private void BtnViewToggle_Click(object sender, RoutedEventArgs e)
         {
             _isGridViewActive = !_isGridViewActive;
-            UpdateUiCollectionBindingStates(FolderSongsListView.ItemsSource as IEnumerable<MusicFile>);
+            
+            // Switch layout types natively without shifting state metrics variables 
+            if (_isGridViewActive)
+            {
+                ListViewContainer.Visibility = Visibility.Collapsed;
+                GridViewContainer.Visibility = Visibility.Visible;
+                ToggleIconPath.Data = Geometry.Parse("M3,5H21V7H3V5M3,11H21V13H3V11M3,17H21V19H3V17Z");
+            }
+            else
+            {
+                GridViewContainer.Visibility = Visibility.Collapsed;
+                ListViewContainer.Visibility = Visibility.Visible;
+                ToggleIconPath.Data = Geometry.Parse("M4,11H7V5H4V11M4,18H7V12H4V18M8,11H11V5H8V11M8,18H11V12H8V18M12,11H15V5H12V11M12,18H15V12H12V18M16,11H19V5H16V11M16,18H19V12H16V18Z");
+            }
         }
 
         private void GridCardItem_Click(object sender, RoutedEventArgs e)
@@ -252,6 +253,5 @@ namespace Musicefy.Controls
                 _playbackService.PlayTrack(track);
             }
         }
-        #endregion
     }
 }
