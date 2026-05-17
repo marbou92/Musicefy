@@ -14,17 +14,21 @@ namespace Musicefy.Services
 
         public static void ApplyTheme(string mode, string palette)
         {
+            // Wipe runtime theme dictionaries to avoid asset collection collision states
             Application.Current.Resources.MergedDictionaries.Clear();
-
+        
             // Inject foundational underlying design rules first
             MergeDictionary("/Themes/Base.xaml");
-
+        
+            // FIXED: Force re-inject your custom layout template here so it survives the Clear() sweep!
+            MergeDictionary("/Themes/ScrollbarTheme.xaml");
+        
             // Process hardware-level environmental tracking vectors
             if (mode.Equals("System", StringComparison.OrdinalIgnoreCase))
             {
                 mode = IsSystemDarkMode() ? "Dark" : "Light";
             }
-
+        
             // Route execution flows to handle pure black vs classic gray layouts dynamically
             if (mode.Equals("DarkPure", StringComparison.OrdinalIgnoreCase))
             {
@@ -34,14 +38,14 @@ namespace Musicefy.Services
             {
                 MergeDictionary($"/Themes/Modes/{mode}.xaml");
             }
-
+        
             // Resolve palette adaptations cleanly
             if (palette.Equals("Default", StringComparison.OrdinalIgnoreCase))
             {
                 string paletteFile = mode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase)
                     ? "Default.Dark.xaml"
                     : "Default.Light.xaml";
-
+        
                 MergeDictionary($"/Themes/Palettes/{paletteFile}");
             }
             else
