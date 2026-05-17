@@ -6,7 +6,8 @@
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource BackgroundBrush}" 
         Foreground="{DynamicResource TextBrush}"
-        TextElement.FontFamily="Segoe UI Semibold">
+        TextElement.FontFamily="Segoe UI Semibold"
+        Style="{StaticResource EchoCustomWindowStyle}">
 
     <Window.Resources>
         <converters:PathToImageConverter x:Key="PathToImageConverter"/>
