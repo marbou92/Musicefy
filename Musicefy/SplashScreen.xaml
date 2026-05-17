@@ -8,7 +8,7 @@
         Opacity="0"
         Background="Transparent">
 
-    <Border x:Name="MainRootBorder" CornerRadius="28" Background="#0A0A0A" RenderTransformOrigin="0.5,0.5">
+    <Border x:Name="MainRootBorder" CornerRadius="28" Background="#121212" RenderTransformOrigin="0.5,0.5">
         <Border.RenderTransform>
             <TransformGroup>
                 <ScaleTransform x:Name="RootScale" ScaleX="0.95" ScaleY="0.95"/>
@@ -16,7 +16,7 @@
         </Border.RenderTransform>
         
         <Border.Effect>
-            <DropShadowEffect Color="Black" BlurRadius="50" ShadowDepth="0" Opacity="0.75"/>
+            <DropShadowEffect Color="Black" BlurRadius="50" ShadowDepth="0" Opacity="0.6"/>
         </Border.Effect>
 
         <Grid>
@@ -29,12 +29,12 @@
                     
                     <Image Source="Assets/musicefy.png" RenderOptions.BitmapScalingMode="HighQuality">
                         <Image.Effect>
-                            <DropShadowEffect Color="#1DB954" BlurRadius="25" ShadowDepth="0" Opacity="0.25"/>
+                            <DropShadowEffect x:Name="LogoGlow" Color="#1DB954" BlurRadius="25" ShadowDepth="0" Opacity="0.25"/>
                         </Image.Effect>
                     </Image>
                 </Grid>
 
-                <TextBlock Text="Musicefy" FontSize="36" FontWeight="Bold" 
+                <TextBlock x:Name="TxtBrandTitle" Text="Musicefy" FontSize="36" FontWeight="Bold" 
                            Foreground="White" HorizontalAlignment="Center"
                            FontFamily="Segoe UI" LetterSpacing="1">
                     <TextBlock.Effect>
@@ -42,13 +42,13 @@
                     </TextBlock.Effect>
                 </TextBlock>
 
-                <TextBlock Text="INITIALIZING AUDIO ENGINE" FontSize="10" FontWeight="Bold" 
+                <TextBlock x:Name="TxtSubMarker" Text="INITIALIZING AUDIO ENGINE" FontSize="10" FontWeight="Bold" 
                            Foreground="#6A6A6A" Margin="0,16,0,0" CharacterSpacing="150"
                            HorizontalAlignment="Center"/>
             </StackPanel>
 
             <Grid VerticalAlignment="Bottom" Margin="48,0,48,44">
-                <Border Height="3" Background="#1A1A1A" CornerRadius="1.5"/>
+                <Border x:Name="ProgressBarTrack" Height="3" Background="#1A1A1A" CornerRadius="1.5"/>
                 
                 <ProgressBar x:Name="BottomProgress" Height="3" 
                              Background="Transparent" BorderThickness="0" Foreground="#1DB954"
