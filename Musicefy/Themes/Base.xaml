@@ -19,7 +19,9 @@
                 <ControlTemplate TargetType="{x:Type Window}">
                     <Border Background="{TemplateBinding Background}" 
                             BorderBrush="{DynamicResource BorderBrush}" 
-                            BorderThickness="1">
+                            BorderThickness="1"
+                            VerticalAlignment="Stretch"
+                            HorizontalAlignment="Stretch">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="40"/>
@@ -81,8 +83,8 @@
                                 </StackPanel>
                             </Grid>
 
-                            <Grid Grid.Row="1" Background="{TemplateBinding Background}">
-                                <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" Margin="{TemplateBinding Padding}"/>
+                            <Grid Grid.Row="1" Background="{TemplateBinding Background}" VerticalAlignment="Stretch">
+                                <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" Margin="{TemplateBinding Padding}" VerticalAlignment="Stretch"/>
                             </Grid>
                         </Grid>
                     </Border>
