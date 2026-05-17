@@ -37,7 +37,13 @@
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ScrollBar}">
                     <Grid x:Name="Bg" Background="Transparent" SnapsToDevicePixels="True">
-                        <Track x:Name="PART_Track" IsDirectionReversed="True" IsEnabled="{TemplateBinding IsEnabled}">
+                        <Track x:Name="PART_Track" 
+                               IsDirectionReversed="True" 
+                               IsEnabled="{TemplateBinding IsEnabled}"
+                               Minimum="{TemplateBinding Minimum}"
+                               Maximum="{TemplateBinding Maximum}"
+                               Value="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                               ViewportSize="{TemplateBinding ViewportSize}">
                             <Track.DecreaseRepeatButton>
                                 <RepeatButton Command="{x:Static ScrollBar.PageUpCommand}" Background="Transparent" BorderThickness="0" Focusable="False"/>
                             </Track.DecreaseRepeatButton>
@@ -86,13 +92,21 @@
                         <ScrollBar x:Name="PART_VerticalScrollBar" 
                                    Grid.Column="1" Grid.Row="0" 
                                    Cursor="Arrow" 
-                                   Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"/>
+                                   Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"
+                                   Minimum="0"
+                                   Maximum="{Binding ScrollableHeight, RelativeSource={RelativeSource TemplatedParent}}"
+                                   Value="{Binding VerticalOffset, RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}"
+                                   ViewportSize="{Binding ViewportHeight, RelativeSource={RelativeSource TemplatedParent}}"/>
                         
                         <ScrollBar x:Name="PART_HorizontalScrollBar" 
                                    Grid.Column="0" Grid.Row="1" 
                                    Cursor="Arrow" 
                                    Orientation="Horizontal" 
-                                   Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"/>
+                                   Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"
+                                   Minimum="0"
+                                   Maximum="{Binding ScrollableWidth, RelativeSource={RelativeSource TemplatedParent}}"
+                                   Value="{Binding HorizontalOffset, RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}"
+                                   ViewportSize="{Binding ViewportWidth, RelativeSource={RelativeSource TemplatedParent}}"/>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
