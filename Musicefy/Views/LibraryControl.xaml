@@ -1,6 +1,7 @@
 <UserControl x:Class="Musicefy.Views.LibraryControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Musicefy.Controls"
              Background="Transparent">
     <Grid Margin="40,20,40,20">
         <Grid.RowDefinitions>
@@ -41,49 +42,53 @@
             </StackPanel>
         </Grid>
 
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-            <ItemsControl x:Name="LibraryItemsControl">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <WrapPanel Orientation="Horizontal" Margin="0,0,-20,0"/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Button Background="Transparent" BorderThickness="0" Margin="0,0,20,25" Cursor="Hand" Click="LibraryCard_Click">
-                            <Button.Template>
-                                <ControlTemplate TargetType="Button">
-                                    <StackPanel Width="140">
-                                        <Border Background="{DynamicResource SecondaryBackgroundBrush}" 
-                                                Height="140" 
-                                                CornerRadius="12" 
-                                                Margin="0,0,0,10"
-                                                SnapsToDevicePixels="True">
-                                            <Path Data="{Binding IconData}" 
-                                                  Fill="{DynamicResource TextBrush}" 
-                                                  Stretch="Uniform" 
-                                                  Width="32" Height="32" 
-                                                  HorizontalAlignment="Center" 
-                                                  VerticalAlignment="Center"/>
-                                        </Border>
-                                        
-                                        <TextBlock Text="{Binding Title}" 
-                                                   FontWeight="SemiBold" 
-                                                   FontSize="14" 
-                                                   Foreground="{DynamicResource TextBrush}" 
-                                                   Margin="2,0,0,2"
-                                                   TextTrimming="CharacterEllipsis"/>
-                                        <TextBlock Text="{Binding Subtitle}" 
-                                                   FontSize="12" 
-                                                   Foreground="{DynamicResource MutedTextBrush}" 
-                                                   Margin="2,0,0,0"/>
-                                    </StackPanel>
-                                </ControlTemplate>
-                            </Button.Template>
-                        </Button>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
+        <Grid Grid.Row="1">
+            <ScrollViewer x:Name="LibraryCardsScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Visibility="Visible">
+                <ItemsControl x:Name="LibraryItemsControl">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal" Margin="0,0,-20,0"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button Background="Transparent" BorderThickness="0" Margin="0,0,20,25" Cursor="Hand" Click="LibraryCard_Click">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <StackPanel Width="140">
+                                            <Border Background="{DynamicResource SecondaryBackgroundBrush}" 
+                                                    Height="140" 
+                                                    CornerRadius="12" 
+                                                    Margin="0,0,0,10"
+                                                    SnapsToDevicePixels="True">
+                                                <Path Data="{Binding IconData}" 
+                                                      Fill="{DynamicResource TextBrush}" 
+                                                      Stretch="Uniform" 
+                                                      Width="32" Height="32" 
+                                                      HorizontalAlignment="Center" 
+                                                      VerticalAlignment="Center"/>
+                                            </Border>
+                                            
+                                            <TextBlock Text="{Binding Title}" 
+                                                       FontWeight="SemiBold" 
+                                                       FontSize="14" 
+                                                       Foreground="{DynamicResource TextBrush}" 
+                                                       Margin="2,0,0,2"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock Text="{Binding Subtitle}" 
+                                                       FontSize="12" 
+                                                       Foreground="{DynamicResource MutedTextBrush}" 
+                                                       Margin="2,0,0,0"/>
+                                        </StackPanel>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+            <controls:FolderLibraryControl x:Name="TrackListDisplayPanel" Visibility="Collapsed"/>
+        </Grid>
     </Grid>
 </UserControl>
