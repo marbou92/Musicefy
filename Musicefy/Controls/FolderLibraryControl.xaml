@@ -8,30 +8,31 @@
                   Background="Transparent" BorderThickness="0" 
                   Foreground="{DynamicResource TextBrush}"
                   ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                  ScrollViewer.VerticalScrollBarVisibility="Hidden"
                   MouseDoubleClick="OnSongDoubleClicked">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <Setter Property="Background" Value="Transparent"/>
                     <Setter Property="BorderThickness" Value="0"/>
-                    <Setter Property="Margin" Value="0,2"/>
-                    <Setter Property="Padding" Value="10,8"/>
+                    <Setter Property="Margin" Value="0,4"/>
+                    <Setter Property="Padding" Value="16,12"/>
                     <Setter Property="Template">
                         <Setter.Value>
                             <ControlTemplate TargetType="ListViewItem">
-                                <Border CornerRadius="8" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                                <Border x:Name="RowBorder" CornerRadius="12" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
                                     <ContentPresenter />
                                 </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}"/>
+                                    </Trigger>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource BorderBrush}"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
                             </ControlTemplate>
                         </Setter.Value>
                     </Setter>
-                    <Style.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="#0FFFFFFF"/>
-                        </Trigger>
-                        <Trigger Property="IsSelected" Value="True">
-                            <Setter Property="Background" Value="#1AFFFFFF"/>
-                        </Trigger>
-                    </Style.Triggers>
                 </Style>
             </ListView.ItemContainerStyle>
 
@@ -43,33 +44,47 @@
                             <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}"/>
                             <Setter Property="BorderThickness" Value="0"/>
                             <Setter Property="HorizontalContentAlignment" Value="Left"/>
-                            <Setter Property="Padding" Value="10,4"/>
+                            <Setter Property="Padding" Value="16,8"/>
+                            <Setter Property="FontSize" Value="12"/>
+                            <Setter Property="FontWeight="Bold"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                                </Trigger>
+                            </Style.Triggers>
                         </Style>
                     </GridView.ColumnHeaderContainerStyle>
                     
-                    <GridViewColumn Header="Title" Width="280">
+                    <GridViewColumn Header="TITLE" Width="360">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="🎵" Margin="0,0,10,0" Foreground="#1DB954"/>
-                                    <TextBlock Text="{Binding Title}" FontWeight="Medium" Foreground="{DynamicResource TextBrush}" TextTrimming="CharacterEllipsis"/>
-                                </StackPanel>
+                                <Grid VerticalAlignment="Center">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <Path Grid.Column="0" Data="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M10,17L5,12L6.41,10.59L10,14.17L17.59,6.58L19,8L10,17Z" 
+                                          Fill="{DynamicResource AccentBrush}" Width="14" Height="14" Stretch="Uniform" Margin="0,0,16,0" VerticalAlignment="Center" Opacity="0.85"/>
+                                    
+                                    <TextBlock Grid.Column="1" Text="{Binding Title}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextBrush}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                                </Grid>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
                     
-                    <GridViewColumn Header="Artist" Width="180">
+                    <GridViewColumn Header="ARTIST" Width="220">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Artist}" Foreground="{DynamicResource MutedTextBrush}" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Text="{Binding Artist}" FontSize="14" FontWeight="Medium" Foreground="{DynamicResource MutedTextBrush}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
 
-                    <GridViewColumn Header="Duration" Width="90">
+                    <GridViewColumn Header="DURATION" Width="100">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Duration, StringFormat=\{0:mm\\:ss\}}" Foreground="{DynamicResource MutedTextBrush}"/>
+                                <TextBlock Text="{Binding Duration, StringFormat=\{0:mm\\:ss\}}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource MutedTextBrush}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
