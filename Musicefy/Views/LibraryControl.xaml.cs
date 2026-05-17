@@ -41,7 +41,7 @@ namespace Musicefy.Views
             LoadRootLibraryLayout();
             LibraryItemsControl.ItemsSource = DisplayItems;
         }
-
+        
         private void LoadRootLibraryLayout()
         {
             RootLibraryItems.Clear();
@@ -80,13 +80,12 @@ namespace Musicefy.Views
         }
 
         /// <summary>
-        /// Sanitizes corrupt tag character arrays to drop Windows 7 box tokens safely
+        /// Cleans unprintable characters but safely preserves international text, letters, and accents.
         /// </summary>
         private string FilterWindows7UnicodeBugs(string input)
         {
             if (string.IsNullOrEmpty(input)) return "Unknown Field";
-            // Cleans non-printable ASCII noise and replacement box data sequences
-            string clean = Regex.Replace(input, @"[^\x20-\x7E]", "").Trim();
+            string clean = Regex.Replace(input, @"[\x00-\x1F\x7F-\x9F]", "").Trim();
             return string.IsNullOrEmpty(clean) ? "Local Track Node" : clean;
         }
 
@@ -158,24 +157,23 @@ namespace Musicefy.Views
                             }
                         }
 
-                        // AUTOMATED EXTRACTION: If you have TagLib referenced, this scans artwork flawlessly!
-                        /*
-                        var tagContainer = TagLib.File.Create(file);
-                        if(tagContainer.Tag.Pictures.Length > 0)
+                        // Active dynamic TagLib audio asset scanner engine layer hook
+                        using (var tagContainer = TagLib.File.Create(file))
                         {
-                            string imgHashName = Path.GetFileNameWithoutExtension(file).GetHashCode().ToString() + ".jpg";
-                            string writeImgPath = Path.Combine(tempCachePath, imgHashName);
-                            if(!File.Exists(writeImgPath))
+                            if (tagContainer.Tag != null && tagContainer.Tag.Pictures != null && tagContainer.Tag.Pictures.Length > 0)
                             {
-                                File.WriteAllBytes(writeImgPath, tagContainer.Tag.Pictures[0].Data.Data);
+                                string safeImgName = "cover_" + Math.Abs(file.GetHashCode()).ToString() + ".jpg";
+                                string writeImgPath = Path.Combine(tempCachePath, safeImgName);
+                                if (!File.Exists(writeImgPath))
+                                {
+                                    File.WriteAllBytes(writeImgPath, tagContainer.Tag.Pictures[0].Data.Data);
+                                }
+                                trackCoverImageReference = writeImgPath;
                             }
-                            trackCoverImageReference = writeImgPath;
                         }
-                        */
                     }
                     catch { }
 
-                    // Apply the text filtering function to clear trailing boxes instantly
                     trackTitle = FilterWindows7UnicodeBugs(trackTitle);
                     trackArtist = FilterWindows7UnicodeBugs(trackArtist);
 
