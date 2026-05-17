@@ -14,15 +14,17 @@ namespace Musicefy.Views
         public SettingsWindow()
         {
             InitializeComponent();
-            ShowAppearance(); // Mount primary surface view context on initialization pass
+
+            // FIXED: Runs the shell controller wiring pass on initialization to bring buttons to life
+            AttachCustomTitleBarWindowActions();
+
+            ShowAppearance(); 
         }
 
-        // Call this inside your Window class constructor (e.g., public SettingsWindow() { ... })
         private void AttachCustomTitleBarWindowActions()
         {
             this.Loaded += (s, e) =>
             {
-                // Resolve buttons from the applied ControlTemplate shell context
                 var btnMinimize = this.Template.FindName("BtnShellMinimize", this) as Button;
                 var btnMaximize = this.Template.FindName("BtnShellMaximize", this) as Button;
                 var btnClose = this.Template.FindName("BtnShellClose", this) as Button;
@@ -78,7 +80,7 @@ namespace Musicefy.Views
         {
             if (SettingsContent.Content is FrameworkElement currentContent)
             {
-                var fadeOut = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(180));
+                var fadeOut = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromMilliseconds(180)));
                 var slideOut = new ThicknessAnimation
                 {
                     From = new Thickness(0),
@@ -94,7 +96,7 @@ namespace Musicefy.Views
                     newContent.Opacity = 0;
                     newContent.Margin = new Thickness(fromRight ? 40 : -40, 0, 0, 0);
 
-                    var fadeIn = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(180));
+                    var fadeIn = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromMilliseconds(180)));
                     var slideIn = new ThicknessAnimation
                     {
                         From = newContent.Margin,
@@ -117,7 +119,7 @@ namespace Musicefy.Views
                 newContent.Opacity = 0;
                 newContent.Margin = new Thickness(fromRight ? 40 : -40, 0, 0, 0);
 
-                var fadeIn = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(180));
+                var fadeIn = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromMilliseconds(180)));
                 var slideIn = new ThicknessAnimation
                 {
                     From = newContent.Margin,
