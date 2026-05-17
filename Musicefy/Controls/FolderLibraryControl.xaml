@@ -37,7 +37,11 @@
         </Grid.RowDefinitions>
 
         <Grid Grid.Row="0" Margin="16,0,16,16">
-            <TextBlock Text="TRACKS ENGINE CHANNEL" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource MutedTextBrush}" VerticalAlignment="Center" LetterSpacing="1"/>
+            <TextBlock Text="TRACKS ENGINE CHANNEL" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource MutedTextBrush}" VerticalAlignment="Center" RenderTransformOrigin="0,0.5">
+                <TextBlock.RenderTransform>
+                    <ScaleTransform ScaleX="1.05"/>
+                </TextBlock.RenderTransform>
+            </TextBlock>
             
             <Button x:Name="BtnViewToggle" HorizontalAlignment="Right" Style="{StaticResource LayoutPillToggleStyle}" Click="BtnViewToggle_Click">
                 <Path x:Name="ToggleIconPath" Data="M4,11H7V5H4V11M4,18H7V12H4V18M8,11H11V5H8V11M8,18H11V12H8V18M12,11H15V5H12V11M12,18H15V12H12V18M16,11H19V5H16V11M16,18H19V12H16V18Z" 
