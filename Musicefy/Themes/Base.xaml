@@ -107,16 +107,37 @@
 
     <Style TargetType="Slider">
         <Setter Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}"/>
-        <Style.Resources>
-            <Style x:Key="SliderThumbStyle" TargetType="Thumb">
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate>
-                            <Ellipse Fill="{DynamicResource ForegroundBrush}" Width="14" Height="14"/>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-            </Style>
-        </Style.Resources>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Slider">
+                    <Grid x:Name="SliderRoot">
+                        <Border x:Name="TrackBackground" 
+                                Background="{TemplateBinding Background}" 
+                                Height="4" 
+                                CornerRadius="2" 
+                                VerticalAlignment="Center"/>
+                        <Track x:Name="PART_Track">
+                            <Track.Thumb>
+                                <Thumb Width="14" Height="14" Focusable="False">
+                                    <Thumb.Template>
+                                        <ControlTemplate TargetType="Thumb">
+                                            <Ellipse Fill="{DynamicResource ForegroundBrush}" Width="14" Height="14"/>
+                                        </ControlTemplate>
+                                    </Thumb.Template>
+                                </Thumb>
+                            </Track.Thumb>
+                        </Track>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Orientation" Value="Vertical">
+                            <Setter TargetName="TrackBackground" Property="Width" Value="4"/>
+                            <Setter TargetName="TrackBackground" Property="Height" Value="Auto"/>
+                            <Setter TargetName="TrackBackground" Property="HorizontalAlignment" Value="Center"/>
+                            <Setter TargetName="TrackBackground" Property="VerticalAlignment" Value="Stretch"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 </ResourceDictionary>
