@@ -25,26 +25,28 @@ namespace Musicefy.Controls
         {
             InitializeComponent();
             
-            // PERSISTENCE ENGINE: Automatically reload the saved folder path when the user enters this tab
-            Loaded += FolderLibraryControl_Loaded;
+            // PERSISTENCE WIREUP: Hook up control initialization layout notifications
+            this.Loaded += FolderLibraryControl_Loaded;
         }
 
         private async void FolderLibraryControl_Loaded(object sender, RoutedEventArgs e)
         {
             try
             {
-                // Pull the saved file path string directly out of application setting properties configuration
+                // Pull the saved folder configuration string path directly out of registry properties storage
                 string savedPath = LibraryControlSettings.Default.LastSelectedFolderPath;
                 
                 if (!string.IsNullOrEmpty(savedPath) && Directory.Exists(savedPath))
                 {
                     _lastActiveDirectoryPath = savedPath;
+
+                    // FIXED: Re-trigger the background scan immediately upon re-entering the application context
                     await ExecuteBackgroundFolderScanAsync(savedPath);
                 }
             }
             catch
             {
-                // Fallback gracefully if configuration namespaces are still initializing on boot
+                // Safety fallback if configuration settings are initializing on system thread boot up
             }
         }
 
@@ -98,7 +100,7 @@ namespace Musicefy.Controls
                     {
                         _lastActiveDirectoryPath = folderPath;
 
-                        // PERSISTENCE ENGINE: Save the folder path to settings storage immediately
+                        // PERSISTENCE ENGINE: Save the folder path configuration string to local storage cache immediately
                         try
                         {
                             LibraryControlSettings.Default.LastSelectedFolderPath = folderPath;
@@ -136,7 +138,7 @@ namespace Musicefy.Controls
 
                 try
                 {
-                    // FIXED: Safe recursive directory tracking loop bypasses locked system files without crashing out the app loop
+                    // Recursively crawl through directories while bypassing locked files or directory blocks
                     SafeRecursiveFileSearch(directoryPath, filesToProcess);
 
                     string artworkCacheFolder = Path.Combine(Path.GetTempPath(), "MusicefyArtworkCache");
@@ -144,66 +146,75 @@ namespace Musicefy.Controls
 
                     foreach (string file in filesToProcess)
                     {
-                        string fallbackName = Path.GetFileNameWithoutExtension(file);
-                        string trackTitle = fallbackName;
-                        string trackArtist = "Unknown Artist";
-                        string trackAlbum = "Local Stream Layer";
-                        string trackCoverImageReference = null;
-                        TimeSpan trackDuration = TimeSpan.Zero;
-
+                        // FIXED: Enclosed EACH INDIVIDUAL file parsing loop within an isolation try-catch wrapper.
+                        // If one single file is corrupted, locked, or broken, it skips it and carries on!
                         try
                         {
-                            using (var reader = new NAudio.Wave.AudioFileReader(file))
-                            {
-                                trackDuration = reader.TotalTime;
-                            }
+                            string fallbackName = Path.GetFileNameWithoutExtension(file);
+                            string trackTitle = fallbackName;
+                            string trackArtist = "Unknown Artist";
+                            string trackAlbum = "Local Stream Layer";
+                            string trackCoverImageReference = null;
+                            TimeSpan trackDuration = TimeSpan.Zero;
 
-                            using (var tagContainer = TagLib.File.Create(file))
+                            try
                             {
-                                if (tagContainer.Tag != null)
+                                using (var reader = new NAudio.Wave.AudioFileReader(file))
                                 {
-                                    if (!string.IsNullOrEmpty(tagContainer.Tag.Title)) trackTitle = tagContainer.Tag.Title;
-                                    if (!string.IsNullOrEmpty(tagContainer.Tag.FirstPerformer)) trackArtist = tagContainer.Tag.FirstPerformer;
-                                    if (!string.IsNullOrEmpty(tagContainer.Tag.Album)) trackAlbum = tagContainer.Tag.Album;
+                                    trackDuration = reader.TotalTime;
+                                }
 
-                                    if (tagContainer.Tag.Pictures != null && tagContainer.Tag.Pictures.Length > 0)
+                                using (var tagContainer = TagLib.File.Create(file))
+                                {
+                                    if (tagContainer.Tag != null)
                                     {
-                                        string safeHashName = "cover_" + Math.Abs(file.GetHashCode()).ToString() + ".jpg";
-                                        string writeImgPath = Path.Combine(artworkCacheFolder, safeHashName);
+                                        if (!string.IsNullOrEmpty(tagContainer.Tag.Title)) trackTitle = tagContainer.Tag.Title;
+                                        if (!string.IsNullOrEmpty(tagContainer.Tag.FirstPerformer)) trackArtist = tagContainer.Tag.FirstPerformer;
+                                        if (!string.IsNullOrEmpty(tagContainer.Tag.Album)) trackAlbum = tagContainer.Tag.Album;
 
-                                        if (!File.Exists(writeImgPath))
+                                        if (tagContainer.Tag.Pictures != null && tagContainer.Tag.Pictures.Length > 0)
                                         {
-                                            File.WriteAllBytes(writeImgPath, tagContainer.Tag.Pictures[0].Data.Data);
+                                            string safeHashName = "cover_" + Math.Abs(file.GetHashCode()).ToString() + ".jpg";
+                                            string writeImgPath = Path.Combine(artworkCacheFolder, safeHashName);
+
+                                            if (!File.Exists(writeImgPath))
+                                            {
+                                                File.WriteAllBytes(writeImgPath, tagContainer.Tag.Pictures[0].Data.Data);
+                                            }
+                                            trackCoverImageReference = writeImgPath;
                                         }
-                                        trackCoverImageReference = writeImgPath;
                                     }
                                 }
                             }
+                            catch { trackTitle = fallbackName; }
+
+                            trackTitle = Regex.Replace(trackTitle, @"[\x00-\x1F\x7F-\x9F]", "").Trim();
+                            trackArtist = Regex.Replace(trackArtist, @"[\x00-\x1F\x7F-\x9F]", "").Trim();
+
+                            if (string.IsNullOrEmpty(trackTitle)) trackTitle = fallbackName;
+                            if (string.IsNullOrEmpty(trackArtist)) trackArtist = "Unknown Artist";
+
+                            scannedTracks.Add(new MusicFile
+                            {
+                                Title = trackTitle,
+                                Artist = trackArtist,
+                                Album = trackAlbum,
+                                FilePath = file,
+                                SourceUri = file,
+                                SourceType = "Local",
+                                Duration = trackDuration,
+                                CoverPath = trackCoverImageReference
+                            });
                         }
-                        catch { trackTitle = fallbackName; }
-
-                        trackTitle = Regex.Replace(trackTitle, @"[\x00-\x1F\x7F-\x9F]", "").Trim();
-                        trackArtist = Regex.Replace(trackArtist, @"[\x00-\x1F\x7F-\x9F]", "").Trim();
-
-                        if (string.IsNullOrEmpty(trackTitle)) trackTitle = fallbackName;
-                        if (string.IsNullOrEmpty(trackArtist)) trackArtist = "Unknown Artist";
-
-                        scannedTracks.Add(new MusicFile
+                        catch
                         {
-                            Title = trackTitle,
-                            Artist = trackArtist,
-                            Album = trackAlbum,
-                            FilePath = file,
-                            SourceUri = file,
-                            SourceType = "Local",
-                            Duration = trackDuration,
-                            CoverPath = trackCoverImageReference
-                        });
+                            // Skip broken single music track nodes gracefully to prevent scanning thread lockups
+                        }
                     }
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Deep scanning failed: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"Deep scanning task block layout exception crash: {ex.Message}");
                 }
 
                 return scannedTracks;
@@ -213,16 +224,12 @@ namespace Musicefy.Controls
             TriggerEchoToastMessage($"Successfully indexed {scannedResults.Count} tracks.");
         }
 
-        /// <summary>
-        /// FIXED: Safely crawls subdirectories, catching and skipping restricted system paths effortlessly.
-        /// </summary>
         private void SafeRecursiveFileSearch(string rootDirectory, List<string> accumulatedFiles)
         {
             string[] audioExtensions = { ".mp3", ".wav", ".flac", ".m4a" };
 
             try
             {
-                // Grabs audio files in the current folder tier
                 foreach (string file in Directory.GetFiles(rootDirectory))
                 {
                     string ext = Path.GetExtension(file).ToLower();
@@ -232,23 +239,18 @@ namespace Musicefy.Controls
                     }
                 }
 
-                // Recursively drill down into subdirectories while safely bypassing access violation errors
                 foreach (string directory in Directory.GetDirectories(rootDirectory))
                 {
-                    // Skip hidden Windows directory nodes like AppData or system data structures
                     var dirInfo = new DirectoryInfo(directory);
                     if ((dirInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden) continue;
 
                     SafeRecursiveFileSearch(directory, accumulatedFiles);
                 }
             }
-            catch (UnauthorizedAccessException)
-            {
-                // Gracefully skips hidden system folders without breaking the rest of the directory tree scan
-            }
+            catch (UnauthorizedAccessException) { }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Directory skip block: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Directory skip block loop catch: {ex.Message}");
             }
         }
 
@@ -325,9 +327,6 @@ namespace Musicefy.Controls
         }
     }
 
-    /// <summary>
-    /// FIXED: Fully qualified the DebuggerNonUserCode namespace definition path to pass MSBuild checks smoothly
-    /// </summary>
     public class LibraryControlSettings : System.Configuration.ApplicationSettingsBase
     {
         private static LibraryControlSettings defaultInstance = ((LibraryControlSettings)(System.Configuration.ApplicationSettingsBase.Synchronized(new LibraryControlSettings())));
@@ -335,7 +334,7 @@ namespace Musicefy.Controls
         public static LibraryControlSettings Default => defaultInstance;
 
         [System.Configuration.UserScopedSettingAttribute()]
-        [System.Diagnostics.DebuggerNonUserCodeAttribute()] // FIXED: Now points directly to System.Diagnostics context channels
+        [System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [System.Configuration.DefaultSettingValueAttribute("")]
         public string LastSelectedFolderPath
         {
