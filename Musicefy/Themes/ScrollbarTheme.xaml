@@ -94,20 +94,12 @@
                         <ScrollBar x:Name="PART_VerticalScrollBar" 
                                    Grid.Column="1" Grid.Row="0" 
                                    Cursor="Arrow" 
-                                   Minimum="0"
-                                   Maximum="{TemplateBinding ScrollableHeight}"
-                                   Value="{Binding VerticalOffset, RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}"
-                                   ViewportSize="{TemplateBinding ViewportHeight}"
                                    Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"/>
                         
                         <ScrollBar x:Name="PART_HorizontalScrollBar" 
                                    Grid.Column="0" Grid.Row="1" 
                                    Cursor="Arrow" 
                                    Orientation="Horizontal" 
-                                   Minimum="0"
-                                   Maximum="{TemplateBinding ScrollableWidth}"
-                                   Value="{Binding HorizontalOffset, RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}"
-                                   ViewportSize="{TemplateBinding ViewportWidth}"
                                    Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"/>
                     </Grid>
                 </ControlTemplate>
