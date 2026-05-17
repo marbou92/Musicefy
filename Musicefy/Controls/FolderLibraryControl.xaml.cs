@@ -326,7 +326,7 @@ namespace Musicefy.Controls
     }
 
     /// <summary>
-    /// Lightweight Application Setting Wrapper to seamlessly save folder path strings onto local hard drive storage.
+    /// FIXED: Fully qualified the DebuggerNonUserCode namespace definition path to pass MSBuild checks smoothly
     /// </summary>
     public class LibraryControlSettings : System.Configuration.ApplicationSettingsBase
     {
@@ -335,7 +335,7 @@ namespace Musicefy.Controls
         public static LibraryControlSettings Default => defaultInstance;
 
         [System.Configuration.UserScopedSettingAttribute()]
-        [System.Configuration.DebuggerNonUserCodeAttribute()]
+        [System.Diagnostics.DebuggerNonUserCodeAttribute()] // FIXED: Now points directly to System.Diagnostics context channels
         [System.Configuration.DefaultSettingValueAttribute("")]
         public string LastSelectedFolderPath
         {
