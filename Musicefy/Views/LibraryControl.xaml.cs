@@ -79,11 +79,14 @@ namespace Musicefy.Views
             }
         }
 
-        private string FilterWindows7UnicodeBugs(string input)
+        /// <summary>
+        /// Cleans hidden system control characters while keeping accents, letters, and foreign names safe.
+        /// </summary>
+        private string FilterWindows7UnicodeBugs(string input, string fallbackDefault)
         {
-            if (string.IsNullOrEmpty(input)) return "Unknown Field";
+            if (string.IsNullOrEmpty(input)) return fallbackDefault;
             string clean = Regex.Replace(input, @"[\x00-\x1F\x7F-\x9F]", "").Trim();
-            return string.IsNullOrEmpty(clean) ? "Local Track Node" : clean;
+            return (string.IsNullOrEmpty(clean) || clean.StartsWith("???")) ? fallbackDefault : clean;
         }
 
         private void NavigateIntoDirectory(string targetPath)
@@ -120,7 +123,8 @@ namespace Musicefy.Views
 
                 foreach (string file in matchedFiles)
                 {
-                    string trackTitle = Path.GetFileNameWithoutExtension(file);
+                    string defaultFilename = Path.GetFileNameWithoutExtension(file);
+                    string trackTitle = defaultFilename;
                     string trackArtist = "Unknown Artist";
                     string trackAlbum = "Local Stream";
                     string trackCoverImageReference = null;
@@ -133,44 +137,34 @@ namespace Musicefy.Views
                             trackDuration = reader.TotalTime;
                         }
 
-                        using (var fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read))
-                        {
-                            if (file.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase) && fs.Length >= 128)
-                            {
-                                byte[] b = new byte[128];
-                                fs.Seek(-128, SeekOrigin.End);
-                                fs.Read(b, 0, 128);
-                                if (Encoding.Default.GetString(b, 0, 3) == "TAG")
-                                {
-                                    string t = Encoding.Default.GetString(b, 3, 30).Trim();
-                                    string a = Encoding.Default.GetString(b, 33, 30).Trim();
-                                    string al = Encoding.Default.GetString(b, 63, 30).Trim();
-
-                                    if (!string.IsNullOrEmpty(t)) trackTitle = t;
-                                    if (!string.IsNullOrEmpty(a)) trackArtist = a;
-                                    if (!string.IsNullOrEmpty(al)) trackAlbum = al;
-                                }
-                            }
-                        }
-
                         using (var tagContainer = TagLib.File.Create(file))
                         {
-                            if (tagContainer.Tag != null && tagContainer.Tag.Pictures != null && tagContainer.Tag.Pictures.Length > 0)
+                            if (tagContainer.Tag != null)
                             {
-                                string safeImgName = "cover_" + Math.Abs(file.GetHashCode()).ToString() + ".jpg";
-                                string writeImgPath = Path.Combine(tempCachePath, safeImgName);
-                                if (!File.Exists(writeImgPath))
+                                if (!string.IsNullOrEmpty(tagContainer.Tag.Title)) trackTitle = tagContainer.Tag.Title;
+                                if (!string.IsNullOrEmpty(tagContainer.Tag.FirstPerformer)) trackArtist = tagContainer.Tag.FirstPerformer;
+                                if (!string.IsNullOrEmpty(tagContainer.Tag.Album)) trackAlbum = tagContainer.Tag.Album;
+
+                                if (tagContainer.Tag.Pictures != null && tagContainer.Tag.Pictures.Length > 0)
                                 {
-                                    File.WriteAllBytes(writeImgPath, tagContainer.Tag.Pictures[0].Data.Data);
+                                    string safeImgName = "cover_" + Math.Abs(file.GetHashCode()).ToString() + ".jpg";
+                                    string writeImgPath = Path.Combine(tempCachePath, safeImgName);
+                                    if (!File.Exists(writeImgPath))
+                                    {
+                                        File.WriteAllBytes(writeImgPath, tagContainer.Tag.Pictures[0].Data.Data);
+                                    }
+                                    trackCoverImageReference = writeImgPath;
                                 }
-                                trackCoverImageReference = writeImgPath;
                             }
                         }
                     }
-                    catch { }
+                    catch 
+                    {
+                        trackTitle = defaultFilename;
+                    }
 
-                    trackTitle = FilterWindows7UnicodeBugs(trackTitle);
-                    trackArtist = FilterWindows7UnicodeBugs(trackArtist);
+                    trackTitle = FilterWindows7UnicodeBugs(trackTitle, defaultFilename);
+                    trackArtist = FilterWindows7UnicodeBugs(trackArtist, "Unknown Artist");
 
                     localTracks.Add(new MusicFile
                     {
