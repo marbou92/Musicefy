@@ -1,3 +1,4 @@
+// File Path: Musicefy/Views/LibraryControl.xaml.cs
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -6,6 +7,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using Musicefy.Core.Models;
+using Musicefy.Models; // ✅ Imported the new standalone models namespace
 using Musicefy.Services;
 
 namespace Musicefy.Views
@@ -18,7 +20,6 @@ namespace Musicefy.Views
         private bool IsInsideFolderBrowsingMode = false;
         private PlaybackService _playbackService;
 
-        // Vector Path Data Keys
         private const string IconHeart = "M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z";
         private const string IconDownload = "M5,20H19V18H5V20M19,9H15V3H9V9H5L12,16L19,9Z";
         private const string IconHistory = "M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z";
@@ -28,11 +29,9 @@ namespace Musicefy.Views
         {
             InitializeComponent();
             
-            // Resolve runtime tracking engine context mapping channels safely
             _playbackService = optionalDependency as PlaybackService;
             if (_playbackService == null)
             {
-                // Fallback context discovery verification lookup routine
                 var mainWin = Application.Current.MainWindow;
                 var prop = mainWin?.GetType().GetProperty("PlaybackService");
                 _playbackService = prop?.GetValue(mainWin) as PlaybackService;
@@ -98,7 +97,6 @@ namespace Musicefy.Views
 
             try
             {
-                // 1. Resolve sub-directories natively as access hubs
                 foreach (string dir in Directory.GetDirectories(targetPath))
                 {
                     internalContents.Add(new LibraryCardItem
@@ -111,7 +109,6 @@ namespace Musicefy.Views
                     });
                 }
 
-                // 2. Parse out explicit physical files inside folder path parameters
                 string[] audioExtensions = { "*.mp3", "*.wav", "*.flac", "*.m4a" };
                 var matchedFiles = audioExtensions.SelectMany(ext => Directory.GetFiles(targetPath, ext)).ToList();
 
@@ -125,7 +122,7 @@ namespace Musicefy.Views
                         FilePath = file,
                         SourceUri = file,
                         SourceType = "Local",
-                        Duration = TimeSpan.Zero // Populated via background NAudio streams automatically at execution
+                        Duration = TimeSpan.Zero
                     });
                 }
             }
@@ -134,7 +131,6 @@ namespace Musicefy.Views
                 MessageBox.Show($"Access Violation Error: {ex.Message}");
             }
 
-            // 3. Switch view states depending on what content was resolved from the path
             if (localTracks.Count > 0)
             {
                 LibraryCardsScrollViewer.Visibility = Visibility.Collapsed;
@@ -174,7 +170,8 @@ namespace Musicefy.Views
 
         private void BtnAddPlaylist_Click(object sender, RoutedEventArgs e)
         {
-            // Fallback action safety framework trigger
+            // Custom dialog trigger logic container hook
         }
     }
 }
+// ✅ Cleaned up: The old nested class definitions at the bottom have been deleted!
