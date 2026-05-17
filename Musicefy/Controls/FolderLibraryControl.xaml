@@ -78,7 +78,7 @@
             </StackPanel>
 
             <Button x:Name="BtnViewToggle" HorizontalAlignment="Right" Style="{StaticResource LayoutPillToggleStyle}" Click="BtnViewToggle_Click">
-                <Path x:Name="ToggleIconPath" Data="M4,11H7V5H4V11M4,18H7V12H4V18M8,11H11V5H8V11M8,18H11V12H8V18M12,11H15V5H12V11M12,18H15V12H12V18M16,11H19V5H16V11M16,18H19V12H16V18Z" 
+                <Path x:Name="ToggleIconPath" Data="M3,5H21V7H3V5M3,11H21V13H3V11M3,17H21V19H3V17Z" 
                       Fill="{DynamicResource TextBrush}" Width="14" Height="14" Stretch="Uniform"/>
             </Button>
         </Grid>
@@ -225,7 +225,7 @@
                 </Border.Effect>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <Ellipse Width="8" Height="8" Fill="{DynamicResource AccentBrush}" Margin="0,0,12,0"/>
-                    <TextBlock x:Name="TxtToastMessage" Text="Scanning target local system folder path..." FontSize="13" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="TxtToastMessage" Text="Scanning target folder tree channels..." FontSize="13" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
                 </StackPanel>
             </Border>
         </Grid>
