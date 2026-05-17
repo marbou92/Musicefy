@@ -17,6 +17,25 @@ namespace Musicefy.Views
             ShowAppearance(); // Mount primary surface view context on initialization pass
         }
 
+        // Call this inside your Window class constructor (e.g., public SettingsWindow() { ... })
+        private void AttachCustomTitleBarWindowActions()
+        {
+            this.Loaded += (s, e) =>
+            {
+                // Resolve buttons from the applied ControlTemplate shell context
+                var btnMinimize = this.Template.FindName("BtnShellMinimize", this) as Button;
+                var btnMaximize = this.Template.FindName("BtnShellMaximize", this) as Button;
+                var btnClose = this.Template.FindName("BtnShellClose", this) as Button;
+        
+                if (btnMinimize != null) btnMinimize.Click += (o, a) => this.WindowState = WindowState.Minimized;
+                if (btnMaximize != null) btnMaximize.Click += (o, a) => 
+                {
+                    this.WindowState = (this.WindowState == WindowState.Maximized) ? WindowState.Normal : WindowState.Maximized;
+                };
+                if (btnClose != null) btnClose.Click += (o, a) => this.Close();
+            };
+        }
+
         private void AppearanceButton_Click(object sender, RoutedEventArgs e)
         {
             ShowAppearance();
