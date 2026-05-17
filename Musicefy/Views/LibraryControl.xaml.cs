@@ -1,4 +1,3 @@
-// File Path: Musicefy/Views/LibraryControl.xaml.cs
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -7,7 +6,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using Musicefy.Core.Models;
-using Musicefy.Models; // ✅ Imported the new standalone models namespace
+using Musicefy.Models;
 using Musicefy.Services;
 
 namespace Musicefy.Views
@@ -114,15 +113,52 @@ namespace Musicefy.Views
 
                 foreach (string file in matchedFiles)
                 {
+                    string trackTitle = Path.GetFileNameWithoutExtension(file);
+                    string trackArtist = "Unknown Artist";
+                    TimeSpan trackDuration = TimeSpan.Zero;
+
+                    try
+                    {
+                        // 1. Natively extract total audio runtime length using NAudio core reader tracking
+                        using (var reader = new NAudio.Wave.AudioFileReader(file))
+                        {
+                            trackDuration = reader.TotalTime;
+                        }
+
+                        // 2. FIXED: Extracts raw binary ID3 segments directly to scrap out real Artist descriptors
+                        using (var fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read))
+                        {
+                            if (file.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase) && fs.Length >= 128)
+                            {
+                                byte[] id3Buffer = new byte[128];
+                                fs.Seek(-128, SeekOrigin.End);
+                                fs.Read(id3Buffer, 0, 128);
+                                
+                                if (System.Text.Encoding.Default.GetString(id3Buffer, 0, 3) == "TAG")
+                                {
+                                    string parsedTitle = System.Text.Encoding.Default.GetString(id3Buffer, 3, 30).Trim();
+                                    string parsedArtist = System.Text.Encoding.Default.GetString(id3Buffer, 33, 30).Trim();
+
+                                    if (!string.IsNullOrEmpty(parsedTitle)) trackTitle = parsedTitle;
+                                    if (!string.IsNullOrEmpty(parsedArtist)) trackArtist = parsedArtist;
+                                }
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        // Fallback gracefully if filesystem locks are active on the track file
+                    }
+
                     localTracks.Add(new MusicFile
                     {
-                        Title = Path.GetFileNameWithoutExtension(file),
-                        Artist = "Local Audio File",
-                        Album = "Direct Directory Stream",
+                        Title = trackTitle,
+                        Artist = trackArtist, // FIXED: Returns real artist meta properties
+                        Album = "Direct Folder Playback",
                         FilePath = file,
                         SourceUri = file,
                         SourceType = "Local",
-                        Duration = TimeSpan.Zero
+                        Duration = trackDuration
                     });
                 }
             }
@@ -170,8 +206,7 @@ namespace Musicefy.Views
 
         private void BtnAddPlaylist_Click(object sender, RoutedEventArgs e)
         {
-            // Custom dialog trigger logic container hook
+            // Custom playlist collection trigger point
         }
     }
 }
-// ✅ Cleaned up: The old nested class definitions at the bottom have been deleted!
