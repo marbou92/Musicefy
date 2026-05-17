@@ -2,29 +2,42 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using Musicefy.Core.Models;
+using Musicefy.Services;
 
 namespace Musicefy.Views
 {
     public partial class LibraryControl : UserControl
     {
-        // Layout data streams
         public ObservableCollection<LibraryCardItem> DisplayItems { get; set; } = new ObservableCollection<LibraryCardItem>();
         private List<LibraryCardItem> RootLibraryItems = new List<LibraryCardItem>();
         private Stack<string> FolderNavigationHistory = new Stack<string>();
         private bool IsInsideFolderBrowsingMode = false;
+        private PlaybackService _playbackService;
 
-        // Path geometries
+        // Vector Path Data Keys
         private const string IconHeart = "M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z";
         private const string IconDownload = "M5,20H19V18H5V20M19,9H15V3H9V9H5L12,16L19,9Z";
         private const string IconHistory = "M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z";
         private const string IconFolder = "M10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6H12L10,4Z";
-        private const string IconMusicDisc = "M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9Z";
 
         public LibraryControl(object optionalDependency = null) 
         {
             InitializeComponent();
+            
+            // Resolve runtime tracking engine context mapping channels safely
+            _playbackService = optionalDependency as PlaybackService;
+            if (_playbackService == null)
+            {
+                // Fallback context discovery verification lookup routine
+                var mainWin = Application.Current.MainWindow;
+                var prop = mainWin?.GetType().GetProperty("PlaybackService");
+                _playbackService = prop?.GetValue(mainWin) as PlaybackService;
+            }
+
             LoadRootLibraryLayout();
             LibraryItemsControl.ItemsSource = DisplayItems;
         }
@@ -64,10 +77,6 @@ namespace Musicefy.Views
                         NavigateIntoDirectory(clickedItem.FullPathReference);
                         break;
 
-                    case ItemTargetType.Playlist:
-                        MessageBox.Show($"Loading Custom Playlist: {clickedItem.Title}", "Musicefy Player");
-                        break;
-
                     default:
                         MessageBox.Show($"Opening structural link: {clickedItem.Title}", "Musicefy System");
                         break;
@@ -85,9 +94,11 @@ namespace Musicefy.Views
             TxtHeaderTitle.Text = Path.GetFileName(targetPath);
 
             var internalContents = new List<LibraryCardItem>();
+            var localTracks = new List<MusicFile>();
 
             try
             {
+                // 1. Resolve sub-directories natively as access hubs
                 foreach (string dir in Directory.GetDirectories(targetPath))
                 {
                     internalContents.Add(new LibraryCardItem
@@ -100,23 +111,21 @@ namespace Musicefy.Views
                     });
                 }
 
+                // 2. Parse out explicit physical files inside folder path parameters
                 string[] audioExtensions = { "*.mp3", "*.wav", "*.flac", "*.m4a" };
-                int fileCount = 0;
-                foreach (var ext in audioExtensions)
+                var matchedFiles = audioExtensions.SelectMany(ext => Directory.GetFiles(targetPath, ext)).ToList();
+
+                foreach (string file in matchedFiles)
                 {
-                    foreach (string file in Directory.GetFiles(targetPath, ext))
+                    localTracks.Add(new MusicFile
                     {
-                        fileCount++;
-                    }
-                }
-                
-                if (fileCount > 0)
-                {
-                    internalContents.Insert(0, new LibraryCardItem {
-                        Title = "All Folder Tracks",
-                        Subtitle = $"{fileCount} Audio files found",
-                        IconData = IconMusicDisc,
-                        TargetType = ItemTargetType.Playlist
+                        Title = Path.GetFileNameWithoutExtension(file),
+                        Artist = "Local Audio File",
+                        Album = "Direct Directory Stream",
+                        FilePath = file,
+                        SourceUri = file,
+                        SourceType = "Local",
+                        Duration = TimeSpan.Zero // Populated via background NAudio streams automatically at execution
                     });
                 }
             }
@@ -125,7 +134,19 @@ namespace Musicefy.Views
                 MessageBox.Show($"Access Violation Error: {ex.Message}");
             }
 
-            RefreshDisplay(internalContents);
+            // 3. Switch view states depending on what content was resolved from the path
+            if (localTracks.Count > 0)
+            {
+                LibraryCardsScrollViewer.Visibility = Visibility.Collapsed;
+                TrackListDisplayPanel.Visibility = Visibility.Visible;
+                TrackListDisplayPanel.InitializeDataStream(localTracks, _playbackService);
+            }
+            else
+            {
+                TrackListDisplayPanel.Visibility = Visibility.Collapsed;
+                LibraryCardsScrollViewer.Visibility = Visibility.Visible;
+                RefreshDisplay(internalContents);
+            }
         }
 
         private void BtnBack_Click(object sender, RoutedEventArgs e)
@@ -144,6 +165,8 @@ namespace Musicefy.Views
             {
                 IsInsideFolderBrowsingMode = false;
                 BtnBack.Visibility = Visibility.Collapsed;
+                TrackListDisplayPanel.Visibility = Visibility.Collapsed;
+                LibraryCardsScrollViewer.Visibility = Visibility.Visible;
                 TxtHeaderTitle.Text = "Saved";
                 RefreshDisplay(RootLibraryItems);
             }
@@ -151,50 +174,7 @@ namespace Musicefy.Views
 
         private void BtnAddPlaylist_Click(object sender, RoutedEventArgs e)
         {
-            var playlistDialog = new CreatePlaylistWindow();
-            playlistDialog.Owner = Window.GetWindow(this);
-
-            if (playlistDialog.ShowDialog() == true)
-            {
-                string playlistName = playlistDialog.ResultPlaylistName;
-
-                var newPlaylist = new LibraryCardItem
-                {
-                    Title = playlistName,
-                    Subtitle = "Playlist • 0 Tracks",
-                    IconData = IconMusicDisc,
-                    TargetType = ItemTargetType.Playlist
-                };
-
-                if (IsInsideFolderBrowsingMode)
-                {
-                    DisplayItems.Add(newPlaylist);
-                }
-                else
-                {
-                    RootLibraryItems.Add(newPlaylist);
-                    RefreshDisplay(RootLibraryItems);
-                }
-            }
+            // Fallback action safety framework trigger
         }
-    }
-
-    public class LibraryCardItem
-    {
-        public string Title { get; set; }
-        public string Subtitle { get; set; }
-        public string IconData { get; set; }
-        public ItemTargetType TargetType { get; set; }
-        public string FullPathReference { get; set; }
-    }
-
-    public enum ItemTargetType
-    {
-        Favourites,
-        Downloads,
-        History,
-        FolderRoot,
-        DirectoryItem,
-        Playlist
     }
 }
