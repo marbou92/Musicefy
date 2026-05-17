@@ -29,54 +29,80 @@ namespace Musicefy.Views
             _playback.ProgressChanged += OnProgressChanged;
             _playback.PlaybackStateChanged += OnPlaybackStateChanged;
 
+            // Wire up the size adaptive display engine interface link hooks
+            this.SizeChanged += OnControlSizeChanged;
+
             this.Unloaded += (s, e) => {
                 _playback.TrackChanged -= OnTrackChanged;
                 _playback.ProgressChanged -= OnProgressChanged;
                 _playback.PlaybackStateChanged -= OnPlaybackStateChanged;
+                this.SizeChanged -= OnControlSizeChanged;
             };
 
             SyncPlayPauseControls(_playback.IsPlaying);
             if (_playback.CurrentTrack != null) OnTrackChanged(_playback.CurrentTrack);
         }
 
-        #region Spatial Fluid State Machine (Echo Transitions)
+        private void OnControlSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            ApplyLayoutCalculations();
+        }
+
         private void UpdateLayoutState(RightViewMode targetMode)
         {
-            if (_currentMode == targetMode)
-            {
-                // Toggle action: Clicking active item minimizes view back to perfect center baseline
-                _currentMode = RightViewMode.None;
-            }
-            else
-            {
-                _currentMode = targetMode;
-            }
+            _currentMode = (_currentMode == targetMode) ? RightViewMode.None : targetMode;
+            ApplyLayoutCalculations();
+        }
 
-            // Reset UI state vectors
+        /// <summary>
+        /// Dynamic Viewport Processing Engine (Echo Engine Layout State Machine)
+        /// Balances wide multi-pane structural environments or pivots into full bleed overlays on small window widths.
+        /// </summary>
+        private void ApplyLayoutCalculations()
+        {
+            // Clean vector layouts reset step
             LyricsPanelContainer.Visibility = Visibility.Collapsed;
             QueuePanelContainer.Visibility = Visibility.Collapsed;
-            BtnToggleLyrics.ClearValue(Button.ForegroundProperty);
-            BtnToggleQueue.ClearValue(Button.ForegroundProperty);
             QueueIcon.Fill = (Brush)FindResource("MutedTextBrush");
             LyricsIcon.Fill = (Brush)FindResource("MutedTextBrush");
 
             if (_currentMode == RightViewMode.None)
             {
-                // Collapse Right Panel Column, snap player back into centered alignment context
+                // Baseline Centralization Layout Rule Engine
                 LeftPlayerColumn.Width = new GridLength(1, GridUnitType.Star);
                 RightPanelColumn.Width = new GridLength(0);
                 RightPanelRoot.Visibility = Visibility.Collapsed;
+                
+                PlayerDeckRoot.Visibility = Visibility.Visible;
                 PlayerDeckRoot.HorizontalAlignment = HorizontalAlignment.Center;
+                
+                // Allow elements to dynamically recover standard design proportions
+                CoverArtBorder.Height = double.NaN; 
             }
             else
             {
-                // Dynamic Shift Left Step: Allocate a clean 4.5* to 5.5* asymmetric viewport spread
-                LeftPlayerColumn.Width = new GridLength(4.5, GridUnitType.Star);
-                RightPanelColumn.Width = new GridLength(5.5, GridUnitType.Star);
                 RightPanelRoot.Visibility = Visibility.Visible;
-                PlayerDeckRoot.HorizontalAlignment = HorizontalAlignment.Left;
-
                 Brush activeAccent = (Brush)FindResource("AccentBrush");
+
+                // Check Width Threshold Rules for Adaptive Sizing (Pivots around 840 units width standard)
+                if (this.ActualWidth < 840)
+                {
+                    // Small/Compact Window View Mode Matrix: Suppress Primary Controls to Give Focus to Data Context Track Views
+                    LeftPlayerColumn.Width = new GridLength(0);
+                    RightPanelColumn.Width = new GridLength(1, GridUnitType.Star);
+                    PlayerDeckRoot.Visibility = Visibility.Collapsed;
+                    RightPanelRoot.Margin = new Thickness(0, 10, 0, 10);
+                }
+                else
+                {
+                    // Premium Asymmetric Side Window Split Canvas
+                    LeftPlayerColumn.Width = new GridLength(4.5, GridUnitType.Star);
+                    RightPanelColumn.Width = new GridLength(5.5, GridUnitType.Star);
+                    PlayerDeckRoot.Visibility = Visibility.Visible;
+                    PlayerDeckRoot.HorizontalAlignment = HorizontalAlignment.Center;
+                    RightPanelRoot.Margin = new Thickness(40, 10, 0, 10);
+                    CoverArtBorder.Height = double.NaN;
+                }
 
                 if (_currentMode == RightViewMode.Lyrics)
                 {
@@ -93,9 +119,8 @@ namespace Musicefy.Views
 
         private void BtnToggleLyrics_Click(object sender, RoutedEventArgs e) => UpdateLayoutState(RightViewMode.Lyrics);
         private void BtnToggleQueue_Click(object sender, RoutedEventArgs e) => UpdateLayoutState(RightViewMode.Queue);
-        #endregion
 
-        #region Gesture Recognition Links
+        #region Spatial User Input Gesture Recognition
         private void OnMouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left)
@@ -126,25 +151,17 @@ namespace Musicefy.Views
             this.ReleaseMouseCapture();
         }
 
-        private void OnTouchDown(object sender, TouchEventArgs e)
-        {
-            _startY = e.GetTouchPoint(this).Position.Y;
-        }
-
+        private void OnTouchDown(object sender, TouchEventArgs e) => _startY = e.GetTouchPoint(this).Position.Y;
         private void OnTouchMove(object sender, TouchEventArgs e)
         {
             double currentY = e.GetTouchPoint(this).Position.Y;
-            if (currentY - _startY > 80)
-            {
-                RequestCollapse?.Invoke();
-            }
+            if (currentY - _startY > 80) RequestCollapse?.Invoke();
         }
-
         private void OnTouchUp(object sender, TouchEventArgs e) { }
         private void BackButton_Click(object sender, RoutedEventArgs e) => RequestCollapse?.Invoke();
         #endregion
 
-        #region Core Core Engine Event Syncs
+        #region Playback Service Event Synchronization
         private void OnTrackChanged(MusicFile track)
         {
             if (track == null) return;
@@ -168,28 +185,13 @@ namespace Musicefy.Views
             });
         }
 
-        private void OnPlaybackStateChanged(bool isPlaying)
-        {
-            Dispatcher.Invoke(() => SyncPlayPauseControls(isPlaying));
-        }
-
-        private void SyncPlayPauseControls(bool isPlaying)
-        {
-            BtnMainPlay.Content = isPlaying ? "⏸" : "▶";
-        }
-
+        private void OnPlaybackStateChanged(bool isPlaying) => Dispatcher.Invoke(() => SyncPlayPauseControls(isPlaying));
+        private void SyncPlayPauseControls(bool isPlaying) => BtnMainPlay.Content = isPlaying ? "⏸" : "▶";
         private string FormatTimeInterval(TimeSpan ts) => $"{(int)ts.TotalMinutes}:{ts.Seconds:D2}";
-
-        private void Play_Click(object sender, RoutedEventArgs e)
-        {
-            if (_playback.IsPlaying) _playback.Pause(); else _playback.Resume();
-        }
-
+        private void Play_Click(object sender, RoutedEventArgs e) { if (_playback.IsPlaying) _playback.Pause(); else _playback.Resume(); }
         private void Next_Click(object sender, RoutedEventArgs e) => _playback.Next();
         private void Previous_Click(object sender, RoutedEventArgs e) => _playback.Previous();
-
         private void Slider_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e) => _userIsScrubbingSlider = true;
-
         private void Slider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
         {
             _userIsScrubbingSlider = false;
