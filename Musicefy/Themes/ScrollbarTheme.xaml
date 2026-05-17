@@ -66,6 +66,7 @@
 
     <Style TargetType="{x:Type ScrollViewer}">
         <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="CanContentScroll" Value="False"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ScrollViewer}">
@@ -84,7 +85,7 @@
                                                 Content="{TemplateBinding Content}" 
                                                 ContentTemplate="{TemplateBinding ContentTemplate}" 
                                                 Margin="{TemplateBinding Padding}" 
-                                                CanContentScroll="{TemplateBinding CanContentScroll}"/>
+                                                CanContentScroll="False"/>
                         
                         <ScrollBar x:Name="PART_VerticalScrollBar" 
                                    Grid.Column="1" Grid.Row="0" 
