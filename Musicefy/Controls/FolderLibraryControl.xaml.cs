@@ -36,8 +36,6 @@ namespace Musicefy.Controls
             {
                 _rootLibraryPath = savedPath;
                 BtnClearFolder.Visibility = Visibility.Visible;
-                
-                // FIXED: Displays the actual root link container card out-of-the-box instead of diving inside automatically
                 RenderRootLibraryHubView();
             }
             else
@@ -90,15 +88,22 @@ namespace Musicefy.Controls
 
             FolderSongsListView.ItemsSource = trackList;
             FolderSongsItemsControl.ItemsSource = trackList;
+            
+            // Execute Echo view entry animations on data binding refreshes
+            TriggerFluidLayoutEntranceAnimation();
         }
 
-        /// <summary>
-        /// Renders the root linked folder node as a distinct, actionable explorer access link
-        /// </summary>
         private void RenderRootLibraryHubView()
         {
             _currentBrowsingDirectoryPath = null;
-            BtnFolderBack.Visibility = Visibility.Collapsed; // Root layer hides back navigation arrow
+
+            if (BtnFolderBack.Visibility == Visibility.Visible)
+            {
+                var fadeOut = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromMilliseconds(150)));
+                fadeOut.Completed += (s, e) => { BtnFolderBack.Visibility = Visibility.Collapsed; };
+                BtnFolderBack.BeginAnimation(UIElement.OpacityProperty, fadeOut);
+            }
+
             _currentLevelItemsCollection.Clear();
 
             if (!string.IsNullOrEmpty(_rootLibraryPath) && Directory.Exists(_rootLibraryPath))
@@ -113,7 +118,7 @@ namespace Musicefy.Controls
                 });
             }
 
-            RenderExplorerViewDeck();
+            UpdateUiCollectionBindingStates(_currentLevelItemsCollection);
         }
 
         private void NavigateToTargetDirectoryFolder(string targetPath)
@@ -121,14 +126,17 @@ namespace Musicefy.Controls
             if (!Directory.Exists(targetPath)) return;
             _currentBrowsingDirectoryPath = targetPath;
 
-            // FIXED: Back button calculation loops to allow clean ascending traces up folder hierarchies
-            BtnFolderBack.Visibility = Visibility.Visible;
+            if (BtnFolderBack.Visibility != Visibility.Visible)
+            {
+                BtnFolderBack.Visibility = Visibility.Visible;
+                var fadeIn = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromMilliseconds(200)));
+                BtnFolderBack.BeginAnimation(UIElement.OpacityProperty, fadeIn);
+            }
 
             _currentLevelItemsCollection.Clear();
 
             try
             {
-                // 1. Map lower child directories
                 foreach (string subDir in Directory.GetDirectories(targetPath))
                 {
                     var dirInfo = new DirectoryInfo(subDir);
@@ -144,7 +152,6 @@ namespace Musicefy.Controls
                     });
                 }
 
-                // 2. Fetch tracks and resolve extracted album artwork paths
                 string[] validExtensions = { ".mp3", ".wav", ".flac", ".m4a" };
                 string artworkCacheFolder = Path.Combine(Path.GetTempPath(), "MusicefyArtworkCache");
 
@@ -175,15 +182,36 @@ namespace Musicefy.Controls
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Folder mapping traversal failure: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Directory mapping exploration failed: {ex.Message}");
             }
 
-            RenderExplorerViewDeck();
+            UpdateUiCollectionBindingStates(_currentLevelItemsCollection);
         }
 
-        private void RenderExplorerViewDeck()
+        /// <summary>
+        /// ANIMATIONS ENGINE: Fires an exponential slide-fade transition when view states swap or reload.
+        /// </summary>
+        private void TriggerFluidLayoutEntranceAnimation()
         {
-            UpdateUiCollectionBindingStates(_currentLevelItemsCollection);
+            var targetElement = _isGridViewActive ? (UIElement)GridViewContainer : (UIElement)ListViewContainer;
+            var targetTransform = _isGridViewActive ? GridTranslate : ListTranslate;
+
+            // Reset baseline values seamlessly
+            targetElement.Opacity = 0;
+            targetTransform.Y = 24;
+
+            var fadeAnim = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromMilliseconds(400)))
+            {
+                EasingFunction = new CircleEase { EasingMode = EasingMode.EaseOut }
+            };
+
+            var slideAnim = new DoubleAnimation(24, 0, new Duration(TimeSpan.FromMilliseconds(450)))
+            {
+                EasingFunction = new CircleEase { EasingMode = EasingMode.EaseOut }
+            };
+
+            targetElement.BeginAnimation(UIElement.OpacityProperty, fadeAnim);
+            targetTransform.BeginAnimation(TranslateTransform.YProperty, slideAnim);
         }
 
         private void BtnAddFolder_Click(object sender, RoutedEventArgs e)
@@ -223,7 +251,6 @@ namespace Musicefy.Controls
             TriggerEchoToastMessage("Cleared target folder registry memory successfully.");
         }
 
-        // FIXED: Re-engineered click logic to back trace paths or drop cleanly into the Root hub presentation deck
         private void BtnFolderBack_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(_currentBrowsingDirectoryPath)) return;
@@ -314,7 +341,7 @@ namespace Musicefy.Controls
                 ToggleIconPath.Data = Geometry.Parse("M4,11H7V5H4V11M4,18H7V12H4V18M8,11H11V5H8V11M8,18H11V12H8V18M12,11H15V5H12V11M12,18H15V12H12V18M16,11H19V5H16V11M16,18H19V12H16V18Z");
             }
 
-            RenderExplorerViewDeck();
+            UpdateUiCollectionBindingStates(_currentLevelItemsCollection);
         }
 
         private void TriggerEchoToastMessage(string msg)
