@@ -31,12 +31,17 @@ namespace Musicefy.Controls
 
         private void FolderLibraryControl_Loaded(object sender, RoutedEventArgs e)
         {
-            // PERSISTENCE BLOCK: Fetch the saved root library path location off local disk configuration
             string savedPath = LibraryControlSettings.Default.LastSelectedFolderPath;
             if (!string.IsNullOrEmpty(savedPath) && Directory.Exists(savedPath))
             {
                 _rootLibraryPath = savedPath;
+                BtnClearFolder.Visibility = Visibility.Visible; // Show clear button if path exists
                 NavigateToTargetDirectoryFolder(savedPath);
+            }
+            else
+            {
+                BtnClearFolder.Visibility = Visibility.Collapsed;
+                UpdateUiCollectionBindingStates(new List<MusicFile>());
             }
         }
 
@@ -49,68 +54,11 @@ namespace Musicefy.Controls
             }
         }
 
-        /// <summary>
-        /// Renders local folders and file contents dynamically on screen to simulate a browser experience
-        /// </summary>
-        private void NavigateToTargetDirectoryFolder(string targetPath)
+        private void UpdateUiCollectionBindingStates(IEnumerable<MusicFile> tracks)
         {
-            if (!Directory.Exists(targetPath)) return;
-            _currentBrowsingDirectoryPath = targetPath;
+            var trackList = tracks?.ToList() ?? new List<MusicFile>();
 
-            // Toggle the visibility of the back arrow depending on if we are currently sitting in the root folder link
-            BtnFolderBack.Visibility = (targetPath.Equals(_rootLibraryPath, StringComparison.OrdinalIgnoreCase)) 
-                ? Visibility.Collapsed : Visibility.Visible;
-
-            _currentLevelItemsCollection.Clear();
-
-            try
-            {
-                // 1. Map subdirectories down into visible clickable folder item nodes on-screen
-                foreach (string subDir in Directory.GetDirectories(targetPath))
-                {
-                    var dirInfo = new DirectoryInfo(subDir);
-                    if ((dirInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden) continue;
-
-                    _currentLevelItemsCollection.Add(new MusicFile
-                    {
-                        Title = Path.GetFileName(subDir),
-                        Artist = "Folder",
-                        SourceType = "FolderItem", // Visual trigger token flag for the XAML data template layers
-                        FilePath = subDir,
-                        SourceUri = subDir
-                    });
-                }
-
-                // 2. Load audio tracks matching valid extensions inside the active directory path
-                string[] validExtensions = { ".mp3", ".wav", ".flac", ".m4a" };
-                foreach (string file in Directory.GetFiles(targetPath))
-                {
-                    if (validExtensions.Contains(Path.GetExtension(file).ToLower()))
-                    {
-                        string cleanTitle = Path.GetFileNameWithoutExtension(file);
-                        _currentLevelItemsCollection.Add(new MusicFile
-                        {
-                            Title = Regex.Replace(cleanTitle, @"[\x00-\x1F\x7F-\x9F]", "").Trim(),
-                            Artist = "Local Audio File",
-                            SourceType = "AudioItem",
-                            FilePath = file,
-                            SourceUri = file,
-                            Duration = TimeSpan.Zero // Populated instantly on NAudio execution pipelines playback launch
-                        });
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Directory navigation mapping skipped: {ex.Message}");
-            }
-
-            RenderExplorerViewDeck();
-        }
-
-        private void RenderExplorerViewDeck()
-        {
-            if (_currentLevelItemsCollection.Count == 0)
+            if (trackList.Count == 0)
             {
                 EmptyLibraryStateContainer.Visibility = Visibility.Visible;
                 ListViewContainer.Visibility = Visibility.Collapsed;
@@ -123,17 +71,88 @@ namespace Musicefy.Controls
                 {
                     ListViewContainer.Visibility = Visibility.Collapsed;
                     GridViewContainer.Visibility = Visibility.Visible;
-                    FolderSongsItemsControl.ItemsSource = null;
-                    FolderSongsItemsControl.ItemsSource = _currentLevelItemsCollection;
                 }
                 else
                 {
                     GridViewContainer.Visibility = Visibility.Collapsed;
                     ListViewContainer.Visibility = Visibility.Visible;
-                    FolderSongsListView.ItemsSource = null;
-                    FolderSongsListView.ItemsSource = _currentLevelItemsCollection;
                 }
             }
+
+            FolderSongsListView.ItemsSource = trackList;
+            FolderSongsItemsControl.ItemsSource = trackList;
+        }
+
+        private void NavigateToTargetDirectoryFolder(string targetPath)
+        {
+            if (!Directory.Exists(targetPath)) return;
+            _currentBrowsingDirectoryPath = targetPath;
+
+            BtnFolderBack.Visibility = (targetPath.Equals(_rootLibraryPath, StringComparison.OrdinalIgnoreCase)) 
+                ? Visibility.Collapsed : Visibility.Visible;
+
+            _currentLevelItemsCollection.Clear();
+
+            try
+            {
+                // 1. Fetch subdirectories
+                foreach (string subDir in Directory.GetDirectories(targetPath))
+                {
+                    var dirInfo = new DirectoryInfo(subDir);
+                    if ((dirInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden) continue;
+
+                    _currentLevelItemsCollection.Add(new MusicFile
+                    {
+                        Title = Path.GetFileName(subDir),
+                        Artist = "Subfolder",
+                        SourceType = "FolderItem", // XAML trigger token flag
+                        FilePath = subDir,
+                        SourceUri = subDir
+                    });
+                }
+
+                // 2. Fetch audio files and resolve artwork paths
+                string[] validExtensions = { ".mp3", "*.wav", ".flac", ".m4a" };
+                string artworkCacheFolder = Path.Combine(Path.GetTempPath(), "MusicefyArtworkCache");
+
+                foreach (string file in Directory.GetFiles(targetPath))
+                {
+                    string ext = Path.GetExtension(file).ToLower();
+                    if (ext == ".mp3" || ext == ".wav" || ext == ".flac" || ext == ".m4a")
+                    {
+                        string cleanTitle = Path.GetFileNameWithoutExtension(file);
+                        string detectedArtworkPath = null;
+
+                        // Check if an artwork file has already been cached for this track hash code
+                        string possibleCacheFile = Path.Combine(artworkCacheFolder, "cover_" + Math.Abs(file.GetHashCode()).ToString() + ".jpg");
+                        if (File.Exists(possibleCacheFile))
+                        {
+                            detectedArtworkPath = possibleCacheFile;
+                        }
+
+                        _currentLevelItemsCollection.Add(new MusicFile
+                        {
+                            Title = Regex.Replace(cleanTitle, @"[\x00-\x1F\x7F-\x9F]", "").Trim(),
+                            Artist = "Local Audio",
+                            SourceType = "AudioItem",
+                            FilePath = file,
+                            SourceUri = file,
+                            CoverPath = detectedArtworkPath // Feeds explicit disk path strings directly into XAML data templates
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Directory exploration sweep failed: {ex.Message}");
+            }
+
+            RenderExplorerViewDeck();
+        }
+
+        private void RenderExplorerViewDeck()
+        {
+            UpdateUiCollectionBindingStates(_currentLevelItemsCollection);
         }
 
         private void BtnAddFolder_Click(object sender, RoutedEventArgs e)
@@ -146,15 +165,32 @@ namespace Musicefy.Controls
                 if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
                     _rootLibraryPath = dialog.SelectedPath;
+                    BtnClearFolder.Visibility = Visibility.Visible;
                     
-                    // Cache configurations right onto hard drive memory files permanently
                     LibraryControlSettings.Default.LastSelectedFolderPath = _rootLibraryPath;
                     LibraryControlSettings.Default.Save();
 
                     NavigateToTargetDirectoryFolder(_rootLibraryPath);
-                    TriggerEchoToastMessage("Linked root folder database successfully.");
+                    TriggerEchoToastMessage("Linked root folder successfully.");
                 }
             }
+        }
+
+        // NEW: Clear configuration database registries on demand instantly
+        private void BtnClearFolder_Click(object sender, RoutedEventArgs e)
+        {
+            _rootLibraryPath = null;
+            _currentBrowsingDirectoryPath = null;
+            _currentLevelItemsCollection.Clear();
+
+            LibraryControlSettings.Default.LastSelectedFolderPath = string.Empty;
+            LibraryControlSettings.Default.Save();
+
+            BtnClearFolder.Visibility = Visibility.Collapsed;
+            BtnFolderBack.Visibility = Visibility.Collapsed;
+
+            UpdateUiCollectionBindingStates(new List<MusicFile>());
+            TriggerEchoToastMessage("Cleared target folder registry memory successfully.");
         }
 
         private void BtnFolderBack_Click(object sender, RoutedEventArgs e)
@@ -173,7 +209,7 @@ namespace Musicefy.Controls
             if (!string.IsNullOrEmpty(_currentBrowsingDirectoryPath))
             {
                 NavigateToTargetDirectoryFolder(_currentBrowsingDirectoryPath);
-                TriggerEchoToastMessage("Refreshed folder items mapping stream.");
+                TriggerEchoToastMessage("Refreshed layout tree channels mapping.");
             }
         }
 
@@ -197,17 +233,13 @@ namespace Musicefy.Controls
         {
             if (item == null) return;
 
-            // IF SUBFOLDER CARD: Double clicking drills down one level deeper into the folder tree hierarchy
             if (item.SourceType == "FolderItem")
             {
                 NavigateToTargetDirectoryFolder(item.FilePath);
             }
-            // IF AUDIO TRACK: Dispatch selection block into the NAudio stream playback output wrapper
             else if (item.SourceType == "AudioItem" && _playbackService != null)
             {
                 _playbackService.Queue.Clear();
-                
-                // Enqueue audio choices present at the current folder level sequentially
                 foreach (var track in _currentLevelItemsCollection.Where(x => x.SourceType == "AudioItem"))
                 {
                     _playbackService.EnqueueTrack(track);
