@@ -18,7 +18,9 @@ namespace Musicefy.Controls
     public partial class FolderLibraryControl : UserControl
     {
         private PlaybackService _playbackService;
-        private bool _isGridViewActive = false;
+        
+        // FIXED: Grid View initialized to true out-of-the-box by default layout rules
+        private bool _isGridViewActive = true;
         private string _lastActiveDirectoryPath = null;
 
         public FolderLibraryControl()
@@ -63,13 +65,10 @@ namespace Musicefy.Controls
 
         private async void BtnAddFolder_Click(object sender, RoutedEventArgs e)
         {
-            // FIXED: Using Windows Forms FolderBrowserDialog to provide a true directory picker interface
             using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
             {
-                dialog.Description = "Select Music Library Target Folder Collection";
+                dialog.Description = "Select Music Library Target Folder (Subfolders will be automatically included)";
                 dialog.ShowNewFolderButton = false;
-                
-                // Seed initial tracking layout back to standard system music pathways
                 dialog.SelectedPath = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
 
                 if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
@@ -99,7 +98,7 @@ namespace Musicefy.Controls
         private async Task ExecuteBackgroundFolderScanAsync(string directoryPath)
         {
             string targetFolderName = Path.GetFileName(directoryPath);
-            TriggerEchoToastMessage($"Scanning '{targetFolderName}' for songs...");
+            TriggerEchoToastMessage($"Scanning '{targetFolderName}' and subfolders...");
 
             List<MusicFile> scannedResults = await Task.Run(() =>
             {
@@ -107,7 +106,10 @@ namespace Musicefy.Controls
                 try
                 {
                     string[] extensions = { "*.mp3", "*.wav", "*.flac", "*.m4a" };
-                    var discoveredFiles = extensions.SelectMany(ext => Directory.GetFiles(directoryPath, ext)).ToList();
+                    
+                    // FIXED: Switched file crawling from single folder level to recursive deep tree scans
+                    var discoveredFiles = extensions.SelectMany(ext => 
+                        Directory.GetFiles(directoryPath, ext, SearchOption.AllDirectories)).ToList();
 
                     string artworkCacheFolder = Path.Combine(Path.GetTempPath(), "MusicefyArtworkCache");
                     if (!Directory.Exists(artworkCacheFolder)) Directory.CreateDirectory(artworkCacheFolder);
@@ -173,7 +175,7 @@ namespace Musicefy.Controls
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Background indexing crashed context path: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"Deep background scanning failed: {ex.Message}");
                 }
 
                 return scannedTracks;
