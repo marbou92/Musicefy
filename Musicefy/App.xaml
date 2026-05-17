@@ -9,6 +9,8 @@
                 <ResourceDictionary Source="Themes/Modes/System.xaml"/>
                 <ResourceDictionary Source="Themes/Palettes/Default.xaml"/>
                 <ResourceDictionary Source="Themes/Base.xaml"/>
+                
+                <ResourceDictionary Source="Themes/ScrollbarTheme.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
@@ -18,8 +20,8 @@
             <conv:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
             <conv:PathToImageConverter x:Key="PathToImageConverter"/>
             <conv:LyricsToLinesConverter x:Key="LyricsToLinesConverter"/>
-            
             <conv:IndexToBoolConverter x:Key="IndexToBoolConverter"/>
+            
         </ResourceDictionary>
     </Application.Resources>
 </Application>
