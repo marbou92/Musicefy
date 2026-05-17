@@ -27,10 +27,10 @@ namespace Musicefy.Controls
         {
             if (FolderSongsListView.SelectedItem is MusicFile clickedTrack && _playbackService != null)
             {
-                // Clear the running dynamic queue layer
+                // Clear active running dynamic pipeline player queue layers 
                 _playbackService.Queue.Clear();
 
-                // Enqueue all tracks currently visible in this view context for sequential playback tracking
+                // Enqueue items seamlessly to support fluent skip / next transport calls later
                 if (FolderSongsListView.ItemsSource is IEnumerable<MusicFile> activeList)
                 {
                     foreach (var track in activeList)
@@ -39,7 +39,7 @@ namespace Musicefy.Controls
                     }
                 }
 
-                // Execute immediate audio stream pipeline assignment
+                // Dispatches audio file selection direct into NAudio stream outputs
                 _playbackService.PlayTrack(clickedTrack);
             }
         }
