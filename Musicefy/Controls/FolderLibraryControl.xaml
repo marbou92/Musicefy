@@ -94,7 +94,7 @@
                                 <Setter Property="HorizontalContentAlignment" Value="Left"/>
                                 <Setter Property="Padding" Value="16,8"/>
                                 <Setter Property="FontSize" Value="12"/>
-                                <Setter Property="FontWeight="Bold"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
                             </Style>
                         </GridView.ColumnHeaderContainerStyle>
                         
