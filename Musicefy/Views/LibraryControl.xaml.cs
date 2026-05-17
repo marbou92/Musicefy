@@ -21,10 +21,8 @@ namespace Musicefy.Views
         private readonly PlaybackService _playbackService;
         private bool _isInsideFolderBrowsingMode = false;
 
-        // Optimized Global Disk Cache Memory References Dictionary
         private readonly Dictionary<string, List<MusicFile>> _directoryTrackCache = new Dictionary<string, List<MusicFile>>();
 
-        // Shared Frozen Path Vectors
         private const string IconHeart = "M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z";
         private const string IconDownload = "M5,20H19V18H5V20M19,9H15V3H9V9H5L12,16L19,9Z";
         private const string IconHistory = "M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z";
@@ -67,9 +65,18 @@ namespace Musicefy.Views
         {
             if (sender is Button btn && btn.DataContext is LibraryCardItem clickedItem)
             {
+                // FIXED: Clicking the master Folder card now flips views cleanly instead of triggering an auto disk sweep
                 if (clickedItem.TargetType == ItemTargetType.FolderRoot)
                 {
-                    NavigateIntoDirectory(Environment.GetFolderPath(Environment.SpecialFolder.MyMusic));
+                    _isInsideFolderBrowsingMode = true;
+                    BtnBack.Visibility = Visibility.Visible;
+                    TxtHeaderTitle.Text = "Local Folder Storage";
+
+                    LibraryCardsScrollViewer.Visibility = Visibility.Collapsed;
+                    TrackListDisplayPanel.Visibility = Visibility.Visible;
+                    
+                    // Initialize the view states cleanly without feeding mock parameters
+                    TrackListDisplayPanel.InitializeDataStream(new List<MusicFile>(), _playbackService);
                 }
                 else if (clickedItem.TargetType == ItemTargetType.DirectoryItem)
                 {
@@ -96,7 +103,6 @@ namespace Musicefy.Views
 
             var internalContents = new List<LibraryCardItem>();
 
-            // 1. Fetch subfolders
             try
             {
                 foreach (string dir in Directory.GetDirectories(targetPath))
@@ -113,7 +119,6 @@ namespace Musicefy.Views
             }
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Directory read skipped: {ex.Message}"); }
 
-            // 2. RAM CACHE ENGINE: Check if we have indexed this track file list array already
             if (_directoryTrackCache.TryGetValue(targetPath, out List<MusicFile> cachedTracks))
             {
                 SwitchToDisplayState(cachedTracks, internalContents);
@@ -181,7 +186,6 @@ namespace Musicefy.Views
                     });
                 }
 
-                // Append the newly resolved dataset into RAM index cache definitions loops
                 _directoryTrackCache[targetPath] = localTracks;
             }
             catch (Exception ex) { MessageBox.Show($"Access Violation Error: {ex.Message}"); }
