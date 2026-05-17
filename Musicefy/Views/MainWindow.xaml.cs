@@ -1,4 +1,6 @@
 using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -7,34 +9,51 @@ using System.Windows.Media.Animation;
 using Musicefy.Views;
 using Musicefy.Services;
 using Musicefy.ViewModels;
+using Musicefy.Core.Models;
 
 namespace Musicefy
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
         private readonly PlaybackService _playback;
         private readonly MainViewModel _mainViewModel;
         private NowPlayingControl _nowPlayingView;
         private bool _isInitializing = true;
 
+        // FIXED: Expose the playback track object directly so XAML can query properties on change warnings
+        public MusicFile NowPlaying => _playback?.CurrentTrack;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
         public MainWindow()
         {
-            // Initialize Core Data Layers First
             _mainViewModel = new MainViewModel();
             _playback = new PlaybackService();
             
-            this.DataContext = _mainViewModel;
+            // Set the master window DataContext to self so standard properties filter perfectly
+            this.DataContext = this;
             
-            // Render Initial Core Visual Component Layout Trees
             InitializeComponent();
 
             _isInitializing = false;
-
-            // Seed initial fallback focus index
             SidebarList.SelectedIndex = 0;
 
-            // Hook Core Player Service events to keep the tiny mini-player bar buttons updated automatically
+            // Wire pipeline change tracking triggers up directly
+            _playback.TrackChanged += OnTrackChanged;
             _playback.PlaybackStateChanged += OnPlaybackStateChanged;
+        }
+
+        private void OnTrackChanged(MusicFile track)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                // Forces XAML to re-evaluate the data link pathways instantly
+                OnPropertyChanged(nameof(NowPlaying));
+            });
         }
 
         private void Sidebar_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -44,7 +63,6 @@ namespace Musicefy
 
             if (SidebarList.SelectedItem == null) return;
 
-            // Modal Settings Hook Intercept Router
             if (SidebarList.SelectedItem == SettingsItem)
             {
                 new SettingsWindow { Owner = this }.ShowDialog();
@@ -57,7 +75,6 @@ namespace Musicefy
             {
                 case 0: nextView = new HomeControl(_playback, _mainViewModel); break;
                 case 1: nextView = new SearchControl(_playback); break;
-                // FIXED PARAMS: Instantiated with the dynamic constructor framework pass
                 case 2: nextView = new LibraryControl(_playback); break;
             }
 
@@ -89,11 +106,9 @@ namespace Musicefy
                 NowPlayingPresenter.Content = _nowPlayingView;
             }
 
-            // Reveal hidden full expanded overlay frame wrapper
             FullNowPlayingContainer.Visibility = Visibility.Visible;
             MiniPlayerBar.Visibility = Visibility.Collapsed;
             
-            // Execute premium circular slide ease transitions up the view axis
             FullPanelTransform.Y = this.ActualHeight;
             var slideUpAnim = new DoubleAnimation(this.ActualHeight, 0, TimeSpan.FromMilliseconds(450))
             {
@@ -128,7 +143,7 @@ namespace Musicefy
 
         private void MiniPlay_Click(object sender, RoutedEventArgs e)
         {
-            e.Handled = true; // Stop event escalation from firing the parent slide container maximize logic
+            e.Handled = true; // Stop event escalation bubbles
             if (_playback.IsPlaying) _playback.Pause(); else _playback.Resume();
         }
 
