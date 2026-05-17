@@ -79,9 +79,6 @@ namespace Musicefy.Views
             }
         }
 
-        /// <summary>
-        /// Cleans unprintable characters but safely preserves international text, letters, and accents.
-        /// </summary>
         private string FilterWindows7UnicodeBugs(string input)
         {
             if (string.IsNullOrEmpty(input)) return "Unknown Field";
@@ -136,7 +133,6 @@ namespace Musicefy.Views
                             trackDuration = reader.TotalTime;
                         }
 
-                        // Parse explicit ID3 metadata bytes directly
                         using (var fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read))
                         {
                             if (file.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase) && fs.Length >= 128)
@@ -157,7 +153,6 @@ namespace Musicefy.Views
                             }
                         }
 
-                        // Active dynamic TagLib audio asset scanner engine layer hook
                         using (var tagContainer = TagLib.File.Create(file))
                         {
                             if (tagContainer.Tag != null && tagContainer.Tag.Pictures != null && tagContainer.Tag.Pictures.Length > 0)
