@@ -61,7 +61,27 @@
 
         <Grid Grid.Row="0" Margin="0,0,0,20">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
-                <Button x:Name="BtnFolderBack" Content="←" FontSize="16" FontWeight="Bold" Margin="0,0,12,0" Width="38" Height="38" Style="{StaticResource LayoutPillToggleStyle}" Visibility="Collapsed" Click="BtnFolderBack_Click"/>
+                <Button x:Name="BtnFolderBack" Margin="0,0,14,0" Width="38" Height="38" Visibility="Collapsed" Click="BtnFolderBack_Click">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Grid>
+                                <Border x:Name="BtnBg" Background="{DynamicResource SecondaryBackgroundBrush}" CornerRadius="19" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" SnapsToDevicePixels="True"/>
+                                <Path x:Name="ArrowPath" Data="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" Fill="{DynamicResource TextBrush}" Width="16" Height="16" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.85"/>
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="BtnBg" Value="{DynamicResource BorderBrush}" Property="Background"/>
+                                    <Setter TargetName="BtnBg" Value="{DynamicResource AccentBrush}" Property="BorderBrush"/>
+                                    <Setter TargetName="ArrowPath" Value="{DynamicResource AccentBrush}" Property="Fill"/>
+                                    <Setter TargetName="ArrowPath" Property="Opacity" Value="1"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="BtnBg" Property="Opacity" Value="0.7"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
                 
                 <Button x:Name="BtnAddFolder" Style="{StaticResource EchoActionButtonStyle}" Margin="0,0,10,0" Click="BtnAddFolder_Click">
                     <StackPanel Orientation="Horizontal">
@@ -106,7 +126,10 @@
                 </StackPanel>
             </Grid>
 
-            <Grid x:Name="ListViewContainer" Visibility="Collapsed">
+            <Grid x:Name="ListViewContainer" Visibility="Collapsed" RenderTransformOrigin="0.5, 0.5">
+                <Grid.RenderTransform>
+                    <TranslateTransform x:Name="ListTranslate" Y="0"/>
+                </Grid.RenderTransform>
                 <ListView x:Name="FolderSongsListView" 
                           Background="Transparent" BorderThickness="0" 
                           Foreground="{DynamicResource TextBrush}"
@@ -189,7 +212,10 @@
                 </ListView>
             </Grid>
 
-            <Grid x:Name="GridViewContainer" Visibility="Visible">
+            <Grid x:Name="GridViewContainer" Visibility="Visible" RenderTransformOrigin="0.5, 0.5">
+                <Grid.RenderTransform>
+                    <TranslateTransform x:Name="GridTranslate" Y="0"/>
+                </Grid.RenderTransform>
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <ItemsControl x:Name="FolderSongsItemsControl">
                         <ItemsControl.ItemsPanel>
@@ -217,7 +243,6 @@
                                                             <Border Background="{DynamicResource BorderBrush}" Opacity="0.05"/>
                                                             <Path Data="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9Z" 
                                                                   Fill="{DynamicResource BorderBrush}" Width="36" Height="36" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                            
                                                             <Image Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}}" Stretch="UniformToFill"/>
                                                         </Grid>
                                                     </Grid>
