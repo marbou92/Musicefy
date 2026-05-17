@@ -20,7 +20,6 @@ namespace Musicefy
         private NowPlayingControl _nowPlayingView;
         private bool _isInitializing = true;
 
-        // FIXED: Expose the playback track object directly so XAML can query properties on change warnings
         public MusicFile NowPlaying => _playback?.CurrentTrack;
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -34,25 +33,24 @@ namespace Musicefy
             _mainViewModel = new MainViewModel();
             _playback = new PlaybackService();
             
-            // Set the master window DataContext to self so standard properties filter perfectly
             this.DataContext = this;
             
             InitializeComponent();
 
+            // FIXED: Wires the visual structural control hook engine safely right after base components load
+            AttachCustomTitleBarWindowActions();
+
             _isInitializing = false;
             SidebarList.SelectedIndex = 0;
 
-            // Wire pipeline change tracking triggers up directly
             _playback.TrackChanged += OnTrackChanged;
             _playback.PlaybackStateChanged += OnPlaybackStateChanged;
         }
 
-        // Call this inside your Window class constructor (e.g., public SettingsWindow() { ... })
         private void AttachCustomTitleBarWindowActions()
         {
             this.Loaded += (s, e) =>
             {
-                // Resolve buttons from the applied ControlTemplate shell context
                 var btnMinimize = this.Template.FindName("BtnShellMinimize", this) as Button;
                 var btnMaximize = this.Template.FindName("BtnShellMaximize", this) as Button;
                 var btnClose = this.Template.FindName("BtnShellClose", this) as Button;
@@ -70,7 +68,6 @@ namespace Musicefy
         {
             Dispatcher.Invoke(() =>
             {
-                // Forces XAML to re-evaluate the data link pathways instantly
                 OnPropertyChanged(nameof(NowPlaying));
             });
         }
@@ -99,7 +96,7 @@ namespace Musicefy
 
             if (nextView != null)
             {
-                NavigateWithFade(nextView);
+                NavigateWithFade(newContent: nextView);
             }
         }
 
@@ -162,7 +159,7 @@ namespace Musicefy
 
         private void MiniPlay_Click(object sender, RoutedEventArgs e)
         {
-            e.Handled = true; // Stop event escalation bubbles
+            e.Handled = true; 
             if (_playback.IsPlaying) _playback.Pause(); else _playback.Resume();
         }
 
