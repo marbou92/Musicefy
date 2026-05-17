@@ -156,7 +156,7 @@ namespace Musicefy.Views
                                 if (tagContainer.Tag.Pictures != null && tagContainer.Tag.Pictures.Length > 0)
                                 {
                                     string safeHashName = "cover_" + Math.Abs(file.GetHashCode()).ToString() + ".jpg";
-                                    string writeImgPath = Path.Combine(tempCachePath, safeImgName);
+                                    string writeImgPath = Path.Combine(tempCachePath, safeHashName);
                                     if (!File.Exists(writeImgPath))
                                     {
                                         File.WriteAllBytes(writeImgPath, tagContainer.Tag.Pictures[0].Data.Data);
