@@ -11,38 +11,59 @@ namespace Musicefy
         public SplashScreen()
         {
             InitializeComponent();
-            Loaded += StartSpotifyStyleLoading;
+            Loaded += StartCinematicLoadingSequence;
         }
 
-        private async void StartSpotifyStyleLoading(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Premium App Initialization Pipeline
+        /// Orchestrates layered acceleration curves for an immersive entry and exit sequence.
+        /// </summary>
+        private async void StartCinematicLoadingSequence(object sender, RoutedEventArgs e)
         {
-            // 1. Smooth Fade In
-            var fadeIn = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromMilliseconds(800)));
-            BeginAnimation(Window.OpacityProperty, fadeIn);
-
-            // 2. Rotate the minimal loader
-            var rotateAnim = new DoubleAnimation
+            // 1. Cinematic Entry Transformation Stage (Fade In + Spatial Zoom Tracking Combination)
+            var fadeIn = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromMilliseconds(750)))
             {
-                From = 0,
-                To = 360,
-                Duration = new Duration(TimeSpan.FromSeconds(1)),
-                RepeatBehavior = RepeatBehavior.Forever
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
             };
-            LoaderRotate.BeginAnimation(RotateTransform.AngleProperty, rotateAnim);
+            var scaleIn = new DoubleAnimation(0.95, 1.0, new Duration(TimeSpan.FromMilliseconds(1000)))
+            {
+                EasingFunction = new QuinticEase { EasingMode = EasingMode.EaseOut }
+            };
 
-            // 3. Animate Progress Bar (0 to 100)
-            var progressAnim = new DoubleAnimation(0, 100, new Duration(TimeSpan.FromSeconds(3.5)))
+            BeginAnimation(Window.OpacityProperty, fadeIn);
+            RootScale.BeginAnimation(ScaleTransform.ScaleXProperty, scaleIn);
+            RootScale.BeginAnimation(ScaleTransform.ScaleYProperty, scaleIn);
+
+            // 2. Continuous Organic Logo Accent Pulse Behavior Definition Loop
+            var pulseAnim = new DoubleAnimation(1.0, 1.04, new Duration(TimeSpan.FromMilliseconds(1400)))
+            {
+                AutoReverse = true,
+                RepeatBehavior = RepeatBehavior.Forever,
+                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut }
+            };
+            LogoScale.BeginAnimation(ScaleTransform.ScaleXProperty, pulseAnim);
+            LogoScale.BeginAnimation(ScaleTransform.ScaleYProperty, pulseAnim);
+
+            // 3. Fluid Progress Bar Simulation Load Pipeline Execution Curve
+            var progressAnim = new DoubleAnimation(0, 100, new Duration(TimeSpan.FromSeconds(2.8)))
             {
                 EasingFunction = new QuarticEase { EasingMode = EasingMode.EaseInOut }
             };
             BottomProgress.BeginAnimation(System.Windows.Controls.ProgressBar.ValueProperty, progressAnim);
 
-            // Wait for "Loading" to finish
-            await Task.Delay(4000);
+            // Maintain spatial layout pause to simulate underlying system resource indexing
+            await Task.Delay(3200);
 
-            // 4. Spotify-style Exit (Scale up and Fade out)
-            var fadeOut = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromMilliseconds(500)));
-            
+            // 4. Elegant Window Exit Phase (Scale Outwards while expanding transparency vectors)
+            var fadeOut = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromMilliseconds(450)))
+            {
+                EasingFunction = new PowerEase { Power = 3, EasingMode = EasingMode.EaseIn }
+            };
+            var scaleOut = new DoubleAnimation(1.0, 1.03, new Duration(TimeSpan.FromMilliseconds(450)))
+            {
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn }
+            };
+
             fadeOut.Completed += (s, ev) =>
             {
                 var main = new MainWindow();
@@ -51,6 +72,8 @@ namespace Musicefy
             };
 
             BeginAnimation(Window.OpacityProperty, fadeOut);
+            RootScale.BeginAnimation(ScaleTransform.ScaleXProperty, scaleOut);
+            RootScale.BeginAnimation(ScaleTransform.ScaleYProperty, scaleOut);
         }
     }
 }
