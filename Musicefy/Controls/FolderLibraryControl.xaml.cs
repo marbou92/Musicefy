@@ -89,7 +89,6 @@ namespace Musicefy.Controls
             FolderSongsListView.ItemsSource = trackList;
             FolderSongsItemsControl.ItemsSource = trackList;
             
-            // Execute Echo view entry animations on data binding refreshes
             TriggerFluidLayoutEntranceAnimation();
         }
 
@@ -189,25 +188,24 @@ namespace Musicefy.Controls
         }
 
         /// <summary>
-        /// ANIMATIONS ENGINE: Fires an exponential slide-fade transition when view states swap or reload.
+        /// OPTIMIZED SMOOTH ANIMATION: Implements low-mass Cubic Easing curves to remove interface stiffness completely.
         /// </summary>
         private void TriggerFluidLayoutEntranceAnimation()
         {
             var targetElement = _isGridViewActive ? (UIElement)GridViewContainer : (UIElement)ListViewContainer;
             var targetTransform = _isGridViewActive ? GridTranslate : ListTranslate;
 
-            // Reset baseline values seamlessly
             targetElement.Opacity = 0;
-            targetTransform.Y = 24;
+            targetTransform.Y = 30; // Spacious lower displacement delta for fluid sweeps
 
-            var fadeAnim = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromMilliseconds(400)))
+            var fadeAnim = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromMilliseconds(380)))
             {
-                EasingFunction = new CircleEase { EasingMode = EasingMode.EaseOut }
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
             };
 
-            var slideAnim = new DoubleAnimation(24, 0, new Duration(TimeSpan.FromMilliseconds(450)))
+            var slideAnim = new DoubleAnimation(30, 0, new Duration(TimeSpan.FromMilliseconds(420)))
             {
-                EasingFunction = new CircleEase { EasingMode = EasingMode.EaseOut }
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
             };
 
             targetElement.BeginAnimation(UIElement.OpacityProperty, fadeAnim);
