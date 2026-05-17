@@ -2,6 +2,7 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using Musicefy.Services;
 using Musicefy.Core.Models;
 
@@ -15,7 +16,9 @@ namespace Musicefy.Views
         private double _startY;
         private bool _isDragging = false;
         private bool _userIsScrubbingSlider = false;
-        private bool _showingLyrics = false;
+
+        private enum RightViewMode { None, Lyrics, Queue }
+        private RightViewMode _currentMode = RightViewMode.None;
 
         public NowPlayingControl(PlaybackService playback)
         {
@@ -36,12 +39,71 @@ namespace Musicefy.Views
             if (_playback.CurrentTrack != null) OnTrackChanged(_playback.CurrentTrack);
         }
 
-        #region Gesture Interaction Architecture
+        #region Spatial Fluid State Machine (Echo Transitions)
+        private void UpdateLayoutState(RightViewMode targetMode)
+        {
+            if (_currentMode == targetMode)
+            {
+                // Toggle action: Clicking active item minimizes view back to perfect center baseline
+                _currentMode = RightViewMode.None;
+            }
+            else
+            {
+                _currentMode = targetMode;
+            }
+
+            // Reset UI state vectors
+            LyricsPanelContainer.Visibility = Visibility.Collapsed;
+            QueuePanelContainer.Visibility = Visibility.Collapsed;
+            BtnToggleLyrics.ClearValue(Button.ForegroundProperty);
+            BtnToggleQueue.ClearValue(Button.ForegroundProperty);
+            QueueIcon.Fill = (Brush)FindResource("MutedTextBrush");
+            LyricsIcon.Fill = (Brush)FindResource("MutedTextBrush");
+
+            if (_currentMode == RightViewMode.None)
+            {
+                // Collapse Right Panel Column, snap player back into centered alignment context
+                LeftPlayerColumn.Width = new GridLength(1, GridUnitType.Star);
+                RightPanelColumn.Width = new GridLength(0);
+                RightPanelRoot.Visibility = Visibility.Collapsed;
+                PlayerDeckRoot.HorizontalAlignment = HorizontalAlignment.Center;
+            }
+            else
+            {
+                // Dynamic Shift Left Step: Allocate a clean 4.5* to 5.5* asymmetric viewport spread
+                LeftPlayerColumn.Width = new GridLength(4.5, GridUnitType.Star);
+                RightPanelColumn.Width = new GridLength(5.5, GridUnitType.Star);
+                RightPanelRoot.Visibility = Visibility.Visible;
+                PlayerDeckRoot.HorizontalAlignment = HorizontalAlignment.Left;
+
+                Brush activeAccent = (Brush)FindResource("AccentBrush");
+
+                if (_currentMode == RightViewMode.Lyrics)
+                {
+                    LyricsPanelContainer.Visibility = Visibility.Visible;
+                    LyricsIcon.Fill = activeAccent;
+                }
+                else if (_currentMode == RightViewMode.Queue)
+                {
+                    QueuePanelContainer.Visibility = Visibility.Visible;
+                    QueueIcon.Fill = activeAccent;
+                }
+            }
+        }
+
+        private void BtnToggleLyrics_Click(object sender, RoutedEventArgs e) => UpdateLayoutState(RightViewMode.Lyrics);
+        private void BtnToggleQueue_Click(object sender, RoutedEventArgs e) => UpdateLayoutState(RightViewMode.Queue);
+        #endregion
+
+        #region Gesture Recognition Links
         private void OnMouseDown(object sender, MouseButtonEventArgs e)
         {
-            _startY = e.GetPosition(this).Y;
-            _isDragging = true;
-            this.CaptureMouse();
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                _startY = e.GetPosition(this).Y;
+                _isDragging = true;
+                this.CaptureMouse();
+            }
         }
 
         private void OnMouseMove(object sender, MouseEventArgs e)
@@ -78,15 +140,11 @@ namespace Musicefy.Views
             }
         }
 
-        private void OnTouchUp(object sender, TouchEventArgs e) 
-        { 
-            // Handles touch input release states safely
-        }
-        
+        private void OnTouchUp(object sender, TouchEventArgs e) { }
         private void BackButton_Click(object sender, RoutedEventArgs e) => RequestCollapse?.Invoke();
         #endregion
 
-        #region Playback Synchronizers
+        #region Core Core Engine Event Syncs
         private void OnTrackChanged(MusicFile track)
         {
             if (track == null) return;
@@ -117,14 +175,10 @@ namespace Musicefy.Views
 
         private void SyncPlayPauseControls(bool isPlaying)
         {
-            // Uses basic strings to trigger cross-platform path templates in XAML
             BtnMainPlay.Content = isPlaying ? "⏸" : "▶";
         }
 
-        private string FormatTimeInterval(TimeSpan ts)
-        {
-            return $"{(int)ts.TotalMinutes}:{ts.Seconds:D2}";
-        }
+        private string FormatTimeInterval(TimeSpan ts) => $"{(int)ts.TotalMinutes}:{ts.Seconds:D2}";
 
         private void Play_Click(object sender, RoutedEventArgs e)
         {
@@ -134,41 +188,12 @@ namespace Musicefy.Views
         private void Next_Click(object sender, RoutedEventArgs e) => _playback.Next();
         private void Previous_Click(object sender, RoutedEventArgs e) => _playback.Previous();
 
-        private void Slider_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
-        {
-            _userIsScrubbingSlider = true;
-        }
+        private void Slider_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e) => _userIsScrubbingSlider = true;
 
         private void Slider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
         {
             _userIsScrubbingSlider = false;
             _playback.Seek(TimeSpan.FromSeconds(ProgressSlider.Value));
-        }
-        #endregion
-
-        #region Interactive View Swappers
-        private void BtnToggleLyrics_Click(object sender, RoutedEventArgs e)
-        {
-            _showingLyrics = !_showingLyrics;
-
-            if (_showingLyrics)
-            {
-                // Swap view visibility layers to reveal live lyrics tracks
-                QueuePanelContainer.Visibility = Visibility.Collapsed;
-                LyricsPanelContainer.Visibility = Visibility.Visible;
-                
-                // Active highlight the vector button using live runtime theme palette allocations
-                BtnToggleLyrics.Foreground = (System.Windows.Media.Brush)Application.Current.FindResource("AccentBrush");
-            }
-            else
-            {
-                // Collapse back down to render standard upcoming track layouts
-                QueuePanelContainer.Visibility = Visibility.Visible;
-                LyricsPanelContainer.Visibility = Visibility.Collapsed;
-                
-                // Reset color assignment values to let styles fallback to standard muted design colors
-                BtnToggleLyrics.ClearValue(Button.ForegroundProperty);
-            }
         }
         #endregion
     }
