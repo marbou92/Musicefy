@@ -118,7 +118,7 @@
                     <ColumnDefinition x:Name="RightPanelColumn" Width="0"/>
                 </Grid.ColumnDefinitions>
 
-                <Grid Grid.Column="0" x:Name="PlayerDeckRoot" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="440" HorizontalAlignment="Stretch">
+                <Grid Grid.Column="0" x:Name="PlayerDeckRoot" VerticalAlignment="Center" MaxWidth="440" HorizontalAlignment="Stretch">
                     <StackPanel>
                         
                         <Grid MaxHeight="440" Margin="0,0,0,0">
