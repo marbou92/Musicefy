@@ -14,10 +14,11 @@ namespace Musicefy.Services
     {
         private IWavePlayer _waveOut;
         private AudioFileReader _audioFile;
-        private DispatcherTimer _timer;
+        private readonly DispatcherTimer _timer;
 
         private readonly PlaylistManager _playlistManager;
         private readonly ObservableCollection<MusicFile> _queue;
+        private static readonly Random _random = new Random(); // Fixed: Reusable instance to prevent deterministic repetition
 
         public event Action<MusicFile> TrackChanged;
         public event Action<TimeSpan, TimeSpan> ProgressChanged;
@@ -94,8 +95,8 @@ namespace Musicefy.Services
                 _waveOut = new WaveOutEvent();
                 _audioFile = new AudioFileReader(uri);
                 _waveOut.Init(_audioFile);
-                _waveOut.Play();
                 _waveOut.PlaybackStopped += WaveOut_PlaybackStopped;
+                _waveOut.Play();
 
                 CurrentAudioFile = track; 
                 _timer.Start();
@@ -126,19 +127,23 @@ namespace Musicefy.Services
 
         private void WaveOut_PlaybackStopped(object sender, StoppedEventArgs e)
         {
-            if (e.Exception == null && _playlistManager.RepeatEnabled)
+            // FIXED: Marshaled to the UI thread. NAudio background threads cannot directly update UI states or invoke popups.
+            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
-                if (_currentQueueIndex >= 0 && _currentQueueIndex < _queue.Count)
-                    PlayTrack(_queue[_currentQueueIndex]);
-            }
-            else if (e.Exception == null)
-            {
-                Next();
-            }
-            else
-            {
-                PlaybackStateChanged?.Invoke(false);
-            }
+                if (e.Exception == null && _playlistManager.RepeatEnabled)
+                {
+                    if (_currentQueueIndex >= 0 && _currentQueueIndex < _queue.Count)
+                        PlayTrack(_queue[_currentQueueIndex]);
+                }
+                else if (e.Exception == null)
+                {
+                    Next();
+                }
+                else
+                {
+                    PlaybackStateChanged?.Invoke(false);
+                }
+            }));
         }
 
         private void Timer_Tick(object sender, EventArgs e)
@@ -179,7 +184,7 @@ namespace Musicefy.Services
         {
             if (_queue.Count == 0) return;
             _currentQueueIndex = _playlistManager.ShuffleEnabled
-                ? new Random().Next(_queue.Count)
+                ? _random.Next(_queue.Count)
                 : (_currentQueueIndex + 1) % _queue.Count;
             PlayTrack(_queue[_currentQueueIndex]);
         }
@@ -187,7 +192,7 @@ namespace Musicefy.Services
         public void Previous()
         {
             if (_queue.Count == 0) return;
-            _currentQueueIndex = Math.Max(0, _currentQueueIndex - 1);
+            _currentQueueIndex = _currentQueueIndex <= 0 ? _queue.Count - 1 : _currentQueueIndex - 1;
             PlayTrack(_queue[_currentQueueIndex]);
         }
 
