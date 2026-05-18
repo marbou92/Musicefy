@@ -114,22 +114,36 @@ namespace Musicefy
             MainContent.BeginAnimation(OpacityProperty, fadeOut);
         }
 
-        #region Mini-Player Pipeline Slide Controllers
+    #region Mini-Player Pipeline Slide Controllers
         private bool _isDraggingMiniPlayer = false;
         private Point _dragStartPoint;
         private double _dragStartTranslateX;
+        private double _dragStartTranslateY;
         private bool _hasDraggedSignificantly = false;
         private bool _isFullPanelOpen = false;
 
         private void UpdateMiniPlayerVisibility()
         {
-            if (NowPlaying == null || _isFullPanelOpen)
+            if (NowPlaying == null)
             {
                 MiniPlayerBar.Visibility = Visibility.Collapsed;
             }
-            else
+            else if (!_isFullPanelOpen)
             {
                 MiniPlayerBar.Visibility = Visibility.Visible;
+                
+                // Clear any ongoing animation clocks to restore base interactive states
+                MiniPlayerBar.BeginAnimation(UIElement.OpacityProperty, null);
+                MiniPlayerTransform.BeginAnimation(TranslateTransform.YProperty, null);
+                MiniPlayerTransform.BeginAnimation(TranslateTransform.XProperty, null);
+                
+                MiniPlayerBar.Opacity = 1;
+                MiniPlayerTransform.X = 0;
+                MiniPlayerTransform.Y = 0;
+            }
+            else
+            {
+                MiniPlayerBar.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -143,32 +157,48 @@ namespace Musicefy
             _isDraggingMiniPlayer = true;
             _dragStartPoint = e.GetPosition(this);
             _dragStartTranslateX = MiniPlayerTransform.X;
+            _dragStartTranslateY = MiniPlayerTransform.Y;
             _hasDraggedSignificantly = false;
             
             MiniPlayerBar.CaptureMouse();
         }
 
-        // FIXED SIGNATURE: Changed MouseButtonEventArgs to MouseEventArgs to match delegate expectations
         private void MiniPlayerBar_MouseMove(object sender, MouseEventArgs e)
         {
             if (!_isDraggingMiniPlayer) return;
 
             Point currentPoint = e.GetPosition(this);
             double deltaX = currentPoint.X - _dragStartPoint.X;
+            double deltaY = currentPoint.Y - _dragStartPoint.Y;
 
-            if (!_hasDraggedSignificantly && Math.Abs(deltaX) > 5)
+            if (!_hasDraggedSignificantly && (Math.Abs(deltaX) > 5 || Math.Abs(deltaY) > 5))
             {
                 _hasDraggedSignificantly = true;
             }
 
+            // 1. Horizontal Tracking Constraints
             double targetX = _dragStartTranslateX + deltaX;
             double maxOffset = (this.ActualWidth - MiniPlayerBar.Width) / 2.0 - 16; 
             if (maxOffset < 0) maxOffset = 0;
 
             if (targetX < -maxOffset) targetX = -maxOffset;
             if (targetX > maxOffset) targetX = maxOffset;
-
             MiniPlayerTransform.X = targetX;
+
+            // 2. Vertical Drag-to-Dismiss Tracking (Only allow downward drag)
+            if (deltaY > 0)
+            {
+                MiniPlayerTransform.Y = _dragStartTranslateY + deltaY;
+                
+                // Dynamically fade out the player the further down it goes
+                double dragOpacity = 1.0 - (deltaY / 120.0); 
+                MiniPlayerBar.Opacity = Math.Max(0.2, dragOpacity);
+            }
+            else
+            {
+                MiniPlayerTransform.Y = 0;
+                MiniPlayerBar.Opacity = 1.0;
+            }
         }
 
         private void MiniPlayerBar_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -178,10 +208,59 @@ namespace Musicefy
             _isDraggingMiniPlayer = false;
             MiniPlayerBar.ReleaseMouseCapture();
 
-            if (!_hasDraggedSignificantly)
+            // Dismiss Threshold condition met (dragged down more than 45 pixels)
+            if (MiniPlayerTransform.Y > 45)
             {
-                OpenFullNowPlayingPanel();
+                DismissMiniPlayerAndStopMusic();
             }
+            else
+            {
+                if (!_hasDraggedSignificantly)
+                {
+                    OpenFullNowPlayingPanel();
+                }
+                else
+                {
+                    SnapMiniPlayerBack();
+                }
+            }
+        }
+
+        private void DismissMiniPlayerAndStopMusic()
+        {
+            // 1. Stop playback safely through the backend pipeline
+            if (_playback.IsPlaying)
+            {
+                _playback.Pause();
+            }
+
+            // 2. Smoothly slide the bar out of the view window frame boundaries
+            var easeIn = new CubicEase { EasingMode = EasingMode.EaseIn };
+            var dismissFlydown = new DoubleAnimation(MiniPlayerTransform.Y, MiniPlayerTransform.Y + 80, TimeSpan.FromMilliseconds(200)) { EasingFunction = easeIn };
+            var dismissFade = new DoubleAnimation(MiniPlayerBar.Opacity, 0, TimeSpan.FromMilliseconds(180)) { EasingFunction = easeIn };
+
+            dismissFlydown.Completed += (s, e) =>
+            {
+                MiniPlayerBar.Visibility = Visibility.Collapsed;
+                
+                // Reset defaults so everything behaves cleanly the next time a track plays
+                MiniPlayerTransform.X = 0;
+                MiniPlayerTransform.Y = 0;
+                MiniPlayerBar.Opacity = 1.0;
+            };
+
+            MiniPlayerTransform.BeginAnimation(TranslateTransform.YProperty, dismissFlydown);
+            MiniPlayerBar.BeginAnimation(UIElement.OpacityProperty, dismissFade);
+        }
+
+        private void SnapMiniPlayerBack()
+        {
+            var easeOut = new CubicEase { EasingMode = EasingMode.EaseOut };
+            var snapY = new DoubleAnimation(MiniPlayerTransform.Y, 0, TimeSpan.FromMilliseconds(250)) { EasingFunction = easeOut };
+            var snapOpacity = new DoubleAnimation(MiniPlayerBar.Opacity, 1.0, TimeSpan.FromMilliseconds(200)) { EasingFunction = easeOut };
+
+            MiniPlayerTransform.BeginAnimation(TranslateTransform.YProperty, snapY);
+            MiniPlayerBar.BeginAnimation(UIElement.OpacityProperty, snapOpacity);
         }
 
         private void OpenFullNowPlayingPanel()
@@ -194,32 +273,52 @@ namespace Musicefy
             }
 
             _isFullPanelOpen = true;
+
             FullNowPlayingContainer.Visibility = Visibility.Visible;
-            UpdateMiniPlayerVisibility();
-            
+            FullNowPlayingContainer.Opacity = 0;
             FullPanelTransform.Y = this.ActualHeight;
-            var slideUpAnim = new DoubleAnimation(this.ActualHeight, 0, TimeSpan.FromMilliseconds(450))
+
+            var easeOut = new CubicEase { EasingMode = EasingMode.EaseOut };
+
+            var panelSlideUp = new DoubleAnimation(this.ActualHeight, 0, TimeSpan.FromMilliseconds(400)) { EasingFunction = easeOut };
+            var panelFadeIn = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(300)) { EasingFunction = easeOut };
+            var miniFadeOut = new DoubleAnimation(MiniPlayerBar.Opacity, 0, TimeSpan.FromMilliseconds(200)) { EasingFunction = easeOut };
+            var miniSinkDown = new DoubleAnimation(MiniPlayerTransform.Y, MiniPlayerTransform.Y + 40, TimeSpan.FromMilliseconds(350)) { EasingFunction = easeOut };
+
+            miniFadeOut.Completed += (s, e) =>
             {
-                EasingFunction = new CircleEase { EasingMode = EasingMode.EaseOut }
+                if (_isFullPanelOpen) MiniPlayerBar.Visibility = Visibility.Collapsed;
             };
-            FullPanelTransform.BeginAnimation(TranslateTransform.YProperty, slideUpAnim);
+
+            FullPanelTransform.BeginAnimation(TranslateTransform.YProperty, panelSlideUp);
+            FullNowPlayingContainer.BeginAnimation(UIElement.OpacityProperty, panelFadeIn);
+            MiniPlayerBar.BeginAnimation(UIElement.OpacityProperty, miniFadeOut);
+            MiniPlayerTransform.BeginAnimation(TranslateTransform.YProperty, miniSinkDown);
         }
 
         private void CollapseFullNowPlayingPanel()
         {
-            var slideDownAnim = new DoubleAnimation(0, this.ActualHeight, TimeSpan.FromMilliseconds(400))
-            {
-                EasingFunction = new CircleEase { EasingMode = EasingMode.EaseIn }
-            };
+            MiniPlayerBar.Visibility = Visibility.Visible;
 
-            slideDownAnim.Completed += (s, e) =>
+            var easeIn = new CubicEase { EasingMode = EasingMode.EaseIn };
+            var easeOut = new CubicEase { EasingMode = EasingMode.EaseOut };
+
+            var panelSlideDown = new DoubleAnimation(0, this.ActualHeight, TimeSpan.FromMilliseconds(350)) { EasingFunction = easeIn };
+            var panelFadeOut = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(250)) { EasingFunction = easeIn };
+            var miniFadeIn = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(300)) { EasingFunction = easeOut };
+            var miniRiseUp = new DoubleAnimation(40, 0, TimeSpan.FromMilliseconds(350)) { EasingFunction = easeOut };
+
+            panelSlideDown.Completed += (s, e) =>
             {
                 _isFullPanelOpen = false;
                 FullNowPlayingContainer.Visibility = Visibility.Collapsed;
                 UpdateMiniPlayerVisibility();
             };
 
-            FullPanelTransform.BeginAnimation(TranslateTransform.YProperty, slideDownAnim);
+            FullPanelTransform.BeginAnimation(TranslateTransform.YProperty, panelSlideDown);
+            FullNowPlayingContainer.BeginAnimation(UIElement.OpacityProperty, panelFadeOut);
+            MiniPlayerBar.BeginAnimation(UIElement.OpacityProperty, miniFadeIn);
+            MiniPlayerTransform.BeginAnimation(TranslateTransform.YProperty, miniRiseUp);
         }
 
         private void OnPlaybackStateChanged(bool isPlaying)
