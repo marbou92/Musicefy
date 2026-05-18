@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
@@ -59,13 +58,15 @@ namespace Musicefy.Views
         {
             DisplayItems.Clear();
             foreach (var item in items) DisplayItems.Add(item);
+            
+            // FIXED: Recalculate size mappings directly when the root display shifts templates
+            this.UpdateLayout();
         }
 
         private void LibraryCard_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button btn && btn.DataContext is LibraryCardItem clickedItem)
             {
-                // FIXED: Clicking the master Folder card now flips views cleanly instead of triggering an auto disk sweep
                 if (clickedItem.TargetType == ItemTargetType.FolderRoot)
                 {
                     _isInsideFolderBrowsingMode = true;
@@ -75,12 +76,14 @@ namespace Musicefy.Views
                     LibraryCardsScrollViewer.Visibility = Visibility.Collapsed;
                     TrackListDisplayPanel.Visibility = Visibility.Visible;
                     
-                    // Initialize the view states cleanly without feeding mock parameters
                     TrackListDisplayPanel.InitializeDataStream(new List<MusicFile>(), _playbackService);
+                    
+                    // FIXED: Refresh layout tree mapping values instantly
+                    this.UpdateLayout();
                 }
                 else if (clickedItem.TargetType == ItemTargetType.DirectoryItem)
                 {
-                    NavigateIntoDirectory(clickedItem.FullPathReference);
+                    NewtonsoftDataTraversePass(clickedItem.FullPathReference);
                 }
             }
         }
@@ -92,7 +95,7 @@ namespace Musicefy.Views
             return (string.IsNullOrEmpty(clean) || clean.StartsWith("???")) ? fallback : clean;
         }
 
-        private void NavigateIntoDirectory(string targetPath)
+        private void NewtonsoftDataTraversePass(string targetPath)
         {
             if (!Directory.Exists(targetPath)) return;
 
@@ -190,6 +193,7 @@ namespace Musicefy.Views
             }
             catch (Exception ex) { MessageBox.Show($"Access Violation Error: {ex.Message}"); }
 
+            // Apply modifications straight to screen slots
             SwitchToDisplayState(localTracks, internalContents);
         }
 
@@ -207,6 +211,9 @@ namespace Musicefy.Views
                 LibraryCardsScrollViewer.Visibility = Visibility.Visible;
                 RefreshDisplay(subFolders);
             }
+
+            // FIXED: Synchronize explicit boundary tracking pass as dynamic content swaps finish
+            this.UpdateLayout();
         }
 
         private void BtnBack_Click(object sender, RoutedEventArgs e)
@@ -215,7 +222,7 @@ namespace Musicefy.Views
 
             if (_folderNavigationHistory.Count > 0)
             {
-                NavigateIntoDirectory(_folderNavigationHistory.Pop());
+                NewtonsoftDataTraversePass(_folderNavigationHistory.Pop());
             }
             else
             {
@@ -226,6 +233,9 @@ namespace Musicefy.Views
                 TxtHeaderTitle.Text = "Saved";
                 RefreshDisplay(_rootLibraryItems);
             }
+
+            // FIXED: Force update checks on structural layout history reverse routes
+            this.UpdateLayout();
         }
 
         private void BtnAddPlaylist_Click(object sender, RoutedEventArgs e) { }
