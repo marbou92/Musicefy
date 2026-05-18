@@ -167,7 +167,11 @@
                 </Grid>
             </Border>
 
-            <Grid x:Name="FullNowPlayingContainer" Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=Window}}" VerticalAlignment="Bottom" Visibility="Collapsed">
+                <Grid x:Name="FullNowPlayingContainer" 
+                  Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=Window}}" 
+                  VerticalAlignment="Bottom" 
+                  Visibility="Collapsed"
+                  Opacity="0">
                 <Grid.RenderTransform>
                     <TranslateTransform x:Name="FullPanelTransform"/>
                 </Grid.RenderTransform>
