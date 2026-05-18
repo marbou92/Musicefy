@@ -22,13 +22,12 @@ namespace Musicefy.Views
             
             this.DataContext = _mainViewModel;
 
-            // Explicit assignment for fast data hydration
+            // Fluid UI local assignment handles data stream synchronization safely
             if (ChartsList != null) ChartsList.ItemsSource = _mainViewModel.BrowseCharts;
             if (QuickPicksList != null) QuickPicksList.ItemsSource = _mainViewModel.QuickPicks;
             if (VideosList != null) VideosList.ItemsSource = _mainViewModel.TopMusicVideos;
         }
 
-        // FIXED: Ensured execution only proceeds if an actual item was clicked
         private void QuickPicksList_DoubleClick(object sender, MouseButtonEventArgs e)
         {
             if (QuickPicksList.SelectedItem is TrackCard selectedTrack)
@@ -42,13 +41,13 @@ namespace Musicefy.Views
         {
             if (_mainViewModel.QuickPicks == null || !_mainViewModel.QuickPicks.Any()) return;
 
-            // Enqueue all items safely
+            // Enqueue track data collection safely down to core streaming layers
             foreach (var trackCard in _mainViewModel.QuickPicks)
             {
                 _playback.EnqueueTrack(MapToMusicFile(trackCard));
             }
             
-            // Instantly play the first entry
+            // Instantly resolve and ignite first record sequence
             var first = _mainViewModel.QuickPicks.FirstOrDefault();
             if (first != null)
             {
@@ -61,6 +60,9 @@ namespace Musicefy.Views
             MessageBox.Show("Video engine integration coming in the next core compilation step!", "Musicefy", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
+        /// <summary>
+        /// Maps UI view metadata cards cleanly to backend domain storage entities 
+        /// </summary>
         private MusicFile MapToMusicFile(TrackCard card)
         {
             return new MusicFile(
@@ -69,7 +71,7 @@ namespace Musicefy.Views
                 album: "Musicefy Discovery", 
                 year: DateTime.Now.Year, 
                 genre: "Discovery", 
-                duration: TimeSpan.Zero
+                duration: TimeSpan.Zero // Populated contextually by playback media streams
             );
         }
     }
