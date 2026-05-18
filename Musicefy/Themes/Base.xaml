@@ -3,6 +3,15 @@
 
     <DropShadowEffect x:Key="EchoShadow" BlurRadius="25" ShadowDepth="0" Opacity="0.4" Color="Black"/>
 
+    <Style TargetType="{x:Type ScrollViewer}">
+        <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True"/>
+        <Setter Property="CanContentScroll" Value="False"/>
+    </Style>
+
+    <Style TargetType="{x:Type ScrollBar}">
+        <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True"/>
+    </Style>
+
     <Style x:Key="EchoCustomWindowStyle" TargetType="{x:Type Window}">
         <Setter Property="Background" Value="{DynamicResource BackgroundBrush}"/>
         <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
@@ -19,9 +28,7 @@
                 <ControlTemplate TargetType="{x:Type Window}">
                     <Border Background="{TemplateBinding Background}" 
                             BorderBrush="{DynamicResource BorderBrush}" 
-                            BorderThickness="1"
-                            VerticalAlignment="Stretch"
-                            HorizontalAlignment="Stretch">
+                            BorderThickness="1">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="40"/>
@@ -83,8 +90,8 @@
                                 </StackPanel>
                             </Grid>
 
-                            <Grid Grid.Row="1" Background="{TemplateBinding Background}" VerticalAlignment="Stretch">
-                                <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" Margin="{TemplateBinding Padding}" VerticalAlignment="Stretch"/>
+                            <Grid Grid.Row="1" Background="{TemplateBinding Background}" Padding="0,0,6,0">
+                                <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" Margin="{TemplateBinding Padding}"/>
                             </Grid>
                         </Grid>
                     </Border>
