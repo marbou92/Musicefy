@@ -113,7 +113,7 @@
                            Text="Saved" 
                            FontSize="28" 
                            FontWeight="SemiBold" 
-                           Tracking="0.5"
+                           CharacterSpacing="50"
                            Foreground="{DynamicResource TextBrush}"
                            VerticalAlignment="Center"/>
             </StackPanel>
