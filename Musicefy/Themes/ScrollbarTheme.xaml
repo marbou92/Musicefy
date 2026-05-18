@@ -10,11 +10,11 @@
                     <Border x:Name="ThumbVisual" 
                             Background="{DynamicResource MutedTextBrush}" 
                             CornerRadius="4" 
-                            Opacity="0.4" 
+                            Opacity="0.3" 
                             SnapsToDevicePixels="True"/>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="ThumbVisual" Property="Opacity" Value="0.8"/>
+                            <Setter TargetName="ThumbVisual" Property="Opacity" Value="0.75"/>
                             <Setter TargetName="ThumbVisual" Property="Background" Value="{DynamicResource AccentBrush}"/>
                         </Trigger>
                         <Trigger Property="IsDragging" Value="True">
@@ -43,7 +43,6 @@
                                Maximum="{TemplateBinding Maximum}"
                                Value="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                                ViewportSize="{TemplateBinding ViewportSize}"
-                               IsDirectionReversed="True" 
                                IsEnabled="{TemplateBinding IsEnabled}">
                             <Track.DecreaseRepeatButton>
                                 <RepeatButton Command="{x:Static ScrollBar.PageUpCommand}" Background="Transparent" BorderThickness="0" Focusable="False"/>
@@ -60,7 +59,6 @@
                         <Trigger Property="Orientation" Value="Horizontal">
                             <Setter Property="Width" Value="Auto"/>
                             <Setter Property="Height" Value="8"/>
-                            <Setter TargetName="PART_Track" Property="IsDirectionReversed" Value="False"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -94,14 +92,12 @@
                         <ScrollBar x:Name="PART_VerticalScrollBar" 
                                    Grid.Column="1" Grid.Row="0" 
                                    Cursor="Arrow" 
-                                   WindowChrome.IsHitTestVisibleInChrome="True"
                                    Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"/>
                         
                         <ScrollBar x:Name="PART_HorizontalScrollBar" 
                                    Grid.Column="0" Grid.Row="1" 
                                    Cursor="Arrow" 
                                    Orientation="Horizontal" 
-                                   WindowChrome.IsHitTestVisibleInChrome="True"
                                    Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"/>
                     </Grid>
                 </ControlTemplate>
