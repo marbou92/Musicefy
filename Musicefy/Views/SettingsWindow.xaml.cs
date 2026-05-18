@@ -14,9 +14,7 @@ namespace Musicefy.Views
         public SettingsWindow()
         {
             InitializeComponent();
-
             AttachCustomTitleBarWindowActions();
-
             ShowAppearance(); 
         }
 
@@ -24,9 +22,10 @@ namespace Musicefy.Views
         {
             this.Loaded += (s, e) =>
             {
-                var btnMinimize = this.Template.FindName("BtnShellMinimize", this) as Button;
-                var btnMaximize = this.Template.FindName("BtnShellMaximize", this) as Button;
-                var btnClose = this.Template.FindName("BtnShellClose", this) as Button;
+                var btnInitializeTemplate = this.Template;
+                var btnMinimize = btnInitializeTemplate.FindName("BtnShellMinimize", this) as Button;
+                var btnMaximize = btnInitializeTemplate.FindName("BtnShellMaximize", this) as Button;
+                var btnClose = btnInitializeTemplate.FindName("BtnShellClose", this) as Button;
         
                 if (btnMinimize != null) btnMinimize.Click += (o, a) => this.WindowState = WindowState.Minimized;
                 if (btnMaximize != null) btnMaximize.Click += (o, a) => 
@@ -105,7 +104,6 @@ namespace Musicefy.Views
 
                     fadeIn.Completed += (sender, ev) =>
                     {
-                        // FIXED: Recomputes physical boundaries as soon as layout swapping finishes
                         this.UpdateLayout();
                     };
 
@@ -134,7 +132,6 @@ namespace Musicefy.Views
 
                 fadeIn.Completed += (sender, ev) =>
                 {
-                    // FIXED: Recomputes physical boundaries on entry fallback loops
                     this.UpdateLayout();
                 };
 
