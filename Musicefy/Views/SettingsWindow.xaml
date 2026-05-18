@@ -140,10 +140,9 @@
 
             <TextBlock Grid.Row="0" x:Name="SectionTitle" Text="Appearance Settings" FontSize="24" FontWeight="ExtraBold" Margin="0,0,0,25" Foreground="{DynamicResource ForegroundBrush}"/>
 
-            <ContentControl x:Name="SettingsContent" 
-                            Grid.Row="1" 
-                            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                            ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <ContentControl x:Name="SettingsContent"/>
+            </ScrollViewer>
 
             <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
                 <Button Content="Cancel" Width="110" Margin="0,0,12,0" Style="{StaticResource ActionButtonStyle}" Click="Cancel_Click"/>
