@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Musicefy.Core.Models;
@@ -21,6 +22,7 @@ namespace Musicefy.Views
         private bool _isInsideFolderBrowsingMode = false;
 
         private readonly Dictionary<string, List<MusicFile>> _directoryTrackCache = new Dictionary<string, List<MusicFile>>();
+        private static readonly Regex UnicodeBugRegex = new Regex(@"[\x00-\x1F\x7F-\x9F]", RegexOptions.Compiled);
 
         private const string IconHeart = "M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z";
         private const string IconDownload = "M5,20H19V18H5V20M19,9H15V3H9V9H5L12,16L19,9Z";
@@ -58,8 +60,6 @@ namespace Musicefy.Views
         {
             DisplayItems.Clear();
             foreach (var item in items) DisplayItems.Add(item);
-            
-            // FIXED: Recalculate size mappings directly when the root display shifts templates
             this.UpdateLayout();
         }
 
@@ -77,13 +77,11 @@ namespace Musicefy.Views
                     TrackListDisplayPanel.Visibility = Visibility.Visible;
                     
                     TrackListDisplayPanel.InitializeDataStream(new List<MusicFile>(), _playbackService);
-                    
-                    // FIXED: Refresh layout tree mapping values instantly
                     this.UpdateLayout();
                 }
                 else if (clickedItem.TargetType == ItemTargetType.DirectoryItem)
                 {
-                    NewtonsoftDataTraversePass(clickedItem.FullPathReference);
+                    TraverseDirectoryAsync(clickedItem.FullPathReference);
                 }
             }
         }
@@ -91,11 +89,11 @@ namespace Musicefy.Views
         private string FilterWindows7UnicodeBugs(string input, string fallback)
         {
             if (string.IsNullOrEmpty(input)) return fallback;
-            string clean = Regex.Replace(input, @"[\x00-\x1F\x7F-\x9F]", "").Trim();
+            string clean = UnicodeBugRegex.Replace(input, "").Trim();
             return (string.IsNullOrEmpty(clean) || clean.StartsWith("???")) ? fallback : clean;
         }
 
-        private void NewtonsoftDataTraversePass(string targetPath)
+        private async void TraverseDirectoryAsync(string targetPath)
         {
             if (!Directory.Exists(targetPath)) return;
 
@@ -128,72 +126,75 @@ namespace Musicefy.Views
                 return;
             }
 
-            var localTracks = new List<MusicFile>();
-            try
+            // Processing audio tags inside a background thread worker to protect UI fluidity
+            var localTracks = await Task.Run(() =>
             {
-                string[] audioExtensions = { "*.mp3", "*.wav", "*.flac", "*.m4a" };
-                var matchedFiles = audioExtensions.SelectMany(ext => Directory.GetFiles(targetPath, ext)).ToList();
-
-                string tempCachePath = Path.Combine(Path.GetTempPath(), "MusicefyArtworkCache");
-                if (!Directory.Exists(tempCachePath)) Directory.CreateDirectory(tempCachePath);
-
-                foreach (string file in matchedFiles)
+                var filesCollected = new List<MusicFile>();
+                try
                 {
-                    string defaultFilename = Path.GetFileNameWithoutExtension(file);
-                    string trackTitle = defaultFilename;
-                    string trackArtist = "Unknown Artist";
-                    string trackAlbum = "Local Stream";
-                    string trackCoverImageReference = null;
-                    TimeSpan trackDuration = TimeSpan.Zero;
+                    string[] audioExtensions = { "*.mp3", "*.wav", "*.flac", "*.m4a" };
+                    var matchedFiles = audioExtensions.SelectMany(ext => Directory.GetFiles(targetPath, ext)).ToList();
 
-                    try
+                    string tempCachePath = Path.Combine(Path.GetTempPath(), "MusicefyArtworkCache");
+                    if (!Directory.Exists(tempCachePath)) Directory.CreateDirectory(tempCachePath);
+
+                    foreach (string file in matchedFiles)
                     {
-                        using (var reader = new NAudio.Wave.AudioFileReader(file))
-                        {
-                            trackDuration = reader.TotalTime;
-                        }
+                        string defaultFilename = Path.GetFileNameWithoutExtension(file);
+                        string trackTitle = defaultFilename;
+                        string trackArtist = "Unknown Artist";
+                        string trackAlbum = "Local Stream";
+                        string trackCoverImageReference = null;
+                        TimeSpan trackDuration = TimeSpan.Zero;
 
-                        using (var tagContainer = TagLib.File.Create(file))
+                        try
                         {
-                            if (tagContainer.Tag != null)
+                            using (var reader = new NAudio.Wave.AudioFileReader(file))
                             {
-                                if (!string.IsNullOrEmpty(tagContainer.Tag.Title)) trackTitle = tagContainer.Tag.Title;
-                                if (!string.IsNullOrEmpty(tagContainer.Tag.FirstPerformer)) trackArtist = tagContainer.Tag.FirstPerformer;
-                                if (!string.IsNullOrEmpty(tagContainer.Tag.Album)) trackAlbum = tagContainer.Tag.Album;
+                                trackDuration = reader.TotalTime;
+                            }
 
-                                if (tagContainer.Tag.Pictures != null && tagContainer.Tag.Pictures.Length > 0)
+                            using (var tagContainer = TagLib.File.Create(file))
+                            {
+                                if (tagContainer.Tag != null)
                                 {
-                                    string safeHashName = "cover_" + Math.Abs(file.GetHashCode()).ToString() + ".jpg";
-                                    string writeImgPath = Path.Combine(tempCachePath, safeHashName);
-                                    if (!File.Exists(writeImgPath))
+                                    if (!string.IsNullOrEmpty(tagContainer.Tag.Title)) trackTitle = tagContainer.Tag.Title;
+                                    if (!string.IsNullOrEmpty(tagContainer.Tag.FirstPerformer)) trackArtist = tagContainer.Tag.FirstPerformer;
+                                    if (!string.IsNullOrEmpty(tagContainer.Tag.Album)) trackAlbum = tagContainer.Tag.Album;
+
+                                    if (tagContainer.Tag.Pictures != null && tagContainer.Tag.Pictures.Length > 0)
                                     {
-                                        File.WriteAllBytes(writeImgPath, tagContainer.Tag.Pictures[0].Data.Data);
+                                        string safeHashName = "cover_" + Math.Abs(file.GetHashCode()).ToString() + ".jpg";
+                                        string writeImgPath = Path.Combine(tempCachePath, safeHashName);
+                                        if (!File.Exists(writeImgPath))
+                                        {
+                                            File.WriteAllBytes(writeImgPath, tagContainer.Tag.Pictures[0].Data.Data);
+                                        }
+                                        trackCoverImageReference = writeImgPath;
                                     }
-                                    trackCoverImageReference = writeImgPath;
                                 }
                             }
                         }
+                        catch { trackTitle = defaultFilename; }
+
+                        filesCollected.Add(new MusicFile
+                        {
+                            Title = FilterWindows7UnicodeBugs(trackTitle, defaultFilename),
+                            Artist = FilterWindows7UnicodeBugs(trackArtist, "Unknown Artist"),
+                            Album = trackAlbum,
+                            FilePath = file,
+                            SourceUri = file,
+                            SourceType = "Local",
+                            Duration = trackDuration,
+                            CoverPath = trackCoverImageReference
+                        });
                     }
-                    catch { trackTitle = defaultFilename; }
-
-                    localTracks.Add(new MusicFile
-                    {
-                        Title = FilterWindows7UnicodeBugs(trackTitle, defaultFilename),
-                        Artist = FilterWindows7UnicodeBugs(trackArtist, "Unknown Artist"),
-                        Album = trackAlbum,
-                        FilePath = file,
-                        SourceUri = file,
-                        SourceType = "Local",
-                        Duration = trackDuration,
-                        CoverPath = trackCoverImageReference
-                    });
                 }
+                catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Access error: {ex.Message}"); }
+                return filesCollected;
+            });
 
-                _directoryTrackCache[targetPath] = localTracks;
-            }
-            catch (Exception ex) { MessageBox.Show($"Access Violation Error: {ex.Message}"); }
-
-            // Apply modifications straight to screen slots
+            _directoryTrackCache[targetPath] = localTracks;
             SwitchToDisplayState(localTracks, internalContents);
         }
 
@@ -212,7 +213,6 @@ namespace Musicefy.Views
                 RefreshDisplay(subFolders);
             }
 
-            // FIXED: Synchronize explicit boundary tracking pass as dynamic content swaps finish
             this.UpdateLayout();
         }
 
@@ -222,7 +222,7 @@ namespace Musicefy.Views
 
             if (_folderNavigationHistory.Count > 0)
             {
-                NewtonsoftDataTraversePass(_folderNavigationHistory.Pop());
+                TraverseDirectoryAsync(_folderNavigationHistory.Pop());
             }
             else
             {
@@ -234,7 +234,6 @@ namespace Musicefy.Views
                 RefreshDisplay(_rootLibraryItems);
             }
 
-            // FIXED: Force update checks on structural layout history reverse routes
             this.UpdateLayout();
         }
 
