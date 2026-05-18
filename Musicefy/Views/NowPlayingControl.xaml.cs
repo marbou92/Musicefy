@@ -188,7 +188,7 @@ namespace Musicefy.Views
 
         private void BackButton_Click(object sender, RoutedEventArgs e) => RequestCollapse?.Invoke();
 
-        private void Play_Click(object sender, RoutedEventArgs e) => if (_playbackService.IsPlaying) _playbackService.Pause(); else _playbackService.Resume();
+        private void Play_Click(object sender, RoutedEventArgs e) => _ = _playbackService.IsPlaying ? _playbackService.Pause() : _playbackService.Resume();
 
         private void Previous_Click(object sender, RoutedEventArgs e) => _playbackService.Previous();
 
