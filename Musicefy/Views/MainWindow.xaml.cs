@@ -105,6 +105,12 @@ namespace Musicefy
             fadeOut.Completed += (s, e) =>
             {
                 MainContent.Content = newContent;
+                
+                // FIXED: Force a structural layout layout math refresh pass precisely 
+                // when incoming subviews swap out. This tells the ScrollViewer how tall 
+                // its screen window actual boundaries are to activate your scrollbars!
+                this.UpdateLayout();
+
                 DoubleAnimation fadeIn = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(200));
                 MainContent.BeginAnimation(OpacityProperty, fadeIn);
             };
