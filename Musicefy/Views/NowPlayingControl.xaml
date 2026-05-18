@@ -120,7 +120,7 @@
                     <ColumnDefinition x:Name="RightPanelColumn" Width="0"/>
                 </Grid.ColumnDefinitions>
 
-                <Grid Grid.Column="0" x: x:Name="PlayerDeckRoot" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="420" Width="420">
+                <Grid Grid.Column="0" x:Name="PlayerDeckRoot" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="420" Width="420">
                     <StackPanel>
                         
                         <Border x:Name="CoverArtBorder" CornerRadius="16" ClipToBounds="True" Background="#0A0A0A" Height="420">
