@@ -89,8 +89,7 @@ namespace Musicefy.Controls
             FolderSongsListView.ItemsSource = trackList;
             FolderSongsItemsControl.ItemsSource = trackList;
             
-            // FIXED: Force immediate device pixel calculations over tracking boundaries
-            // before layout engine animation vectors lock up rendering inputs.
+            // Forces immediate device layout pass measurements to scale custom capsule scrollbar tracks
             this.UpdateLayout();
             
             TriggerFluidLayoutEntranceAnimation();
