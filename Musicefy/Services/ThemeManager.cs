@@ -20,7 +20,7 @@ namespace Musicefy.Services
             // Inject foundational underlying design rules first
             MergeDictionary("/Themes/Base.xaml");
         
-            // FIXED: Force re-inject your custom layout template here so it survives the Clear() sweep!
+            // Force re-inject your custom layout template here so it survives the Clear() sweep!
             MergeDictionary("/Themes/ScrollbarTheme.xaml");
         
             // Process hardware-level environmental tracking vectors
@@ -141,7 +141,8 @@ namespace Musicefy.Services
             }
         }
 
-        private void AnimateButtons(Window win)
+        // FIXED: Added missing 'static' keyword context specifier modifier rule 
+        private static void AnimateButtons(Window win)
         {
             foreach (var child in FindVisualChildren<System.Windows.Controls.Button>(win))
             {
