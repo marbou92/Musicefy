@@ -117,8 +117,76 @@ namespace Musicefy
             MainContent.BeginAnimation(OpacityProperty, fadeOut);
         }
 
-        #region Mini-Player Pipeline Slide Controllers
-        private void MiniPlayerBar_Click(object sender, MouseButtonEventArgs e)
+    #region Mini-Player Pipeline Slide Controllers
+        private bool _isDraggingMiniPlayer = false;
+        private Point _dragStartPoint;
+        private double _dragStartTranslateX;
+        private bool _hasDraggedSignificantly = false;
+        private bool _isFullPanelOpen = false;
+
+        private void UpdateMiniPlayerVisibility()
+        {
+            // Only show the bar if a valid audio file track object exists AND the full panel view is tucked away
+            if (NowPlaying == null || _isFullPanelOpen)
+            {
+                MiniPlayerBar.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                MiniPlayerBar.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void MiniPlayerBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            _isDraggingMiniPlayer = true;
+            _dragStartPoint = e.GetPosition(this);
+            _dragStartTranslateX = MiniPlayerTransform.X;
+            _hasDraggedSignificantly = false;
+            
+            MiniPlayerBar.CaptureMouse();
+        }
+
+        private void MiniPlayerBar_MouseMove(object sender, MouseButtonEventArgs e)
+        {
+            if (!_isDraggingMiniPlayer) return;
+
+            Point currentPoint = e.GetPosition(this);
+            double deltaX = currentPoint.X - _dragStartPoint.X;
+
+            // Prevent hypersensitive click-misfires by enforcing a 5px structural deadzone
+            if (!_hasDraggedSignificantly && Math.Abs(deltaX) > 5)
+            {
+                _hasDraggedSignificantly = true;
+            }
+
+            double targetX = _dragStartTranslateX + deltaX;
+
+            // Clamping framework calculations to prevent drifting off the screen margins
+            double maxOffset = (this.ActualWidth - MiniPlayerBar.Width) / 2.0 - 16; 
+            if (maxOffset < 0) maxOffset = 0;
+
+            if (targetX < -maxOffset) targetX = -maxOffset;
+            if (targetX > maxOffset) targetX = maxOffset;
+
+            MiniPlayerTransform.X = targetX;
+        }
+
+        private void MiniPlayerBar_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if (!_isDraggingMiniPlayer) return;
+
+            _isDraggingMiniPlayer = false;
+            MiniPlayerBar.ReleaseMouseCapture();
+
+            // If the user simply tapped without driving the dock left or right, trigger panel slide up action
+            if (!_hasDraggedSignificantly)
+            {
+                OpenFullNowPlayingPanel();
+            }
+        }
+
+        private void OpenFullNowPlayingPanel()
         {
             if (_nowPlayingView == null)
             {
@@ -127,8 +195,9 @@ namespace Musicefy
                 NowPlayingPresenter.Content = _nowPlayingView;
             }
 
+            _isFullPanelOpen = true;
             FullNowPlayingContainer.Visibility = Visibility.Visible;
-            MiniPlayerBar.Visibility = Visibility.Collapsed;
+            UpdateMiniPlayerVisibility();
             
             FullPanelTransform.Y = this.ActualHeight;
             var slideUpAnim = new DoubleAnimation(this.ActualHeight, 0, TimeSpan.FromMilliseconds(450))
@@ -147,8 +216,9 @@ namespace Musicefy
 
             slideDownAnim.Completed += (s, e) =>
             {
+                _isFullPanelOpen = false;
                 FullNowPlayingContainer.Visibility = Visibility.Collapsed;
-                MiniPlayerBar.Visibility = Visibility.Visible;
+                UpdateMiniPlayerVisibility();
             };
 
             FullPanelTransform.BeginAnimation(TranslateTransform.YProperty, slideDownAnim);
