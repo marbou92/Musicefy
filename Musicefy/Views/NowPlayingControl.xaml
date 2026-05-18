@@ -115,7 +115,11 @@
 
                 <Grid Grid.Column="0" x:Name="PlayerDeckRoot" MaxWidth="440" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="*"/>       <RowDefinition Height="Auto"/>    <RowDefinition Height="Auto"/>    <RowDefinition Height="Auto"/>    </Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>       
+                        <RowDefinition Height="Auto"/>    
+                        <RowDefinition Height="Auto"/>    
+                        <RowDefinition Height="Auto"/>    
+                    </Grid.RowDefinitions>
                     
                     <Grid Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="0,0,0,20">
                         <Grid.Effect>
@@ -228,63 +232,62 @@
                             <Path x:Name="RepeatIcon" Data="M17,17H7V14L3,18L7,22V19H19V13H17V17M7,7H17V10L21,6L17,2V5H5V11H7V7Z" Fill="{DynamicResource MutedTextBrush}" Width="16" Height="16" Stretch="Uniform"/>
                         </Button>
                     </Grid>
-                </StackPanel>
-            </Grid>
-
-            <Grid Grid.Column="1" x:Name="RightPanelRoot" Margin="40,10,0,10" Opacity="0" Visibility="Collapsed" RenderTransformOrigin="0.5,0.5">
-                <Grid.RenderTransform>
-                    <TranslateTransform X="30" Y="0"/>
-                </Grid.RenderTransform>
-
-                <Grid x:Name="LyricsPanelContainer" Visibility="Collapsed">
-                    <ScrollViewer VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled" PanningMode="VerticalOnly">
-                        <ItemsControl ItemsSource="{Binding NowPlaying.Lyrics, Converter={StaticResource LyricsToLinesConverter}}" 
-                                      VirtualizingStackPanel.IsVirtualizing="True"
-                                      VirtualizingStackPanel.VirtualizationMode="Recycling">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding}" FontSize="26" FontWeight="Bold" Foreground="{DynamicResource TextBrush}" Opacity="0.3" TextAlignment="Left" TextWrapping="Wrap" Margin="0,14,0,14" Cursor="Hand">
-                                        <TextBlock.Style>
-                                            <Style TargetType="TextBlock">
-                                                <Style.Triggers>
-                                                    <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter Property="Opacity" Value="1.0"/>
-                                                    </Trigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </TextBlock.Style>
-                                    </TextBlock>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
                 </Grid>
 
-                <Grid x:Name="QueuePanelContainer" Visibility="Collapsed">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <Grid.RowDefinition Height="Auto"/>
-                            <Grid.RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-                        <TextBlock Grid.Row="0" Text="Up Next Queue" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextBrush}" Margin="0,4,0,20"/>
-                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Hidden" PanningMode="VerticalOnly">
-                            <StackPanel>
-                                <Border Background="{DynamicResource SecondaryBackgroundBrush}" Padding="18" CornerRadius="16" Margin="0,0,0,12">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-                                        <Path Grid.Column="0" Data="M12,3V10.55C11.41,10.21 10.73,10 10,10A4,4 0 0,0 6,14A4,4 0 0,0 10,18A4,4 0 0,0 14,14V7H18V3H12Z" Fill="{DynamicResource AccentBrush}" Width="16" Height="16" Stretch="Uniform" Margin="0,0,14,0"/>
-                                        <TextBlock Grid.Column="1" Text="Next Tracks Scheduled In Stream Queue" FontSize="14" Foreground="{DynamicResource TextBrush}" VerticalAlignment="Center" FontWeight="Medium"/>
-                                    </Grid>
-                                </Border>
-                            </StackPanel>
+                <Grid Grid.Column="1" x:Name="RightPanelRoot" Margin="40,10,0,10" Opacity="0" Visibility="Collapsed" RenderTransformOrigin="0.5,0.5">
+                    <Grid.RenderTransform>
+                        <TranslateTransform X="30" Y="0"/>
+                    </Grid.RenderTransform>
+
+                    <Grid x:Name="LyricsPanelContainer" Visibility="Collapsed">
+                        <ScrollViewer VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled" PanningMode="VerticalOnly">
+                            <ItemsControl ItemsSource="{Binding NowPlaying.Lyrics, Converter={StaticResource LyricsToLinesConverter}}" 
+                                          VirtualizingStackPanel.IsVirtualizing="True"
+                                          VirtualizingStackPanel.VirtualizationMode="Recycling">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" FontSize="26" FontWeight="Bold" Foreground="{DynamicResource TextBrush}" Opacity="0.3" TextAlignment="Left" TextWrapping="Wrap" Margin="0,14,0,14" Cursor="Hand">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="Opacity" Value="1.0"/>
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                         </ScrollViewer>
                     </Grid>
+
+                    <Grid x:Name="QueuePanelContainer" Visibility="Collapsed">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <Grid.RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Text="Up Next Queue" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextBrush}" Margin="0,4,0,20"/>
+                            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Hidden" PanningMode="VerticalOnly">
+                                <StackPanel>
+                                    <Border Background="{DynamicResource SecondaryBackgroundBrush}" Padding="18" CornerRadius="16" Margin="0,0,0,12">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Path Grid.Column="0" Data="M12,3V10.55C11.41,10.21 10.73,10 10,10A4,4 0 0,0 6,14A4,4 0 0,0 10,18A4,4 0 0,0 14,14V7H18V3H12Z" Fill="{DynamicResource AccentBrush}" Width="16" Height="16" Stretch="Uniform" Margin="0,0,14,0"/>
+                                            <TextBlock Grid.Column="1" Text="Next Tracks Scheduled In Stream Queue" FontSize="14" Foreground="{DynamicResource TextBrush}" VerticalAlignment="Center" FontWeight="Medium"/>
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Grid>
+                    </Grid>
                 </Grid>
-            </Grid>
-            
+                </Grid>
         </Grid>
     </Grid>
 </UserControl>
