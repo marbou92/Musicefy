@@ -112,12 +112,12 @@
                             </Border>
                         </Grid>
                     </Border>
-                    <ControlTemplate.Triggers>
-                        <BronzeTrigger DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource Self}}" Value="Maximized">
-                            <Setter TargetName="BtnShellMaximize" Property="Command" Value="{x:Static SystemCommands.RestoreWindowCommand}"/>
-                            <Setter TargetName="BtnShellMaximize" Property="ToolTip" Value="Restore Down"/>
-                        </BronzeTrigger>
-                    </ControlTemplate.Triggers>
+                      <ControlTemplate.Triggers>
+                          <DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource Self}}" Value="Maximized">
+                              <Setter TargetName="BtnShellMaximize" Property="Command" Value="{x:Static SystemCommands.RestoreWindowCommand}"/>
+                              <Setter TargetName="BtnShellMaximize" Property="ToolTip" Value="Restore Down"/>
+                          </DataTrigger>
+                      </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
