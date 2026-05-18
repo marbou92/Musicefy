@@ -326,4 +326,20 @@ namespace Musicefy.Controls
             }
         }
     }
+
+    // Restored the missing configuration settings wrapper
+    public class LibraryControlSettings : System.Configuration.ApplicationSettingsBase
+    {
+        private static LibraryControlSettings defaultInstance = ((LibraryControlSettings)(System.Configuration.ApplicationSettingsBase.Synchronized(new LibraryControlSettings())));
+        public static LibraryControlSettings Default => defaultInstance;
+
+        [System.Configuration.UserScopedSettingAttribute()]
+        [System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [System.Configuration.DefaultSettingValueAttribute("")]
+        public string LastSelectedFolderPath
+        {
+            get => ((string)(this["LastSelectedFolderPath"]));
+            set => this["LastSelectedFolderPath"] = value;
+        }
+    }
 }
