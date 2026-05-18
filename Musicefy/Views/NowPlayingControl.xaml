@@ -30,26 +30,38 @@
         </Style>
 
         <Style x:Key="CircleIconButtonStyle" TargetType="Button" BasedOn="{StaticResource BaseControlButtonStyle}">
-            <Setter Property="Width" Value="40"/>
-            <Setter Property="Height" Value="40"/>
+            <Setter Property="Width" Value="42"/>
+            <Setter Property="Height" Value="42"/>
             <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Grid>
-                            <Border x:Name="HaloBg" Background="Transparent" CornerRadius="20" Opacity="0.0"/>
+                            <Border x:Name="HaloBg" Background="{DynamicResource SecondaryBackgroundBrush}" CornerRadius="21" Opacity="0.0"/>
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="HaloBg" Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}"/>
-                                <Setter TargetName="HaloBg" Property="Opacity" Value="1.0"/>
-                                <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="HaloBg" Storyboard.TargetProperty="Opacity" To="1.0" Duration="0:0:0.2"/>
+                                            <ColorAnimation Storyboard.TargetProperty="(Button.Foreground).(SolidColorBrush.Color)" To="White" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="HaloBg" Storyboard.TargetProperty="Opacity" To="0.0" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter Property="RenderTransform">
                                     <Setter.Value>
-                                        <ScaleTransform ScaleX="0.95" ScaleY="0.95"/>
+                                        <ScaleTransform ScaleX="0.92" ScaleY="0.92"/>
                                     </Setter.Value>
                                 </Setter>
                             </Trigger>
@@ -62,7 +74,7 @@
         <Style x:Key="TransportPathButtonStyle" TargetType="Button" BasedOn="{StaticResource BaseControlButtonStyle}">
             <Setter Property="Width" Value="44"/>
             <Setter Property="Height" Value="44"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -71,17 +83,28 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ControlBg" Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}"/>
-                                <Setter Property="RenderTransform">
-                                    <Setter.Value>
-                                        <ScaleTransform ScaleX="1.05" ScaleY="1.05"/>
-                                    </Setter.Value>
-                                </Setter>
+                                <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="(Button.RenderTransform).(ScaleTransform.ScaleX)" To="1.08" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetProperty="(Button.RenderTransform).(ScaleTransform.ScaleY)" To="1.08" Duration="0:0:0.15"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="(Button.RenderTransform).(ScaleTransform.ScaleX)" To="1.0" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetProperty="(Button.RenderTransform).(ScaleTransform.ScaleY)" To="1.0" Duration="0:0:0.15"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter Property="RenderTransform">
                                     <Setter.Value>
-                                        <ScaleTransform ScaleX="0.95" ScaleY="0.95"/>
+                                        <ScaleTransform ScaleX="0.92" ScaleY="0.92"/>
                                     </Setter.Value>
                                 </Setter>
                             </Trigger>
@@ -93,15 +116,15 @@
     </UserControl.Resources>
 
     <Grid CacheMode="BitmapCache">
-        <Border Background="{DynamicResource BorderBrush}" Opacity="0.02" VerticalAlignment="Bottom" Height="500"/>
+        <Border Background="{DynamicResource BorderBrush}" Opacity="0.015" VerticalAlignment="Bottom" Height="500"/>
 
-        <Grid Margin="40,20,40,24">
+        <Grid Margin="44,24,44,32">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <Grid Grid.Row="0" Margin="0,0,0,10">
+            <Grid Grid.Row="0" Margin="0,0,0,16">
                 <Button x:Name="BtnCollapse" Style="{StaticResource CircleIconButtonStyle}" HorizontalAlignment="Left" Click="BackButton_Click">
                     <Path Data="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Width="24" Height="24" Stretch="Uniform"/>
                 </Button>
@@ -113,87 +136,74 @@
                     <ColumnDefinition x:Name="RightPanelColumn" Width="0"/>
                 </Grid.ColumnDefinitions>
 
-                <Grid Grid.Column="0" x:Name="PlayerDeckRoot" MaxWidth="440" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <Grid Grid.Column="0" x:Name="PlayerDeckRoot" MaxWidth="460" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="*"/>       
-                        <RowDefinition Height="Auto"/>    
-                        <RowDefinition Height="Auto"/>    
-                        <RowDefinition Height="Auto"/>    
-                    </Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>       <RowDefinition Height="Auto"/>    <RowDefinition Height="Auto"/>    <RowDefinition Height="Auto"/>    </Grid.RowDefinitions>
                     
-                    <Grid Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="0,0,0,20">
+                    <Grid Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,28">
                         <Grid.Effect>
-                            <DropShadowEffect BlurRadius="40" ShadowDepth="6" Opacity="0.4" Color="Black"/>
+                            <DropShadowEffect BlurRadius="54" ShadowDepth="10" Opacity="0.5" Color="Black"/>
                         </Grid.Effect>
-                        <Border x:Name="CoverArtBorder" CornerRadius="20" ClipToBounds="True" Background="#050505" MaxHeight="380" Width="{Binding ActualHeight, RelativeSource={RelativeSource Self}}">
+                        <Border x:Name="CoverArtBorder" CornerRadius="24" ClipToBounds="True" Background="#030303" MaxHeight="390" Width="{Binding ActualHeight, RelativeSource={RelativeSource Self}}">
                             <Image Source="{Binding NowPlaying.CoverPath, Converter={StaticResource PathToImageConverter}}" Stretch="UniformToFill"/>
                         </Border>
                     </Grid>
 
-                    <Grid Grid.Row="1" Margin="4,0,4,16">
+                    <Grid Grid.Row="1" Margin="4,0,4,24">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="50"/>  <ColumnDefinition Width="*"/>   <ColumnDefinition Width="50"/>  </Grid.ColumnDefinitions>
                         
-                        <Button Grid.Column="0" x:Name="BtnFavorite" Style="{StaticResource CircleIconButtonStyle}" Click="Favorite_Click" Margin="0,0,12,0" VerticalAlignment="Center">
+                        <Button Grid.Column="0" x:Name="BtnFavorite" Style="{StaticResource CircleIconButtonStyle}" Click="Favorite_Click" HorizontalAlignment="Left" VerticalAlignment="Center">
                             <Path x:Name="FavoriteIcon" Data="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35ZM7.5,5C5.5,5 4,6.5 4,8.5C4,11 6.33,13.6 12,18.52C17.67,13.6 20,11 20,8.5C20,6.5 18.5,5 16.5,5C15.15,5 13.87,5.88 13.39,7.1H10.61C10.13,5.88 8.85,5 7.5,5Z" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Width="22" Height="22" Stretch="Uniform"/>
                         </Button>
                         
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                            <TextBlock Text="{Binding NowPlaying.Title, FallbackValue='Not Playing'}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource TextBrush}" TextTrimming="CharacterEllipsis" Margin="0,0,0,2"/>
-                            <TextBlock Text="{Binding NowPlaying.Artist, FallbackValue='Unknown Artist'}" FontSize="14" Foreground="{DynamicResource MutedTextBrush}" TextTrimming="CharacterEllipsis"/>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <TextBlock Text="{Binding NowPlaying.Title, FallbackValue='Not Playing'}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource TextBrush}" TextTrimming="CharacterEllipsis" TextAlignment="Center" Margin="0,0,0,4"/>
+                            <TextBlock Text="{Binding NowPlaying.Artist, FallbackValue='Unknown Artist'}" FontSize="15" Foreground="{DynamicResource MutedTextBrush}" TextTrimming="CharacterEllipsis" TextAlignment="Center"/>
                         </StackPanel>
 
-                        <Button Grid.Column="2" x:Name="BtnMoreOptions" Style="{StaticResource CircleIconButtonStyle}" Click="MoreOptions_Click" VerticalAlignment="Center" Margin="8,0,0,0">
+                        <Button Grid.Column="2" x:Name="BtnMoreOptions" Style="{StaticResource CircleIconButtonStyle}" Click="MoreOptions_Click" HorizontalAlignment="Right" VerticalAlignment="Center">
                             <Path Data="M12,16A2,2 0 0,1 14,18A2,2 0 0,1 12,20A2,2 0 0,1 10,18A2,2 0 0,1 14,16M12,10A2,2 0 0,1 14,12A2,2 0 0,1 12,14A2,2 0 0,1 10,12A2,2 0 0,1 14,10M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8A2,2 0 0,1 10,6A2,2 0 0,1 14,4Z" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Width="20" Height="20" Stretch="Uniform"/>
                         </Button>
                     </Grid>
 
-                    <StackPanel Grid.Row="2" Margin="4,0,4,20">
+                    <StackPanel Grid.Row="2" Margin="4,0,4,26">
                         <Slider x:Name="ProgressSlider" Minimum="0" Maximum="100" Style="{StaticResource {x:Type Slider}}" Thumb.DragStarted="Slider_DragStarted" Thumb.DragCompleted="Slider_DragCompleted"/>
-                        <Grid Margin="2,6,2,0">
-                            <TextBlock x:Name="TxtCurrentTime" Text="0:00" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" FontWeight="Medium"/>
-                            <TextBlock x:Name="TxtTotalTime" Text="0:00" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" HorizontalAlignment="Right" FontWeight="Medium"/>
+                        <Grid Margin="2,8,2,0">
+                            <TextBlock x:Name="TxtCurrentTime" Text="0:00" FontSize="12" Foreground="{DynamicResource MutedTextBrush}" FontWeight="Medium"/>
+                            <TextBlock x:Name="TxtTotalTime" Text="0:00" FontSize="12" Foreground="{DynamicResource MutedTextBrush}" HorizontalAlignment="Right" FontWeight="Medium"/>
                         </Grid>
                     </StackPanel>
 
-                    <Grid Grid.Row="3" Margin="0,0,0,10">
+                    <Grid Grid.Row="3" Margin="0,0,0,8">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>   <ColumnDefinition Width="Auto"/>  <ColumnDefinition Width="*"/>   </Grid.ColumnDefinitions>
                         
-                        <Button Grid.Column="0" x:Name="BtnShuffle" Style="{StaticResource TransportPathButtonStyle}" HorizontalAlignment="Left" Click="Shuffle_Click" Margin="0,0,10,0">
-                            <Path x:Name="ShuffleIcon" Data="M14.83,13.41L13.42,14.82L16.55,17.95L14.5,20H20V14.5L17.96,16.54L14.83,13.41M14.5,4L16.54,6.04L4,18.58L5.41,20L17.96,7.46L20,9.5V4H14.5M10.59,9.17L5.41,4L4,5.41L9.17,10.58L10.59,9.17Z" Fill="{DynamicResource MutedTextBrush}" Width="16" Height="16" Stretch="Uniform"/>
-                        </Button>
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+                            <Button x:Name="BtnShuffle" Style="{StaticResource TransportPathButtonStyle}" Click="Shuffle_Click" Margin="0,0,8,0">
+                                <Path x:Name="ShuffleIcon" Data="M14.83,13.41L13.42,14.82L16.55,17.95L14.5,20H20V14.5L17.96,16.54L14.83,13.41M14.5,4L16.54,6.04L4,18.58L5.41,20L17.96,7.46L20,9.5V4H14.5M10.59,9.17L5.41,4L4,5.41L9.17,10.58L10.59,9.17Z" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Width="16" Height="16" Stretch="Uniform"/>
+                            </Button>
+                            <Button x:Name="BtnToggleQueue" Style="{StaticResource CircleIconButtonStyle}" Click="BtnToggleQueue_Click">
+                                <Path x:Name="QueueIcon" Data="M4,16H14V14H4V16ZM4,11H18V9H4V11ZM4,4V6H18V4H4ZM16,14V20L21,17L16,14Z" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Width="18" Height="18" Stretch="Uniform"/>
+                            </Button>
+                        </StackPanel>
 
-                        <Button Grid.Column="1" x:Name="BtnToggleQueue" Style="{StaticResource CircleIconButtonStyle}" Click="BtnToggleQueue_Click" Margin="0,0,4,0">
-                            <Path x:Name="QueueIcon" Data="M4,16H14V14H4V16ZM4,11H18V9H4V11ZM4,4V6H18V4H4ZM16,14V20L21,17L16,14Z" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Width="18" Height="18" Stretch="Uniform"/>
-                        </Button>
-
-                        <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <Button Style="{StaticResource TransportPathButtonStyle}" Click="Previous_Click" Margin="0,0,16,0">
-                                <Path Data="M6,18V6H8V18H6M9.5,12L18,6V18L9.5,12Z" Fill="{DynamicResource TextBrush}" Width="16" Height="16" Stretch="Uniform"/>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Button Style="{StaticResource TransportPathButtonStyle}" Click="Previous_Click" Foreground="{DynamicResource TextBrush}" Margin="0,0,20,0">
+                                <Path Data="M6,18V6H8V18H6M9.5,12L18,6V18L9.5,12Z" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Width="18" Height="18" Stretch="Uniform"/>
                             </Button>
 
-                            <Button x:Name="BtnMainPlay" Content="▶" Width="68" Height="68" Cursor="Hand" Style="{StaticResource BaseControlButtonStyle}" Click="Play_Click">
+                            <Button x:Name="BtnMainPlay" Content="▶" Width="72" Height="72" Cursor="Hand" Style="{StaticResource BaseControlButtonStyle}" Click="Play_Click">
                                 <Button.Template>
                                     <ControlTemplate TargetType="Button">
                                         <Grid>
                                             <Ellipse x:Name="Circle" Fill="{DynamicResource TextBrush}">
                                                 <Ellipse.Effect>
-                                                    <DropShadowEffect BlurRadius="16" ShadowDepth="3" Opacity="0.2" Color="Black"/>
+                                                    <DropShadowEffect BlurRadius="20" ShadowDepth="4" Opacity="0.25" Color="Black"/>
                                                 </Ellipse.Effect>
                                             </Ellipse>
-                                            <Path x:Name="PlayIcon" Data="M8,5V19L19,12L8,5Z" Fill="{DynamicResource BackgroundBrush}" Width="20" Height="20" Stretch="Uniform" Margin="4,0,0,0"/>
-                                            <Path x:Name="PauseIcon" Data="M14,19H18V5H14M6,19H10V5H6Z" Fill="{DynamicResource BackgroundBrush}" Width="18" Height="18" Stretch="Uniform" Visibility="Collapsed"/>
+                                            <Path x:Name="PlayIcon" Data="M8,5V19L19,12L8,5Z" Fill="{DynamicResource BackgroundBrush}" Width="22" Height="22" Stretch="Uniform" Margin="4,0,0,0"/>
+                                            <Path x:Name="PauseIcon" Data="M14,19H18V5H14M6,19H10V5H6Z" Fill="{DynamicResource BackgroundBrush}" Width="20" Height="20" Stretch="Uniform" Visibility="Collapsed"/>
                                         </Grid>
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="Content" Value="⏸">
@@ -201,16 +211,31 @@
                                                 <Setter TargetName="PauseIcon" Property="Visibility" Value="Visible"/>
                                             </Trigger>
                                             <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="Circle" Property="RenderTransform">
-                                                    <Setter.Value>
-                                                        <ScaleTransform ScaleX="1.04" ScaleY="1.04"/>
-                                                    </Setter.Value>
-                                                </Setter>
+                                                <Trigger.EnterActions>
+                                                    <BeginStoryboard>
+                                                        <Storyboard>
+                                                            <DoubleAnimation Storyboard.TargetName="Circle" Storyboard.TargetProperty="(Ellipse.RenderTransform).(ScaleTransform.ScaleX)" To="1.06" Duration="0:0:0.15">
+                                                                <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                                            </DoubleAnimation>
+                                                            <DoubleAnimation Storyboard.TargetName="Circle" Storyboard.TargetProperty="(Ellipse.RenderTransform).(ScaleTransform.ScaleY)" To="1.06" Duration="0:0:0.15">
+                                                                <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                                            </DoubleAnimation>
+                                                        </Storyboard>
+                                                    </BeginStoryboard>
+                                                </Trigger.EnterActions>
+                                                <Trigger.ExitActions>
+                                                    <BeginStoryboard>
+                                                        <Storyboard>
+                                                            <DoubleAnimation Storyboard.TargetName="Circle" Storyboard.TargetProperty="(Ellipse.RenderTransform).(ScaleTransform.ScaleX)" To="1.0" Duration="0:0:0.15"/>
+                                                            <DoubleAnimation Storyboard.TargetName="Circle" Storyboard.TargetProperty="(Ellipse.RenderTransform).(ScaleTransform.ScaleY)" To="1.0" Duration="0:0:0.15"/>
+                                                        </Storyboard>
+                                                    </BeginStoryboard>
+                                                </Trigger.ExitActions>
                                             </Trigger>
                                             <Trigger Property="IsPressed" Value="True">
                                                 <Setter TargetName="Circle" Property="RenderTransform">
                                                     <Setter.Value>
-                                                        <ScaleTransform ScaleX="0.96" ScaleY="0.96"/>
+                                                        <ScaleTransform ScaleX="0.94" ScaleY="0.94"/>
                                                     </Setter.Value>
                                                 </Setter>
                                             </Trigger>
@@ -219,22 +244,23 @@
                                 </Button.Template>
                             </Button>
 
-                            <Button Style="{StaticResource TransportPathButtonStyle}" Click="Next_Click" Margin="16,0,0,0">
-                                <Path Data="M16,18H18V6H16M6,18L14.5,12L6,6V18Z" Fill="{DynamicResource TextBrush}" Width="16" Height="16" Stretch="Uniform"/>
+                            <Button Style="{StaticResource TransportPathButtonStyle}" Click="Next_Click" Foreground="{DynamicResource TextBrush}" Margin="20,0,0,0">
+                                <Path Data="M16,18H18V6H16M6,18L14.5,12L6,6V18Z" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Width="18" Height="18" Stretch="Uniform"/>
                             </Button>
                         </StackPanel>
 
-                        <Button Grid.Column="5" x:Name="BtnToggleLyrics" Style="{StaticResource CircleIconButtonStyle}" Click="BtnToggleLyrics_Click" Margin="4,0,0,0">
-                            <Path x:Name="LyricsIcon" Data="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M9,17H7V10H9V17ZM13,17H11V7H13V17ZM17,17H15V12H17V17Z" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Width="18" Height="18" Stretch="Uniform"/>
-                        </Button>
-
-                        <Button Grid.Column="6" x:Name="BtnRepeat" Style="{StaticResource TransportPathButtonStyle}" HorizontalAlignment="Right" Click="Repeat_Click" Margin="10,0,0,0">
-                            <Path x:Name="RepeatIcon" Data="M17,17H7V14L3,18L7,22V19H19V13H17V17M7,7H17V10L21,6L17,2V5H5V11H7V7Z" Fill="{DynamicResource MutedTextBrush}" Width="16" Height="16" Stretch="Uniform"/>
-                        </Button>
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                            <Button x:Name="BtnToggleLyrics" Style="{StaticResource CircleIconButtonStyle}" Click="BtnToggleLyrics_Click" Margin="0,0,8,0">
+                                <Path x:Name="LyricsIcon" Data="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M9,17H7V10H9V17ZM13,17H11V7H13V17ZM17,17H15V12H17V17Z" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Width="18" Height="18" Stretch="Uniform"/>
+                            </Button>
+                            <Button x:Name="BtnRepeat" Style="{StaticResource TransportPathButtonStyle}" Click="Repeat_Click">
+                                <Path x:Name="RepeatIcon" Data="M17,17H7V14L3,18L7,22V19H19V13H17V17M7,7H17V10L21,6L17,2V5H5V11H7V7Z" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Width="16" Height="16" Stretch="Uniform"/>
+                            </Button>
+                        </StackPanel>
                     </Grid>
                 </Grid>
 
-                <Grid Grid.Column="1" x:Name="RightPanelRoot" Margin="40,10,0,10" Opacity="0" Visibility="Collapsed" RenderTransformOrigin="0.5,0.5">
+                <Grid Grid.Column="1" x:Name="RightPanelRoot" Margin="44,10,0,10" Opacity="0" Visibility="Collapsed" RenderTransformOrigin="0.5,0.5">
                     <Grid.RenderTransform>
                         <TranslateTransform X="30" Y="0"/>
                     </Grid.RenderTransform>
@@ -277,8 +303,8 @@
                                     <Border Background="{DynamicResource SecondaryBackgroundBrush}" Padding="18" CornerRadius="16" Margin="0,0,0,12">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="*"/>
+                                                <Definition x:Uid="Col0" Width="Auto"/>
+                                                <Definition x:Uid="Col1" Width="*"/>
                                             </Grid.ColumnDefinitions>
                                             <Path Grid.Column="0" Data="M12,3V10.55C11.41,10.21 10.73,10 10,10A4,4 0 0,0 6,14A4,4 0 0,0 10,18A4,4 0 0,0 14,14V7H18V3H12Z" Fill="{DynamicResource AccentBrush}" Width="16" Height="16" Stretch="Uniform" Margin="0,0,14,0"/>
                                             <TextBlock Grid.Column="1" Text="Next Tracks Scheduled In Stream Queue" FontSize="14" Foreground="{DynamicResource TextBrush}" VerticalAlignment="Center" FontWeight="Medium"/>
