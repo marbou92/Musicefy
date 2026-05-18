@@ -10,11 +10,11 @@
                     <Border x:Name="ThumbVisual" 
                             Background="{DynamicResource MutedTextBrush}" 
                             CornerRadius="4" 
-                            Opacity="0.3" 
+                            Opacity="0.4" 
                             SnapsToDevicePixels="True"/>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="ThumbVisual" Property="Opacity" Value="0.75"/>
+                            <Setter TargetName="ThumbVisual" Property="Opacity" Value="0.8"/>
                             <Setter TargetName="ThumbVisual" Property="Background" Value="{DynamicResource AccentBrush}"/>
                         </Trigger>
                         <Trigger Property="IsDragging" Value="True">
@@ -39,6 +39,10 @@
                     <Grid x:Name="Bg" Background="Transparent" SnapsToDevicePixels="True">
                         <Track x:Name="PART_Track" 
                                Orientation="{TemplateBinding Orientation}"
+                               Minimum="{TemplateBinding Minimum}"
+                               Maximum="{TemplateBinding Maximum}"
+                               Value="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                               ViewportSize="{TemplateBinding ViewportSize}"
                                IsDirectionReversed="True" 
                                IsEnabled="{TemplateBinding IsEnabled}">
                             <Track.DecreaseRepeatButton>
