@@ -121,14 +121,17 @@
                 <Grid Grid.Column="0" x:Name="PlayerDeckRoot" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="440" Width="Auto">
                     <StackPanel>
                         
-                        <Border x:Name="CoverArtBorder" CornerRadius="20" ClipToBounds="True" Background="#050505" MaxHeight="440" Margin="0,0,0,0">
-                            <Grid x:Name="CoverArtContainer" MaxWidth="{Binding ActualHeight, ElementName=CoverArtBorder}">
-                                <Border.Effect>
-                                    <DropShadowEffect BlurRadius="48" ShadowDepth="8" Opacity="0.45" Color="Black"/>
-                                </Border.Effect>
-                                <Image Source="{Binding NowPlaying.CoverPath, Converter={StaticResource PathToImageConverter}}" Stretch="UniformToFill"/>
-                            </Grid>
-                        </Border>
+                        <Grid MaxHeight="440" Margin="0,0,0,0">
+                            <Grid.Effect>
+                                <DropShadowEffect BlurRadius="48" ShadowDepth="8" Opacity="0.45" Color="Black"/>
+                            </Grid.Effect>
+                            
+                            <Border x:Name="CoverArtBorder" CornerRadius="20" ClipToBounds="True" Background="#050505">
+                                <Grid x:Name="CoverArtContainer" MaxWidth="{Binding ActualHeight, ElementName=CoverArtBorder}">
+                                    <Image Source="{Binding NowPlaying.CoverPath, Converter={StaticResource PathToImageConverter}}" Stretch="UniformToFill"/>
+                                </Grid>
+                            </Border>
+                        </Grid>
 
                         <Grid Margin="4,24,4,0">
                             <Grid.ColumnDefinitions>
@@ -198,8 +201,8 @@
                                             </Grid>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="Content" Value="⏸">
-                                                    <Setter TargetName="PlayIcon" Property="Visibility" Value="Collapsed"/>
-                                                    <Setter TargetName="PauseIcon" Property="Visibility" Value="Visible"/>
+                                                    <Value SetterName="PlayIcon" Property="Visibility" Value="Collapsed"/>
+                                                    <Value SetterName="PauseIcon" Property="Visibility" Value="Visible"/>
                                                 </Trigger>
                                                 <Trigger Property="IsMouseOver" Value="True">
                                                     <Setter TargetName="Circle" Property="RenderTransform">
@@ -271,15 +274,15 @@
                                     <Border Background="{DynamicResource SecondaryBackgroundBrush}" Padding="18" CornerRadius="16" Margin="0,0,0,12">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="*"/>
+                                                <Grid.ColumnDefinition Width="Auto"/>
+                                                <Grid.ColumnDefinition Width="*"/>
                                             </Grid.ColumnDefinitions>
                                             <Path Grid.Column="0" Data="M12,3V10.55C11.41,10.21 10.73,10 10,10A4,4 0 0,0 6,14A4,4 0 0,0 10,18A4,4 0 0,0 14,14V7H18V3H12Z" Fill="{DynamicResource AccentBrush}" Width="16" Height="16" Stretch="Uniform" Margin="0,0,14,0"/>
                                             <TextBlock Grid.Column="1" Text="Next Tracks Scheduled In Stream Queue" FontSize="14" Foreground="{DynamicResource TextBrush}" VerticalAlignment="Center" FontWeight="Medium"/>
                                         </Grid>
                                     </Border>
                                 </StackPanel>
-                            </ScrollViewer>
+                              </ScrollViewer>
                         </Grid>
                     </Grid>
                 </Grid>
