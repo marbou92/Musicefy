@@ -5,42 +5,127 @@
              Background="Transparent"
              VerticalAlignment="Stretch"
              HorizontalAlignment="Stretch">
+
+    <UserControl.Resources>
+        <Style x:Key="MaterialYouCardStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="0,0,24,28"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="CardContainer" 
+                                Background="Transparent" 
+                                CornerRadius="20" 
+                                Padding="8"
+                                SnapsToDevicePixels="True">
+                            <StackPanel Width="140">
+                                <Border x:Name="CoverArtContainer"
+                                        Background="{DynamicResource SecondaryBackgroundBrush}" 
+                                        Height="140" 
+                                        CornerRadius="16" 
+                                        Margin="0,0,0,12"
+                                        SnapsToDevicePixels="True">
+                                    <Path Data="{Binding IconData}" 
+                                          Fill="{DynamicResource TextBrush}" 
+                                          Opacity="0.85"
+                                          Stretch="Uniform" 
+                                          Width="36" Height="36" 
+                                          HorizontalAlignment="Center" 
+                                          VerticalAlignment="Center"/>
+                                </Border>
+
+                                <TextBlock Text="{Binding Title}" 
+                                           FontWeight="Medium" 
+                                           FontSize="14" 
+                                           Foreground="{DynamicResource TextBrush}" 
+                                           Margin="4,0,4,2"
+                                           TextTrimming="CharacterEllipsis"/>
+                                
+                                <TextBlock Text="{Binding Subtitle}" 
+                                           FontSize="12" 
+                                           Foreground="{DynamicResource MutedTextBrush}" 
+                                           Margin="4,0,4,4"
+                                           TextTrimming="CharacterEllipsis"/>
+                            </StackPanel>
+                        </Border>
+                        
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="CardContainer" Property="Background" Value="#0FFFFFFF"/>
+                                <Setter TargetName="CoverArtContainer" Property="RenderTransform">
+                                    <Setter.Value>
+                                        <TranslateTransform Y="-2"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="MaterialYouIconButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="BtnPill" Background="Transparent" CornerRadius="20">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="BtnPill" Property="Background" Value="#0DFFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="BtnPill" Property="Background" Value="#1AFFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
     
-    <Grid Margin="40,20,40,20" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+    <Grid Margin="40,24,40,24" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" Margin="0,0,0,30">
+        <Grid Grid.Row="0" Margin="4,0,4,24">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
                 <Button x:Name="BtnBack" 
-                        Content="←" 
-                        FontSize="20" 
-                        FontWeight="Bold"
-                        Background="Transparent" 
-                        BorderThickness="0" 
-                        Foreground="{DynamicResource TextBrush}"
-                        Margin="0,0,15,0"
-                        Cursor="Hand"
+                        Style="{StaticResource MaterialYouIconButtonStyle}"
+                        Margin="0,0,12,0"
                         Visibility="Collapsed"
-                        Click="BtnBack_Click"/>
+                        Click="BtnBack_Click">
+                    <Path Data="M20,11H7.83l5.59-5.59L12,4l-8,8l8,8l1.41-1.41L7.83,13H20V11z" 
+                          Fill="{DynamicResource TextBrush}" Stretch="Uniform" Width="20" Height="20"/>
+                </Button>
                 
                 <TextBlock x:Name="TxtHeaderTitle"
                            Text="Saved" 
-                           FontSize="24" 
-                           FontWeight="Bold" 
-                           Foreground="{DynamicResource TextBrush}"/>
+                           FontSize="28" 
+                           FontWeight="SemiBold" 
+                           Tracking="0.5"
+                           Foreground="{DynamicResource TextBrush}"
+                           VerticalAlignment="Center"/>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                <Button Width="35" Height="35" Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="0,0,10,0">
-                    <Path Data="M9,3L5,7H8V14H10V7H13L9,3M19,17H16V10H14V17H11L15,21L19,17Z" 
-                          Fill="{DynamicResource MutedTextBrush}" Stretch="Uniform" Width="18"/>
+                <Button Style="{StaticResource MaterialYouIconButtonStyle}" Margin="0,0,8,0">
+                    <Path Data="M3,18H9V16H3V18M3,5V7H21V5H3M3,12H15V10H3V12Z" 
+                          Fill="{DynamicResource MutedTextBrush}" Stretch="Uniform" Width="20" Height="20"/>
                 </Button>
-                <Button Width="35" Height="35" Background="Transparent" BorderThickness="0" Cursor="Hand" Click="BtnAddPlaylist_Click">
+                <Button Style="{StaticResource MaterialYouIconButtonStyle}" Click="BtnAddPlaylist_Click">
                     <Path Data="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" 
-                          Fill="{DynamicResource TextBrush}" Stretch="Uniform" Width="18"/>
+                          Fill="{DynamicResource TextBrush}" Stretch="Uniform" Width="20" Height="20"/>
                 </Button>
             </StackPanel>
         </Grid>
@@ -55,42 +140,12 @@
                 <ItemsControl x:Name="LibraryItemsControl">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <WrapPanel Orientation="Horizontal" Margin="0,0,-20,0"/>
+                            <WrapPanel Orientation="Horizontal" Margin="0,0,-24,0"/>
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Button Background="Transparent" BorderThickness="0" Margin="0,0,20,25" Cursor="Hand" Click="LibraryCard_Click">
-                                <Button.Template>
-                                    <ControlTemplate TargetType="Button">
-                                        <StackPanel Width="140">
-                                            <Border Background="{DynamicResource SecondaryBackgroundBrush}" 
-                                                    Height="144" 
-                                                    CornerRadius="12" 
-                                                    Margin="0,0,0,10"
-                                                    SnapsToDevicePixels="True">
-                                                <Path Data="{Binding IconData}" 
-                                                      Fill="{DynamicResource TextBrush}" 
-                                                      Stretch="Uniform" 
-                                                      Width="32" Height="32" 
-                                                      HorizontalAlignment="Center" 
-                                                      VerticalAlignment="Center"/>
-                                            </Border>
-                                            
-                                            <TextBlock Text="{Binding Title}" 
-                                                       FontWeight="SemiBold" 
-                                                       FontSize="14" 
-                                                       Foreground="{DynamicResource TextBrush}" 
-                                                       Margin="2,0,0,2"
-                                                       TextTrimming="CharacterEllipsis"/>
-                                            <TextBlock Text="{Binding Subtitle}" 
-                                                       FontSize="12" 
-                                                       Foreground="{DynamicResource MutedTextBrush}" 
-                                                       Margin="2,0,0,0"/>
-                                        </StackPanel>
-                                    </ControlTemplate>
-                                </Button.Template>
-                            </Button>
+                            <Button Style="{StaticResource MaterialYouCardStyle}" Click="LibraryCard_Click"/>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
