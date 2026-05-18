@@ -266,10 +266,12 @@
                     <Grid x:Name="QueuePanelContainer" Visibility="Collapsed">
                         <Grid>
                             <Grid.RowDefinitions>
-                                <Grid.RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
+                            
                             <TextBlock Grid.Row="0" Text="Up Next Queue" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextBrush}" Margin="0,4,0,20"/>
+                            
                             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Hidden" PanningMode="VerticalOnly">
                                 <StackPanel>
                                     <Border Background="{DynamicResource SecondaryBackgroundBrush}" Padding="18" CornerRadius="16" Margin="0,0,0,12">
@@ -287,7 +289,8 @@
                         </Grid>
                     </Grid>
                 </Grid>
-                </Grid>
+                
+            </Grid>
         </Grid>
     </Grid>
 </UserControl>
