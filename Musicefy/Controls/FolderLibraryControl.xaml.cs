@@ -89,6 +89,10 @@ namespace Musicefy.Controls
             FolderSongsListView.ItemsSource = trackList;
             FolderSongsItemsControl.ItemsSource = trackList;
             
+            // FIXED: Force immediate device pixel calculations over tracking boundaries
+            // before layout engine animation vectors lock up rendering inputs.
+            this.UpdateLayout();
+            
             TriggerFluidLayoutEntranceAnimation();
         }
 
@@ -219,7 +223,6 @@ namespace Musicefy.Controls
             targetElement.Opacity = 0;
             targetTransform.Y = 24;
 
-            // FIXED CUBIC MOTIONS: Massless velocity curve equations deliver pure smooth renders
             var fadeAnim = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromMilliseconds(350)))
             {
                 EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
