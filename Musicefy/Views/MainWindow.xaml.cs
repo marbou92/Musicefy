@@ -37,7 +37,6 @@ namespace Musicefy
             
             InitializeComponent();
 
-            // FIXED: Wires the visual structural control hook engine safely right after base components load
             AttachCustomTitleBarWindowActions();
 
             _isInitializing = false;
