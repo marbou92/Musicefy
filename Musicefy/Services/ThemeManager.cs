@@ -115,13 +115,16 @@ namespace Musicefy.Services
             {
                 if (e.Category == UserPreferenceCategory.General)
                 {
-                    string savedTheme = Musicefy.Properties.Settings.Default.Theme ?? "System|Default";
-                    if (savedTheme.StartsWith("System", StringComparison.OrdinalIgnoreCase))
+                    // FIXED: Dispatched to UI thread. Registry change events fire cross-thread and would crash App Resource updates.
+                    Application.Current.Dispatcher.BeginInvoke(new Action(() =>
                     {
-                        ApplyThemeFromString(savedTheme);
-                        Application.Current.Dispatcher.BeginInvoke(new Action(AnimateWindowsFade),
-                            System.Windows.Threading.DispatcherPriority.ApplicationIdle);
-                    }
+                        string savedTheme = Musicefy.Properties.Settings.Default.Theme ?? "System|Default";
+                        if (savedTheme.StartsWith("System", StringComparison.OrdinalIgnoreCase))
+                        {
+                            ApplyThemeFromString(savedTheme);
+                            AnimateWindowsFade();
+                        }
+                    }), System.Windows.Threading.DispatcherPriority.ApplicationIdle);
                 }
             };
         }
@@ -141,7 +144,6 @@ namespace Musicefy.Services
             }
         }
 
-        // FIXED: Added missing 'static' keyword context specifier modifier rule 
         private static void AnimateButtons(Window win)
         {
             foreach (var child in FindVisualChildren<System.Windows.Controls.Button>(win))
