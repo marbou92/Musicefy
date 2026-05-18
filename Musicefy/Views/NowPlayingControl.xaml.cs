@@ -1,4 +1,3 @@
-// File Path: Musicefy/Views/NowPlayingControl.xaml.cs
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -20,10 +19,14 @@ namespace Musicefy.Views
         private bool _isDragging = false;
         private bool _userIsScrubbingSlider = false;
 
+        // Visual states variables
+        private bool _isShuffleEnabled = false;
+        private bool _isRepeatEnabled = false;
+        private bool _isFavoriteTrack = false;
+
         private enum RightViewMode { None, Lyrics, Queue }
         private RightViewMode _currentMode = RightViewMode.None;
 
-        // Expose the current track safely for UI Bindings
         public MusicFile NowPlaying => _playback?.CurrentTrack;
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -37,7 +40,6 @@ namespace Musicefy.Views
             InitializeComponent();
             _playback = playback;
             
-            // Explicitly set the DataContext to this code-behind instance
             this.DataContext = this;
 
             _playback.TrackChanged += OnTrackChanged;
@@ -159,14 +161,80 @@ namespace Musicefy.Views
         private void BackButton_Click(object sender, RoutedEventArgs e) => RequestCollapse?.Invoke();
         #endregion
 
+        #region Functional Transport Action Event Triggers
+
+        private void Shuffle_Click(object sender, RoutedEventArgs e)
+        {
+            _isShuffleEnabled = !_isShuffleEnabled;
+            // TODO: Wire up to your streaming backend service logic here if needed: _playback.SetShuffle(_isShuffleEnabled);
+            
+            ShuffleIcon.Fill = _isShuffleEnabled 
+                ? (Brush)FindResource("AccentBrush") 
+                : (Brush)FindResource("MutedTextBrush");
+        }
+
+        private void Repeat_Click(object sender, RoutedEventArgs e)
+        {
+            _isRepeatEnabled = !_isRepeatEnabled;
+            // TODO: Wire up to backend engine logic here if needed: _playback.SetRepeat(_isRepeatEnabled);
+            
+            RepeatIcon.Fill = _isRepeatEnabled 
+                ? (Brush)FindResource("AccentBrush") 
+                : (Brush)FindResource("MutedTextBrush");
+        }
+
+        private void Favorite_Click(object sender, RoutedEventArgs e)
+        {
+            _isFavoriteTrack = !_isFavoriteTrack;
+            
+            if (_isFavoriteTrack)
+            {
+                FavoriteIcon.Fill = new SolidColorBrush(Color.FromRgb(244, 67, 54)); // Vivid Material Red Heart Fill
+                // Vector heart toggle data to completely filled shape representation
+                FavoriteIcon.Data = Geometry.Parse("M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z");
+            }
+            else
+            {
+                FavoriteIcon.Fill = (Brush)FindResource("MutedTextBrush");
+                // Vector heart toggle back to clean outline representation
+                FavoriteIcon.Data = Geometry.Parse("M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z");
+            }
+        }
+
+        private void MoreOptions_Click(object sender, RoutedEventArgs e)
+        {
+            // Instantiates an aesthetic localized context menu strip layout on flyby execution
+            ContextMenu ctxMenu = new ContextMenu();
+            
+            MenuItem subItemQueue = new MenuItem { Header = "Add to Queue" };
+            MenuItem subItemPlaylist = new MenuItem { Header = "Add to Playlist..." };
+            MenuItem subItemArtist = new MenuItem { Header = "Go to Artist View" };
+            MenuItem subItemInfo = new MenuItem { Header = "View Track Details" };
+
+            ctxMenu.Items.Add(subItemQueue);
+            ctxMenu.Items.Add(subItemPlaylist);
+            ctxMenu.Items.Add(new Separator());
+            ctxMenu.Items.Add(subItemArtist);
+            ctxMenu.Items.Add(subItemInfo);
+
+            ctxMenu.PlacementTarget = sender as Button;
+            ctxMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+            ctxMenu.IsOpen = true;
+        }
+
+        #endregion
+
         #region Playback Service Event Synchronization
         private void OnTrackChanged(MusicFile track)
         {
             if (track == null) return;
             Dispatcher.Invoke(() =>
             {
-                // Push update warnings down to the XAML parsing layer
                 OnPropertyChanged(nameof(NowPlaying));
+
+                // Reset dynamic contextual state flags on new track updates
+                _isFavoriteTrack = false; 
+                FavoriteIcon.Fill = (Brush)FindResource("MutedTextBrush");
 
                 ProgressSlider.Value = 0;
                 ProgressSlider.Maximum = track.Duration.TotalSeconds > 0 ? track.Duration.TotalSeconds : 100;
