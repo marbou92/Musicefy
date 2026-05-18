@@ -105,8 +105,7 @@ namespace Musicefy.Views
 
                     fadeIn.Completed += (sender, ev) =>
                     {
-                        // FIXED: Forces a synchronous refresh layout check after animation settles 
-                        // so the scrollbar track correctly monitors actual child height sizes.
+                        // FIXED: Recomputes physical boundaries as soon as layout swapping finishes
                         this.UpdateLayout();
                     };
 
@@ -135,7 +134,7 @@ namespace Musicefy.Views
 
                 fadeIn.Completed += (sender, ev) =>
                 {
-                    // FIXED: Forces layout recalculations on initial loading sequences
+                    // FIXED: Recomputes physical boundaries on entry fallback loops
                     this.UpdateLayout();
                 };
 
