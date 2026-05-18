@@ -68,6 +68,7 @@ namespace Musicefy
             Dispatcher.Invoke(() =>
             {
                 OnPropertyChanged(nameof(NowPlaying));
+                UpdateMiniPlayerVisibility();
             });
         }
 
@@ -105,10 +106,6 @@ namespace Musicefy
             fadeOut.Completed += (s, e) =>
             {
                 MainContent.Content = newContent;
-                
-                // FIXED: Force a structural layout layout math refresh pass precisely 
-                // when incoming subviews swap out. This tells the ScrollViewer how tall 
-                // its screen window actual boundaries are to activate your scrollbars!
                 this.UpdateLayout();
 
                 DoubleAnimation fadeIn = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(200));
@@ -117,7 +114,7 @@ namespace Musicefy
             MainContent.BeginAnimation(OpacityProperty, fadeOut);
         }
 
-    #region Mini-Player Pipeline Slide Controllers
+        #region Mini-Player Pipeline Slide Controllers
         private bool _isDraggingMiniPlayer = false;
         private Point _dragStartPoint;
         private double _dragStartTranslateX;
@@ -126,7 +123,6 @@ namespace Musicefy
 
         private void UpdateMiniPlayerVisibility()
         {
-            // Only show the bar if a valid audio file track object exists AND the full panel view is tucked away
             if (NowPlaying == null || _isFullPanelOpen)
             {
                 MiniPlayerBar.Visibility = Visibility.Collapsed;
@@ -135,6 +131,11 @@ namespace Musicefy
             {
                 MiniPlayerBar.Visibility = Visibility.Visible;
             }
+        }
+
+        private void MiniPlayerBar_Click(object sender, MouseButtonEventArgs e)
+        {
+            // Retained mapping reference node context placeholder if needed for alternative visual hooks
         }
 
         private void MiniPlayerBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -147,22 +148,20 @@ namespace Musicefy
             MiniPlayerBar.CaptureMouse();
         }
 
-        private void MiniPlayerBar_MouseMove(object sender, MouseButtonEventArgs e)
+        // FIXED SIGNATURE: Changed MouseButtonEventArgs to MouseEventArgs to match delegate expectations
+        private void MiniPlayerBar_MouseMove(object sender, MouseEventArgs e)
         {
             if (!_isDraggingMiniPlayer) return;
 
             Point currentPoint = e.GetPosition(this);
             double deltaX = currentPoint.X - _dragStartPoint.X;
 
-            // Prevent hypersensitive click-misfires by enforcing a 5px structural deadzone
             if (!_hasDraggedSignificantly && Math.Abs(deltaX) > 5)
             {
                 _hasDraggedSignificantly = true;
             }
 
             double targetX = _dragStartTranslateX + deltaX;
-
-            // Clamping framework calculations to prevent drifting off the screen margins
             double maxOffset = (this.ActualWidth - MiniPlayerBar.Width) / 2.0 - 16; 
             if (maxOffset < 0) maxOffset = 0;
 
@@ -179,7 +178,6 @@ namespace Musicefy
             _isDraggingMiniPlayer = false;
             MiniPlayerBar.ReleaseMouseCapture();
 
-            // If the user simply tapped without driving the dock left or right, trigger panel slide up action
             if (!_hasDraggedSignificantly)
             {
                 OpenFullNowPlayingPanel();
