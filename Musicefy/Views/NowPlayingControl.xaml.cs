@@ -188,44 +188,48 @@ namespace Musicefy.Views
 
         private void BackButton_Click(object sender, RoutedEventArgs e) => RequestCollapse?.Invoke();
 
-        private void Play_Click(object sender, RoutedEventArgs e) => _ = _playbackService.IsPlaying ? _playbackService.Pause() : _playbackService.Resume();
+        private void Play_Click(object sender, RoutedEventArgs e)
+        {
+            if (_playback.IsPlaying)
+            {
+                _playback.Pause();
+            }
+            else
+            {
+                _playback.Resume();
+            }
+        }
 
-        private void Previous_Click(object sender, RoutedEventArgs e) => _playbackService.Previous();
+        private void Previous_Click(object sender, RoutedEventArgs e) => _playback.Previous();
 
-        private void Next_Click(object sender, RoutedEventArgs e) => _playbackService.Next();
+        private void Next_Click(object sender, RoutedEventArgs e) => _playback.Next();
 
         private void Shuffle_Click(object sender, RoutedEventArgs e)
         {
             _isShuffleEnabled = !_isShuffleEnabled;
-            // Update UI color or icon state
         }
 
         private void Repeat_Click(object sender, RoutedEventArgs e)
         {
             _isRepeatEnabled = !_isRepeatEnabled;
-            // Update UI color or icon state
         }
 
         private void Favorite_Click(object sender, RoutedEventArgs e)
         {
             _isFavoriteTrack = !_isFavoriteTrack;
-            // Add favorite logic and update FavoriteIcon path/color
         }
 
         private void Share_Click(object sender, RoutedEventArgs e)
         {
-            // Trigger share dialog logic
             MessageBox.Show("Share track: " + NowPlaying?.Title);
         }
 
         private void MoreOptions_Click(object sender, RoutedEventArgs e)
         {
-            // Open Context Menu or Dropdown with more options
         }
 
         private void SleepTimer_Click(object sender, RoutedEventArgs e)
         {
-            // Add sleep timer logic
             MessageBox.Show("Sleep timer dialog");
         }
 
@@ -237,29 +241,23 @@ namespace Musicefy.Views
         private void Slider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
         {
             _userIsScrubbingSlider = false;
-            if (_playback.CurrentTrack != null)
-            {
-                // Seek logic mapping ProgressSlider.Value back to playback position
-                // _playback.SeekTo(ProgressSlider.Value);
-            }
         }
 
         private void OnTrackChanged(MusicFile track)
         {
             Dispatcher.Invoke(() => {
                 OnPropertyChanged(nameof(NowPlaying));
-                // Update specific track logic here
             });
         }
 
         private void OnProgressChanged(TimeSpan currentTime, TimeSpan totalTime)
         {
             Dispatcher.Invoke(() => {
-                if (!_userIsScrubbingSlider && totalTime > 0)
+                if (!_userIsScrubbingSlider && totalTime > TimeSpan.Zero)
                 {
-                    ProgressSlider.Value = (currentTime / totalTime) * 100;
-                    TxtCurrentTime.Text = TimeSpan.FromSeconds(currentTime).ToString(@"m\:ss");
-                    TxtTotalTime.Text = TimeSpan.FromSeconds(totalTime).ToString(@"m\:ss");
+                    ProgressSlider.Value = (currentTime.TotalSeconds / totalTime.TotalSeconds) * 100;
+                    TxtCurrentTime.Text = currentTime.ToString(@"m\:ss");
+                    TxtTotalTime.Text = totalTime.ToString(@"m\:ss");
                 }
             });
         }
@@ -276,7 +274,6 @@ namespace Musicefy.Views
             BtnMainPlay.Content = isPlaying ? "⏸" : "▶";
         }
 
-        // Window drag logic (if applicable from the user controls layout)
         private void OnMouseDown(object sender, MouseButtonEventArgs e) { }
         private void OnMouseMove(object sender, MouseEventArgs e) { }
         private void OnMouseUp(object sender, MouseButtonEventArgs e) { }
