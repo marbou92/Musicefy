@@ -290,32 +290,32 @@
                     </Grid>
 
                     <Grid x:Name="QueuePanelContainer" Visibility="Collapsed">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="*"/>
-                            </Grid.RowDefinitions>
-                            
-                            <TextBlock Grid.Row="0" Text="Up Next Queue" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextBrush}" Margin="0,4,0,20"/>
-                            
-                            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Hidden" PanningMode="VerticalOnly">
-                                <StackPanel>
-                                    <Border Background="{DynamicResource SecondaryBackgroundBrush}" Padding="18" CornerRadius="16" Margin="0,0,0,12">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <Definition x:Uid="Col0" Width="Auto"/>
-                                                <Definition x:Uid="Col1" Width="*"/>
-                                            </Grid.ColumnDefinitions>
-                                            <Path Grid.Column="0" Data="M12,3V10.55C11.41,10.21 10.73,10 10,10A4,4 0 0,0 6,14A4,4 0 0,0 10,18A4,4 0 0,0 14,14V7H18V3H12Z" Fill="{DynamicResource AccentBrush}" Width="16" Height="16" Stretch="Uniform" Margin="0,0,14,0"/>
-                                            <TextBlock Grid.Column="1" Text="Next Tracks Scheduled In Stream Queue" FontSize="14" Foreground="{DynamicResource TextBrush}" VerticalAlignment="Center" FontWeight="Medium"/>
-                                        </Grid>
-                                    </Border>
-                                </StackPanel>
-                            </ScrollViewer>
-                        </Grid>
-                    </Grid>
+                      <Grid>
+                          <Grid.RowDefinitions>
+                              <RowDefinition Height="Auto"/>
+                              <RowDefinition Height="*"/>
+                          </Grid.RowDefinitions>
+                          
+                          <TextBlock Grid.Row="0" Text="Up Next Queue" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextBrush}" Margin="0,4,0,20"/>
+                          
+                          <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Hidden" PanningMode="VerticalOnly">
+                              <StackPanel>
+                                  <Border Background="{DynamicResource SecondaryBackgroundBrush}" Padding="18" CornerRadius="16" Margin="0,0,0,12">
+                                      <Grid>
+                                          <Grid.ColumnDefinitions>
+                                              <ColumnDefinition x:Uid="Col0" Width="Auto"/>
+                                              <ColumnDefinition x:Uid="Col1" Width="*"/>
+                                          </Grid.ColumnDefinitions>
+                                          
+                                          <Path Grid.Column="0" Data="M12,3V10.55C11.41,10.21 10.73,10 10,10A4,4 0 0,0 6,14A4,4 0 0,0 10,18A4,4 0 0,0 14,14V7H18V3H12Z" Fill="{DynamicResource AccentBrush}" Width="16" Height="16" Stretch="Uniform" Margin="0,0,14,0"/>
+                                          <TextBlock Grid.Column="1" Text="Next Tracks Scheduled In Stream Queue" FontSize="14" Foreground="{DynamicResource TextBrush}" VerticalAlignment="Center" FontWeight="Medium"/>
+                                      </Grid>
+                                  </Border>
+                              </StackPanel>
+                          </ScrollViewer>
+                      </Grid>
+                  </Grid>
                 </Grid>
-                
             </Grid>
         </Grid>
     </Grid>
