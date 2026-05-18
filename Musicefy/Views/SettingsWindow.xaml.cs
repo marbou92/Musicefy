@@ -15,7 +15,6 @@ namespace Musicefy.Views
         {
             InitializeComponent();
 
-            // FIXED: Runs the shell controller wiring pass on initialization to bring buttons to life
             AttachCustomTitleBarWindowActions();
 
             ShowAppearance(); 
@@ -104,6 +103,13 @@ namespace Musicefy.Views
                         Duration = TimeSpan.FromMilliseconds(180)
                     };
 
+                    fadeIn.Completed += (sender, ev) =>
+                    {
+                        // FIXED: Forces a synchronous refresh layout check after animation settles 
+                        // so the scrollbar track correctly monitors actual child height sizes.
+                        this.UpdateLayout();
+                    };
+
                     newContent.BeginAnimation(OpacityProperty, fadeIn);
                     newContent.BeginAnimation(MarginProperty, slideIn);
                 };
@@ -125,6 +131,12 @@ namespace Musicefy.Views
                     From = newContent.Margin,
                     To = new Thickness(0),
                     Duration = TimeSpan.FromMilliseconds(180)
+                };
+
+                fadeIn.Completed += (sender, ev) =>
+                {
+                    // FIXED: Forces layout recalculations on initial loading sequences
+                    this.UpdateLayout();
                 };
 
                 newContent.BeginAnimation(OpacityProperty, fadeIn);
