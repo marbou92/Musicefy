@@ -5,20 +5,22 @@ using System.Windows;
 using System.Windows.Threading;
 using Musicefy.Core.Models;
 using Musicefy.Core.Services;
+using NAudio.CoreAudioApi; // Added for MMDeviceEnumerator and WasapiOut
 using NAudio.Wave;
 using IOFile = System.IO.File;
 
 namespace Musicefy.Services
 {
-    public class PlaybackService
+    public class PlaybackService : IDisposable
     {
-        private IWavePlayer _waveOut;
+        private WasapiOut _wasapiOut; // Swapped from IWavePlayer/WaveOutEvent
         private AudioFileReader _audioFile;
+        private MediaFoundationResampler _resampler; // Used for converting/upsampling to match DAC format if needed
         private readonly DispatcherTimer _timer;
 
         private readonly PlaylistManager _playlistManager;
         private readonly ObservableCollection<MusicFile> _queue;
-        private static readonly Random _random = new Random(); // Fixed: Reusable instance to prevent deterministic repetition
+        private static readonly Random _random = new Random();
 
         public event Action<MusicFile> TrackChanged;
         public event Action<TimeSpan, TimeSpan> ProgressChanged;
@@ -28,7 +30,7 @@ namespace Musicefy.Services
 
         public MusicFile CurrentAudioFile { get; private set; }
         public MusicFile CurrentTrack => CurrentAudioFile;
-        public bool IsPlaying => _waveOut != null && _waveOut.PlaybackState == PlaybackState.Playing;
+        public bool IsPlaying => _wasapiOut != null && _wasapiOut.PlaybackState == PlaybackState.Playing;
 
         public PlaybackService()
         {
@@ -50,8 +52,7 @@ namespace Musicefy.Services
                 return;
             }
 
-            // AUTOMATIC METADATA LOCK ENFORCER:
-            // If the track model lacks an explicit artwork image cache reference, extract it instantly before firing UI updates.
+            // AUTOMATIC METADATA LOCK ENFORCER
             if (string.IsNullOrEmpty(track.CoverPath))
             {
                 try
@@ -86,48 +87,80 @@ namespace Musicefy.Services
                 }
                 catch
                 {
-                    // Fail-safe: Keep model fallbacks clean if file handles are locked
+                    // Fail-safe
                 }
             }
 
             try
             {
-                _waveOut = new WaveOutEvent();
+                // 1. Initialize the file reader (Loads file as 32-bit IEEE Floating Point samples by default)
                 _audioFile = new AudioFileReader(uri);
-                _waveOut.Init(_audioFile);
-                _waveOut.PlaybackStopped += WaveOut_PlaybackStopped;
-                _waveOut.Play();
 
-                CurrentAudioFile = track; 
+                // 2. Fetch the target hardware output device explicitly using MMDeviceEnumerator
+                var enumerator = new MMDeviceEnumerator();
+                MMDevice defaultDevice = enumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+
+                // 3. Instantiate WASAPI output in Exclusive Mode with 100ms latency buffering
+                _wasapiOut = new WasapiOut(defaultDevice, AudioClientShareMode.Exclusive, true, 100);
+
+                IWaveProvider finalProvider = _audioFile;
+
+                // 4. BIT-PERFECT ENFORCEMENT: Hardware verification check
+                // Exclusive mode fails violently if sample rate or channels don't match the DAC's exact current configuration.
+                WaveFormat deviceFormat = _wasapiOut.DeviceWaveFormat;
+                
+                if (_audioFile.WaveFormat.SampleRate != deviceFormat.SampleRate || 
+                    _audioFile.WaveFormat.Channels != deviceFormat.Channels)
+                {
+                    // If file doesn't match the DAC format, upsample/downsample carefully using MediaFoundationResampler
+                    // preserving 32-bit float structure or outputting the device's expected format.
+                    _resampler = new MediaFoundationResampler(_audioFile, deviceFormat)
+                    {
+                        ResamplerQuality = 60 // Max quality encoding setting
+                    };
+                    finalProvider = _resampler;
+                }
+
+                // 5. Initialize device & begin streaming
+                _wasapiOut.Init(finalProvider);
+                _wasapiOut.PlaybackStopped += WasapiOut_PlaybackStopped;
+                _wasapiOut.Play();
+
+                CurrentAudioFile = track;
                 _timer.Start();
                 TrackChanged?.Invoke(track);
                 PlaybackStateChanged?.Invoke(true);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Playback error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                StopPlayback();
+                MessageBox.Show($"WASAPI Exclusive Output Error:\n{ex.Message}\n\nVerify that another application isn't locking your audio device, and that it supports the file's sample rate.", "Playback Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
         public void StopPlayback()
         {
             _timer.Stop();
-            if (_waveOut != null)
+            if (_wasapiOut != null)
             {
-                _waveOut.PlaybackStopped -= WaveOut_PlaybackStopped;
-                _waveOut.Stop();
-                _waveOut.Dispose();
-                _waveOut = null;
+                _wasapiOut.PlaybackStopped -= WasapiOut_PlaybackStopped;
+                _wasapiOut.Stop();
+                _wasapiOut.Dispose();
+                _wasapiOut = null;
+            }
+            if (_resampler != null)
+            {
+                _resampler.Dispose();
+                _resampler = null;
             }
             _audioFile?.Dispose();
             _audioFile = null;
-            CurrentAudioFile = null; 
+            CurrentAudioFile = null;
             PlaybackStateChanged?.Invoke(false);
         }
 
-        private void WaveOut_PlaybackStopped(object sender, StoppedEventArgs e)
+        private void WasapiOut_PlaybackStopped(object sender, StoppedEventArgs e)
         {
-            // FIXED: Marshaled to the UI thread. NAudio background threads cannot directly update UI states or invoke popups.
             Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
                 if (e.Exception == null && _playlistManager.RepeatEnabled)
@@ -154,18 +187,18 @@ namespace Musicefy.Services
 
         public void Pause()
         {
-            if (_waveOut != null && _waveOut.PlaybackState == PlaybackState.Playing)
+            if (_wasapiOut != null && _wasapiOut.PlaybackState == PlaybackState.Playing)
             {
-                _waveOut.Pause();
+                _wasapiOut.Pause();
                 PlaybackStateChanged?.Invoke(false);
             }
         }
 
         public void Resume()
         {
-            if (_waveOut != null && _waveOut.PlaybackState != PlaybackState.Playing)
+            if (_wasapiOut != null && _wasapiOut.PlaybackState != PlaybackState.Playing)
             {
-                _waveOut.Play();
+                _wasapiOut.Play();
                 PlaybackStateChanged?.Invoke(true);
             }
         }
@@ -200,6 +233,11 @@ namespace Musicefy.Services
         {
             if (!_queue.Contains(track))
                 _queue.Add(track);
+        }
+
+        public void Dispose()
+        {
+            StopPlayback();
         }
 
         public ObservableCollection<MusicFile> Queue => _queue;
