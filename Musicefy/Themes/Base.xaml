@@ -44,7 +44,8 @@
                                 </StackPanel>
 
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,6,0" WindowChrome.IsHitTestVisibleInChrome="True">
-                                    <Button Name="BtnShellMinimize" ToolTip="Minimize" Width="36" Height="28" Background="Transparent" BorderThickness="0" Margin="0,0,2,0">
+                                    <Button Name="BtnShellMinimize" ToolTip="Minimize" Width="36" Height="28" Background="Transparent" BorderThickness="0" Margin="0,0,2,0"
+                                            Command="{x:Static SystemCommands.MinimizeWindowCommand}">
                                         <Button.Template>
                                             <ControlTemplate TargetType="Button">
                                                 <Border x:Name="BtnBg" Background="Transparent" CornerRadius="4">
@@ -59,7 +60,8 @@
                                         </Button.Template>
                                     </Button>
 
-                                    <Button Name="BtnShellMaximize" ToolTip="Maximize" Width="36" Height="28" Background="Transparent" BorderThickness="0" Margin="0,0,2,0">
+                                    <Button Name="BtnShellMaximize" ToolTip="Maximize" Width="36" Height="28" Background="Transparent" BorderThickness="0" Margin="0,0,2,0"
+                                            Command="{x:Static SystemCommands.MaximizeWindowCommand}">
                                         <Button.Template>
                                             <ControlTemplate TargetType="Button">
                                                 <Border x:Name="BtnBg" Background="Transparent" CornerRadius="4">
@@ -74,7 +76,8 @@
                                         </Button.Template>
                                     </Button>
 
-                                    <Button Name="BtnShellClose" ToolTip="Close" Width="36" Height="28" Background="Transparent" BorderThickness="0">
+                                    <Button Name="BtnShellClose" ToolTip="Close" Width="36" Height="28" Background="Transparent" BorderThickness="0"
+                                            Command="{x:Static SystemCommands.CloseWindowCommand}">
                                         <Button.Template>
                                             <ControlTemplate TargetType="Button">
                                                 <Border x:Name="BtnBg" Background="Transparent" CornerRadius="4">
@@ -97,6 +100,12 @@
                             </Border>
                         </Grid>
                     </Border>
+                    <ControlTemplate.Triggers>
+                        <DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource Self}}" Value="Maximized">
+                            <Setter TargetName="BtnShellMaximize" Property="Command" Value="{x:Static SystemCommands.RestoreWindowCommand}"/>
+                            <Setter TargetName="BtnShellMaximize" Property="ToolTip" Value="Restore Down"/>
+                        </DataTrigger>
+                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
@@ -158,7 +167,7 @@
                             <ContentControl x:Name="IconPresenter" DockPanel.Dock="Left" Content="{TemplateBinding Tag}" VerticalAlignment="Center" Margin="0,0,16,0"/>
 
                             <StackPanel VerticalAlignment="Center">
-                                <TextBlock TextElement.FontWeight="Bold" TextElement.FontSize="14" TextElement.Foreground="{TemplateBinding Foreground}">
+                                <TextBlock x:Name="TitleText" FontWeight="Bold" FontSize="14" Foreground="{TemplateBinding Foreground}">
                                     <ContentPresenter x:Name="TitlePresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
                                 </TextBlock>
                             </StackPanel>
@@ -210,12 +219,35 @@
             <Setter.Value>
                 <ControlTemplate TargetType="Slider">
                     <Grid x:Name="SliderRoot">
+                        <Grid.Resources>
+                            <Style x:Key="SliderRepeatButtonStyle" TargetType="RepeatButton">
+                                <Setter Property="OverridesDefaultStyle" Value="True"/>
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="Focusable" Value="False"/>
+                                <Setter Property="IsTabStop" Value="False"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="RepeatButton">
+                                            <Border Background="{TemplateBinding Background}"/>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Grid.Resources>
+                        
                         <Border x:Name="TrackBackground" 
                                 Background="{TemplateBinding Background}" 
                                 Height="4" 
                                 CornerRadius="2" 
                                 VerticalAlignment="Center"/>
+                        
                         <Track x:Name="PART_Track">
+                            <Track.DecreaseRepeatButton>
+                                <RepeatButton Style="{StaticResource SliderRepeatButtonStyle}" Background="{DynamicResource AccentBrush}" Command="{x:Static Slider.DecreaseLarge}"/>
+                            </Track.DecreaseRepeatButton>
+                            <Track.IncreaseRepeatButton>
+                                <RepeatButton Style="{StaticResource SliderRepeatButtonStyle}" Background="Transparent" Command="{x:Static Slider.IncreaseLarge}"/>
+                            </Track.IncreaseRepeatButton>
                             <Track.Thumb>
                                 <Thumb Width="14" Height="14" Focusable="False">
                                     <Thumb.Template>
