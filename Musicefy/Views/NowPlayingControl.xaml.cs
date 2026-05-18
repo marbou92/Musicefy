@@ -101,7 +101,7 @@ namespace Musicefy.Views
                 }
 
                 PlayerDeckRoot.Visibility = Visibility.Visible;
-                PlayerDeckRoot.HorizontalAlignment = HorizontalAlignment.Center;
+                PlayerDeckRoot.HorizontalAlignment = HorizontalAlignment.Stretch;
             }
             else
             {
@@ -134,7 +134,7 @@ namespace Musicefy.Views
                     LeftPlayerColumn.Width = new GridLength(4.5, GridUnitType.Star);
                     RightPanelColumn.Width = new GridLength(5.5, GridUnitType.Star);
                     PlayerDeckRoot.Visibility = Visibility.Visible;
-                    PlayerDeckRoot.HorizontalAlignment = HorizontalAlignment.Center;
+                    PlayerDeckRoot.HorizontalAlignment = HorizontalAlignment.Stretch;
                     RightPanelRoot.Margin = new Thickness(48, 10, 0, 10);
                 }
 
@@ -155,14 +155,13 @@ namespace Musicefy.Views
         {
             element.Visibility = Visibility.Visible;
             
-            DoubleAnimation fadeIn = new DoubleAnimation(0.0,  1.0, TimeSpan.FromMilliseconds(350))
+            DoubleAnimation fadeIn = new DoubleAnimation(0.0, 1.0, TimeSpan.FromMilliseconds(350))
             {
                 EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
             };
             
             DoubleAnimation slideIn = new DoubleAnimation(30, 0, TimeSpan.FromMilliseconds(400))
             {
-                // FIXED: Replaced non-existent 'DecelerateEase' with 'QuadraticEase' set to 'EaseOut'
                 EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
             };
 
@@ -247,14 +246,12 @@ namespace Musicefy.Views
             
             if (_isFavoriteTrack)
             {
-                // Bright Aesthetic Heart Fill Match
                 FavoriteIcon.Fill = new SolidColorBrush(Color.FromRgb(244, 67, 54));
                 FavoriteIcon.Data = Geometry.Parse("M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z");
             }
             else
             {
-                // Dynamic clean vector path mapping back to outline form factor
-                FavoriteIcon.ClearValue(Shape.FillProperty); // This now works because of 'using System.Windows.Shapes;'
+                FavoriteIcon.ClearValue(Shape.FillProperty);
                 FavoriteIcon.Data = Geometry.Parse("M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35ZM7.5,5C5.5,5 4,6.5 4,8.5C4,11 6.33,13.6 12,18.52C17.67,13.6 20,11 20,8.5C20,6.5 18.5,5 16.5,5C15.15,5 13.87,5.88 13.39,7.1H10.61C10.13,5.88 8.85,5 7.5,5Z");
             }
         }
@@ -275,7 +272,6 @@ namespace Musicefy.Views
 
         private void Play_Click(object sender, RoutedEventArgs e)
         {
-            // FIXED: Changed _playback.Play() to _playback.Resume()
             if (_playback.IsPlaying) _playback.Pause(); else _playback.Resume();
         }
 
@@ -298,7 +294,7 @@ namespace Musicefy.Views
             {
                 OnPropertyChanged(nameof(NowPlaying));
                 _isFavoriteTrack = false; 
-                FavoriteIcon.ClearValue(Shape.FillProperty); // This now works because of 'using System.Windows.Shapes;'
+                FavoriteIcon.ClearValue(Shape.FillProperty);
 
                 ProgressSlider.Value = 0;
                 ProgressSlider.Maximum = track.Duration.TotalSeconds > 0 ? track.Duration.TotalSeconds : 100;
