@@ -188,11 +188,11 @@ namespace Musicefy.Views
 
         private void BackButton_Click(object sender, RoutedEventArgs e) => RequestCollapse?.Invoke();
 
-        private void Play_Click(object sender, RoutedEventArgs e) => _playback.TogglePlayPause();
+        private void Play_Click(object sender, RoutedEventArgs e) => if (_playbackService.IsPlaying) _playbackService.Pause(); else _playbackService.Resume();
 
-        private void Previous_Click(object sender, RoutedEventArgs e) => _playback.PreviousTrack();
+        private void Previous_Click(object sender, RoutedEventArgs e) => _playbackService.Previous();
 
-        private void Next_Click(object sender, RoutedEventArgs e) => _playback.NextTrack();
+        private void Next_Click(object sender, RoutedEventArgs e) => _playbackService.Next();
 
         private void Shuffle_Click(object sender, RoutedEventArgs e)
         {
@@ -252,7 +252,7 @@ namespace Musicefy.Views
             });
         }
 
-        private void OnProgressChanged(double currentTime, double totalTime)
+        private void OnProgressChanged(TimeSpan currentTime, TimeSpan totalTime)
         {
             Dispatcher.Invoke(() => {
                 if (!_userIsScrubbingSlider && totalTime > 0)
