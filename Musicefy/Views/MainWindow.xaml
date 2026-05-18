@@ -61,7 +61,7 @@
     </Window.Resources>
 
     <Grid>
-        <DockPanel>
+        <DockPanel LastChildFill="True">
             <Border DockPanel.Dock="Left" Width="75" Background="{DynamicResource SecondaryBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,1,0">
                 <StackPanel VerticalAlignment="Center">
                     <ListBox x:Name="SidebarList" Background="Transparent" BorderThickness="0"
@@ -75,7 +75,7 @@
                 </StackPanel>
             </Border>
 
-            <Grid>
+            <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
@@ -85,7 +85,7 @@
                     <TextBlock Text="Musicefy" FontSize="20" FontWeight="ExtraBold" Margin="10,10,0,10" Foreground="{DynamicResource TextBrush}"/>
                 </StackPanel>
 
-                <ContentControl x:Name="MainContent" Grid.Row="1"/>
+                <ContentControl x:Name="MainContent" Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
             </Grid>
         </DockPanel>
 
