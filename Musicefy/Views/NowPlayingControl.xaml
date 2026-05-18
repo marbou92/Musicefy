@@ -65,13 +65,13 @@
         </Style>
 
         <Style x:Key="TransportPathButtonStyle" TargetType="Button" BasedOn="{StaticResource BaseControlButtonStyle}">
-            <Setter Property="Width" Value="46"/>
-            <Setter Property="Height" Value="46"/>
+            <Setter Property="Width" Value="44"/>
+            <Setter Property="Height" Value="44"/>
             <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="ControlBg" Background="Transparent" CornerRadius="23">
+                        <Border x:Name="ControlBg" Background="Transparent" CornerRadius="22">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
@@ -97,7 +97,7 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid>
+    <Grid CacheMode="BitmapCache">
         <Border Background="{DynamicResource BorderBrush}" Opacity="0.02" VerticalAlignment="Bottom" Height="500"/>
 
         <Grid Margin="48,24,48,32">
@@ -118,7 +118,7 @@
                     <ColumnDefinition x:Name="RightPanelColumn" Width="0"/>
                 </Grid.ColumnDefinitions>
 
-                <Grid Grid.Column="0" x:Name="PlayerDeckRoot" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="440" Width="Auto">
+                <Grid Grid.Column="0" x:Name="PlayerDeckRoot" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="440" Width="Stretch">
                     <StackPanel>
                         
                         <Grid MaxHeight="440" Margin="0,0,0,0">
@@ -182,7 +182,7 @@
                                 <Path x:Name="ShuffleIcon" Data="M14.83,13.41L13.42,14.82L16.55,17.95L14.5,20H20V14.5L17.96,16.54L14.83,13.41M14.5,4L16.54,6.04L4,18.58L5.41,20L17.96,7.46L20,9.5V4H14.5M10.59,9.17L5.41,4L4,5.41L9.17,10.58L10.59,9.17Z" Fill="{DynamicResource MutedTextBrush}" Width="16" Height="16" Stretch="Uniform"/>
                             </Button>
 
-                            <StackPanel Grid.Column="1" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <Button Style="{StaticResource TransportPathButtonStyle}" Click="Previous_Click" Margin="0,0,20,0">
                                     <Path Data="M19,6L19,18L15,18L15,6L19,6ZM5,12L13,6L13,18L5,12Z" Fill="{DynamicResource TextBrush}" Width="18" Height="18" Stretch="Uniform"/>
                                 </Button>
@@ -242,7 +242,9 @@
 
                     <Grid x:Name="LyricsPanelContainer" Visibility="Collapsed">
                         <ScrollViewer VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled" PanningMode="VerticalOnly">
-                            <ItemsControl ItemsSource="{Binding NowPlaying.Lyrics, Converter={StaticResource LyricsToLinesConverter}}" VirtualizingStackPanel.IsVirtualizing="True">
+                            <ItemsControl ItemsSource="{Binding NowPlaying.Lyrics, Converter={StaticResource LyricsToLinesConverter}}" 
+                                          VirtualizingStackPanel.IsVirtualizing="True"
+                                          VirtualizingStackPanel.VirtualizationMode="Recycling">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding}" FontSize="26" FontWeight="Bold" Foreground="{DynamicResource TextBrush}" Opacity="0.3" TextAlignment="Left" TextWrapping="Wrap" Margin="0,14,0,14" Cursor="Hand">
