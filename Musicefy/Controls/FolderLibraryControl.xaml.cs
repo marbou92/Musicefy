@@ -31,6 +31,7 @@ namespace Musicefy.Controls
 
         private void FolderLibraryControl_Loaded(object sender, RoutedEventArgs e)
         {
+            // Assuming LibraryControlSettings is a global settings class in your app
             string savedPath = LibraryControlSettings.Default.LastSelectedFolderPath;
             if (!string.IsNullOrEmpty(savedPath) && Directory.Exists(savedPath))
             {
@@ -89,9 +90,7 @@ namespace Musicefy.Controls
             FolderSongsListView.ItemsSource = trackList;
             FolderSongsItemsControl.ItemsSource = trackList;
             
-            // Forces immediate device layout pass measurements to scale custom capsule scrollbar tracks
             this.UpdateLayout();
-            
             TriggerFluidLayoutEntranceAnimation();
         }
 
@@ -192,206 +191,139 @@ namespace Musicefy.Controls
                         }
                         catch { }
 
+                        // Completed Regex and assignment
                         _currentLevelItemsCollection.Add(new MusicFile
                         {
                             Title = Regex.Replace(cleanTitle, @"[\x00-\x1F\x7F-\x9F]", "").Trim(),
                             Artist = Regex.Replace(trackArtist, @"[\x00-\x1F\x7F-\x9F]", "").Trim(),
-                            Album = trackAlbum,
+                            Duration = trackDuration,
+                            SourceType = "FileItem",
                             FilePath = file,
                             SourceUri = file,
-                            Duration = trackDuration,
-                            CoverPath = detectedArtworkPath,
-                            SourceType = "AudioItem"
+                            CoverPath = detectedArtworkPath
                         });
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Traversing file paths error: {ex.Message}");
-            }
+            catch (UnauthorizedAccessException) { /* Silently bypass folders without read permission */ }
 
             UpdateUiCollectionBindingStates(_currentLevelItemsCollection);
         }
 
         private void TriggerFluidLayoutEntranceAnimation()
         {
-            var targetElement = _isGridViewActive ? (UIElement)GridViewContainer : (UIElement)ListViewContainer;
-            var targetTransform = _isGridViewActive ? GridTranslate : ListTranslate;
+            var transform = _isGridViewActive ? GridTranslate : ListTranslate;
+            var element = _isGridViewActive ? (UIElement)GridViewContainer : ListViewContainer;
 
-            targetElement.Opacity = 0;
-            targetTransform.Y = 24;
+            transform.Y = 20;
+            element.Opacity = 0;
 
-            var fadeAnim = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromMilliseconds(350)))
+            var slideIn = new DoubleAnimation(20, 0, new Duration(TimeSpan.FromMilliseconds(400)))
             {
-                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+                EasingFunction = new CircleEase { EasingMode = EasingMode.EaseOut }
             };
+            
+            var fadeIn = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromMilliseconds(300)));
 
-            var slideAnim = new DoubleAnimation(24, 0, new Duration(TimeSpan.FromMilliseconds(400)))
+            transform.BeginAnimation(TranslateTransform.YProperty, slideIn);
+            element.BeginAnimation(UIElement.OpacityProperty, fadeIn);
+        }
+
+        // --- Event Handlers ---
+
+        private void BtnFolderBack_Click(object sender, RoutedEventArgs e)
+        {
+            if (!string.IsNullOrEmpty(_currentBrowsingDirectoryPath))
             {
-                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
-            };
-
-            targetElement.BeginAnimation(UIElement.OpacityProperty, fadeAnim);
-            targetTransform.BeginAnimation(TranslateTransform.YProperty, slideAnim);
+                var parentDir = Directory.GetParent(_currentBrowsingDirectoryPath);
+                if (parentDir != null && parentDir.FullName.StartsWith(_rootLibraryPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    NavigateToTargetDirectoryFolder(parentDir.FullName);
+                }
+                else
+                {
+                    RenderRootLibraryHubView();
+                }
+            }
         }
 
         private void BtnAddFolder_Click(object sender, RoutedEventArgs e)
         {
             using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
             {
-                dialog.Description = "Select Music Library Folder Node Target Hub Link";
-                dialog.ShowNewFolderButton = false;
-                
+                dialog.Description = "Select a local music folder to add to your Musicefy library";
                 if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
                     _rootLibraryPath = dialog.SelectedPath;
-                    BtnClearFolder.Visibility = Visibility.Visible;
-                    
                     LibraryControlSettings.Default.LastSelectedFolderPath = _rootLibraryPath;
                     LibraryControlSettings.Default.Save();
-
-                    RenderRootLibraryHubView();
-                    TriggerEchoToastMessage("Linked root folder successfully.");
-                }
-            }
-        }
-
-        private void BtnClearFolder_Click(object sender, RoutedEventArgs e)
-        {
-            _rootLibraryPath = null;
-            _currentBrowsingDirectoryPath = null;
-            _currentLevelItemsCollection.Clear();
-
-            LibraryControlSettings.Default.LastSelectedFolderPath = string.Empty;
-            LibraryControlSettings.Default.Save();
-
-            BtnClearFolder.Visibility = Visibility.Collapsed;
-            BtnFolderBack.Visibility = Visibility.Collapsed;
-
-            UpdateUiCollectionBindingStates(new List<MusicFile>());
-            TriggerEchoToastMessage("Cleared target folder registry memory successfully.");
-        }
-
-        private void BtnFolderBack_Click(object sender, RoutedEventArgs e)
-        {
-            if (string.IsNullOrEmpty(_currentBrowsingDirectoryPath)) return;
-
-            if (_currentBrowsingDirectoryPath.Equals(_rootLibraryPath, StringComparison.OrdinalIgnoreCase))
-            {
-                RenderRootLibraryHubView();
-                return;
-            }
-
-            string parentPath = Path.GetDirectoryName(_currentBrowsingDirectoryPath);
-            if (!string.IsNullOrEmpty(parentPath) && Directory.Exists(parentPath))
-            {
-                if (parentPath.Equals(Path.GetDirectoryName(_rootLibraryPath), StringComparison.OrdinalIgnoreCase))
-                {
+                    
+                    BtnClearFolder.Visibility = Visibility.Visible;
                     RenderRootLibraryHubView();
                 }
-                else
-                {
-                    NavigateToTargetDirectoryFolder(parentPath);
-                }
-            }
-            else
-            {
-                RenderRootLibraryHubView();
             }
         }
 
         private void BtnRefresh_Click(object sender, RoutedEventArgs e)
         {
             if (!string.IsNullOrEmpty(_currentBrowsingDirectoryPath))
-            {
                 NavigateToTargetDirectoryFolder(_currentBrowsingDirectoryPath);
-                TriggerEchoToastMessage("Refreshed layout tree channels mapping.");
-            }
             else if (!string.IsNullOrEmpty(_rootLibraryPath))
-            {
                 RenderRootLibraryHubView();
-                TriggerEchoToastMessage("Refreshed root catalog deck.");
-            }
         }
 
-        private void GridCardItem_Click(object sender, RoutedEventArgs e)
+        private void BtnClearFolder_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button btn && btn.DataContext is MusicFile item)
-            {
-                HandleItemSelectionActivation(item);
-            }
-        }
+            _rootLibraryPath = null;
+            _currentBrowsingDirectoryPath = null;
+            LibraryControlSettings.Default.LastSelectedFolderPath = string.Empty;
+            LibraryControlSettings.Default.Save();
 
-        private void OnSongDoubleClicked(object sender, MouseButtonEventArgs e)
-        {
-            if (FolderSongsListView.SelectedItem is MusicFile item)
-            {
-                HandleItemSelectionActivation(item);
-            }
-        }
-
-        private void HandleItemSelectionActivation(MusicFile item)
-        {
-            if (item == null) return;
-
-            if (item.SourceType == "FolderItem")
-            {
-                NavigateToTargetDirectoryFolder(item.FilePath);
-            }
-            else if (item.SourceType == "AudioItem" && _playbackService != null)
-            {
-                _playbackService.Queue.Clear();
-                foreach (var track in _currentLevelItemsCollection.Where(x => x.SourceType == "AudioItem"))
-                {
-                    _playbackService.EnqueueTrack(track);
-                }
-                _playbackService.PlayTrack(item);
-            }
+            BtnClearFolder.Visibility = Visibility.Collapsed;
+            BtnFolderBack.Visibility = Visibility.Collapsed;
+            
+            _currentLevelItemsCollection.Clear();
+            UpdateUiCollectionBindingStates(_currentLevelItemsCollection);
         }
 
         private void BtnViewToggle_Click(object sender, RoutedEventArgs e)
         {
             _isGridViewActive = !_isGridViewActive;
             
-            if (_isGridViewActive)
-            {
-                ToggleIconPath.Data = Geometry.Parse("M3,5H21V7H3V5M3,11H21V13H3V11M3,17H21V19H3V17Z");
-            }
-            else
-            {
-                ToggleIconPath.Data = Geometry.Parse("M4,11H7V5H4V11M4,18H7V12H4V18M8,11H11V5H8V11M8,18H11V12H8V18M12,11H15V5H12V11M12,18H15V12H12V18M16,11H19V5H16V11M16,18H19V12H16V18Z");
-            }
+            // Switch Icon Path Data
+            ToggleIconPath.Data = _isGridViewActive 
+                ? Geometry.Parse("M3,5H21V7H3V5M3,11H21V13H3V11M3,17H21V19H3V17Z") // List Icon 
+                : Geometry.Parse("M3,3H11V11H3V3M13,3H21V11H13V3M3,13H11V21H3V13M13,13H21V21H13V13Z"); // Grid Icon
 
             UpdateUiCollectionBindingStates(_currentLevelItemsCollection);
         }
 
-        private void TriggerEchoToastMessage(string msg)
+        private void OnSongDoubleClicked(object sender, MouseButtonEventArgs e)
         {
-            TxtToastMessage.Text = msg;
-            ToastNotificationCard.Visibility = Visibility.Visible;
-
-            var slideDown = new DoubleAnimation(-40, 12, TimeSpan.FromMilliseconds(400)) { EasingFunction = new CircleEase { EasingMode = EasingMode.EaseOut } };
-            var slideUp = new DoubleAnimation(12, -40, TimeSpan.FromMilliseconds(350)) { BeginTime = TimeSpan.FromSeconds(2.5), EasingFunction = new CircleEase { EasingMode = EasingMode.EaseIn } };
-            slideUp.Completed += (s, ev) => { ToastNotificationCard.Visibility = Visibility.Collapsed; };
-
-            ToastTranslation.BeginAnimation(TranslateTransform.YProperty, slideDown);
-            ToastTranslation.BeginAnimation(TranslateTransform.YProperty, slideUp);
+            if (FolderSongsListView.SelectedItem is MusicFile selectedItem)
+            {
+                HandleItemSelection(selectedItem);
+            }
         }
-    }
 
-    public class LibraryControlSettings : System.Configuration.ApplicationSettingsBase
-    {
-        private static LibraryControlSettings defaultInstance = ((LibraryControlSettings)(System.Configuration.ApplicationSettingsBase.Synchronized(new LibraryControlSettings())));
-        public static LibraryControlSettings Default => defaultInstance;
-
-        [System.Configuration.UserScopedSettingAttribute()]
-        [System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [System.Configuration.DefaultSettingValueAttribute("")]
-        public string LastSelectedFolderPath
+        private void GridCardItem_Click(object sender, RoutedEventArgs e)
         {
-            get => ((string)(this["LastSelectedFolderPath"]));
-            set => this["LastSelectedFolderPath"] = value;
+            if (sender is Button button && button.DataContext is MusicFile selectedItem)
+            {
+                HandleItemSelection(selectedItem);
+            }
+        }
+
+        private void HandleItemSelection(MusicFile item)
+        {
+            if (item.SourceType == "FolderItem")
+            {
+                NavigateToTargetDirectoryFolder(item.FilePath);
+            }
+            else if (item.SourceType == "FileItem")
+            {
+                _playbackService?.PlayTrack(item);
+            }
         }
     }
 }
