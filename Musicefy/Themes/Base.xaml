@@ -12,6 +12,13 @@
         <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True"/>
     </Style>
 
+    <Style x:Key="ChromeButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Cursor" Value="Arrow"/>
+    </Style>
+
     <Style x:Key="EchoCustomWindowStyle" TargetType="{x:Type Window}">
         <Setter Property="Background" Value="{DynamicResource BackgroundBrush}"/>
         <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
@@ -45,7 +52,7 @@
 
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,6,0" WindowChrome.IsHitTestVisibleInChrome="True">
                                     
-                                    <Button Name="BtnShellMinimize" ToolTip="Minimize" Width="36" Height="28" Background="Transparent" BorderThickness="0" Margin="0,0,2,0"
+                                    <Button Name="BtnShellMinimize" Style="{StaticResource ChromeButtonStyle}" ToolTip="Minimize" Width="36" Height="28" Margin="0,0,2,0"
                                             Command="{x:Static SystemCommands.MinimizeWindowCommand}"
                                             CommandParameter="{Binding RelativeSource={RelativeSource TemplatedParent}}">
                                         <Button.Template>
@@ -62,7 +69,7 @@
                                         </Button.Template>
                                     </Button>
 
-                                    <Button Name="BtnShellMaximize" ToolTip="Maximize" Width="36" Height="28" Background="Transparent" BorderThickness="0" Margin="0,0,2,0"
+                                    <Button Name="BtnShellMaximize" Style="{StaticResource ChromeButtonStyle}" ToolTip="Maximize" Width="36" Height="28" Margin="0,0,2,0"
                                             Command="{x:Static SystemCommands.MaximizeWindowCommand}"
                                             CommandParameter="{Binding RelativeSource={RelativeSource TemplatedParent}}">
                                         <Button.Template>
@@ -79,7 +86,7 @@
                                         </Button.Template>
                                     </Button>
 
-                                    <Button Name="BtnShellClose" ToolTip="Close" Width="36" Height="28" Background="Transparent" BorderThickness="0"
+                                    <Button Name="BtnShellClose" Style="{StaticResource ChromeButtonStyle}" ToolTip="Close" Width="36" Height="28"
                                             Command="{x:Static SystemCommands.CloseWindowCommand}"
                                             CommandParameter="{Binding RelativeSource={RelativeSource TemplatedParent}}">
                                         <Button.Template>
@@ -106,10 +113,10 @@
                         </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
-                        <DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource Self}}" Value="Maximized">
+                        <BronzeTrigger DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource Self}}" Value="Maximized">
                             <Setter TargetName="BtnShellMaximize" Property="Command" Value="{x:Static SystemCommands.RestoreWindowCommand}"/>
                             <Setter TargetName="BtnShellMaximize" Property="ToolTip" Value="Restore Down"/>
-                        </DataTrigger>
+                        </BronzeTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
