@@ -144,7 +144,6 @@
         </Grid>
 
         <Grid Grid.Row="1">
-            
             <Grid x:Name="EmptyLibraryStateContainer" Visibility="Visible" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,40">
                 <StackPanel HorizontalAlignment="Center">
                     <Border Width="72" Height="72" CornerRadius="36" Background="{DynamicResource SecondaryBackgroundBrush}" HorizontalAlignment="Center" Margin="0,0,0,16">
@@ -237,7 +236,7 @@
                 <Grid.RenderTransform>
                     <TranslateTransform x:Name="GridTranslate" Y="0"/>
                 </Grid.RenderTransform>
-                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Style="{DynamicResource EchoScrollViewerStyle}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <ItemsControl x:Name="FolderSongsItemsControl">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
