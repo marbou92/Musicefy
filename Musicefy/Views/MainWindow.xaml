@@ -90,7 +90,6 @@
         </DockPanel>
 
         <Grid VerticalAlignment="Bottom" HorizontalAlignment="Stretch">
-            
             <Border x:Name="MiniPlayerBar"
                     Height="76" 
                     Width="580"
@@ -115,7 +114,7 @@
                     </Grid.ColumnDefinitions>
             
                     <Border Grid.Column="0" Width="56" Height="56" CornerRadius="28" ClipToBounds="True" Background="#0A0A0A" VerticalAlignment="Center" Margin="12,0,0,0">
-                        <Image Source="{Binding NowPlaying.CoverPath, Converter={StaticResource PathToImageConverter}, FallbackValue='pack://application:,,,/Assets/default_cover.png'}" Stretch="UniformToFill"/>
+                        <Image Source="{Binding NowPlaying.CoverPath, Converter={StaticResource PathToImageConverter}}" Stretch="UniformToFill"/>
                     </Border>
             
                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="16,0,16,0">
