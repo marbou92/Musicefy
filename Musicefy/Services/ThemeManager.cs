@@ -68,7 +68,7 @@ namespace Musicefy.Services
             string mode = parts.Length > 0 ? parts[0] : "Dark";
             string palette = parts.Length > 1 ? parts[1] : "Default";
 
-            // FIXED: Automatically maps the persistent config flags on startup if user choice matches pure black
+            // Automatically maps the persistent config flags on startup if user choice matches pure black
             if (mode.Equals("DarkPure", StringComparison.OrdinalIgnoreCase))
             {
                 Musicefy.Properties.Settings.Default.PureBlackMode = true;
@@ -141,7 +141,7 @@ namespace Musicefy.Services
             }
         }
 
-        private static void AnimateButtons(Window win)
+        private void AnimateButtons(Window win)
         {
             foreach (var child in FindVisualChildren<System.Windows.Controls.Button>(win))
             {
