@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Musicefy.Core.Interfaces;
 using Musicefy.Core.Models;
+using Musicefy.Properties;
 using Musicefy.Services;
 
 namespace Musicefy.ViewModels
@@ -62,6 +63,8 @@ namespace Musicefy.ViewModels
 
         private async Task LoadQuickPicksAsync()
         {
+            if (!Settings.Default.DiscoverLibrary) return;
+
             var recent = await _libraryService.GetHistoryTracksAsync(10);
             foreach (var track in recent.Take(8))
                 QuickPicks.Add(CreateTrackCard(track));
@@ -83,6 +86,9 @@ namespace Musicefy.ViewModels
         {
             foreach (var source in _sourceManager.Sources)
             {
+                if (!IsSourceEnabledForDiscover(source.Type))
+                    continue;
+
                 var session = _sourceManager.GetSession(source.Id);
                 if (session == null) continue;
 
@@ -110,6 +116,9 @@ namespace Musicefy.ViewModels
         {
             foreach (var source in _sourceManager.Sources)
             {
+                if (!IsSourceEnabledForDiscover(source.Type))
+                    continue;
+
                 var session = _sourceManager.GetSession(source.Id);
                 if (session == null) continue;
 
@@ -130,6 +139,16 @@ namespace Musicefy.ViewModels
                 {
                     // Skip sources that fail
                 }
+            }
+        }
+
+        private bool IsSourceEnabledForDiscover(string sourceType)
+        {
+            switch (sourceType)
+            {
+                case "YouTube": return Settings.Default.DiscoverYouTube;
+                case "Subsonic": return Settings.Default.DiscoverSubsonic;
+                default: return true;
             }
         }
 
