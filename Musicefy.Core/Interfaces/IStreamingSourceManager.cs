@@ -47,7 +47,7 @@ namespace Musicefy.Core.Interfaces
         Task<string> ResolveStreamUrlAsync(string resourceId);
 
         /// <summary>
-        /// Search across all sources
+        /// Search across all sources (parallel)
         /// </summary>
         Task<List<MusicFile>> SearchAllSourcesAsync(string query, CancellationToken cancellationToken = default);
 
