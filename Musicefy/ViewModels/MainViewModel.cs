@@ -287,7 +287,13 @@ namespace Musicefy.ViewModels
 
         private static BitmapImage DefaultCover()
         {
-            return new BitmapImage(new Uri("pack://application:,,,/Assets/default_cover.png"));
+            var bmp = new BitmapImage();
+            bmp.BeginInit();
+            bmp.DecodePixelWidth = 1;
+            bmp.DecodePixelHeight = 1;
+            bmp.EndInit();
+            bmp.Freeze();
+            return bmp;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
