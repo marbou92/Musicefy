@@ -22,6 +22,7 @@ namespace Musicefy.Services
         private readonly DispatcherTimer _timer;
         private readonly IQueueManager _queueManager;
         private readonly IStreamingSourceManager _sourceManager;
+        private readonly ILibraryService _libraryService;
         private bool _atQueueEnd;
         private MusicFile _lastPlayedAtEndTrack;
 
@@ -47,10 +48,11 @@ namespace Musicefy.Services
 
         public IReadOnlyCollection<MusicFile> Queue => _queueManager.Tracks;
 
-        public PlaybackService(IQueueManager queueManager, IStreamingSourceManager sourceManager)
+        public PlaybackService(IQueueManager queueManager, IStreamingSourceManager sourceManager, ILibraryService libraryService)
         {
             _queueManager = queueManager ?? throw new ArgumentNullException(nameof(queueManager));
             _sourceManager = sourceManager ?? throw new ArgumentNullException(nameof(sourceManager));
+            _libraryService = libraryService ?? throw new ArgumentNullException(nameof(libraryService));
             _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
             _timer.Tick += Timer_Tick;
         }
@@ -86,15 +88,28 @@ namespace Musicefy.Services
                         if (string.Equals(file, uri, StringComparison.OrdinalIgnoreCase))
                             continue;
 
-                        var sibling = new MusicFile
+                        MusicFile sibling;
+                        try
                         {
-                            Title = Path.GetFileNameWithoutExtension(file),
-                            Artist = "Unknown Artist",
-                            FilePath = file,
-                            SourceUri = file,
-                            SourceType = "Local"
-                        };
-                        EnrichFromTags(sibling, file);
+                            sibling = await _libraryService.GetTrackByPathAsync(file);
+                        }
+                        catch
+                        {
+                            sibling = null;
+                        }
+
+                        if (sibling == null)
+                        {
+                            sibling = new MusicFile
+                            {
+                                Title = Path.GetFileNameWithoutExtension(file),
+                                Artist = "Unknown Artist",
+                                FilePath = file,
+                                SourceUri = file,
+                                SourceType = "Local"
+                            };
+                        }
+
                         _queueManager.Enqueue(sibling);
                     }
                 }
@@ -148,39 +163,6 @@ namespace Musicefy.Services
             {
                 System.Diagnostics.Debug.WriteLine($"Failed to resolve stream URL: {ex.Message}");
                 PlayInternal(track, uri);
-            }
-        }
-
-        private static void EnrichFromTags(MusicFile track, string filePath)
-        {
-            try
-            {
-                using (var tagContainer = TagLib.File.Create(filePath))
-                {
-                    if (tagContainer.Tag == null) return;
-
-                    if (string.IsNullOrEmpty(track.Title) || track.Title.StartsWith("Local"))
-                        track.Title = !string.IsNullOrEmpty(tagContainer.Tag.Title)
-                            ? tagContainer.Tag.Title
-                            : Path.GetFileNameWithoutExtension(filePath);
-
-                    if (track.Artist == "Unknown Artist" || track.Artist == "Local Audio File")
-                        track.Artist = !string.IsNullOrEmpty(tagContainer.Tag.FirstPerformer)
-                            ? tagContainer.Tag.FirstPerformer
-                            : "Unknown Artist";
-
-                    if (tagContainer.Tag.Pictures != null && tagContainer.Tag.Pictures.Length > 0)
-                    {
-                        string expectedCover = LibraryScanner.GetArtworkCachePath(filePath);
-                        if (!IOFile.Exists(expectedCover))
-                            IOFile.WriteAllBytes(expectedCover, tagContainer.Tag.Pictures[0].Data.Data);
-                        track.CoverPath = expectedCover;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[PlaybackService] Tag enrichment failed for {filePath}: {ex.Message}");
             }
         }
 
