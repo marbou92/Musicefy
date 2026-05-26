@@ -122,8 +122,10 @@ namespace Musicefy.Core.Services
             {
                 var queries = new[] { "popular music", "top hits", "new songs", "music mix", "trending music" };
                 var random = new Random();
-                var query = queries[random.Next(queries.Length)];
-                return await SearchAsync(query, count);
+                var shuffled = queries.OrderBy(_ => random.Next()).Take(3).ToArray();
+                var tasks = shuffled.Select(q => SearchAsync(q, count / shuffled.Length));
+                var results = await Task.WhenAll(tasks);
+                return results.SelectMany(r => r).Distinct().Take(count).ToList();
             }
 
             public void Dispose()
