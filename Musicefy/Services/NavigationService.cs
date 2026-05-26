@@ -12,7 +12,6 @@ public class NavigationService
     private readonly SearchViewModel _searchViewModel;
     private readonly LibraryViewModel _libraryViewModel;
 
-    private UserControl _cachedHomePage;
     private UserControl _cachedSearchPage;
     private UserControl _cachedLibraryPage;
 
@@ -32,10 +31,10 @@ public class NavigationService
     {
         switch (pageIndex)
         {
-            case 0: return _cachedHomePage ??= new HomeControl(_playback, _homeViewModel);
+            case 0: return new HomeControl(_playback, _homeViewModel);
             case 1: return _cachedSearchPage ??= new SearchControl { DataContext = _searchViewModel };
             case 2: return _cachedLibraryPage ??= new LibraryControl { DataContext = _libraryViewModel };
-            default: return _cachedHomePage ??= new HomeControl(_playback, _homeViewModel);
+            default: return new HomeControl(_playback, _homeViewModel);
         }
     }
 }
