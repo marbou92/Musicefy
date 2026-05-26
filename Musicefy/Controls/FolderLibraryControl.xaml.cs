@@ -34,6 +34,7 @@ public partial class FolderLibraryControl : UserControl
     private CancellationTokenSource? _scanCts;
     private bool                    _isScanToastVisible           = false;
     private bool                    _isLibraryLoaded;
+    private Storyboard?             _libraryShimmer;
 
     private readonly ILibraryService _libraryScanner;
     private readonly IFolderDataProvider _dataProvider;
@@ -89,9 +90,39 @@ public partial class FolderLibraryControl : UserControl
         }
     }
 
+    // ── Skeleton shimmer ───────────────────────────────────────────────────
+    private void ShowLibrarySkeleton()
+    {
+        LoadingSkeleton.Visibility = Visibility.Visible;
+        EmptyLibraryStateContainer.Visibility = Visibility.Collapsed;
+        ListViewContainer.Visibility = Visibility.Collapsed;
+        GridViewContainer.Visibility = Visibility.Collapsed;
+        if (_libraryShimmer != null) return;
+        _libraryShimmer = new Storyboard();
+        var pulse = new DoubleAnimation
+        {
+            From = 0.15,
+            To = 0.5,
+            Duration = new Duration(TimeSpan.FromSeconds(1.4)),
+            AutoReverse = true,
+            RepeatBehavior = RepeatBehavior.Forever
+        };
+        Storyboard.SetTargetProperty(pulse, new PropertyPath("Opacity"));
+        _libraryShimmer.Children.Add(pulse);
+        _libraryShimmer.Begin(LoadingSkeleton, true);
+    }
+
+    private void HideLibrarySkeleton()
+    {
+        LoadingSkeleton.Visibility = Visibility.Collapsed;
+        _libraryShimmer?.Stop(LoadingSkeleton);
+        _libraryShimmer = null;
+    }
+
     // ── Collection + view state ────────────────────────────────────────────
     private void UpdateUiCollectionBindingStates(IEnumerable<MusicFile> tracks)
     {
+        HideLibrarySkeleton();
         var trackList = tracks?.ToList() ?? [];
 
         if (trackList.Count == 0)
@@ -122,6 +153,7 @@ public partial class FolderLibraryControl : UserControl
     // ── Navigation ─────────────────────────────────────────────────────────
     private async void RenderRootLibraryHubView()
     {
+        ShowLibrarySkeleton();
         _currentBrowsingDirectoryPath = null;
 
         if (BtnFolderBack.Visibility == Visibility.Visible)
@@ -178,6 +210,7 @@ public partial class FolderLibraryControl : UserControl
     {
         if (string.IsNullOrWhiteSpace(targetPath) || !Directory.Exists(targetPath)) return;
 
+        ShowLibrarySkeleton();
         _currentBrowsingDirectoryPath = targetPath;
 
         if (BtnFolderBack.Visibility != Visibility.Visible)
