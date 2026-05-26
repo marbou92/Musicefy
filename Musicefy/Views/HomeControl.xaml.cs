@@ -71,16 +71,16 @@ namespace Musicefy.Views
         {
             if (_shimmerStoryboard != null) return;
             _shimmerStoryboard = new Storyboard();
-            var animation = new DoubleAnimation
+            var pulse = new DoubleAnimation
             {
-                From = 0.3,
-                To = 0.7,
-                Duration = new Duration(TimeSpan.FromSeconds(1.2)),
+                From = 0.2,
+                To = 0.6,
+                Duration = new Duration(TimeSpan.FromSeconds(1.4)),
                 AutoReverse = true,
                 RepeatBehavior = RepeatBehavior.Forever
             };
-            Storyboard.SetTargetProperty(animation, new PropertyPath("Opacity"));
-            _shimmerStoryboard.Children.Add(animation);
+            Storyboard.SetTargetProperty(pulse, new PropertyPath("Opacity"));
+            _shimmerStoryboard.Children.Add(pulse);
             _shimmerStoryboard.Begin(LoadingSkeleton, true);
         }
 
