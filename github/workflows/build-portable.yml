@@ -1,0 +1,77 @@
+name: Build Portable EXE
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1.3.1
+
+      - name: Install NuGet CLI
+        uses: nuget/setup-nuget@v1
+
+      - name: Clear NuGet cache
+        shell: pwsh
+        run: nuget locals all -clear
+
+      # Restore for packages.config projects
+      - name: NuGet restore
+        shell: pwsh
+        run: nuget restore Musicefy.sln
+
+      # Restore for SDK-style projects
+      - name: Dotnet restore
+        run: dotnet restore Musicefy.sln
+
+      - name: Build solution (Release)
+        shell: pwsh
+        run: msbuild Musicefy.sln /t:Rebuild /p:Configuration=Release /p:DebugType=none /v:m
+
+      - name: Locate build output folder
+        id: locate
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem -Path . -Filter Musicefy.exe -Recurse -ErrorAction SilentlyContinue | Where-Object { $_.FullName -match '\\bin\\Release' } | Select-Object -First 1
+          if ($null -eq $exe) {
+            Write-Host 'Musicefy.exe not found in any bin\Release folder.'
+            exit 1
+          }
+          $outDir = $exe.Directory.FullName
+          Write-Host "Found build output: $outDir"
+          echo "output_dir=$outDir" >> $env:GITHUB_OUTPUT
+
+      - name: Create portable folder and copy release output
+        shell: pwsh
+        run: |
+          $out = '${{ steps.locate.outputs.output_dir }}'
+          $portable = Join-Path -Path $PWD -ChildPath 'Musicefy-Portable'
+          if (Test-Path $portable) { Remove-Item -Recurse -Force $portable }
+          New-Item -ItemType Directory -Path $portable | Out-Null
+          Write-Host "Copying files from $out to $portable"
+          Copy-Item -Path (Join-Path $out '*') -Destination $portable -Recurse -Force
+
+      - name: Create ZIP of portable folder
+        shell: pwsh
+        run: |
+          $zip = Join-Path $PWD 'Musicefy-Portable.zip'
+          if (Test-Path $zip) { Remove-Item $zip -Force }
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          [System.IO.Compression.ZipFile]::CreateFromDirectory((Join-Path $PWD 'Musicefy-Portable'), $zip)
+          Write-Host "Created $zip"
+
+      - name: Upload portable artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Musicefy-Portable
+          path: |
+            Musicefy-Portable
+            Musicefy-Portable.zip

@@ -1,0 +1,43 @@
+name: CI - Build & Test (Matrix)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        configuration: [ Debug, Release ]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 6.0.x   # adjust if you target another SDK
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1.3.1
+
+      - name: Restore NuGet packages
+        run: dotnet restore Musicefy.sln
+
+      - name: Build solution
+        run: msbuild Musicefy.sln /t:Rebuild /p:Configuration=${{ matrix.configuration }} /p:Platform="Any CPU"
+
+      - name: Run MSTest unit tests
+        run: dotnet test Musicefy.Tests/Musicefy.Tests.csproj --configuration ${{ matrix.configuration }} --logger "trx;LogFileName=test_results_${{ matrix.configuration }}.trx"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.configuration }}
+          path: Musicefy.Tests/TestResults
