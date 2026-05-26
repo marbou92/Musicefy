@@ -29,6 +29,23 @@ namespace Musicefy.Views
             LoadSources();
         }
 
+        private void SetTestStatus(string text, bool isSuccess)
+        {
+            TestStatus.Visibility = Visibility.Visible;
+            TestStatus.Text = text;
+            TestStatus.Foreground = isSuccess
+                ? new SolidColorBrush(Color.FromRgb(39, 174, 96))
+                : new SolidColorBrush(Color.FromRgb(231, 76, 60));
+            TestButton.IsEnabled = true;
+        }
+
+        private void ClearTestStatus()
+        {
+            TestStatus.Visibility = Visibility.Collapsed;
+            TestStatus.Text = "";
+            TestButton.IsEnabled = true;
+        }
+
         private void LoadProviders()
         {
             SourceTypeCombo.Items.Clear();
@@ -148,27 +165,29 @@ namespace Musicefy.Views
         {
             if (_selectedProvider == null)
             {
-                MessageBox.Show("Please select a source type.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                SetTestStatus("Select a source type first", false);
                 return;
             }
 
             if (_fieldValues.Values.All(v => string.IsNullOrEmpty(v)))
             {
-                MessageBox.Show("Please fill in the required fields.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                SetTestStatus("Fill in the required fields", false);
                 return;
             }
+
+            TestButton.IsEnabled = false;
+            TestStatus.Visibility = Visibility.Visible;
+            TestStatus.Text = "Testing...";
+            TestStatus.Foreground = TryFindResource("MutedTextBrush") as Brush ?? new SolidColorBrush(Colors.Gray);
 
             try
             {
                 bool connected = await _selectedProvider.TestConnectionAsync(_fieldValues);
-                if (connected)
-                    MessageBox.Show("Connection successful!", "Musicefy", MessageBoxButton.OK, MessageBoxImage.Information);
-                else
-                    MessageBox.Show("Connection failed. Check your settings.", "Musicefy", MessageBoxButton.OK, MessageBoxImage.Warning);
+                SetTestStatus(connected ? "Connected!" : "Failed", connected);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Connection failed: {ex.Message}", "Musicefy", MessageBoxButton.OK, MessageBoxImage.Warning);
+                SetTestStatus($"Failed: {ex.Message}", false);
             }
         }
 
