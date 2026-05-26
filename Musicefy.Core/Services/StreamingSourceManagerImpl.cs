@@ -143,23 +143,35 @@ namespace Musicefy.Core.Services
             List<KeyValuePair<string, IMusicSourceSession>> activeSessions;
             lock (_lock) activeSessions = _activeSessions.Where(s => _sources.Any(src => src.Id == s.Key && src.IsConnected)).ToList();
 
-            var allSongs = new List<MusicFile>();
+            if (activeSessions.Count == 0)
+                return new List<MusicFile>();
 
-            foreach (var kvp in activeSessions)
+            var tasks = activeSessions.Select(kvp => SearchSourceAsync(kvp.Key, kvp.Value, query, cancellationToken));
+            var results = await Task.WhenAll(tasks);
+
+            return results.Where(r => r != null).SelectMany(r => r).ToList();
+        }
+
+        private async Task<List<MusicFile>> SearchSourceAsync(string sourceId, IMusicSourceSession session, string query, CancellationToken cancellationToken)
+        {
+            if (cancellationToken.IsCancellationRequested)
+                return new List<MusicFile>();
+
+            try
             {
-                try
-                {
-                    var songs = await kvp.Value.SearchAsync(query, 50);
-                    allSongs.AddRange(songs);
-                }
-                catch (Exception ex)
-                {
-                    var source = GetSource(kvp.Key);
-                    System.Diagnostics.Debug.WriteLine($"Error searching {source?.Name ?? kvp.Key}: {ex.Message}");
-                }
+                var songs = await session.SearchAsync(query, 50);
+                return songs?.ToList() ?? new List<MusicFile>();
             }
-
-            return allSongs;
+            catch (OperationCanceledException)
+            {
+                return new List<MusicFile>();
+            }
+            catch (Exception ex)
+            {
+                var source = GetSource(sourceId);
+                System.Diagnostics.Debug.WriteLine($"Error searching {source?.Name ?? sourceId}: {ex.Message}");
+                return new List<MusicFile>();
+            }
         }
 
         public async Task<string> ResolveStreamUrlAsync(string resourceId)
