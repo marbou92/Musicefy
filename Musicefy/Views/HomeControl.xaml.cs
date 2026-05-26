@@ -19,11 +19,19 @@ namespace Musicefy.Views
             _playback = playback ?? throw new ArgumentNullException(nameof(playback));
             _viewModel = mainViewModel ?? throw new ArgumentNullException(nameof(mainViewModel));
 
-            this.DataContext = _viewModel;
+            DataContext = _viewModel;
 
-            if (ChartsList != null) ChartsList.ItemsSource = _viewModel.BrowseCharts;
-            if (QuickPicksList != null) QuickPicksList.ItemsSource = _viewModel.QuickPicks;
-            if (VideosList != null) VideosList.ItemsSource = _viewModel.TopMusicVideos;
+            Loaded += async (s, e) =>
+            {
+                await _viewModel.ReloadAsync();
+                UpdateEmptyState();
+            };
+        }
+
+        private void UpdateEmptyState()
+        {
+            EmptyState.Visibility = _viewModel.IsEmpty ? Visibility.Visible : Visibility.Collapsed;
+            ContentArea.Visibility = _viewModel.IsEmpty ? Visibility.Collapsed : Visibility.Visible;
         }
 
         private void QuickPicksList_DoubleClick(object sender, MouseButtonEventArgs e)
@@ -51,6 +59,13 @@ namespace Musicefy.Views
         {
             MessageBox.Show("Video engine coming soon!", "Musicefy",
                 MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void OpenSources_Click(object sender, RoutedEventArgs e)
+        {
+            var settings = new SettingsWindow { Owner = Window.GetWindow(this) };
+            settings.ShowDialog();
+            _ = _viewModel.ReloadAsync();
         }
     }
 }
