@@ -47,6 +47,11 @@ namespace Musicefy.Core.Interfaces
         Task<string> ResolveStreamUrlAsync(string resourceId);
 
         /// <summary>
+        /// Resolve a cover art resource ID to raw image bytes
+        /// </summary>
+        Task<byte[]> ResolveCoverArtAsync(string resourceId);
+
+        /// <summary>
         /// Search across all sources (parallel)
         /// </summary>
         Task<List<MusicFile>> SearchAllSourcesAsync(string query, CancellationToken cancellationToken = default);
