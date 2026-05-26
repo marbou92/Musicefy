@@ -210,30 +210,10 @@
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter Property="Background" Value="{DynamicResource BorderBrush}"/>
                         </Trigger>
-                        <EventTrigger RoutedEvent="Checked">
-                            <BeginStoryboard>
-                                <Storyboard>
-                                    <ThicknessAnimation Storyboard.TargetName="KnobContainer"
-                                        Storyboard.TargetProperty="Margin"
-                                        From="4,0,0,0" To="24,0,0,0" Duration="0:0:0.25" DecelerationRatio="0.5"/>
-                                    <DoubleAnimation Storyboard.TargetName="CrossIcon"
-                                        Storyboard.TargetProperty="Opacity"
-                                        From="1" To="0" Duration="0:0:0.15"/>
-                                </Storyboard>
-                            </BeginStoryboard>
-                        </EventTrigger>
-                        <EventTrigger RoutedEvent="Unchecked">
-                            <BeginStoryboard>
-                                <Storyboard>
-                                    <ThicknessAnimation Storyboard.TargetName="KnobContainer"
-                                        Storyboard.TargetProperty="Margin"
-                                        From="24,0,0,0" To="4,0,0,0" Duration="0:0:0.25" DecelerationRatio="0.5"/>
-                                    <DoubleAnimation Storyboard.TargetName="CrossIcon"
-                                        Storyboard.TargetProperty="Opacity"
-                                        From="0" To="1" Duration="0:0:0.15"/>
-                                </Storyboard>
-                            </BeginStoryboard>
-                        </EventTrigger>
+                        <Trigger Property="IsChecked" Value="False">
+                            <Setter TargetName="KnobContainer" Property="Margin" Value="4,0,0,0"/>
+                            <Setter TargetName="CrossIcon" Property="Opacity" Value="1"/>
+                        </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
