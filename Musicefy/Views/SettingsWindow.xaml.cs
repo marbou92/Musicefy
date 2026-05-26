@@ -79,6 +79,7 @@ namespace Musicefy.Views
         private void AppearanceButton_Click(object sender, RoutedEventArgs e) => ShowAppearance();
         private void DownloadsButton_Click(object sender, RoutedEventArgs e) => ShowDownloads();
         private void SourcesButton_Click(object sender, RoutedEventArgs e) => ShowSources();
+        private void DiscoverButton_Click(object sender, RoutedEventArgs e) => ShowDiscover();
         private void RepositoriesButton_Click(object sender, RoutedEventArgs e) => ShowRepositories();
         private void ExtensionsButton_Click(object sender, RoutedEventArgs e) => ShowExtensions();
 
@@ -98,6 +99,11 @@ namespace Musicefy.Views
         private void ShowSources()
         {
             AnimateContentChange(new SourcesSettingsControl(), "Sources Settings", fromRight: true);
+        }
+
+        private void ShowDiscover()
+        {
+            AnimateContentChange(new DiscoverSettingsControl(), "Discover", fromRight: true);
         }
 
         private void ShowRepositories()
