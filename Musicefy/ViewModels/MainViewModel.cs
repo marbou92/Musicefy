@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Musicefy.Core.Interfaces;
@@ -20,7 +21,7 @@ namespace Musicefy.ViewModels
 
         public ObservableCollection<ChartCard> BrowseCharts { get; }
         public ObservableCollection<TrackCard> QuickPicks { get; }
-        public ObservableCollection<VideoCard> TopMusicVideos { get; }
+        public ObservableCollection<TrackCard> TopMusicVideos { get; }
 
         private bool _isLoading;
         public bool IsLoading
@@ -28,6 +29,22 @@ namespace Musicefy.ViewModels
             get => _isLoading;
             set { _isLoading = value; OnPropertyChanged(); }
         }
+
+        private bool _isEmpty = true;
+        public bool IsEmpty
+        {
+            get => _isEmpty;
+            set { _isEmpty = value; OnPropertyChanged(); }
+        }
+
+        private string _emptyMessage = "No music found. Add a library folder or connect a streaming source.";
+        public string EmptyMessage
+        {
+            get => _emptyMessage;
+            set { _emptyMessage = value; OnPropertyChanged(); }
+        }
+
+        private CancellationTokenSource _reloadCts;
 
         public MainViewModel(ILibraryService libraryService, IStreamingSourceManager sourceManager, PlaybackService playback)
         {
@@ -37,32 +54,51 @@ namespace Musicefy.ViewModels
 
             BrowseCharts = new ObservableCollection<ChartCard>();
             QuickPicks = new ObservableCollection<TrackCard>();
-            TopMusicVideos = new ObservableCollection<VideoCard>();
-
-            _ = LoadAsync();
+            TopMusicVideos = new ObservableCollection<TrackCard>();
         }
 
-        private async Task LoadAsync()
+        public async Task ReloadAsync()
         {
+            _reloadCts?.Cancel();
+            _reloadCts = new CancellationTokenSource();
+            var token = _reloadCts.Token;
+
             IsLoading = true;
             try
             {
-                await LoadQuickPicksAsync();
-                await LoadBrowseChartsAsync();
-                await LoadTopMusicVideosAsync();
+                BrowseCharts.Clear();
+                QuickPicks.Clear();
+                TopMusicVideos.Clear();
+
+                var quickPicksTask = LoadQuickPicksAsync(token);
+                var chartsTask = LoadBrowseChartsAsync(token);
+                var videosTask = LoadTopMusicVideosAsync(token);
+
+                await Task.WhenAll(quickPicksTask, chartsTask, videosTask);
+
+                IsEmpty = QuickPicks.Count == 0 && BrowseCharts.Count == 0 && TopMusicVideos.Count == 0;
+                if (IsEmpty)
+                {
+                    bool hasSources = _sourceManager.Sources.Any(s => s.IsConnected);
+                    bool hasLibraryTracks = (await _libraryService.GetAllTracksAsync(token)).Count > 0;
+                    if (hasLibraryTracks)
+                        EmptyMessage = "All sources disabled in Discover settings. Enable some to see music here.";
+                    else if (!hasSources)
+                        EmptyMessage = "No music sources configured. Go to Sources settings to add a library folder or streaming service.";
+                    else
+                        EmptyMessage = "No tracks available from your current sources.";
+                }
             }
-            catch
-            {
-                // Silently handle — home view shows empty sections on failure
-            }
+            catch (OperationCanceledException) { }
             finally
             {
                 IsLoading = false;
             }
         }
 
-        private async Task LoadQuickPicksAsync()
+        private async Task LoadQuickPicksAsync(CancellationToken token)
         {
+            if (token.IsCancellationRequested) return;
             if (!Settings.Default.DiscoverLibrary) return;
 
             var recent = await _libraryService.GetHistoryTracksAsync(10);
@@ -71,85 +107,113 @@ namespace Musicefy.ViewModels
 
             if (QuickPicks.Count > 0) return;
 
-            var favs = await _libraryService.GetFavouriteTracksAsync();
+            var favs = await _libraryService.GetFavouriteTracksAsync(token);
             foreach (var track in favs.Take(8))
                 QuickPicks.Add(CreateTrackCard(track));
 
             if (QuickPicks.Count > 0) return;
 
-            var all = await _libraryService.GetAllTracksAsync();
+            var all = await _libraryService.GetAllTracksAsync(token);
             foreach (var track in all.OrderBy(_ => Guid.NewGuid()).Take(8))
                 QuickPicks.Add(CreateTrackCard(track));
         }
 
-        private async Task LoadBrowseChartsAsync()
+        private async Task LoadBrowseChartsAsync(CancellationToken token)
         {
-            foreach (var source in _sourceManager.Sources)
-            {
-                if (!IsSourceEnabledForDiscover(source.Type))
-                    continue;
+            if (token.IsCancellationRequested) return;
 
-                var session = _sourceManager.GetSession(source.Id);
-                if (session == null) continue;
+            var tasks = _sourceManager.Sources
+                .Where(s => s.IsConnected && IsSourceEnabledForDiscover(s.Type))
+                .Select(s => LoadChartsFromSourceAsync(s, token))
+                .ToArray();
 
-                try
-                {
-                    var songs = await session.GetRandomSongsAsync(6);
-                    foreach (var song in songs)
-                    {
-                        BrowseCharts.Add(new ChartCard
-                        {
-                            Title = song.Title,
-                            Subtitle = song.Artist,
-                            Cover = LoadCoverImage(song.CoverPath)
-                        });
-                    }
-                }
-                catch
-                {
-                    // Skip sources that fail
-                }
-            }
+            await Task.WhenAll(tasks);
         }
 
-        private async Task LoadTopMusicVideosAsync()
+        private async Task LoadChartsFromSourceAsync(StreamingSource source, CancellationToken token)
         {
-            foreach (var source in _sourceManager.Sources)
+            if (token.IsCancellationRequested) return;
+
+            var session = _sourceManager.GetSession(source.Id);
+            if (session == null) return;
+
+            try
             {
-                if (!IsSourceEnabledForDiscover(source.Type))
-                    continue;
-
-                var session = _sourceManager.GetSession(source.Id);
-                if (session == null) continue;
-
-                try
+                var songs = await session.GetRandomSongsAsync(6);
+                foreach (var song in songs)
                 {
-                    var videos = await session.SearchAsync("music", 10);
-                    foreach (var video in videos.Take(8))
+                    BrowseCharts.Add(new ChartCard
                     {
-                        TopMusicVideos.Add(new VideoCard
-                        {
-                            Title = video.Title,
-                            Channel = video.Artist,
-                            Cover = LoadCoverImage(video.CoverPath)
-                        });
-                    }
-                }
-                catch
-                {
-                    // Skip sources that fail
+                        Title = song.Title,
+                        Subtitle = song.Artist,
+                        Cover = LoadCoverImage(song.CoverPath)
+                    });
                 }
             }
+            catch { }
+        }
+
+        private async Task LoadTopMusicVideosAsync(CancellationToken token)
+        {
+            if (token.IsCancellationRequested) return;
+
+            var tasks = _sourceManager.Sources
+                .Where(s => s.IsConnected && IsSourceEnabledForDiscover(s.Type))
+                .Select(s => LoadVideosFromSourceAsync(s, token))
+                .ToArray();
+
+            await Task.WhenAll(tasks);
+        }
+
+        private async Task LoadVideosFromSourceAsync(StreamingSource source, CancellationToken token)
+        {
+            if (token.IsCancellationRequested) return;
+
+            var session = _sourceManager.GetSession(source.Id);
+            if (session == null) return;
+
+            try
+            {
+                var videos = await session.SearchAsync("music", 10);
+                foreach (var video in videos.Take(8))
+                {
+                    TopMusicVideos.Add(new TrackCard
+                    {
+                        Title = video.Title,
+                        Artist = video.Artist,
+                        Cover = LoadCoverImage(video.CoverPath),
+                        SourceTrack = video
+                    });
+                }
+            }
+            catch { }
         }
 
         private bool IsSourceEnabledForDiscover(string sourceType)
         {
-            switch (sourceType)
+            return GetEnabledDiscoverSources().Contains(sourceType);
+        }
+
+        private System.Collections.Generic.HashSet<string> GetEnabledDiscoverSources()
+        {
+            var enabled = new System.Collections.Generic.HashSet<string>();
+            if (Settings.Default.DiscoverLibrary) enabled.Add("Local");
+            if (Settings.Default.DiscoverYouTube) enabled.Add("YouTube");
+            if (Settings.Default.DiscoverSubsonic) enabled.Add("Subsonic");
+
+            var extraJson = Settings.Default.DiscoverExtraSources;
+            if (!string.IsNullOrEmpty(extraJson))
             {
-                case "YouTube": return Settings.Default.DiscoverYouTube;
-                case "Subsonic": return Settings.Default.DiscoverSubsonic;
-                default: return true;
+                try
+                {
+                    var extra = Newtonsoft.Json.JsonConvert.DeserializeObject<System.Collections.Generic.List<string>>(extraJson);
+                    if (extra != null)
+                        foreach (var s in extra) enabled.Add(s);
+                }
+                catch { }
             }
+
+            return enabled;
         }
 
         private TrackCard CreateTrackCard(MusicFile track)
@@ -198,5 +262,4 @@ namespace Musicefy.ViewModels
     public class CategoryItem { public string Name { get; set; } }
     public class ChartCard { public string Title { get; set; } public string Subtitle { get; set; } public BitmapImage Cover { get; set; } }
     public class TrackCard { public string Title { get; set; } public string Artist { get; set; } public BitmapImage Cover { get; set; } public MusicFile SourceTrack { get; set; } }
-    public class VideoCard { public string Title { get; set; } public string Channel { get; set; } public BitmapImage Cover { get; set; } }
 }
