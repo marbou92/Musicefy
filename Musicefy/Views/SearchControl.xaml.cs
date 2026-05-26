@@ -1,6 +1,9 @@
+using System;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media.Animation;
 using Musicefy.Core.Models;
 using Musicefy.ViewModels;
 
@@ -9,10 +12,53 @@ namespace Musicefy.Views
     public partial class SearchControl : UserControl
     {
         private SearchViewModel ViewModel => DataContext as SearchViewModel;
+        private Storyboard _spinnerStoryboard;
 
         public SearchControl()
         {
             InitializeComponent();
+            Loaded += (s, e) =>
+            {
+                if (ViewModel != null)
+                    ViewModel.PropertyChanged += OnSearchPropertyChanged;
+            };
+        }
+
+        private void OnSearchPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(SearchViewModel.IsSearching))
+            {
+                if (ViewModel.IsSearching)
+                    StartSpinner();
+                else
+                    StopSpinner();
+            }
+        }
+
+        private void StartSpinner()
+        {
+            SearchSpinner.Visibility = Visibility.Visible;
+            if (_spinnerStoryboard != null) return;
+            _spinnerStoryboard = new Storyboard();
+            var rotate = new DoubleAnimation
+            {
+                From = 0,
+                To = 360,
+                Duration = new Duration(TimeSpan.FromSeconds(1.2)),
+                RepeatBehavior = RepeatBehavior.Forever
+            };
+            Storyboard.SetTargetName(rotate, "SpinnerArc");
+            Storyboard.SetTargetProperty(rotate, new PropertyPath("(Path.RenderTransform).(RotateTransform.Angle)"));
+            _spinnerStoryboard.Children.Add(rotate);
+            _spinnerStoryboard.Begin(SearchSpinner);
+        }
+
+        private void StopSpinner()
+        {
+            if (_spinnerStoryboard == null) return;
+            _spinnerStoryboard.Stop(SearchSpinner);
+            _spinnerStoryboard = null;
+            SearchSpinner.Visibility = Visibility.Collapsed;
         }
 
         private void SearchBox_GotFocus(object sender, RoutedEventArgs e)
