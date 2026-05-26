@@ -118,6 +118,24 @@
             </StackPanel>
         </Border>
 
+        <!-- Loading skeleton -->
+        <ScrollViewer x:Name="LoadingSkeleton" Visibility="Collapsed" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Margin="30,20,30,30">
+                <Border Background="{DynamicResource SecondaryBackgroundBrush}" CornerRadius="10" Margin="6,0,0,16" Width="200" Height="36" Opacity="0.4"/>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,32">
+                    <Border Background="{DynamicResource SecondaryBackgroundBrush}" CornerRadius="28" Width="170" Height="250" Margin="0,0,18,0" Opacity="0.3"/>
+                    <Border Background="{DynamicResource SecondaryBackgroundBrush}" CornerRadius="28" Width="170" Height="250" Margin="0,0,18,0" Opacity="0.2"/>
+                    <Border Background="{DynamicResource SecondaryBackgroundBrush}" CornerRadius="28" Width="170" Height="250" Margin="0,0,18,0" Opacity="0.15"/>
+                </StackPanel>
+                <Border Background="{DynamicResource SecondaryBackgroundBrush}" CornerRadius="10" Margin="6,0,6,16" Width="160" Height="36" Opacity="0.4"/>
+                <WrapPanel Orientation="Horizontal" Margin="0,0,0,32">
+                    <Border Background="{DynamicResource SecondaryBackgroundBrush}" CornerRadius="16" Width="290" Height="72" Margin="6" Opacity="0.3"/>
+                    <Border Background="{DynamicResource SecondaryBackgroundBrush}" CornerRadius="16" Width="290" Height="72" Margin="6" Opacity="0.2"/>
+                    <Border Background="{DynamicResource SecondaryBackgroundBrush}" CornerRadius="16" Width="290" Height="72" Margin="6" Opacity="0.15"/>
+                </WrapPanel>
+            </StackPanel>
+        </ScrollViewer>
+
         <!-- Content area -->
         <ScrollViewer x:Name="ContentArea" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled">
             <StackPanel Margin="30,20,30,30">
