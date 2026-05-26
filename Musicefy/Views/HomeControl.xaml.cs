@@ -5,7 +5,6 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Musicefy.Services;
 using Musicefy.ViewModels;
-using Musicefy.Core.Models;
 
 namespace Musicefy.Views
 {
@@ -29,40 +28,29 @@ namespace Musicefy.Views
 
         private void QuickPicksList_DoubleClick(object sender, MouseButtonEventArgs e)
         {
-            if (QuickPicksList.SelectedItem is TrackCard selectedTrack)
-                _playback.PlayTrack(MapToMusicFile(selectedTrack));
+            if (QuickPicksList.SelectedItem is TrackCard selected && selected.SourceTrack != null)
+                _playback.PlayTrack(selected.SourceTrack);
         }
 
         private void PlayAllQuickPicks_Click(object sender, RoutedEventArgs e)
         {
-            if (_viewModel.QuickPicks == null || !_viewModel.QuickPicks.Any()) return;
-            foreach (var trackCard in _viewModel.QuickPicks)
-                _playback.EnqueueTrack(MapToMusicFile(trackCard));
+            var tracks = _viewModel.QuickPicks
+                .Where(c => c.SourceTrack != null)
+                .Select(c => c.SourceTrack)
+                .ToList();
 
-            var first = _viewModel.QuickPicks.FirstOrDefault();
-            if (first != null)
-                _playback.PlayTrack(MapToMusicFile(first));
+            if (tracks.Count == 0) return;
+
+            foreach (var track in tracks)
+                _playback.EnqueueTrack(track);
+
+            _playback.PlayTrack(tracks[0]);
         }
 
         private void MoreVideos_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("Video engine coming soon!", "Musicefy",
                 MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private MusicFile MapToMusicFile(TrackCard card)
-        {
-            return new MusicFile
-            {
-                Id = Guid.NewGuid().ToString(),
-                Title = string.IsNullOrWhiteSpace(card.Title) ? "Unknown Track" : card.Title,
-                Artist = string.IsNullOrWhiteSpace(card.Artist) ? "Unknown Artist" : card.Artist,
-                Album = "Musicefy Discovery",
-                Year = DateTime.Now.Year,
-                Genre = "Discovery",
-                Duration = TimeSpan.Zero,
-                SourceType = "Discovery"
-            };
         }
     }
 }
