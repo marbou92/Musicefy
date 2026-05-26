@@ -75,16 +75,32 @@
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" Text="{Binding Name}" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource ForegroundBrush}"/>
-                                        <TextBlock Grid.Column="1" Text="{Binding Url}" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" VerticalAlignment="Center"/>
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource ForegroundBrush}"/>
+                                            <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" Margin="0,2,0,0"/>
+                                        </StackPanel>
+                                        <Border Grid.Column="1" Background="#2c3e50" CornerRadius="4" Padding="8,2" VerticalAlignment="Center" Margin="0,0,8,0">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Url}" Value="https://raw.githubusercontent.com/marbou92/Musicefy-Extensions/main/repo.json">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <TextBlock Text="Official" FontSize="10" FontWeight="Bold" Foreground="White"/>
+                                        </Border>
+                                        <TextBlock Grid.Column="2" Text="{Binding Url}" FontSize="9" Foreground="{DynamicResource MutedTextBrush}" VerticalAlignment="Center" MaxWidth="200" TextTrimming="CharacterEllipsis"/>
                                     </Grid>
-                                    <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" Margin="0,2,0,10"/>
 
-                                    <ItemsControl ItemsSource="{Binding Extensions}">
+                                    <ItemsControl ItemsSource="{Binding Extensions}" Margin="0,8,0,0">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <Border Background="{DynamicResource BackgroundBrush}" CornerRadius="10" Padding="12,10" Margin="0,3">
+                                                <Border Background="{DynamicResource BackgroundBrush}" CornerRadius="8" Padding="10,8" Margin="0,2">
                                                     <Grid>
                                                         <Grid.ColumnDefinitions>
                                                             <ColumnDefinition Width="Auto"/>
@@ -92,26 +108,23 @@
                                                             <ColumnDefinition Width="Auto"/>
                                                         </Grid.ColumnDefinitions>
 
-                                                        <Border Grid.Column="0" Width="36" Height="36" CornerRadius="18"
+                                                        <Border Grid.Column="0" Width="28" Height="28" CornerRadius="14"
                                                                 Background="{DynamicResource AccentBrush}" Margin="0,0,10,0">
                                                             <Path Data="{Binding SourceType, Converter={StaticResource IconGlyphConverter}}"
-                                                                  Width="18" Height="18" Stretch="Uniform"
+                                                                  Width="14" Height="14" Stretch="Uniform"
                                                                   Fill="White"
                                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                         </Border>
 
                                                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource ForegroundBrush}"/>
-                                                            <StackPanel Orientation="Horizontal" Margin="0,1,0,1">
-                                                                <TextBlock Text="{Binding Author, StringFormat='by {0}'}" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" Margin="0,0,10,0" TextTrimming="CharacterEllipsis"/>
-                                                                <TextBlock Text="{Binding Version, StringFormat='v{0}'}" FontSize="10" Foreground="{DynamicResource MutedTextBrush}"/>
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource ForegroundBrush}"/>
+                                                                <TextBlock Text="{Binding Version, StringFormat=' v{0}'}" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" VerticalAlignment="Center" Margin="4,0,0,0"/>
                                                             </StackPanel>
                                                             <TextBlock Text="{Binding Description}" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" TextTrimming="CharacterEllipsis"/>
                                                         </StackPanel>
 
-                                                        <Button Grid.Column="2" Content="Install"
-                                                                Command="{Binding DataContext.InstallCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                                CommandParameter="{Binding}" Margin="8,0,0,0"/>
+                                                        <TextBlock Grid.Column="2" Text="Browse" FontSize="11" Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center" Margin="8,0,0,0"/>
                                                     </Grid>
                                                 </Border>
                                             </DataTemplate>
@@ -133,20 +146,6 @@
                                             </Style>
                                         </Button.Style>
                                     </Button>
-                                    <Border Background="#2c3e50" CornerRadius="4" Padding="8,2" HorizontalAlignment="Right" Margin="0,6,0,0"
-                                            Visibility="Collapsed">
-                                        <Border.Style>
-                                            <Style TargetType="Border">
-                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding Url}" Value="https://raw.githubusercontent.com/marbou92/Musicefy-Extensions/main/repo.json">
-                                                        <Setter Property="Visibility" Value="Visible"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Border.Style>
-                                        <TextBlock Text="Official" FontSize="10" FontWeight="Bold" Foreground="White"/>
-                                    </Border>
                                 </StackPanel>
                             </Border>
                         </DataTemplate>
