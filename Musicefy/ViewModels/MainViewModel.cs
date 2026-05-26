@@ -1,53 +1,183 @@
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
+using Musicefy.Core.Interfaces;
 using Musicefy.Core.Models;
+using Musicefy.Services;
 
 namespace Musicefy.ViewModels
 {
     public class MainViewModel : INotifyPropertyChanged
     {
-        public ObservableCollection<CategoryItem> HeaderCategories { get; set; }
-        public ObservableCollection<ChartCard> BrowseCharts { get; set; }
-        public ObservableCollection<TrackCard> QuickPicks { get; set; }
-        public ObservableCollection<VideoCard> TopMusicVideos { get; set; }
+        private readonly ILibraryService _libraryService;
+        private readonly IStreamingSourceManager _sourceManager;
+        private readonly PlaybackService _playback;
 
-        private MusicFile _nowPlaying;
-        public MusicFile NowPlaying 
-        { 
-            get => _nowPlaying; 
-            set { _nowPlaying = value; OnPropertyChanged(); } 
+        public ObservableCollection<ChartCard> BrowseCharts { get; }
+        public ObservableCollection<TrackCard> QuickPicks { get; }
+        public ObservableCollection<VideoCard> TopMusicVideos { get; }
+
+        private bool _isLoading;
+        public bool IsLoading
+        {
+            get => _isLoading;
+            set { _isLoading = value; OnPropertyChanged(); }
         }
 
-        public MainViewModel()
+        public MainViewModel(ILibraryService libraryService, IStreamingSourceManager sourceManager, PlaybackService playback)
         {
-            var placeholder = new BitmapImage(new Uri("pack://application:,,,/Assets/default_cover.png"));
+            _libraryService = libraryService;
+            _sourceManager = sourceManager;
+            _playback = playback;
 
-            BrowseCharts = new ObservableCollection<ChartCard> {
-                new ChartCard { Title = "Global Top 50", Subtitle = "Your daily update", Cover = placeholder },
-                new ChartCard { Title = "Viral Hits", Subtitle = "Trending on Musicefy", Cover = placeholder }
-            };
+            BrowseCharts = new ObservableCollection<ChartCard>();
+            QuickPicks = new ObservableCollection<TrackCard>();
+            TopMusicVideos = new ObservableCollection<VideoCard>();
 
-            QuickPicks = new ObservableCollection<TrackCard> {
-                new TrackCard { Title = "Moonlight", Artist = "Lofi Girl", Cover = placeholder },
-                new TrackCard { Title = "Midnight City", Artist = "M83", Cover = placeholder }
-            };
+            _ = LoadAsync();
+        }
 
-            TopMusicVideos = new ObservableCollection<VideoCard> {
-                new VideoCard { Title = "Lofi Hip Hop Radio", Channel = "Lofi Girl", Cover = placeholder },
-                new VideoCard { Title = "Synthwave Mix 2026", Channel = "Echo Beats", Cover = placeholder }
+        private async Task LoadAsync()
+        {
+            IsLoading = true;
+            try
+            {
+                await LoadQuickPicksAsync();
+                await LoadBrowseChartsAsync();
+                await LoadTopMusicVideosAsync();
+            }
+            catch
+            {
+                // Silently handle — home view shows empty sections on failure
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        private async Task LoadQuickPicksAsync()
+        {
+            var recent = await _libraryService.GetHistoryTracksAsync(10);
+            foreach (var track in recent.Take(8))
+                QuickPicks.Add(CreateTrackCard(track));
+
+            if (QuickPicks.Count > 0) return;
+
+            var favs = await _libraryService.GetFavouriteTracksAsync();
+            foreach (var track in favs.Take(8))
+                QuickPicks.Add(CreateTrackCard(track));
+
+            if (QuickPicks.Count > 0) return;
+
+            var all = await _libraryService.GetAllTracksAsync();
+            foreach (var track in all.OrderBy(_ => Guid.NewGuid()).Take(8))
+                QuickPicks.Add(CreateTrackCard(track));
+        }
+
+        private async Task LoadBrowseChartsAsync()
+        {
+            foreach (var source in _sourceManager.Sources)
+            {
+                var session = _sourceManager.GetSession(source.Id);
+                if (session == null) continue;
+
+                try
+                {
+                    var songs = await session.GetRandomSongsAsync(6);
+                    foreach (var song in songs)
+                    {
+                        BrowseCharts.Add(new ChartCard
+                        {
+                            Title = song.Title,
+                            Subtitle = song.Artist,
+                            Cover = LoadCoverImage(song.CoverPath)
+                        });
+                    }
+                }
+                catch
+                {
+                    // Skip sources that fail
+                }
+            }
+        }
+
+        private async Task LoadTopMusicVideosAsync()
+        {
+            foreach (var source in _sourceManager.Sources)
+            {
+                var session = _sourceManager.GetSession(source.Id);
+                if (session == null) continue;
+
+                try
+                {
+                    var videos = await session.SearchAsync("music", 10);
+                    foreach (var video in videos.Take(8))
+                    {
+                        TopMusicVideos.Add(new VideoCard
+                        {
+                            Title = video.Title,
+                            Channel = video.Artist,
+                            Cover = LoadCoverImage(video.CoverPath)
+                        });
+                    }
+                }
+                catch
+                {
+                    // Skip sources that fail
+                }
+            }
+        }
+
+        private TrackCard CreateTrackCard(MusicFile track)
+        {
+            return new TrackCard
+            {
+                Title = track.Title,
+                Artist = track.Artist,
+                Cover = LoadCoverImage(track.CoverPath),
+                SourceTrack = track
             };
+        }
+
+        private static BitmapImage LoadCoverImage(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                return DefaultCover();
+            try
+            {
+                var uri = path.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+                    ? new Uri(path)
+                    : new Uri(path, UriKind.Absolute);
+                var img = new BitmapImage();
+                img.BeginInit();
+                img.CacheOption = BitmapCacheOption.OnLoad;
+                img.UriSource = uri;
+                img.EndInit();
+                return img;
+            }
+            catch
+            {
+                return DefaultCover();
+            }
+        }
+
+        private static BitmapImage DefaultCover()
+        {
+            return new BitmapImage(new Uri("pack://application:,,,/Assets/default_cover.png"));
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string name = null) 
+        protected void OnPropertyChanged([CallerMemberName] string name = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 
     public class CategoryItem { public string Name { get; set; } }
     public class ChartCard { public string Title { get; set; } public string Subtitle { get; set; } public BitmapImage Cover { get; set; } }
-    public class TrackCard { public string Title { get; set; } public string Artist { get; set; } public BitmapImage Cover { get; set; } }
+    public class TrackCard { public string Title { get; set; } public string Artist { get; set; } public BitmapImage Cover { get; set; } public MusicFile SourceTrack { get; set; } }
     public class VideoCard { public string Title { get; set; } public string Channel { get; set; } public BitmapImage Cover { get; set; } }
 }
