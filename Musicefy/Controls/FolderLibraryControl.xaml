@@ -176,6 +176,42 @@
         <!-- ── Content area ──────────────────────────────────────────────── -->
         <Grid Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
 
+            <!-- Loading skeleton -->
+            <Grid x:Name="LoadingSkeleton" Visibility="Collapsed" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                <ScrollViewer VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Margin="0,0,0,20">
+                        <WrapPanel Orientation="Horizontal" Margin="0,0,-16,24">
+                            <Border Background="{DynamicResource SecondaryBackgroundBrush}" CornerRadius="20" Width="150" Height="190" Margin="0,0,16,20" Opacity="0.2">
+                                <StackPanel>
+                                    <Border CornerRadius="16" Height="150" Background="{DynamicResource BorderBrush}" Opacity="0.5"/>
+                                    <Border CornerRadius="4" Height="12" Margin="8,10,24,4" Background="{DynamicResource BorderBrush}" Opacity="0.4"/>
+                                    <Border CornerRadius="3" Height="10" Margin="8,0,48,0" Background="{DynamicResource BorderBrush}" Opacity="0.3"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Background="{DynamicResource SecondaryBackgroundBrush}" CornerRadius="20" Width="150" Height="190" Margin="0,0,16,20" Opacity="0.15">
+                                <StackPanel>
+                                    <Border CornerRadius="16" Height="150" Background="{DynamicResource BorderBrush}" Opacity="0.5"/>
+                                    <Border CornerRadius="4" Height="12" Margin="8,10,24,4" Background="{DynamicResource BorderBrush}" Opacity="0.4"/>
+                                    <Border CornerRadius="3" Height="10" Margin="8,0,48,0" Background="{DynamicResource BorderBrush}" Opacity="0.3"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Background="{DynamicResource SecondaryBackgroundBrush}" CornerRadius="20" Width="150" Height="190" Margin="0,0,16,20" Opacity="0.1">
+                                <StackPanel>
+                                    <Border CornerRadius="16" Height="150" Background="{DynamicResource BorderBrush}" Opacity="0.5"/>
+                                    <Border CornerRadius="4" Height="12" Margin="8,10,24,4" Background="{DynamicResource BorderBrush}" Opacity="0.4"/>
+                                    <Border CornerRadius="3" Height="10" Margin="8,0,48,0" Background="{DynamicResource BorderBrush}" Opacity="0.3"/>
+                                </StackPanel>
+                            </Border>
+                        </WrapPanel>
+                        <StackPanel Margin="0,0,0,16">
+                            <Border CornerRadius="6" Height="32" Margin="0,0,0,8" Background="{DynamicResource SecondaryBackgroundBrush}" Opacity="0.15"/>
+                            <Border CornerRadius="6" Height="32" Margin="0,0,0,8" Background="{DynamicResource SecondaryBackgroundBrush}" Opacity="0.12"/>
+                            <Border CornerRadius="6" Height="32" Background="{DynamicResource SecondaryBackgroundBrush}" Opacity="0.1"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+
             <!-- Empty state -->
             <Grid x:Name="EmptyLibraryStateContainer" Visibility="Visible"
                   VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,40">
