@@ -146,6 +146,7 @@ namespace Musicefy.ViewModels
                     {
                         Title = song.Title,
                         Subtitle = song.Artist,
+                        CoverPath = song.CoverPath,
                         Cover = LoadCoverImage(song.CoverPath)
                     });
                 }
@@ -181,6 +182,7 @@ namespace Musicefy.ViewModels
                     {
                         Title = video.Title,
                         Artist = video.Artist,
+                        CoverPath = video.CoverPath,
                         Cover = LoadCoverImage(video.CoverPath),
                         SourceTrack = video
                     });
@@ -222,15 +224,24 @@ namespace Musicefy.ViewModels
             {
                 Title = track.Title,
                 Artist = track.Artist,
+                CoverPath = track.CoverPath,
                 Cover = LoadCoverImage(track.CoverPath),
                 SourceTrack = track
             };
         }
 
-        private static BitmapImage LoadCoverImage(string path)
+        private BitmapImage LoadCoverImage(string path)
         {
             if (string.IsNullOrEmpty(path))
                 return DefaultCover();
+
+            // Subsonic-style cover ID: "sourceId:cover:artId"
+            if (path.Contains(":cover:"))
+            {
+                _ = LoadStreamingCoverAsync(path);
+                return DefaultCover();
+            }
+
             try
             {
                 var uri = path.StartsWith("http", StringComparison.OrdinalIgnoreCase)
@@ -241,6 +252,31 @@ namespace Musicefy.ViewModels
                 img.CacheOption = BitmapCacheOption.OnLoad;
                 img.UriSource = uri;
                 img.EndInit();
+                return img;
+            }
+            catch
+            {
+                return DefaultCover();
+            }
+        }
+
+        private async Task<BitmapImage> LoadStreamingCoverAsync(string coverPath)
+        {
+            try
+            {
+                var bytes = await _sourceManager.ResolveCoverArtAsync(coverPath);
+                if (bytes == null || bytes.Length == 0)
+                    return DefaultCover();
+
+                var img = new BitmapImage();
+                using (var ms = new System.IO.MemoryStream(bytes))
+                {
+                    img.BeginInit();
+                    img.CacheOption = BitmapCacheOption.OnLoad;
+                    img.StreamSource = ms;
+                    img.EndInit();
+                }
+                img.Freeze();
                 return img;
             }
             catch
@@ -260,6 +296,6 @@ namespace Musicefy.ViewModels
     }
 
     public class CategoryItem { public string Name { get; set; } }
-    public class ChartCard { public string Title { get; set; } public string Subtitle { get; set; } public BitmapImage Cover { get; set; } }
-    public class TrackCard { public string Title { get; set; } public string Artist { get; set; } public BitmapImage Cover { get; set; } public MusicFile SourceTrack { get; set; } }
+    public class ChartCard { public string Title { get; set; } public string Subtitle { get; set; } public string CoverPath { get; set; } public BitmapImage Cover { get; set; } }
+    public class TrackCard { public string Title { get; set; } public string Artist { get; set; } public string CoverPath { get; set; } public BitmapImage Cover { get; set; } public MusicFile SourceTrack { get; set; } }
 }
