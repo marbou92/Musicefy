@@ -3,15 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Background="Transparent">
 
-    <UserControl.Resources>
-        <Style x:Key="SourceCardStyle" TargetType="Border">
-            <Setter Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}"/>
-            <Setter Property="CornerRadius" Value="10"/>
-            <Setter Property="Padding" Value="14,12"/>
-            <Setter Property="Margin" Value="0,4"/>
-        </Style>
-    </UserControl.Resources>
-
     <Grid Margin="10,0,10,10">
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
             <StackPanel Orientation="Vertical">
@@ -19,44 +10,28 @@
                 <TextBlock Text="Discover" FontSize="22" FontWeight="Bold" Margin="4,0,0,4" Foreground="{DynamicResource ForegroundBrush}"/>
                 <TextBlock Text="Choose which sources appear on your home screen." Foreground="{DynamicResource MutedTextBrush}" Margin="4,0,0,20" FontSize="12"/>
 
-                <Border Background="{DynamicResource SecondaryBackgroundBrush}" CornerRadius="12" Padding="16" Margin="0,0,0,16">
-                    <StackPanel>
-                        <TextBlock Text="Sources" FontWeight="Bold" FontSize="13" Margin="0,0,0,12" Foreground="{DynamicResource ForegroundBrush}"/>
-
-                        <ItemsControl ItemsSource="{Binding Sources}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Style="{StaticResource SourceCardStyle}">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-
-                                            <Border Grid.Column="0" Width="36" Height="36" CornerRadius="18"
-                                                    Background="{DynamicResource AccentBrush}" Margin="0,0,12,0">
-                                                <TextBlock Text="{Binding IconGlyph}" FontSize="16"
-                                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                            </Border>
-
-                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource ForegroundBrush}"/>
-                                                <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" TextTrimming="CharacterEllipsis"/>
-                                            </StackPanel>
-
-                                            <CheckBox Grid.Column="2" IsChecked="{Binding IsEnabled}" VerticalAlignment="Center" Margin="8,0,0,0"/>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
-                </Border>
+                <ItemsControl ItemsSource="{Binding Sources}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <CheckBox Style="{DynamicResource ModernSettingRowStyle}"
+                                      IsChecked="{Binding IsEnabled}">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding DisplayName}" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource ForegroundBrush}"/>
+                                    <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <CheckBox.Tag>
+                                    <Path Data="{Binding SourceType, Converter={StaticResource IconGlyphConverter}}"
+                                          Width="20" Height="20" Stretch="Uniform"
+                                          Fill="{DynamicResource AccentBrush}"/>
+                                </CheckBox.Tag>
+                            </CheckBox>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
 
                 <TextBlock Text="Tip: Changes apply when you navigate back to the home view."
                            FontSize="11" Foreground="{DynamicResource MutedTextBrush}"
-                           HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                           HorizontalAlignment="Center" Margin="0,20,0,10"/>
 
             </StackPanel>
         </ScrollViewer>
