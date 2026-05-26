@@ -207,6 +207,54 @@ namespace Musicefy.Core.Services
             return resourceId;
         }
 
+        public async Task<byte[]> ResolveCoverArtAsync(string resourceId)
+        {
+            if (string.IsNullOrEmpty(resourceId))
+                return null;
+
+            if (resourceId.StartsWith("http"))
+            {
+                try
+                {
+                    using var client = new System.Net.Http.HttpClient();
+                    var response = await client.GetAsync(resourceId);
+                    response.EnsureSuccessStatusCode();
+                    return await response.Content.ReadAsByteArrayAsync();
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+
+            var parts = resourceId.Split(':');
+            if (parts.Length < 3 || parts[1] != "cover")
+                return null;
+
+            var sourceId = parts[0];
+            var coverId = parts[2];
+
+            IMusicSourceSession session;
+            lock (_lock)
+            {
+                _activeSessions.TryGetValue(sourceId, out session);
+            }
+
+            if (session != null)
+            {
+                try
+                {
+                    return await session.GetCoverArtAsync(resourceId);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Failed to resolve cover art: {ex.Message}");
+                }
+            }
+
+            return null;
+        }
+
         public async Task<bool> TestConnectionAsync(string sourceId, CancellationToken cancellationToken = default)
         {
             var source = GetSource(sourceId);
