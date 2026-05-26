@@ -133,7 +133,7 @@ namespace Musicefy.ViewModels
         {
             var json = Settings.Default.DiscoverExtraSources;
             if (string.IsNullOrEmpty(json)) return new HashSet<string>();
-            try { return JsonConvert.DeserializeObject<List<string>>(json)?.ToHashSet() ?? new HashSet<string>(); }
+            try { var list = JsonConvert.DeserializeObject<List<string>>(json); return list != null ? new HashSet<string>(list) : new HashSet<string>(); }
             catch { return new HashSet<string>(); }
         }
 
