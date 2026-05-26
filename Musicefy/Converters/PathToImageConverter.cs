@@ -9,38 +9,23 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Microsoft.Extensions.DependencyInjection;
+using Musicefy.Core.Interfaces;
 
 namespace Musicefy.Converters
 {
-    /// <summary>
-    /// High-performance cover art converter with deduplication, dual decode sizes,
-    /// and throttled concurrent loading. Optimized for WPF virtualized lists.
-    ///
-    /// Key improvements over the original:
-    /// - In-flight deduplication: when 12 tracks from the same album all miss the
-    ///   cache at once, only ONE async load is started (12x fewer disk reads).
-    /// - Dual decode sizes: 48 px for list-row thumbnails, 200 px for grid cards.
-    ///   Pass ConverterParameter="list" or ConverterParameter="grid" in XAML.
-    /// - Throttled concurrent loads (max 4 simultaneous) prevents I/O thrashing.
-    /// - No synchronous File.Exists check in Convert (was blocking the UI thread).
-    /// - Smarter cache eviction with stale-reference cleanup.
-    /// - Visual tree refresh limited to visible windows only.
-    /// </summary>
     public class PathToImageConverter : IValueConverter
     {
-        // ── Bitmap cache: CoverPath → frozen BitmapImage ───────────────────
         private static readonly ConcurrentDictionary<string, BitmapImage> _cache
             = new ConcurrentDictionary<string, BitmapImage>(StringComparer.OrdinalIgnoreCase);
 
-        // Tracks in-flight async loads so we never load the same cover twice
         private static readonly ConcurrentDictionary<string, byte> _inFlight
             = new ConcurrentDictionary<string, byte>(StringComparer.OrdinalIgnoreCase);
 
-        // Limits concurrent disk reads — the real bottleneck on large libraries
         private static readonly SemaphoreSlim _throttle = new SemaphoreSlim(4, 4);
 
-        // Pre-loaded frozen placeholder (shown instantly while the real cover loads)
         private static readonly ImageSource _fallbackImage;
+        private static IStreamingSourceManager _sourceManager;
 
         private const int MaxCacheEntries = 800;
         private const int ListDecodeWidth  = 48;
@@ -49,20 +34,19 @@ namespace Musicefy.Converters
         static PathToImageConverter()
         {
             _fallbackImage = LoadResourceImage("pack://application:,,,/Assets/default_cover.png");
+            try { _sourceManager = App.Services.GetService<IStreamingSourceManager>(); }
+            catch { }
         }
 
-        // ── IValueConverter ─────────────────────────────────────────────────
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             string path = value as string;
             if (string.IsNullOrEmpty(path))
                 return _fallbackImage;
 
-            // Cache hit → instant return, zero overhead
             if (_cache.TryGetValue(path, out var cached))
                 return cached;
 
-            // Cache miss → show fallback, kick off ONE async load (deduped)
             if (_inFlight.TryAdd(path, 0))
             {
                 bool isGrid = string.Equals(parameter?.ToString(), "grid",
@@ -79,10 +63,8 @@ namespace Musicefy.Converters
             throw new NotImplementedException();
         }
 
-        // ── Async loading (throttled + deduped) ────────────────────────────
         private static async System.Threading.Tasks.Task LoadAsync(string coverPath, int decodeWidth)
         {
-            // Wait for a throttle slot (max 4 concurrent disk reads)
             try
             {
                 await _throttle.WaitAsync();
@@ -98,7 +80,19 @@ namespace Musicefy.Converters
             {
                 bitmap = await System.Threading.Tasks.Task.Run(() =>
                 {
-                    try { return LoadDiskImage(coverPath, decodeWidth); }
+                    try
+                    {
+                        // Streaming source cover ID
+                        if (coverPath.Contains(":cover:"))
+                            return LoadStreamingCover(coverPath);
+
+                        // HTTP URL
+                        if (coverPath.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                            return LoadHttpImage(coverPath, decodeWidth);
+
+                        // Local file path
+                        return LoadDiskImage(coverPath, decodeWidth);
+                    }
                     catch { return null; }
                 });
             }
@@ -108,42 +102,34 @@ namespace Musicefy.Converters
                 catch (ObjectDisposedException) { }
             }
 
-            // Store in cache
             if (bitmap != null)
             {
                 _cache[coverPath] = bitmap;
                 EvictIfNeeded();
             }
 
-            // Clear in-flight flag so future requests can retry if this failed
             _inFlight.TryRemove(coverPath, out _);
 
-            // Refresh every Image control bound to this path (at idle priority)
             Application.Current?.Dispatcher.BeginInvoke(
                 (Action)(() => RefreshImages(coverPath)),
                 System.Windows.Threading.DispatcherPriority.ApplicationIdle);
         }
 
-        // ── Cache eviction ──────────────────────────────────────────────────
         private static void EvictIfNeeded()
         {
             if (_cache.Count <= MaxCacheEntries) return;
-
-            // Remove the oldest ~20 % to stay well under the limit
             int toRemove = MaxCacheEntries / 5;
             var keys = _cache.Keys.ToArray();
             for (int i = 0; i < Math.Min(toRemove, keys.Length); i++)
                 _cache.TryRemove(keys[i], out _);
         }
 
-        // ── Visual tree refresh ─────────────────────────────────────────────
         private static void RefreshImages(string coverPath)
         {
             if (Application.Current == null) return;
-
             foreach (Window window in Application.Current.Windows)
             {
-                if (!window.IsVisible) continue;   // skip hidden / minimized
+                if (!window.IsVisible) continue;
                 WalkAndUpdate(window, coverPath);
             }
         }
@@ -154,44 +140,65 @@ namespace Musicefy.Converters
             for (int i = 0; i < children; i++)
             {
                 var child = VisualTreeHelper.GetChild(parent, i);
-
                 if (child is Image img && ReferenceEquals(img.Source, _fallbackImage))
                 {
-                    var dc = (child as FrameworkElement)?.DataContext
-                             as Musicefy.Core.Models.MusicFile;
-
+                    var dc = (child as FrameworkElement)?.DataContext as Musicefy.Core.Models.MusicFile;
                     if (dc?.CoverPath != null &&
-                        string.Equals(dc.CoverPath, coverPath,
-                            StringComparison.OrdinalIgnoreCase))
+                        string.Equals(dc.CoverPath, coverPath, StringComparison.OrdinalIgnoreCase))
                     {
                         if (_cache.TryGetValue(coverPath, out var bmp))
                             img.Source = bmp;
                     }
                 }
-
                 WalkAndUpdate(child, coverPath);
             }
         }
 
-        // ── Image factories ─────────────────────────────────────────────────
         private static BitmapImage LoadDiskImage(string filePath, int decodeWidth)
         {
-            try
+            var bmp = new BitmapImage();
+            bmp.BeginInit();
+            bmp.UriSource = new Uri(Path.GetFullPath(filePath), UriKind.Absolute);
+            bmp.CacheOption = BitmapCacheOption.OnLoad;
+            bmp.DecodePixelWidth = decodeWidth;
+            bmp.CreateOptions = BitmapCreateOptions.IgnoreColorProfile;
+            bmp.EndInit();
+            bmp.Freeze();
+            return bmp;
+        }
+
+        private static BitmapImage LoadHttpImage(string url, int decodeWidth)
+        {
+            var bmp = new BitmapImage();
+            bmp.BeginInit();
+            bmp.UriSource = new Uri(url, UriKind.Absolute);
+            bmp.CacheOption = BitmapCacheOption.OnLoad;
+            bmp.DecodePixelWidth = decodeWidth;
+            bmp.CreateOptions = BitmapCreateOptions.IgnoreColorProfile;
+            bmp.EndInit();
+            bmp.Freeze();
+            return bmp;
+        }
+
+        private static BitmapImage LoadStreamingCover(string coverId)
+        {
+            if (_sourceManager == null) return null;
+
+            var bytes = System.Threading.Tasks.Task.Run(() =>
+                _sourceManager.ResolveCoverArtAsync(coverId)).GetAwaiter().GetResult();
+
+            if (bytes == null || bytes.Length == 0) return null;
+
+            var bmp = new BitmapImage();
+            using (var ms = new MemoryStream(bytes))
             {
-                var bmp = new BitmapImage();
                 bmp.BeginInit();
-                bmp.UriSource     = new Uri(Path.GetFullPath(filePath), UriKind.Absolute);
-                bmp.CacheOption   = BitmapCacheOption.OnLoad;
-                bmp.DecodePixelWidth = decodeWidth;
-                bmp.CreateOptions = BitmapCreateOptions.IgnoreColorProfile;
+                bmp.CacheOption = BitmapCacheOption.OnLoad;
+                bmp.StreamSource = ms;
                 bmp.EndInit();
-                bmp.Freeze();
-                return bmp;
             }
-            catch
-            {
-                return null;
-            }
+            bmp.Freeze();
+            return bmp;
         }
 
         private static BitmapImage LoadResourceImage(string packUri)
@@ -204,7 +211,6 @@ namespace Musicefy.Converters
             }
             catch
             {
-                // Absolute last resort — 1×1 transparent pixel
                 var fallback = new BitmapImage();
                 fallback.BeginInit();
                 fallback.DecodePixelWidth = 1;
