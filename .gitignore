@@ -1,0 +1,59 @@
+# Build artifacts
+*.exe
+*.dll
+*.so
+*.a
+*.obj
+*.out
+bin/
+obj/
+Debug/
+Release/
+
+# Dependencies
+packages/
+node_modules/
+vendor/
+
+# IDE files
+.vs/
+.idea/
+*.userprefs
+*.suo
+*.user
+*.aps
+*.ncb
+*.ilk
+*.iobj
+*.ipdb
+*.pdb
+*.tlog
+*.DotSettings
+
+# OS files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Icon?
+desktop.ini
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.cache
+*.jar
+
+# Configuration
+appsettings.Development.json
+appsettings.Production.json
+.vsconfig
+
+# User-specific files
+.vscode/settings.json
+
+# Benchmark / perf
+BenchmarkDotNet.Artifacts/
