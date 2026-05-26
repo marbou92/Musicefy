@@ -175,7 +175,7 @@ namespace Musicefy.Views
                 .ToList();
 
             var missingRequired = requiredFields
-                .Where(key => string.IsNullOrEmpty(_fieldValues.GetValueOrDefault(key)))
+                .Where(key => !_fieldValues.ContainsKey(key) || string.IsNullOrEmpty(_fieldValues[key]))
                 .ToList();
 
             if (missingRequired.Count > 0)
@@ -214,7 +214,7 @@ namespace Musicefy.Views
                 .ToList();
 
             var missingRequired = requiredFields
-                .Where(key => string.IsNullOrEmpty(_fieldValues.GetValueOrDefault(key)))
+                .Where(key => !_fieldValues.ContainsKey(key) || string.IsNullOrEmpty(_fieldValues[key]))
                 .ToList();
 
             if (missingRequired.Count > 0)
