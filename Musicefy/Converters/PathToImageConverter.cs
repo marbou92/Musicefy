@@ -33,9 +33,21 @@ namespace Musicefy.Converters
 
         static PathToImageConverter()
         {
-            _fallbackImage = LoadResourceImage("pack://application:,,,/Assets/default_cover.png");
+            _fallbackImage = CreateFallbackIcon();
             try { _sourceManager = App.Services.GetService<IStreamingSourceManager>(); }
             catch { }
+        }
+
+        private static ImageSource CreateFallbackIcon()
+        {
+            var geometry = Geometry.Parse(
+                "M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z");
+            var drawing = new GeometryDrawing
+            {
+                Geometry = geometry,
+                Brush = new SolidColorBrush(Color.FromArgb(80, 128, 128, 128)),
+            };
+            return new DrawingImage(drawing);
         }
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
