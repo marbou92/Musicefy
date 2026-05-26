@@ -119,6 +119,29 @@
                        HorizontalAlignment="Center" VerticalAlignment="Center"
                        Visibility="{Binding IsNoResultsVisible, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 
+            <!-- Circular loading spinner -->
+            <Grid x:Name="SearchSpinner" Visibility="Collapsed" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Grid Width="48" Height="48">
+                    <Path Stroke="{DynamicResource BorderBrush}" StrokeThickness="3" Width="42" Height="42" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.3">
+                        <Path.Data>
+                            <EllipseGeometry RadiusX="19" RadiusY="19" Center="21,21"/>
+                        </Path.Data>
+                    </Path>
+                    <Path x:Name="SpinnerArc" Stroke="{DynamicResource AccentBrush}" StrokeThickness="3"
+                          StrokeDashArray="30, 100" StrokeDashCap="Round"
+                          Width="42" Height="42" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Path.Data>
+                            <EllipseGeometry RadiusX="19" RadiusY="19" Center="21,21"/>
+                        </Path.Data>
+                        <Path.RenderTransform>
+                            <RotateTransform x:Name="SpinnerRotate" Angle="0"/>
+                        </Path.RenderTransform>
+                    </Path>
+                </Grid>
+                <TextBlock Text="Searching..." FontSize="13" Foreground="{DynamicResource MutedTextBrush}"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,56,0,0"/>
+            </Grid>
+
             <ListView x:Name="SearchResultsListView"
                       Background="Transparent" BorderThickness="0"
                       Foreground="{DynamicResource TextBrush}"
