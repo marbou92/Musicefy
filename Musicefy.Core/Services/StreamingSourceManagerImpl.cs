@@ -124,6 +124,15 @@ namespace Musicefy.Core.Services
             lock (_lock) return _sources.FirstOrDefault(s => s.Id == sourceId);
         }
 
+        public IMusicSourceSession GetSession(string sourceId)
+        {
+            lock (_lock)
+            {
+                _activeSessions.TryGetValue(sourceId, out var session);
+                return session;
+            }
+        }
+
         public ISubsonicClient GetClient(string sourceId)
         {
             return null;
