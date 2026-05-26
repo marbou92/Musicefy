@@ -1,0 +1,176 @@
+<UserControl x:Class="Musicefy.Views.SearchControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:Musicefy.Converters"
+             Background="Transparent"
+             VerticalAlignment="Stretch"
+             HorizontalAlignment="Stretch">
+
+    <UserControl.Resources>
+        <converters:PathToImageConverter x:Key="PathToImageConverter"/>
+
+        <Style x:Key="SearchResultRowStyle" TargetType="ListViewItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="0,3"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListViewItem">
+                        <Border x:Name="RowBorder" CornerRadius="14"
+                                Background="{TemplateBinding Background}"
+                                Padding="12,8" SnapsToDevicePixels="True">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource BorderBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="40,24,40,24" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- ── Header ── -->
+        <TextBlock Grid.Row="0" Text="Search"
+                   FontSize="28" FontWeight="SemiBold"
+                   Foreground="{DynamicResource TextBrush}"
+                   Margin="4,0,0,24"/>
+
+        <!-- ── Search bar ── -->
+        <Border Grid.Row="1" CornerRadius="14"
+                Background="{DynamicResource SecondaryBackgroundBrush}"
+                Height="48" Margin="4,0,4,20"
+                SnapsToDevicePixels="True"
+                PreviewMouseDown="SearchBar_PreviewMouseDown">
+            <Grid Margin="16,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Path Grid.Column="0"
+                      Data="M15.5,14h-0.79l-0.28-0.27A6.47,6.47 0 0,0 16,9.5A6.5,6.5 0 1,0 9.5,16c1.61,0 3.09-0.59 4.23-1.57l0.27,0.28v0.79l5,4.99L20.49,19l-4.99-5zM9.5,14C7,14 5,12 5,9.5S7,5 9.5,5S14,7 14,9.5S12,14 9.5,14z"
+                      Fill="{DynamicResource MutedTextBrush}" Width="22" Height="22"
+                      Stretch="Uniform" VerticalAlignment="Center"/>
+
+                <TextBox Grid.Column="1" x:Name="SearchBox"
+                         Background="Transparent" BorderThickness="0"
+                         Foreground="{DynamicResource TextBrush}"
+                         CaretBrush="{DynamicResource TextBrush}"
+                         FontSize="15" FontWeight="Medium"
+                         VerticalAlignment="Center"
+                         Margin="12,0,0,0"
+                         TextChanged="SearchBox_TextChanged"
+                         GotFocus="SearchBox_GotFocus"
+                         LostFocus="SearchBox_LostFocus"/>
+
+                <Button Grid.Column="2" x:Name="BtnClear"
+                        Background="Transparent" BorderThickness="0"
+                        Width="32" Height="32"
+                        Cursor="Hand" Click="BtnClear_Click"
+                        Visibility="{Binding HasSearchText, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="Bd" Background="Transparent" CornerRadius="16"
+                                    SnapsToDevicePixels="True">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource BorderBrush}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                    <Path Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+                          Fill="{DynamicResource MutedTextBrush}" Width="16" Height="16" Stretch="Uniform"/>
+                </Button>
+            </Grid>
+        </Border>
+
+        <!-- ── Content area ── -->
+        <Grid Grid.Row="2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+
+            <TextBlock Text="Type a song, artist, or album to search."
+                       FontSize="14" Foreground="{DynamicResource MutedTextBrush}"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Visibility="{Binding IsEmptyStateVisible, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+            <TextBlock Text="No results found."
+                       FontSize="14" Foreground="{DynamicResource MutedTextBrush}"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Visibility="{Binding IsNoResultsVisible, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+            <ListView x:Name="SearchResultsListView"
+                      Background="Transparent" BorderThickness="0"
+                      Foreground="{DynamicResource TextBrush}"
+                      ItemsSource="{Binding SearchResults}"
+                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                      ScrollViewer.VerticalScrollBarVisibility="Auto"
+                      VirtualizingPanel.IsVirtualizing="True"
+                      VirtualizingPanel.VirtualizationMode="Recycling"
+                      ItemContainerStyle="{StaticResource SearchResultRowStyle}"
+                      Padding="0,4"
+                      MouseDoubleClick="SearchResults_MouseDoubleClick"
+                      Visibility="{Binding IsResultsVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Height="52">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="200"/>
+                                <ColumnDefinition Width="64"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Border Width="44" Height="44" CornerRadius="12"
+                                        ClipToBounds="True" Margin="0,0,14,0"
+                                        Background="{DynamicResource SecondaryBackgroundBrush}"
+                                        SnapsToDevicePixels="True">
+                                    <Image Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}}"
+                                           RenderOptions.BitmapScalingMode="HighQuality" Stretch="UniformToFill"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center" MaxWidth="280">
+                                    <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="Medium"
+                                               Foreground="{DynamicResource TextBrush}"
+                                               TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Text="{Binding Artist}" FontSize="12"
+                                               Foreground="{DynamicResource MutedTextBrush}"
+                                               TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <TextBlock Grid.Column="1" Text="{Binding Album}" FontSize="13"
+                                       Foreground="{DynamicResource MutedTextBrush}"
+                                       TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+
+                            <TextBlock Grid.Column="2"
+                                       Text="{Binding Duration, StringFormat='{}{0:mm\\:ss}'}"
+                                       FontSize="13" FontWeight="Medium"
+                                       Foreground="{DynamicResource MutedTextBrush}"
+                                       VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
+    </Grid>
+</UserControl>

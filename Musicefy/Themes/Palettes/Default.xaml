@@ -1,0 +1,8 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Fallback: Default palette points to Light -->
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="Default.Light.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>
