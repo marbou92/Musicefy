@@ -1,8 +1,10 @@
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media.Animation;
 using Musicefy.Services;
 using Musicefy.ViewModels;
 
@@ -12,6 +14,7 @@ namespace Musicefy.Views
     {
         private readonly PlaybackService _playback;
         private readonly MainViewModel _viewModel;
+        private Storyboard _shimmerStoryboard;
 
         public HomeControl(PlaybackService playback, MainViewModel mainViewModel)
         {
@@ -21,17 +24,71 @@ namespace Musicefy.Views
 
             DataContext = _viewModel;
 
+            _viewModel.PropertyChanged += OnViewModelPropertyChanged;
+
             Loaded += async (s, e) =>
             {
                 await _viewModel.ReloadAsync();
-                UpdateEmptyState();
+                UpdateViewState();
             };
         }
 
-        private void UpdateEmptyState()
+        private void OnViewModelPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            EmptyState.Visibility = _viewModel.IsEmpty ? Visibility.Visible : Visibility.Collapsed;
-            ContentArea.Visibility = _viewModel.IsEmpty ? Visibility.Collapsed : Visibility.Visible;
+            if (e.PropertyName == nameof(MainViewModel.IsLoading) ||
+                e.PropertyName == nameof(MainViewModel.IsEmpty))
+            {
+                UpdateViewState();
+            }
+        }
+
+        private void UpdateViewState()
+        {
+            if (_viewModel.IsLoading)
+            {
+                LoadingSkeleton.Visibility = Visibility.Visible;
+                ContentArea.Visibility = Visibility.Collapsed;
+                EmptyState.Visibility = Visibility.Collapsed;
+                StartShimmer();
+            }
+            else if (_viewModel.IsEmpty)
+            {
+                EmptyState.Visibility = Visibility.Visible;
+                ContentArea.Visibility = Visibility.Collapsed;
+                LoadingSkeleton.Visibility = Visibility.Collapsed;
+                StopShimmer();
+            }
+            else
+            {
+                ContentArea.Visibility = Visibility.Visible;
+                EmptyState.Visibility = Visibility.Collapsed;
+                LoadingSkeleton.Visibility = Visibility.Collapsed;
+                StopShimmer();
+            }
+        }
+
+        private void StartShimmer()
+        {
+            if (_shimmerStoryboard != null) return;
+            _shimmerStoryboard = new Storyboard();
+            var animation = new DoubleAnimation
+            {
+                From = 0.3,
+                To = 0.7,
+                Duration = new Duration(TimeSpan.FromSeconds(1.2)),
+                AutoReverse = true,
+                RepeatBehavior = RepeatBehavior.Forever
+            };
+            Storyboard.SetTargetProperty(animation, new PropertyPath("Opacity"));
+            _shimmerStoryboard.Children.Add(animation);
+            _shimmerStoryboard.Begin(LoadingSkeleton, true);
+        }
+
+        private void StopShimmer()
+        {
+            if (_shimmerStoryboard == null) return;
+            _shimmerStoryboard.Stop(LoadingSkeleton);
+            _shimmerStoryboard = null;
         }
 
         private void QuickPicksList_DoubleClick(object sender, MouseButtonEventArgs e)
