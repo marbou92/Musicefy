@@ -27,6 +27,8 @@ namespace Musicefy.ViewModels
 
     public class DiscoverSettingsViewModel : ViewModelBase
     {
+        private readonly IStreamingSourceManager _sourceManager;
+
         public ObservableCollection<DiscoverSourceItem> Sources { get; } = new ObservableCollection<DiscoverSourceItem>();
 
         public ICommand SaveCommand { get; }
@@ -34,6 +36,7 @@ namespace Musicefy.ViewModels
 
         public DiscoverSettingsViewModel()
         {
+            _sourceManager = App.Services.GetService<IStreamingSourceManager>();
             Load();
             SaveCommand = new RelayCommand(_ => Save());
             ResetCommand = new RelayCommand(_ => ResetDefaults());
@@ -44,17 +47,17 @@ namespace Musicefy.ViewModels
             Sources.Clear();
 
             var providers = App.Services.GetServices<IMusicSourceProvider>();
-            var installed = App.Services.GetService<IExtensionManager>()?.GetInstalledExtensions() ?? new List<ExtensionManifest>();
-            var installedTypes = new HashSet<string>(installed.Select(e => e.SourceType));
+            var connectedTypes = _sourceManager != null
+                ? new HashSet<string>(_sourceManager.Sources
+                    .Where(s => s.IsConnected)
+                    .Select(s => s.Type))
+                : new HashSet<string>();
 
             var enabledExtra = GetEnabledExtraSources();
 
             foreach (var provider in providers)
             {
-                bool isInstalled = provider.SourceType == "Local" || installedTypes.Contains(provider.SourceType) ||
-                    _providersAlwaysShow.Contains(provider.SourceType);
-
-                if (!isInstalled) continue;
+                if (!IsProviderLinked(provider, connectedTypes)) continue;
 
                 bool enabled = provider.SourceType switch
                 {
@@ -74,10 +77,11 @@ namespace Musicefy.ViewModels
                 });
             }
 
-            // Also show providers from extension manager that aren't built-in
+            // Also show extension providers that aren't built-in but are linked
             foreach (var extProvider in App.Services.GetService<IExtensionManager>()?.ExtensionProviders ?? new List<IMusicSourceProvider>())
             {
                 if (Sources.Any(s => s.SourceType == extProvider.SourceType)) continue;
+                if (!connectedTypes.Contains(extProvider.SourceType)) continue;
 
                 Sources.Add(new DiscoverSourceItem
                 {
@@ -88,6 +92,12 @@ namespace Musicefy.ViewModels
                     IsEnabled = enabledExtra.Contains(extProvider.SourceType)
                 });
             }
+        }
+
+        private bool IsProviderLinked(IMusicSourceProvider provider, HashSet<string> connectedTypes)
+        {
+            if (provider.SourceType == "Local") return true;
+            return connectedTypes.Contains(provider.SourceType);
         }
 
         public void Save()
@@ -136,10 +146,5 @@ namespace Musicefy.ViewModels
             try { var list = JsonConvert.DeserializeObject<List<string>>(json); return list != null ? new HashSet<string>(list) : new HashSet<string>(); }
             catch { return new HashSet<string>(); }
         }
-
-        private static readonly HashSet<string> _providersAlwaysShow = new HashSet<string>
-        {
-            "YouTube", "Subsonic"
-        };
     }
 }
