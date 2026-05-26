@@ -32,6 +32,11 @@ namespace Musicefy.Core.Interfaces
         StreamingSource GetSource(string sourceId);
 
         /// <summary>
+        /// Get the active session for a source
+        /// </summary>
+        IMusicSourceSession GetSession(string sourceId);
+
+        /// <summary>
         /// Get the Subsonic client for a source (legacy)
         /// </summary>
         ISubsonicClient GetClient(string sourceId);
