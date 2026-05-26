@@ -18,7 +18,6 @@
   <ItemGroup>
     <Resource Include="Assets\musicefy.ico" />
     <Resource Include="Assets\musicefy.png" />
-    <Resource Include="Assets\default_cover.png" />
   </ItemGroup>
 
   <ItemGroup>
