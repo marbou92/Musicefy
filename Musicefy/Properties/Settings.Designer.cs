@@ -88,5 +88,32 @@ namespace Musicefy.Properties {
             get => ((long)(this["CacheWarningThreshold"]));
             set => this["CacheWarningThreshold"] = value;
         }
+
+        // Discover: show local library on home
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool DiscoverLibrary {
+            get => ((bool)(this["DiscoverLibrary"]));
+            set => this["DiscoverLibrary"] = value;
+        }
+
+        // Discover: show YouTube content on home
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool DiscoverYouTube {
+            get => ((bool)(this["DiscoverYouTube"]));
+            set => this["DiscoverYouTube"] = value;
+        }
+
+        // Discover: show Subsonic content on home
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool DiscoverSubsonic {
+            get => ((bool)(this["DiscoverSubsonic"]));
+            set => this["DiscoverSubsonic"] = value;
+        }
     }
 }
