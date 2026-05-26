@@ -115,5 +115,14 @@ namespace Musicefy.Properties {
             get => ((bool)(this["DiscoverSubsonic"]));
             set => this["DiscoverSubsonic"] = value;
         }
+
+        // Discover: extra source types enabled (JSON array of source type names)
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("[]")]
+        public string DiscoverExtraSources {
+            get => ((string)(this["DiscoverExtraSources"]));
+            set => this["DiscoverExtraSources"] = value;
+        }
     }
 }
