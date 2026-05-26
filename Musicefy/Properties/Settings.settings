@@ -33,5 +33,16 @@
     <Setting Name="CacheWarningThreshold" Type="System.Int64" Scope="User">
       <Value Profile="(Default)">419430400</Value> <!-- 400 MB -->
     </Setting>
+
+    <!-- Discover / Feed settings -->
+    <Setting Name="DiscoverLibrary" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="DiscoverYouTube" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="DiscoverSubsonic" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
