@@ -81,6 +81,18 @@ namespace Musicefy.Services
                 string directory = Path.GetDirectoryName(uri);
                 if (!string.IsNullOrEmpty(directory) && Directory.Exists(directory))
                 {
+                    Dictionary<string, MusicFile> libraryLookup = null;
+                    try
+                    {
+                        var allTracks = await _libraryService.GetAllTracksAsync();
+                        libraryLookup = allTracks.ToDictionary(
+                            t => t.FilePath, t => t, StringComparer.OrdinalIgnoreCase);
+                    }
+                    catch
+                    {
+                        // Fall through — all siblings will use filename-only metadata
+                    }
+
                     foreach (var file in Directory.EnumerateFiles(directory)
                         .Where(f => AudioExtensions.Contains(Path.GetExtension(f)))
                         .OrderBy(f => f, StringComparer.OrdinalIgnoreCase))
@@ -88,17 +100,8 @@ namespace Musicefy.Services
                         if (string.Equals(file, uri, StringComparison.OrdinalIgnoreCase))
                             continue;
 
-                        MusicFile sibling;
-                        try
-                        {
-                            sibling = await _libraryService.GetTrackByPathAsync(file);
-                        }
-                        catch
-                        {
-                            sibling = null;
-                        }
-
-                        if (sibling == null)
+                        MusicFile sibling = null;
+                        if (libraryLookup?.TryGetValue(file, out sibling) != true)
                         {
                             sibling = new MusicFile
                             {
