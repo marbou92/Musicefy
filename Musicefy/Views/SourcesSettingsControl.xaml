@@ -76,6 +76,7 @@
                         <StackPanel x:Name="DynamicFieldsStack" Margin="0,0,0,12"/>
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4,0,0">
+                            <TextBlock x:Name="TestStatus" Visibility="Collapsed" FontSize="12" VerticalAlignment="Center" Margin="0,0,12,0"/>
                             <Button x:Name="TestButton" Content="Test Connection" Width="140" Margin="0,0,10,0" Click="TestButton_Click"/>
                             <Button x:Name="AddButton" Content="Link Service" Width="140" Click="AddButton_Click"/>
                         </StackPanel>
