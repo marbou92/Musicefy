@@ -1,0 +1,330 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using Musicefy.Core.Interfaces;
+using Musicefy.Core.Models;
+using Newtonsoft.Json;
+
+namespace Musicefy.Core.Services
+{
+    /// <summary>
+    /// Streaming source manager implementation using provider registry
+    /// </summary>
+    public class StreamingSourceManagerImpl : IStreamingSourceManager
+    {
+        private readonly List<StreamingSource> _sources = new List<StreamingSource>();
+        private readonly Dictionary<string, IMusicSourceSession> _activeSessions = new Dictionary<string, IMusicSourceSession>();
+        private readonly Dictionary<string, IMusicSourceProvider> _providers = new Dictionary<string, IMusicSourceProvider>();
+        private readonly string _storageFilePath;
+        private readonly IServiceProvider _serviceProvider;
+        private static readonly byte[] _entropy = Encoding.UTF8.GetBytes("Musicefy_Source_Protection_v1");
+        private readonly object _lock = new object();
+
+        public IReadOnlyList<StreamingSource> Sources
+        {
+            get { lock (_lock) return _sources.ToList().AsReadOnly(); }
+        }
+
+        public StreamingSourceManagerImpl(IServiceProvider serviceProvider, IEnumerable<IMusicSourceProvider> providers)
+        {
+            _serviceProvider = serviceProvider;
+
+            foreach (var provider in providers)
+            {
+                _providers[provider.SourceType] = provider;
+            }
+
+            var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            var musicefyPath = Path.Combine(appDataPath, "Musicefy");
+
+            if (!Directory.Exists(musicefyPath))
+                Directory.CreateDirectory(musicefyPath);
+
+            _storageFilePath = Path.Combine(musicefyPath, "sources.json");
+            LoadSources();
+            RestoreSessions();
+        }
+
+        public async Task<bool> AddSourceAsync(StreamingSource source, CancellationToken cancellationToken = default)
+        {
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
+
+            if (string.IsNullOrEmpty(source.Id))
+                source.Id = Guid.NewGuid().ToString();
+
+            source.EnsureConfiguration();
+
+            if (!_providers.TryGetValue(source.Type, out var provider))
+                throw new InvalidOperationException($"Unsupported source type: {source.Type}");
+
+            if (source.Type == "Local")
+            {
+                var path = GetConfig(source, "folderPath");
+                if (string.IsNullOrEmpty(path))
+                    path = source.Url;
+                if (!string.IsNullOrEmpty(path) && !Directory.Exists(path))
+                    throw new InvalidOperationException("Local folder not found.");
+
+                source.IsConnected = true;
+                var session = provider.CreateSession(source.Configuration, source.Id);
+                lock (_lock)
+                {
+                    _sources.Add(source);
+                    _activeSessions[source.Id] = session;
+                }
+                SaveSources();
+                return true;
+            }
+            else
+            {
+                var connected = await provider.TestConnectionAsync(source.Configuration);
+                if (!connected)
+                    throw new InvalidOperationException($"Failed to connect to {provider.DisplayName}.");
+
+                source.IsConnected = true;
+                var session = provider.CreateSession(source.Configuration, source.Id);
+                lock (_lock)
+                {
+                    _sources.Add(source);
+                    _activeSessions[source.Id] = session;
+                }
+                SaveSources();
+                return true;
+            }
+        }
+
+        public void RemoveSource(string sourceId)
+        {
+            IMusicSourceSession session = null;
+            lock (_lock)
+            {
+                var source = _sources.FirstOrDefault(s => s.Id == sourceId);
+                if (source == null) return;
+
+                _sources.Remove(source);
+
+                if (_activeSessions.TryGetValue(sourceId, out session))
+                {
+                    _activeSessions.Remove(sourceId);
+                }
+            }
+
+            session?.Dispose();
+            SaveSources();
+        }
+
+        public StreamingSource GetSource(string sourceId)
+        {
+            lock (_lock) return _sources.FirstOrDefault(s => s.Id == sourceId);
+        }
+
+        public ISubsonicClient GetClient(string sourceId)
+        {
+            return null;
+        }
+
+        public async Task<List<MusicFile>> SearchAllSourcesAsync(string query, CancellationToken cancellationToken = default)
+        {
+            List<KeyValuePair<string, IMusicSourceSession>> activeSessions;
+            lock (_lock) activeSessions = _activeSessions.Where(s => _sources.Any(src => src.Id == s.Key && src.IsConnected)).ToList();
+
+            var allSongs = new List<MusicFile>();
+
+            foreach (var kvp in activeSessions)
+            {
+                try
+                {
+                    var songs = await kvp.Value.SearchAsync(query, 50);
+                    allSongs.AddRange(songs);
+                }
+                catch (Exception ex)
+                {
+                    var source = GetSource(kvp.Key);
+                    System.Diagnostics.Debug.WriteLine($"Error searching {source?.Name ?? kvp.Key}: {ex.Message}");
+                }
+            }
+
+            return allSongs;
+        }
+
+        public async Task<string> ResolveStreamUrlAsync(string resourceId)
+        {
+            if (string.IsNullOrEmpty(resourceId) || resourceId.StartsWith("http"))
+                return resourceId;
+
+            var parts = resourceId.Split(':');
+            if (parts.Length < 2)
+                return resourceId;
+
+            var sourceId = parts[0];
+            var trackId = string.Join(":", parts.Skip(1));
+
+            IMusicSourceSession session;
+            lock (_lock)
+            {
+                _activeSessions.TryGetValue(sourceId, out session);
+            }
+
+            if (session != null)
+            {
+                try
+                {
+                    return await session.GetStreamUrlAsync(trackId);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Failed to resolve stream URL: {ex.Message}");
+                }
+            }
+
+            return resourceId;
+        }
+
+        public async Task<bool> TestConnectionAsync(string sourceId, CancellationToken cancellationToken = default)
+        {
+            var source = GetSource(sourceId);
+            if (source == null) return false;
+
+            source.EnsureConfiguration();
+
+            if (_providers.TryGetValue(source.Type, out var provider))
+            {
+                return await provider.TestConnectionAsync(source.Configuration);
+            }
+
+            return false;
+        }
+
+        private static string GetConfig(StreamingSource source, string key)
+        {
+            if (source.Configuration != null && source.Configuration.TryGetValue(key, out var val))
+                return val ?? "";
+            return "";
+        }
+
+        private void RestoreSessions()
+        {
+            lock (_lock)
+            {
+                foreach (var source in _sources)
+                {
+                    if (!source.IsConnected) continue;
+
+                    source.EnsureConfiguration();
+
+                    if (_providers.TryGetValue(source.Type, out var provider))
+                    {
+                        try
+                        {
+                            var session = provider.CreateSession(source.Configuration, source.Id);
+                            _activeSessions[source.Id] = session;
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Failed to restore session for {source.Name}: {ex.Message}");
+                        }
+                    }
+                }
+            }
+        }
+
+        private static string EncryptPassword(string plainText)
+        {
+            if (string.IsNullOrEmpty(plainText)) return string.Empty;
+            var plainBytes = Encoding.UTF8.GetBytes(plainText);
+            var encryptedBytes = ProtectedData.Protect(plainBytes, _entropy, DataProtectionScope.CurrentUser);
+            return Convert.ToBase64String(encryptedBytes);
+        }
+
+        private static string DecryptPassword(string cipherText)
+        {
+            if (string.IsNullOrEmpty(cipherText)) return string.Empty;
+            try
+            {
+                var encryptedBytes = Convert.FromBase64String(cipherText);
+                var plainBytes = ProtectedData.Unprotect(encryptedBytes, _entropy, DataProtectionScope.CurrentUser);
+                return Encoding.UTF8.GetString(plainBytes);
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
+
+        private void SaveSources()
+        {
+            try
+            {
+                List<StreamingSource> sourcesSnapshot;
+                lock (_lock) sourcesSnapshot = _sources.ToList();
+
+                var sourcesToSave = sourcesSnapshot.Select(s => new
+                {
+                    s.Id,
+                    s.Name,
+                    s.Type,
+                    s.Url,
+                    s.Username,
+                    EncryptedPassword = EncryptPassword(s.Password),
+                    s.IsConnected,
+                    Configuration = s.Configuration
+                }).ToList();
+
+                var json = JsonConvert.SerializeObject(sourcesToSave, Formatting.Indented);
+                File.WriteAllText(_storageFilePath, json);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error saving sources: {ex.Message}");
+            }
+        }
+
+        private void LoadSources()
+        {
+            try
+            {
+                if (!File.Exists(_storageFilePath)) return;
+
+                var json = File.ReadAllText(_storageFilePath);
+                var loadedSources = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(json);
+
+                if (loadedSources == null) return;
+
+                lock (_lock)
+                {
+                    foreach (var sourceData in loadedSources)
+                    {
+                        var source = new StreamingSource
+                        {
+                            Id = sourceData["Id"].ToString(),
+                            Name = sourceData["Name"].ToString(),
+                            Type = sourceData["Type"].ToString(),
+                            Url = sourceData.ContainsKey("Url") ? sourceData["Url"].ToString() : "",
+                            Username = sourceData.ContainsKey("Username") ? sourceData["Username"].ToString() : "",
+                            Password = sourceData.ContainsKey("EncryptedPassword") ? DecryptPassword(sourceData["EncryptedPassword"].ToString()) : "",
+                            IsConnected = sourceData.ContainsKey("IsConnected") && (bool)sourceData["IsConnected"]
+                        };
+
+                        if (sourceData.ContainsKey("Configuration") && sourceData["Configuration"] is Newtonsoft.Json.Linq.JObject configObj)
+                        {
+                            source.Configuration = configObj.ToObject<Dictionary<string, string>>() ?? new Dictionary<string, string>();
+                        }
+
+                        source.EnsureConfiguration();
+                        _sources.Add(source);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading sources: {ex.Message}");
+            }
+        }
+    }
+}
