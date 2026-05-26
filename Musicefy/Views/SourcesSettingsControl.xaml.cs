@@ -169,9 +169,18 @@ namespace Musicefy.Views
                 return;
             }
 
-            if (_fieldValues.Values.All(v => string.IsNullOrEmpty(v)))
+            var requiredFields = _selectedProvider.ConfigurationFields
+                .Where(f => f.IsRequired)
+                .Select(f => f.Key)
+                .ToList();
+
+            var missingRequired = requiredFields
+                .Where(key => string.IsNullOrEmpty(_fieldValues.GetValueOrDefault(key)))
+                .ToList();
+
+            if (missingRequired.Count > 0)
             {
-                SetTestStatus("Fill in the required fields", false);
+                SetTestStatus($"Fill required fields: {string.Join(", ", missingRequired)}", false);
                 return;
             }
 
@@ -196,6 +205,21 @@ namespace Musicefy.Views
             if (_selectedProvider == null)
             {
                 MessageBox.Show("Please select a source type.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var requiredFields = _selectedProvider.ConfigurationFields
+                .Where(f => f.IsRequired)
+                .Select(f => f.Key)
+                .ToList();
+
+            var missingRequired = requiredFields
+                .Where(key => string.IsNullOrEmpty(_fieldValues.GetValueOrDefault(key)))
+                .ToList();
+
+            if (missingRequired.Count > 0)
+            {
+                MessageBox.Show($"Fill required fields: {string.Join(", ", missingRequired)}", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
