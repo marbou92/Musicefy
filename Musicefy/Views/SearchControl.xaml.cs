@@ -51,7 +51,11 @@ namespace Musicefy.Views
         private void SearchResults_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             if (SearchResultsListView.SelectedItem is MusicFile track && ViewModel != null)
+            {
                 ViewModel.SelectedResult = track;
+                if (ViewModel.PlayTrackCommand.CanExecute(track))
+                    ViewModel.PlayTrackCommand.Execute(track);
+            }
         }
 
         private void SearchBar_PreviewMouseDown(object sender, MouseButtonEventArgs e)
