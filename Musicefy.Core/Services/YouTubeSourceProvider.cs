@@ -66,7 +66,7 @@ namespace Musicefy.Core.Services
                             {
                                 FilePath = $"{_sourceId}:{video.Id}",
                                 Title = video.Title,
-                                Artist = video.Author?.Title ?? "YouTube",
+                                Artist = video.Author?.ChannelTitle ?? "YouTube",
                                 Album = "YouTube Music",
                                 Genre = "Music",
                                 SourceType = "YouTube",
