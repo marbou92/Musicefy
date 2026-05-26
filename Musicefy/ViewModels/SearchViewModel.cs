@@ -18,10 +18,13 @@ namespace Musicefy.ViewModels
         private string _searchQuery;
         private ObservableCollection<MusicFile> _searchResults = new ObservableCollection<MusicFile>();
         private CancellationTokenSource _debounceCts;
+        private CancellationTokenSource _searchCts;
         private bool _hasSearchText;
         private bool _isEmptyStateVisible = true;
         private bool _isNoResultsVisible;
         private bool _isResultsVisible;
+        private bool _isSearching;
+        private int _searchCount;
 
         public string SearchQuery
         {
@@ -70,6 +73,17 @@ namespace Musicefy.ViewModels
             set => SetProperty(ref _isResultsVisible, value);
         }
 
+        public bool IsSearching
+        {
+            get => _isSearching;
+            set => SetProperty(ref _isSearching, value);
+        }
+
+        public string SearchStatus
+        {
+            get => _searchCount > 0 ? $"{_searchCount} results" : "Searching...";
+        }
+
         public ICommand PlayTrackCommand { get; }
 
         public SearchViewModel(PlaybackService playback, ILibraryService libraryService, IStreamingSourceManager sourceManager)
@@ -86,7 +100,7 @@ namespace Musicefy.ViewModels
             _debounceCts = new CancellationTokenSource();
             var token = _debounceCts.Token;
 
-            Task.Delay(300, token).ContinueWith(t =>
+            Task.Delay(200, token).ContinueWith(t =>
             {
                 if (!t.IsCanceled)
                     PerformSearch();
@@ -95,6 +109,10 @@ namespace Musicefy.ViewModels
 
         private async void PerformSearch()
         {
+            _searchCts?.Cancel();
+            _searchCts = new CancellationTokenSource();
+            var token = _searchCts.Token;
+
             if (string.IsNullOrWhiteSpace(SearchQuery))
             {
                 SearchResults.Clear();
@@ -102,12 +120,40 @@ namespace Musicefy.ViewModels
                 return;
             }
 
-            var localResults = await _libraryService.SearchAsync(SearchQuery);
+            IsSearching = true;
+            _searchCount = 0;
+            SearchResults.Clear();
 
-            var sourceResults = await _sourceManager.SearchAllSourcesAsync(SearchQuery);
+            try
+            {
+                var localTask = _libraryService.SearchAsync(SearchQuery, token);
+                var sourceTask = _sourceManager.SearchAllSourcesAsync(SearchQuery, token);
 
-            var allResults = localResults.Concat(sourceResults).ToList();
-            SearchResults = new ObservableCollection<MusicFile>(allResults);
+                await Task.WhenAll(localTask, sourceTask);
+
+                if (token.IsCancellationRequested) return;
+
+                var allResults = localTask.Result.Concat(sourceTask.Result).ToList();
+
+                // Deduplicate by FilePath
+                var seen = new System.Collections.Generic.HashSet<string>();
+                foreach (var item in allResults)
+                {
+                    if (token.IsCancellationRequested) return;
+                    if (string.IsNullOrEmpty(item.FilePath) || seen.Add(item.FilePath))
+                    {
+                        SearchResults.Add(item);
+                        _searchCount++;
+                    }
+                }
+            }
+            catch (OperationCanceledException) { }
+            finally
+            {
+                IsSearching = false;
+                OnPropertyChanged(nameof(SearchStatus));
+                UpdateVisibility();
+            }
         }
 
         private void UpdateVisibility()
@@ -116,8 +162,8 @@ namespace Musicefy.ViewModels
             HasSearchText = hasQuery;
             IsEmptyStateVisible = !hasQuery;
             bool hasResults = _searchResults.Count > 0;
-            IsNoResultsVisible = hasQuery && !hasResults;
-            IsResultsVisible = hasQuery && hasResults;
+            IsNoResultsVisible = hasQuery && !hasResults && !IsSearching;
+            IsResultsVisible = hasQuery && (hasResults || IsSearching);
         }
 
         private MusicFile _selectedResult;
