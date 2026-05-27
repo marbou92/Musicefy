@@ -90,6 +90,11 @@ namespace Musicefy
             // Navigation service (decouples ViewModel from View creation)
             services.AddSingleton<NavigationService>();
 
+            // Views registered for DI resolution
+            services.AddTransient<HomeControl>();
+            services.AddTransient<SearchControl>();
+            services.AddTransient<LibraryControl>();
+
             // ViewModels (singleton so state persists across navigation)
             services.AddSingleton<MainViewModel>();
             services.AddSingleton<MainWindowViewModel>();
@@ -97,6 +102,10 @@ namespace Musicefy
             services.AddSingleton<LibraryViewModel>();
             services.AddSingleton<AppearanceSettingsViewModel>();
             services.AddSingleton<DownloadsSettingsViewModel>();
+            services.AddTransient<ExtensionsSettingsViewModel>();
+            services.AddTransient<RepositoriesSettingsViewModel>();
+            services.AddTransient<DiscoverSettingsViewModel>();
+            services.AddTransient<SourcesSettingsViewModel>();
 
             _serviceProvider = services.BuildServiceProvider();
 
@@ -143,9 +152,9 @@ namespace Musicefy
                 string logPath = Path.Combine(appDataPath, "crash.log");
                 File.AppendAllText(logPath, $"[{DateTime.Now}] {ex}\n---------------------------------\n");
             }
-            catch
+            catch (Exception logEx)
             {
-                // Suppress crash log write failures
+                System.Diagnostics.Debug.WriteLine($"[App] Failed to write crash log: {logEx.Message}");
             }
         }
 
