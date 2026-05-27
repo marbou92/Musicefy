@@ -5,12 +5,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Musicefy.Core.Interfaces;
 using Musicefy.Core.Models;
+using static Musicefy.Core.SourceTypes;
 
 namespace Musicefy.Core.Services
 {
     public class LocalSourceProvider : IMusicSourceProvider
     {
-        public string SourceType => "Local";
+        public string SourceType => Local;
         public string DisplayName => "Local Folder";
         public string Description => "Music files stored on your local disk";
         public string IconGlyph => "💻";
@@ -79,7 +80,7 @@ namespace Musicefy.Core.Services
                             Artist = "Local",
                             FilePath = file,
                             SourceUri = file,
-                            SourceType = "Local"
+                            SourceType = Local
                         });
                     }
                 }
@@ -117,7 +118,7 @@ namespace Musicefy.Core.Services
                         Artist = "Local",
                         FilePath = file,
                         SourceUri = file,
-                        SourceType = "Local"
+                        SourceType = Local
                     });
                 }
 
