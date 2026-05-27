@@ -290,9 +290,9 @@ namespace Musicefy.Core.Services
         private string GenerateToken(string password, string salt)
         {
             var combined = password + salt;
-            using (var md5 = System.Security.Cryptography.MD5.Create())
+            using (var sha256 = System.Security.Cryptography.SHA256.Create())
             {
-                var hash = md5.ComputeHash(Encoding.UTF8.GetBytes(combined));
+                var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(combined));
                 return BitConverter.ToString(hash).Replace("-", "").ToLower();
             }
         }
