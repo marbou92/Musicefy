@@ -145,12 +145,6 @@ namespace Musicefy.Core.Services
             }
         }
 
-        [Obsolete("GetClient is deprecated. Use GetSession instead.")]
-        public ISubsonicClient GetClient(string sourceId)
-        {
-            return null;
-        }
-
         public async Task<List<MusicFile>> SearchAllSourcesAsync(string query, CancellationToken cancellationToken = default)
         {
             List<KeyValuePair<string, IMusicSourceSession>> activeSessions;
