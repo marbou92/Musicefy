@@ -26,7 +26,7 @@ namespace Musicefy.Views
                 {
                     TrackListDisplayPanel.InitializeDataStream(
                         new System.Collections.Generic.List<MusicFile>(),
-                        App.Services.GetService<PlaybackService>());
+                        (PlaybackService)App.Services.GetService(typeof(PlaybackService)));
                 };
                 ViewModel.CreatePlaylistRequested += name =>
                 {
