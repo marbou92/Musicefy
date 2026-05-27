@@ -5,12 +5,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Musicefy.Core.Interfaces;
 using Musicefy.Core.Models;
+using static Musicefy.Core.SourceTypes;
 
 namespace Musicefy.Core.Services
 {
     public class SubsonicSourceProvider : IMusicSourceProvider
     {
-        public string SourceType => "Subsonic";
+        public string SourceType => Subsonic;
         public string DisplayName => "Subsonic API";
         public string Description => "Subsonic-compatible server (Navidrome, Airsonic, Squidify, etc.)";
         public string IconGlyph => "🔗";
@@ -61,7 +62,7 @@ namespace Musicefy.Core.Services
             return new StreamingSource
             {
                 Id = Guid.NewGuid().ToString(),
-                Type = "Subsonic",
+                Type = Subsonic,
                 Url = GetConfig(config, "url"),
                 Username = GetConfig(config, "username"),
                 Password = GetConfig(config, "password")
@@ -84,7 +85,7 @@ namespace Musicefy.Core.Services
                 var source = new StreamingSource
                 {
                     Id = sourceId,
-                    Type = "Subsonic",
+                    Type = Subsonic,
                     Url = GetConfig(config, "url"),
                     Username = GetConfig(config, "username"),
                     Password = GetConfig(config, "password")
