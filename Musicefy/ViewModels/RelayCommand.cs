@@ -3,14 +3,11 @@ using System.Windows.Input;
 
 namespace Musicefy.ViewModels
 {
-    /// <summary>
-    /// Standard ICommand implementation for binding UI actions to ViewModel methods.
-    /// Supports optional CanExecute guard and parameter passing.
-    /// </summary>
     public class RelayCommand : ICommand
     {
         private readonly Action<object> _execute;
         private readonly Func<object, bool> _canExecute;
+        private event EventHandler _canExecuteChanged;
 
         public RelayCommand(Action<object> execute, Func<object, bool> canExecute = null)
         {
@@ -23,13 +20,13 @@ namespace Musicefy.ViewModels
 
         public event EventHandler CanExecuteChanged
         {
-            add { CommandManager.RequerySuggested += value; }
-            remove { CommandManager.RequerySuggested -= value; }
+            add { _canExecuteChanged += value; }
+            remove { _canExecuteChanged -= value; }
         }
 
         public bool CanExecute(object parameter) => _canExecute?.Invoke(parameter) ?? true;
         public void Execute(object parameter) => _execute(parameter);
 
-        public void RaiseCanExecuteChanged() => CommandManager.InvalidateRequerySuggested();
+        public void RaiseCanExecuteChanged() => _canExecuteChanged?.Invoke(this, EventArgs.Empty);
     }
 }
