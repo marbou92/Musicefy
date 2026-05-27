@@ -204,7 +204,10 @@ namespace Musicefy.ViewModels
                         string partialFile = Path.Combine(_downloadsPath, fileName);
                         if (File.Exists(partialFile)) File.Delete(partialFile);
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[DownloadsSettings] Failed to delete partial file: {ex.Message}");
+                    }
                     SetIdleState();
                 }
                 else
@@ -276,7 +279,10 @@ namespace Musicefy.ViewModels
                 foreach (var file in Directory.GetFiles(path, "*", SearchOption.AllDirectories))
                     size += new FileInfo(file).Length;
             }
-            catch { }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[DownloadsSettings] GetDirectorySize failed: {ex.Message}");
+            }
             return size;
         }
 
@@ -316,7 +322,7 @@ namespace Musicefy.ViewModels
         public void Dispose()
         {
             _cacheMonitorTimer?.Stop();
-            _downloadCts?.Cancel();
+            try { _downloadCts?.Cancel(); } catch (ObjectDisposedException) { }
             _downloadCts?.Dispose();
         }
     }
