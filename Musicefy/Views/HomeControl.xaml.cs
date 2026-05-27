@@ -25,12 +25,19 @@ namespace Musicefy.Views
             DataContext = _viewModel;
 
             _viewModel.PropertyChanged += OnViewModelPropertyChanged;
+            Unloaded += OnUnloaded;
 
             Loaded += async (s, e) =>
             {
                 await _viewModel.ReloadAsync();
                 UpdateViewState();
             };
+        }
+
+        private void OnUnloaded(object sender, RoutedEventArgs e)
+        {
+            _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
+            StopShimmer();
         }
 
         private void OnViewModelPropertyChanged(object sender, PropertyChangedEventArgs e)
