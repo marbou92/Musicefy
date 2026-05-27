@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
@@ -47,7 +48,7 @@ namespace Musicefy
                 }), DispatcherPriority.ApplicationIdle);
 
                 ThemeManager.StartSystemThemeWatcher();
-                InitializeLibraryAsync();
+                _ = InitializeLibraryAsync();
             }
             catch (Exception ex)
             {
@@ -104,7 +105,7 @@ namespace Musicefy
             extManager?.LoadExtensions();
         }
 
-        private async void InitializeLibraryAsync()
+        private async Task InitializeLibraryAsync()
         {
             try
             {
