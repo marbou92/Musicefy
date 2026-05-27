@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Musicefy.Core.Interfaces;
@@ -14,6 +15,8 @@ namespace Musicefy.Core.Services
 {
     public class YouTubeSourceProvider : IMusicSourceProvider
     {
+        private static readonly HttpClient _httpClient = new HttpClient();
+
         public string SourceType => YouTube;
         public string DisplayName => "YouTube Music";
         public string Description => "Search and play music from YouTube";
@@ -128,8 +131,7 @@ namespace Musicefy.Core.Services
 
                 try
                 {
-                    using var client = new System.Net.Http.HttpClient();
-                    var response = await client.GetAsync(coverId);
+                    var response = await _httpClient.GetAsync(coverId);
                     response.EnsureSuccessStatusCode();
                     return await response.Content.ReadAsByteArrayAsync();
                 }
