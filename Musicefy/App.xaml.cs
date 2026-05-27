@@ -137,7 +137,10 @@ namespace Musicefy
         {
             try
             {
-                string logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "crash.log");
+                string appDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Musicefy");
+                if (!Directory.Exists(appDataPath))
+                    Directory.CreateDirectory(appDataPath);
+                string logPath = Path.Combine(appDataPath, "crash.log");
                 File.AppendAllText(logPath, $"[{DateTime.Now}] {ex}\n---------------------------------\n");
             }
             catch
