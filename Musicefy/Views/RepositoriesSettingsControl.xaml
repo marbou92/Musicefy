@@ -7,37 +7,18 @@
         <Style TargetType="TextBox">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
-            <Setter Property="CaretBrush" Value="{DynamicResource ForegroundBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource OnSurfaceBrush}"/>
+            <Setter Property="CaretBrush" Value="{DynamicResource OnSurfaceBrush}"/>
             <Setter Property="Padding" Value="12,0"/>
             <Setter Property="Height" Value="38"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="FontSize" Value="14"/>
         </Style>
 
-        <Style TargetType="Button">
-            <Setter Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}"/>
-            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
-            <Setter Property="Cursor" Value="Hand"/>
+        <Style TargetType="Button" BasedOn="{StaticResource TonalButtonStyle}">
             <Setter Property="Padding" Value="16,8"/>
             <Setter Property="Height" Value="34"/>
-            <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="BtnBorder" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="BtnBorder" Property="Background" Value="{DynamicResource AccentBrush}"/>
-                                <Setter Property="Foreground" Value="White"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
         </Style>
     </UserControl.Resources>
 
@@ -45,19 +26,19 @@
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
             <StackPanel Orientation="Vertical">
 
-                <TextBlock Text="Extension Repositories" FontSize="22" FontWeight="Bold" Margin="4,0,0,4" Foreground="{DynamicResource ForegroundBrush}"/>
-                <TextBlock Text="Add and manage extension repositories from the community." Foreground="{DynamicResource MutedTextBrush}" Margin="4,0,0,20" FontSize="12"/>
+                <TextBlock Text="Extension Repositories" FontSize="22" FontWeight="Bold" Margin="4,0,0,4" Foreground="{DynamicResource OnSurfaceBrush}"/>
+                <TextBlock Text="Add and manage extension repositories from the community." Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="4,0,0,20" FontSize="12"/>
 
-                <Border Background="{DynamicResource SecondaryBackgroundBrush}" CornerRadius="12" Padding="16" Margin="0,0,0,16">
+                <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="12" Padding="16" Margin="0,0,0,16">
                     <StackPanel>
-                        <TextBlock Text="Add Repository" FontWeight="Bold" FontSize="13" Margin="0,0,0,10" Foreground="{DynamicResource ForegroundBrush}"/>
+                        <TextBlock Text="Add Repository" FontWeight="Bold" FontSize="13" Margin="0,0,0,10" Foreground="{DynamicResource OnSurfaceBrush}"/>
 
                         <Grid Margin="0,0,0,12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <Border Grid.Column="0" Background="{DynamicResource SecondaryBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" Height="38" Margin="0,0,8,0">
+                            <Border Grid.Column="0" Background="{DynamicResource SurfaceVariantBrush}" BorderBrush="{DynamicResource OutlineBrush}" BorderThickness="1" CornerRadius="10" Height="38" Margin="0,0,8,0">
                                 <TextBox Text="{Binding RepoUrlInput, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          ToolTip="Paste a repo manifest URL" VerticalAlignment="Center"/>
                             </Border>
@@ -69,7 +50,7 @@
                 <ItemsControl ItemsSource="{Binding Repos}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Background="{DynamicResource SecondaryBackgroundBrush}" CornerRadius="12" Padding="16" Margin="0,0,0,12">
+                            <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="12" Padding="16" Margin="0,0,0,12">
                                 <StackPanel>
                                     <Grid>
                                         <Grid.ColumnDefinitions>
@@ -78,8 +59,8 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
                                         <StackPanel Grid.Column="0">
-                                            <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource ForegroundBrush}"/>
-                                            <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" Margin="0,2,0,0"/>
+                                            <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource OnSurfaceBrush}"/>
+                                            <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,2,0,0"/>
                                         </StackPanel>
                                         <Border Grid.Column="1" Background="#2c3e50" CornerRadius="4" Padding="8,2" VerticalAlignment="Center" Margin="0,0,8,0">
                                             <Border.Style>
@@ -94,13 +75,13 @@
                                             </Border.Style>
                                             <TextBlock Text="Official" FontSize="10" FontWeight="Bold" Foreground="White"/>
                                         </Border>
-                                        <TextBlock Grid.Column="2" Text="{Binding Url}" FontSize="9" Foreground="{DynamicResource MutedTextBrush}" VerticalAlignment="Center" MaxWidth="200" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding Url}" FontSize="9" Foreground="{DynamicResource OnSurfaceVariantBrush}" VerticalAlignment="Center" MaxWidth="200" TextTrimming="CharacterEllipsis"/>
                                     </Grid>
 
                                     <ItemsControl ItemsSource="{Binding Extensions}" Margin="0,8,0,0">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <Border Background="{DynamicResource BackgroundBrush}" CornerRadius="8" Padding="10,8" Margin="0,2">
+                                                <Border Background="{DynamicResource SurfaceContainerLowBrush}" CornerRadius="8" Padding="10,8" Margin="0,2">
                                                     <Grid>
                                                         <Grid.ColumnDefinitions>
                                                             <ColumnDefinition Width="Auto"/>
@@ -109,7 +90,7 @@
                                                         </Grid.ColumnDefinitions>
 
                                                         <Border Grid.Column="0" Width="28" Height="28" CornerRadius="14"
-                                                                Background="{DynamicResource AccentBrush}" Margin="0,0,10,0">
+                                                                Background="{DynamicResource PrimaryBrush}" Margin="0,0,10,0">
                                                             <Path Data="{Binding SourceType, Converter={StaticResource IconGlyphConverter}}"
                                                                   Width="14" Height="14" Stretch="Uniform"
                                                                   Fill="White"
@@ -118,13 +99,13 @@
 
                                                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                                             <StackPanel Orientation="Horizontal">
-                                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource ForegroundBrush}"/>
-                                                                <TextBlock Text="{Binding Version, StringFormat=' v{0}'}" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource OnSurfaceBrush}"/>
+                                                                <TextBlock Text="{Binding Version, StringFormat=' v{0}'}" FontSize="10" Foreground="{DynamicResource OnSurfaceVariantBrush}" VerticalAlignment="Center" Margin="4,0,0,0"/>
                                                             </StackPanel>
-                                                            <TextBlock Text="{Binding Description}" FontSize="10" Foreground="{DynamicResource MutedTextBrush}" TextTrimming="CharacterEllipsis"/>
+                                                            <TextBlock Text="{Binding Description}" FontSize="10" Foreground="{DynamicResource OnSurfaceVariantBrush}" TextTrimming="CharacterEllipsis"/>
                                                         </StackPanel>
 
-                                                        <TextBlock Grid.Column="2" Text="Browse" FontSize="11" Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                                        <TextBlock Grid.Column="2" Text="Browse" FontSize="11" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="8,0,0,0"/>
                                                     </Grid>
                                                 </Border>
                                             </DataTemplate>
@@ -153,7 +134,7 @@
                 </ItemsControl>
 
                 <TextBlock Text="Tip: Installed extensions appear in the Extensions tab."
-                           FontSize="11" Foreground="{DynamicResource MutedTextBrush}"
+                           FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"
                            HorizontalAlignment="Center" Margin="0,0,0,10"/>
 
             </StackPanel>
