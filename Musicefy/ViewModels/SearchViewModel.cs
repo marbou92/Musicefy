@@ -96,17 +96,24 @@ namespace Musicefy.ViewModels
 
         private async void DebounceSearch()
         {
-            _debounceCts?.Cancel();
-            _debounceCts = new CancellationTokenSource();
-            var token = _debounceCts.Token;
-
             try
             {
-                await Task.Delay(200, token);
-                if (!token.IsCancellationRequested)
-                    await PerformSearch();
+                _debounceCts?.Cancel();
+                _debounceCts = new CancellationTokenSource();
+                var token = _debounceCts.Token;
+
+                try
+                {
+                    await Task.Delay(200, token);
+                    if (!token.IsCancellationRequested)
+                        await PerformSearch();
+                }
+                catch (OperationCanceledException) { }
             }
-            catch (OperationCanceledException) { }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Search debounce failed: {ex}");
+            }
         }
 
         private async Task PerformSearch()
