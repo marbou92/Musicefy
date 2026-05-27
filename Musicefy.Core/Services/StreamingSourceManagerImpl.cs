@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Musicefy.Core.Interfaces;
 using Musicefy.Core.Models;
 using Newtonsoft.Json;
+using static Musicefy.Core.SourceTypes;
 
 namespace Musicefy.Core.Services
 {
@@ -62,7 +63,7 @@ namespace Musicefy.Core.Services
             if (!_providers.TryGetValue(source.Type, out var provider))
                 throw new InvalidOperationException($"Unsupported source type: {source.Type}");
 
-            if (source.Type == "Local")
+            if (source.Type == Local)
             {
                 var path = GetConfig(source, "folderPath");
                 if (string.IsNullOrEmpty(path))
@@ -132,6 +133,7 @@ namespace Musicefy.Core.Services
             }
         }
 
+        [Obsolete("GetClient is deprecated. Use GetSession instead.")]
         public ISubsonicClient GetClient(string sourceId)
         {
             return null;
