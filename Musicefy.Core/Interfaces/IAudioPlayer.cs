@@ -90,5 +90,25 @@ namespace Musicefy.Core.Interfaces
         /// Clear the entire queue
         /// </summary>
         void ClearQueue();
+
+        /// <summary>
+        /// Whether shuffle is enabled
+        /// </summary>
+        bool ShuffleEnabled { get; set; }
+
+        /// <summary>
+        /// Whether repeat is enabled
+        /// </summary>
+        bool RepeatEnabled { get; set; }
+
+        /// <summary>
+        /// Shuffle the current queue
+        /// </summary>
+        void ShuffleQueue();
+
+        /// <summary>
+        /// Restore the original queue order
+        /// </summary>
+        void RestoreQueueOrder();
     }
 }
