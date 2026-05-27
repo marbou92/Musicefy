@@ -27,7 +27,7 @@ namespace Musicefy.Views
                         new System.Collections.Generic.List<MusicFile>(),
                         ViewModel.PlaybackService);
                 };
-                ViewModel.CreatePlaylistRequested += _ =>
+                ViewModel.CreatePlaylistRequested += name =>
                 {
                     var dialog = new CreatePlaylistWindow { Owner = Window.GetWindow(this) };
                     if (dialog.ShowDialog() == true)
