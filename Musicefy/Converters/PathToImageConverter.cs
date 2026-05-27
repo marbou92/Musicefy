@@ -35,7 +35,7 @@ namespace Musicefy.Converters
         {
             _fallbackImage = CreateFallbackIcon();
             try { _sourceManager = App.Services.GetService<IStreamingSourceManager>(); }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[PathToImageConverter] Failed to resolve IStreamingSourceManager: {ex.Message}"); }
         }
 
         private static ImageSource CreateFallbackIcon()
@@ -134,9 +134,8 @@ namespace Musicefy.Converters
         {
             if (_cache.Count <= MaxCacheEntries) return;
             int toRemove = MaxCacheEntries / 5;
-            var keys = _cache.Keys.ToArray();
-            for (int i = 0; i < Math.Min(toRemove, keys.Length); i++)
-                _cache.TryRemove(keys[i], out _);
+            foreach (var key in _cache.Keys.Take(toRemove))
+                _cache.TryRemove(key, out _);
         }
 
         private static void RefreshImages(string coverPath)
@@ -145,12 +144,15 @@ namespace Musicefy.Converters
             foreach (Window window in Application.Current.Windows)
             {
                 if (!window.IsVisible) continue;
-                WalkAndUpdate(window, coverPath);
+                var content = window.Content as FrameworkElement;
+                if (content != null)
+                    WalkAndUpdate(content, coverPath, 0);
             }
         }
 
-        private static void WalkAndUpdate(DependencyObject parent, string coverPath)
+        private static void WalkAndUpdate(DependencyObject parent, string coverPath, int depth)
         {
+            if (depth > 20) return;
             int children = VisualTreeHelper.GetChildrenCount(parent);
             for (int i = 0; i < children; i++)
             {
@@ -165,7 +167,9 @@ namespace Musicefy.Converters
                             img.Source = bmp;
                     }
                 }
-                WalkAndUpdate(child, coverPath);
+                if (child is System.Windows.Controls.Panel || child is System.Windows.Controls.ContentPresenter ||
+                    child is System.Windows.Controls.ItemsPresenter || child is System.Windows.Controls.Border)
+                    WalkAndUpdate(child, coverPath, depth + 1);
             }
         }
 
