@@ -358,7 +358,7 @@ namespace Musicefy.Core.Services
                     EncryptedPassword = EncryptPassword(s.Password),
                     s.IsConnected,
                     Configuration = s.Configuration != null
-                        ? new Dictionary<string, string>(s.Configuration.Where(kvp => !string.Equals(kvp.Key, "password", System.StringComparison.OrdinalIgnoreCase)))
+                        ? s.Configuration.Where(kvp => !string.Equals(kvp.Key, "password", System.StringComparison.OrdinalIgnoreCase)).ToDictionary(kvp => kvp.Key, kvp => kvp.Value)
                         : null
                 }).ToList();
 
