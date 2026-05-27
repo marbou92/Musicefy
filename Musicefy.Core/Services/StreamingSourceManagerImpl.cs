@@ -22,7 +22,6 @@ namespace Musicefy.Core.Services
         private readonly Dictionary<string, IMusicSourceProvider> _providers = new Dictionary<string, IMusicSourceProvider>();
         private readonly string _storageFilePath;
         private readonly IServiceProvider _serviceProvider;
-        private static readonly byte[] _entropy = Encoding.UTF8.GetBytes("Musicefy_Source_Protection_v1");
         private readonly object _lock = new object();
 
         public IReadOnlyList<StreamingSource> Sources
@@ -307,7 +306,7 @@ namespace Musicefy.Core.Services
         {
             if (string.IsNullOrEmpty(plainText)) return string.Empty;
             var plainBytes = Encoding.UTF8.GetBytes(plainText);
-            var encryptedBytes = ProtectedData.Protect(plainBytes, _entropy, DataProtectionScope.CurrentUser);
+            var encryptedBytes = ProtectedData.Protect(plainBytes, null, DataProtectionScope.CurrentUser);
             return Convert.ToBase64String(encryptedBytes);
         }
 
@@ -317,7 +316,7 @@ namespace Musicefy.Core.Services
             try
             {
                 var encryptedBytes = Convert.FromBase64String(cipherText);
-                var plainBytes = ProtectedData.Unprotect(encryptedBytes, _entropy, DataProtectionScope.CurrentUser);
+                var plainBytes = ProtectedData.Unprotect(encryptedBytes, null, DataProtectionScope.CurrentUser);
                 return Encoding.UTF8.GetString(plainBytes);
             }
             catch
