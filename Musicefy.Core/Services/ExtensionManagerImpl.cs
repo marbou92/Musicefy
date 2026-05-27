@@ -46,6 +46,11 @@ namespace Musicefy.Core.Services
             if (string.IsNullOrWhiteSpace(repoUrl))
                 throw new ArgumentException("Repo URL is required.");
 
+            if (!Uri.TryCreate(repoUrl, UriKind.Absolute, out var uri) ||
+                (!string.Equals(uri.Scheme, "https", StringComparison.OrdinalIgnoreCase) &&
+                 !string.Equals(uri.Scheme, "http", StringComparison.OrdinalIgnoreCase)))
+                throw new ArgumentException("Repo URL must be a valid HTTP or HTTPS URL.");
+
             if (_repoUrls.Contains(repoUrl, StringComparer.OrdinalIgnoreCase))
                 return;
 
@@ -94,11 +99,12 @@ namespace Musicefy.Core.Services
             if (string.IsNullOrWhiteSpace(extension.Id) || string.IsNullOrWhiteSpace(extension.DownloadUrl))
                 throw new ArgumentException("Extension must have an Id and DownloadUrl.");
 
-            var extDir = Path.Combine(_extensionsDir, extension.Id);
+            var safeId = SanitizeExtensionId(extension.Id);
+            var extDir = Path.Combine(_extensionsDir, safeId);
             if (!Directory.Exists(extDir))
                 Directory.CreateDirectory(extDir);
 
-            var dllPath = Path.Combine(extDir, $"{extension.Id}.dll");
+            var dllPath = Path.Combine(extDir, $"{safeId}.dll");
 
             var response = await _httpClient.GetAsync(extension.DownloadUrl);
             response.EnsureSuccessStatusCode();
@@ -128,7 +134,8 @@ namespace Musicefy.Core.Services
 
         public async Task UninstallExtensionAsync(string extensionId)
         {
-            var extDir = Path.Combine(_extensionsDir, extensionId);
+            var safeId = SanitizeExtensionId(extensionId);
+            var extDir = Path.Combine(_extensionsDir, safeId);
             if (Directory.Exists(extDir))
             {
                 Directory.Delete(extDir, true);
@@ -173,7 +180,8 @@ namespace Musicefy.Core.Services
             if (!extensionId.StartsWith("builtin_"))
                 return;
 
-            var extDir = Path.Combine(_extensionsDir, extensionId);
+            var safeId = SanitizeExtensionId(extensionId);
+            var extDir = Path.Combine(_extensionsDir, safeId);
             if (Directory.Exists(extDir))
                 Directory.Delete(extDir, true);
 
@@ -294,6 +302,15 @@ namespace Musicefy.Core.Services
         {
             SaveRepos();
             await Task.CompletedTask;
+        }
+
+        private static string SanitizeExtensionId(string extensionId)
+        {
+            var invalid = System.IO.Path.GetInvalidFileNameChars();
+            var sanitized = new string(extensionId.Where(c => !invalid.Contains(c)).ToArray());
+            if (sanitized.Length == 0)
+                throw new ArgumentException("Extension ID contains no valid characters.");
+            return sanitized;
         }
     }
 }
