@@ -28,6 +28,7 @@ namespace Musicefy.Core.Services
         {
             _httpClient = new HttpClient();
             _httpClient.DefaultRequestHeaders.Add("User-Agent", "Musicefy/1.0");
+            _httpClient.Timeout = TimeSpan.FromSeconds(30);
 
             var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             var musicefyDir = Path.Combine(appData, "Musicefy");
