@@ -11,47 +11,47 @@
         <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
             <StackPanel Orientation="Vertical">
 
-                <TextBlock Text="Storage Directory" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource ForegroundBrush}" Margin="4,0,0,12"/>
-                <Border Background="{DynamicResource SecondaryBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="14" Padding="16,14" Margin="0,0,0,20">
+                <TextBlock Text="Storage Directory" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource OnSurfaceBrush}" Margin="4,0,0,12"/>
+                <Border Background="{DynamicResource SurfaceVariantBrush}" BorderBrush="{DynamicResource OutlineBrush}" BorderThickness="1" CornerRadius="14" Padding="16,14" Margin="0,0,0,20">
                     <DockPanel>
                         <Button Content="Browse..." DockPanel.Dock="Right" Padding="16,6" Width="100" Click="Browse_Click" VerticalAlignment="Center"/>
                         <StackPanel Margin="0,0,16,0">
-                            <TextBlock Text="Target Download Path" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource ForegroundBrush}"/>
-                            <TextBox x:Name="DownloadPathBox" IsReadOnly="True" BorderThickness="0" Background="Transparent" Foreground="{DynamicResource MutedTextBrush}" FontSize="12" Margin="0,4,0,0" TextWrapping="NoWrap" VerticalAlignment="Center"/>
+                            <TextBlock Text="Target Download Path" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource OnSurfaceBrush}"/>
+                            <TextBox x:Name="DownloadPathBox" IsReadOnly="True" BorderThickness="0" Background="Transparent" Foreground="{DynamicResource OnSurfaceVariantBrush}" FontSize="12" Margin="0,4,0,0" TextWrapping="NoWrap" VerticalAlignment="Center"/>
                         </StackPanel>
                     </DockPanel>
                 </Border>
 
-                <TextBlock Text="Caching &amp; Bandwidth Policies" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource ForegroundBrush}" Margin="4,0,0,12"/>
+                <TextBlock Text="Caching &amp; Bandwidth Policies" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource OnSurfaceBrush}" Margin="4,0,0,12"/>
 
                 <CheckBox x:Name="AutoClearCacheBox" Style="{StaticResource ModernSettingRowStyle}">
                     <StackPanel>
-                        <TextBlock Text="Auto-Clear Cache on Exit" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource ForegroundBrush}"/>
-                        <TextBlock Text="Flushes temporary stream directories immediately upon application shutdown" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" Margin="0,2,0,0"/>
+                        <TextBlock Text="Auto-Clear Cache on Exit" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource OnSurfaceBrush}"/>
+                        <TextBlock Text="Flushes temporary stream directories immediately upon application shutdown" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,2,0,0"/>
                     </StackPanel>
                     <CheckBox.Tag>
                         <Path Data="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" 
-                              Fill="{DynamicResource MutedTextBrush}" Width="18" Height="18" Stretch="Uniform"/>
+                              Fill="{DynamicResource OnSurfaceVariantBrush}" Width="18" Height="18" Stretch="Uniform"/>
                     </CheckBox.Tag>
                 </CheckBox>
 
                 <CheckBox x:Name="LimitDownloadSizeBox" Style="{StaticResource ModernSettingRowStyle}">
                     <StackPanel>
-                        <TextBlock Text="Limit Download Size to 500 MB" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource ForegroundBrush}"/>
-                        <TextBlock Text="Restricts maximum track file sizes to conserve your local storage footprint" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" Margin="0,2,0,0"/>
+                        <TextBlock Text="Limit Download Size to 500 MB" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource OnSurfaceBrush}"/>
+                        <TextBlock Text="Restricts maximum track file sizes to conserve your local storage footprint" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,2,0,0"/>
                     </StackPanel>
                     <CheckBox.Tag>
                         <Path Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" 
-                              Fill="{DynamicResource MutedTextBrush}" Width="18" Height="18" Stretch="Uniform"/>
+                              Fill="{DynamicResource OnSurfaceVariantBrush}" Width="18" Height="18" Stretch="Uniform"/>
                     </CheckBox.Tag>
                 </CheckBox>
 
-                <TextBlock Text="Live Storage Monitor" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource ForegroundBrush}" Margin="4,8,0,12"/>
-                <Border CornerRadius="14" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Padding="16" Background="{DynamicResource SecondaryBackgroundBrush}">
+                <TextBlock Text="Live Storage Monitor" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource OnSurfaceBrush}" Margin="4,8,0,12"/>
+                <Border CornerRadius="14" BorderThickness="1" BorderBrush="{DynamicResource OutlineBrush}" Padding="16" Background="{DynamicResource SurfaceVariantBrush}">
                     <StackPanel>
                         <DockPanel Margin="0,0,0,10">
-                            <TextBlock x:Name="DownloadStatusLabel" Text="Idle" DockPanel.Dock="Right" FontWeight="Bold" Foreground="{DynamicResource MutedTextBrush}"/>
-                            <TextBlock x:Name="CacheStatusLabel" Text="Cache size: 0.00 MB" FontWeight="Bold" Foreground="{DynamicResource ForegroundBrush}"/>
+                            <TextBlock x:Name="DownloadStatusLabel" Text="Idle" DockPanel.Dock="Right" FontWeight="Bold" Foreground="{DynamicResource OnSurfaceVariantBrush}"/>
+                            <TextBlock x:Name="CacheStatusLabel" Text="Cache size: 0.00 MB" FontWeight="Bold" Foreground="{DynamicResource OnSurfaceBrush}"/>
                         </DockPanel>
                         
                         <ProgressBar x:Name="CacheProgressBar" Height="8" Maximum="100" Value="0" BorderThickness="0" Background="#202020" Margin="0,0,0,16"/>
