@@ -1,17 +1,14 @@
 using System;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Media;
 using Musicefy.Services;
 
 namespace Musicefy.ViewModels
 {
-    public class AppearanceSettingsViewModel : INotifyPropertyChanged
+    public class AppearanceSettingsViewModel : ViewModelBase
     {
-        public event PropertyChangedEventHandler PropertyChanged;
 
         private int _selectedThemeIndex;
         private string _selectedDateFormat;
@@ -187,8 +184,6 @@ namespace Musicefy.ViewModels
             });
         }
 
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
-            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
     public class ThemePreview : INotifyPropertyChanged
