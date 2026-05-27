@@ -1,18 +1,20 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Musicefy.Core.Interfaces;
 using Musicefy.Core.Models;
 using YoutubeExplode;
 using YoutubeExplode.Search;
 using YoutubeExplode.Videos.Streams;
+using static Musicefy.Core.SourceTypes;
 
 namespace Musicefy.Core.Services
 {
     public class YouTubeSourceProvider : IMusicSourceProvider
     {
-        public string SourceType => "YouTube";
+        public string SourceType => YouTube;
         public string DisplayName => "YouTube Music";
         public string Description => "Search and play music from YouTube";
         public string IconGlyph => "▶️";
@@ -30,9 +32,28 @@ namespace Musicefy.Core.Services
             }
         };
 
-        public Task<bool> TestConnectionAsync(IReadOnlyDictionary<string, string> config)
+        public async Task<bool> TestConnectionAsync(IReadOnlyDictionary<string, string> config)
         {
-            return Task.FromResult(true);
+            try
+            {
+                using (var youtube = new YoutubeClient())
+                {
+                    var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                    var enumerator = youtube.Search.GetResultsAsync("test").GetAsyncEnumerator(cts.Token);
+                    try
+                    {
+                        return await enumerator.MoveNextAsync();
+                    }
+                    finally
+                    {
+                        await enumerator.DisposeAsync();
+                    }
+                }
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public IMusicSourceSession CreateSession(IReadOnlyDictionary<string, string> config, string sourceId)
@@ -69,7 +90,7 @@ namespace Musicefy.Core.Services
                                 Artist = video.Author?.ChannelTitle ?? "YouTube",
                                 Album = "YouTube Music",
                                 Genre = "Music",
-                                SourceType = "YouTube",
+                                SourceType = YouTube,
                                 CoverPath = video.Thumbnails?.FirstOrDefault()?.Url,
                                 Duration = video.Duration ?? TimeSpan.Zero
                             });
