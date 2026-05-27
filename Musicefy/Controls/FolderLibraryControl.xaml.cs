@@ -22,7 +22,7 @@ using Musicefy.Services;
 
 namespace Musicefy.Controls;
 
-public partial class FolderLibraryControl : UserControl
+public partial class FolderLibraryControl : UserControl, IDisposable
 {
     // ── State ──────────────────────────────────────────────────────────────
     private PlaybackService?        _playbackService;
@@ -231,7 +231,7 @@ public partial class FolderLibraryControl : UserControl
             subDirs = Directory.GetDirectories(targetPath);
             Array.Sort(subDirs, StringComparer.OrdinalIgnoreCase);
         }
-        catch { subDirs = Array.Empty<string>(); }
+        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[FolderLibraryControl] Failed to get subdirectories: {ex.Message}"); subDirs = Array.Empty<string>(); }
 
         // Step 2: Single DB query for ALL tracks under this directory tree
         try
@@ -365,9 +365,9 @@ public partial class FolderLibraryControl : UserControl
                     count += CountFilesRecursive(dir, depth + 1, maxDepth);
             }
         }
-        catch
+        catch (Exception ex)
         {
-            // Best-effort file count; skip inaccessible directories
+            System.Diagnostics.Debug.WriteLine($"[FolderLibraryControl] CountFilesRecursive failed for {path}: {ex.Message}");
         }
         return count;
     }
@@ -375,7 +375,7 @@ public partial class FolderLibraryControl : UserControl
     // ── Background deep scan + toast ───────────────────────────────────────
     private void StartBackgroundScan(string scanPath)
     {
-        _scanCts?.Cancel();
+        try { _scanCts?.Cancel(); } catch (ObjectDisposedException) { }
         _scanCts?.Dispose();
         _scanCts = new CancellationTokenSource();
         var token = _scanCts.Token;
@@ -607,6 +607,12 @@ public partial class FolderLibraryControl : UserControl
     {
         if (sender is Button button && button.DataContext is MusicFile selectedItem)
             HandleItemSelection(selectedItem);
+    }
+
+    public void Dispose()
+    {
+        try { _scanCts?.Cancel(); } catch (ObjectDisposedException) { }
+        _scanCts?.Dispose();
     }
 
     private void HandleItemSelection(MusicFile item)
