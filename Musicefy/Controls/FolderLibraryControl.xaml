@@ -10,8 +10,8 @@
         <converters:PathToImageConverter x:Key="PathToImageConverter"/>
 
         <Style x:Key="EchoActionButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource SurfaceVariantBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource OnSurfaceBrush}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Height" Value="40"/>
@@ -31,7 +31,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bg" Value="{DynamicResource BorderBrush}" Property="Background"/>
+                                <Setter TargetName="Bg" Property="Background" Value="{DynamicResource SurfaceContainerHighBrush}"/>
                                 <Trigger.EnterActions>
                                     <BeginStoryboard>
                                         <Storyboard>
@@ -71,7 +71,7 @@
         </Style>
 
         <Style x:Key="LayoutPillToggleStyle" TargetType="Button">
-            <Setter Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource SurfaceVariantBrush}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Width" Value="40"/>
@@ -88,7 +88,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bg" Value="{DynamicResource BorderBrush}" Property="Background"/>
+                                <Setter TargetName="Bg" Property="Background" Value="{DynamicResource SurfaceContainerHighBrush}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Trigger.EnterActions>
@@ -129,7 +129,7 @@
                         Visibility="Collapsed" Click="BtnFolderBack_Click"
                         Style="{StaticResource LayoutPillToggleStyle}">
                     <Path Data="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"
-                          Fill="{DynamicResource TextBrush}" Width="18" Height="18"
+                          Fill="{DynamicResource OnSurfaceBrush}" Width="18" Height="18"
                           Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.9"/>
                 </Button>
 
@@ -137,7 +137,7 @@
                         Margin="0,0,12,0" Click="BtnAddFolder_Click">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"
-                              Fill="{DynamicResource TextBrush}" Width="14" Height="14"
+                              Fill="{DynamicResource OnSurfaceBrush}" Width="14" Height="14"
                               Stretch="Uniform" Margin="0,0,8,0" VerticalAlignment="Center"/>
                         <TextBlock Text="Add Folder" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     </StackPanel>
@@ -147,7 +147,7 @@
                         Margin="0,0,12,0" Click="BtnRefresh_Click">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"
-                              Fill="{DynamicResource TextBrush}" Width="14" Height="14"
+                              Fill="{DynamicResource OnSurfaceBrush}" Width="14" Height="14"
                               Stretch="Uniform" Margin="0,0,8,0" VerticalAlignment="Center"/>
                         <TextBlock Text="Refresh" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     </StackPanel>
@@ -169,7 +169,7 @@
                     Style="{StaticResource LayoutPillToggleStyle}" Click="BtnViewToggle_Click">
                 <Path x:Name="ToggleIconPath"
                       Data="M3,5H21V7H3V5M3,11H21V13H3V11M3,17H21V19H3V17Z"
-                      Fill="{DynamicResource TextBrush}" Width="16" Height="16" Stretch="Uniform"/>
+                      Fill="{DynamicResource OnSurfaceBrush}" Width="16" Height="16" Stretch="Uniform"/>
             </Button>
         </Grid>
 
@@ -181,32 +181,32 @@
                 <ScrollViewer VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled">
                     <StackPanel Margin="0,0,0,20">
                         <WrapPanel Orientation="Horizontal" Margin="0,0,-16,24">
-                            <Border Background="{DynamicResource SecondaryBackgroundBrush}" CornerRadius="20" Width="150" Height="190" Margin="0,0,16,20" Opacity="0.2">
+                            <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="20" Width="150" Height="190" Margin="0,0,16,20" Opacity="0.2">
                                 <StackPanel>
-                                    <Border CornerRadius="16" Height="150" Background="{DynamicResource BorderBrush}" Opacity="0.5"/>
-                                    <Border CornerRadius="4" Height="12" Margin="8,10,24,4" Background="{DynamicResource BorderBrush}" Opacity="0.4"/>
-                                    <Border CornerRadius="3" Height="10" Margin="8,0,48,0" Background="{DynamicResource BorderBrush}" Opacity="0.3"/>
+                                    <Border CornerRadius="16" Height="150" Background="{DynamicResource OutlineBrush}" Opacity="0.5"/>
+                                    <Border CornerRadius="4" Height="12" Margin="8,10,24,4" Background="{DynamicResource OutlineBrush}" Opacity="0.4"/>
+                                    <Border CornerRadius="3" Height="10" Margin="8,0,48,0" Background="{DynamicResource OutlineBrush}" Opacity="0.3"/>
                                 </StackPanel>
                             </Border>
-                            <Border Background="{DynamicResource SecondaryBackgroundBrush}" CornerRadius="20" Width="150" Height="190" Margin="0,0,16,20" Opacity="0.15">
+                            <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="20" Width="150" Height="190" Margin="0,0,16,20" Opacity="0.15">
                                 <StackPanel>
-                                    <Border CornerRadius="16" Height="150" Background="{DynamicResource BorderBrush}" Opacity="0.5"/>
-                                    <Border CornerRadius="4" Height="12" Margin="8,10,24,4" Background="{DynamicResource BorderBrush}" Opacity="0.4"/>
-                                    <Border CornerRadius="3" Height="10" Margin="8,0,48,0" Background="{DynamicResource BorderBrush}" Opacity="0.3"/>
+                                    <Border CornerRadius="16" Height="150" Background="{DynamicResource OutlineBrush}" Opacity="0.5"/>
+                                    <Border CornerRadius="4" Height="12" Margin="8,10,24,4" Background="{DynamicResource OutlineBrush}" Opacity="0.4"/>
+                                    <Border CornerRadius="3" Height="10" Margin="8,0,48,0" Background="{DynamicResource OutlineBrush}" Opacity="0.3"/>
                                 </StackPanel>
                             </Border>
-                            <Border Background="{DynamicResource SecondaryBackgroundBrush}" CornerRadius="20" Width="150" Height="190" Margin="0,0,16,20" Opacity="0.1">
+                            <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="20" Width="150" Height="190" Margin="0,0,16,20" Opacity="0.1">
                                 <StackPanel>
-                                    <Border CornerRadius="16" Height="150" Background="{DynamicResource BorderBrush}" Opacity="0.5"/>
-                                    <Border CornerRadius="4" Height="12" Margin="8,10,24,4" Background="{DynamicResource BorderBrush}" Opacity="0.4"/>
-                                    <Border CornerRadius="3" Height="10" Margin="8,0,48,0" Background="{DynamicResource BorderBrush}" Opacity="0.3"/>
+                                    <Border CornerRadius="16" Height="150" Background="{DynamicResource OutlineBrush}" Opacity="0.5"/>
+                                    <Border CornerRadius="4" Height="12" Margin="8,10,24,4" Background="{DynamicResource OutlineBrush}" Opacity="0.4"/>
+                                    <Border CornerRadius="3" Height="10" Margin="8,0,48,0" Background="{DynamicResource OutlineBrush}" Opacity="0.3"/>
                                 </StackPanel>
                             </Border>
                         </WrapPanel>
                         <StackPanel Margin="0,0,0,16">
-                            <Border CornerRadius="6" Height="32" Margin="0,0,0,8" Background="{DynamicResource SecondaryBackgroundBrush}" Opacity="0.15"/>
-                            <Border CornerRadius="6" Height="32" Margin="0,0,0,8" Background="{DynamicResource SecondaryBackgroundBrush}" Opacity="0.12"/>
-                            <Border CornerRadius="6" Height="32" Background="{DynamicResource SecondaryBackgroundBrush}" Opacity="0.1"/>
+                            <Border CornerRadius="6" Height="32" Margin="0,0,0,8" Background="{DynamicResource SurfaceVariantBrush}" Opacity="0.15"/>
+                            <Border CornerRadius="6" Height="32" Margin="0,0,0,8" Background="{DynamicResource SurfaceVariantBrush}" Opacity="0.12"/>
+                            <Border CornerRadius="6" Height="32" Background="{DynamicResource SurfaceVariantBrush}" Opacity="0.1"/>
                         </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
@@ -217,16 +217,16 @@
                   VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,40">
                 <StackPanel HorizontalAlignment="Center">
                     <Border Width="96" Height="96" CornerRadius="48"
-                            Background="{DynamicResource SecondaryBackgroundBrush}"
+                            Background="{DynamicResource SurfaceVariantBrush}"
                             HorizontalAlignment="Center" Margin="0,0,0,20">
                         <Path Data="M10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6H12L10,4Z"
-                              Fill="{DynamicResource MutedTextBrush}" Width="32" Height="32"
+                              Fill="{DynamicResource OnSurfaceVariantBrush}" Width="32" Height="32"
                               Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.5"/>
                     </Border>
                     <TextBlock Text="No Folders Indexed" FontSize="18" FontWeight="SemiBold"
-                               Foreground="{DynamicResource TextBrush}" HorizontalAlignment="Center"/>
+                               Foreground="{DynamicResource OnSurfaceBrush}" HorizontalAlignment="Center"/>
                     <TextBlock Text="Tap 'Add Folder' to bring your local files into the library."
-                               FontSize="14" Foreground="{DynamicResource MutedTextBrush}"
+                               FontSize="14" Foreground="{DynamicResource OnSurfaceVariantBrush}"
                                Margin="0,8,0,0" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Grid>
@@ -240,7 +240,7 @@
                 </Grid.RenderTransform>
                 <ListView x:Name="FolderSongsListView"
                           Background="Transparent" BorderThickness="0"
-                          Foreground="{DynamicResource TextBrush}"
+                          Foreground="{DynamicResource OnSurfaceBrush}"
                           VerticalAlignment="Stretch"
                           ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                           ScrollViewer.VerticalScrollBarVisibility="Auto"
@@ -267,10 +267,10 @@
                                         </Border>
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}"/>
+                                                <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource SurfaceContainerHighBrush}"/>
                                             </Trigger>
                                             <Trigger Property="IsSelected" Value="True">
-                                                <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource BorderBrush}"/>
+                                                <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource PrimaryContainerBrush}"/>
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
@@ -287,18 +287,18 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Border Background="{DynamicResource SecondaryBackgroundBrush}"
+                                    <Border Background="{DynamicResource SurfaceVariantBrush}"
                                             Width="40" Height="40" CornerRadius="12" ClipToBounds="True"
                                             Margin="0,0,16,0" SnapsToDevicePixels="True">
                                         <Grid>
                                             <Path x:Name="ListFolderIcon"
                                                   Data="M2,6A2,2 0 0,1 4,4H10L12,6H20A2,2 0 0,1 22,8V18A2,2 0 0,1 20,20H4A2,2 0 0,1 2,18V6Z"
-                                                  Fill="{DynamicResource AccentBrush}" Width="20" Height="20"
+                                                  Fill="{DynamicResource PrimaryBrush}" Width="20" Height="20"
                                                   Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
                                                   Visibility="Collapsed"/>
                                             <Path x:Name="ListMusicIcon"
                                                   Data="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9Z"
-                                                  Fill="{DynamicResource BorderBrush}" Width="18" Height="18"
+                                                  Fill="{DynamicResource OutlineBrush}" Width="18" Height="18"
                                                   Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
                                                   Visibility="Visible"/>
                                             <Image x:Name="ListCoverImage"
@@ -308,21 +308,21 @@
                                     </Border>
                                     <StackPanel VerticalAlignment="Center">
                                         <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="Medium"
-                                                   Foreground="{DynamicResource TextBrush}"
+                                                   Foreground="{DynamicResource OnSurfaceBrush}"
                                                    TextTrimming="CharacterEllipsis"/>
                                         <TextBlock x:Name="ListSubtitleGenre" Text="{Binding Genre}"
-                                                   FontSize="11" Foreground="{DynamicResource MutedTextBrush}"
+                                                   FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"
                                                    TextTrimming="CharacterEllipsis" Margin="0,1,0,0"/>
                                     </StackPanel>
                                 </StackPanel>
                                 <TextBlock x:Name="TxtArtistField" Grid.Column="1"
                                            Text="{Binding Artist}" FontSize="14"
-                                           Foreground="{DynamicResource MutedTextBrush}"
+                                           Foreground="{DynamicResource OnSurfaceVariantBrush}"
                                            TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
                                 <TextBlock x:Name="TxtDurationField" Grid.Column="2"
                                            Text="{Binding Duration, StringFormat='{}{0:mm\\:ss}'}"
                                            FontSize="14" FontWeight="Medium"
-                                           Foreground="{DynamicResource MutedTextBrush}"
+                                           Foreground="{DynamicResource OnSurfaceVariantBrush}"
                                            VerticalAlignment="Center" Margin="0,0,16,0"/>
                             </Grid>
                             <DataTemplate.Triggers>
@@ -380,10 +380,10 @@
                                         </Border>
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="CardBorder" Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}"/>
+                                                <Setter TargetName="CardBorder" Property="Background" Value="{DynamicResource SurfaceContainerHighBrush}"/>
                                             </Trigger>
                                             <Trigger Property="IsSelected" Value="True">
-                                                <Setter TargetName="CardBorder" Property="Background" Value="{DynamicResource BorderBrush}"/>
+                                                <Setter TargetName="CardBorder" Property="Background" Value="{DynamicResource PrimaryContainerBrush}"/>
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
@@ -394,25 +394,25 @@
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Width="150" Background="Transparent">
-                                <Border Background="{DynamicResource SecondaryBackgroundBrush}"
+                                <Border Background="{DynamicResource SurfaceVariantBrush}"
                                         Height="150" CornerRadius="20" ClipToBounds="True"
                                         Margin="0,0,0,14" SnapsToDevicePixels="True">
                                     <Grid>
                                         <Grid x:Name="GridFolderContainer" Visibility="Collapsed">
-                                            <Border Background="{DynamicResource BorderBrush}" Opacity="0.1"/>
+                                            <Border Background="{DynamicResource OutlineBrush}" Opacity="0.1"/>
                                             <Path Data="M6,6H11L13,8H19A1.5,1.5 0 0,1 20.5,9.5V11H4V8A2,2 0 0,1 6,6Z"
-                                                  Fill="{DynamicResource AccentBrush}" Width="70" Height="70"
+                                                  Fill="{DynamicResource PrimaryBrush}" Width="70" Height="70"
                                                   Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
                                                   Margin="0,0,8,12" Opacity="0.2"/>
                                             <Path Data="M4,7H10L12,9H20A2,2 0 0,1 22,11V19A2,2 0 0,1 20,21H4A2,2 0 0,1 2,19V9A2,2 0 0,1 4,7Z"
-                                                  Fill="{DynamicResource AccentBrush}" Width="86" Height="86"
+                                                  Fill="{DynamicResource PrimaryBrush}" Width="86" Height="86"
                                                   Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
                                                   Opacity="0.4"/>
                                         </Grid>
                                         <Grid x:Name="GridAudioContainer" Visibility="Visible">
-                                            <Border Background="{DynamicResource BorderBrush}" Opacity="0.05"/>
+                                            <Border Background="{DynamicResource OutlineBrush}" Opacity="0.05"/>
                                             <Path Data="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9Z"
-                                                  Fill="{DynamicResource BorderBrush}" Width="40" Height="40"
+                                                  Fill="{DynamicResource OutlineBrush}" Width="40" Height="40"
                                                   Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                             <Image Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}, ConverterParameter=grid}"
                                                    RenderOptions.BitmapScalingMode="HighQuality" Stretch="UniformToFill"/>
@@ -420,10 +420,10 @@
                                     </Grid>
                                 </Border>
                                 <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="SemiBold"
-                                           Foreground="{DynamicResource TextBrush}"
+                                           Foreground="{DynamicResource OnSurfaceBrush}"
                                            TextTrimming="CharacterEllipsis" Margin="4,0,0,2"/>
                                 <TextBlock x:Name="GridTxtArtist" Text="{Binding Artist}" FontSize="12"
-                                           Foreground="{DynamicResource MutedTextBrush}"
+                                           Foreground="{DynamicResource OnSurfaceVariantBrush}"
                                            TextTrimming="CharacterEllipsis" Margin="4,0,0,0"/>
                             </StackPanel>
                             <DataTemplate.Triggers>
@@ -450,9 +450,9 @@
                 VerticalAlignment="Bottom" HorizontalAlignment="Right"
                 Margin="0,0,24,24"
                 MinWidth="300" MaxWidth="380"
-                Background="{DynamicResource SecondaryBackgroundBrush}"
+                Background="{DynamicResource SurfaceVariantBrush}"
                 BorderThickness="1"
-                BorderBrush="{DynamicResource BorderBrush}"
+                BorderBrush="{DynamicResource OutlineBrush}"
                 CornerRadius="20"
                 Padding="20,16"
                 Visibility="Collapsed"
@@ -468,7 +468,7 @@
                 <!-- Row 1: pulse dot + headline -->
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,10">
                     <Ellipse x:Name="ScanPulseDot" Width="9" Height="9"
-                             Fill="{DynamicResource AccentBrush}"
+                             Fill="{DynamicResource PrimaryBrush}"
                              VerticalAlignment="Center" Margin="0,0,12,0">
                         <Ellipse.Triggers>
                             <EventTrigger RoutedEvent="Ellipse.Loaded">
@@ -485,7 +485,7 @@
                     <TextBlock x:Name="TxtScanHeadline"
                                Text="Scanning library…"
                                FontSize="14" FontWeight="SemiBold"
-                               Foreground="{DynamicResource TextBrush}"
+                               Foreground="{DynamicResource OnSurfaceBrush}"
                                VerticalAlignment="Center"/>
                 </StackPanel>
 
@@ -493,7 +493,7 @@
                 <TextBlock x:Name="TxtScanCurrentFile"
                            Text=""
                            FontSize="12"
-                           Foreground="{DynamicResource MutedTextBrush}"
+                           Foreground="{DynamicResource OnSurfaceVariantBrush}"
                            TextTrimming="CharacterEllipsis"
                            Margin="0,0,0,12"/>
 
@@ -501,8 +501,8 @@
                 <ProgressBar x:Name="ScanProgressBar"
                              Minimum="0" Maximum="100" Value="0"
                              Height="4"
-                             Foreground="{DynamicResource AccentBrush}"
-                             Background="{DynamicResource BorderBrush}"
+                             Foreground="{DynamicResource PrimaryBrush}"
+                             Background="{DynamicResource OutlineBrush}"
                              BorderThickness="0"
                              IsIndeterminate="False"
                              Margin="0,0,0,10"/>
@@ -511,7 +511,7 @@
                 <TextBlock x:Name="TxtScanCounter"
                            Text="0 / 0 files"
                            FontSize="11"
-                           Foreground="{DynamicResource MutedTextBrush}"
+                           Foreground="{DynamicResource OnSurfaceVariantBrush}"
                            HorizontalAlignment="Right"/>
             </StackPanel>
         </Border>
