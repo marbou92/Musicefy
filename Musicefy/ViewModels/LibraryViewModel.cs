@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -231,7 +232,7 @@ namespace Musicefy.ViewModels
             SetSpecialTracks(tracks);
         }
 
-        private async Task<List<MusicFile>> GetDownloadedTracksAsync()
+        private async Task<List<MusicFile>> GetDownloadedTracksAsync(CancellationToken cancellationToken = default)
         {
             string downloadsPath = Musicefy.Properties.Settings.Default.DownloadsPath;
             if (string.IsNullOrWhiteSpace(downloadsPath))
@@ -242,8 +243,12 @@ namespace Musicefy.ViewModels
             if (!Directory.Exists(downloadsPath))
                 return new List<MusicFile>();
 
-            return await Task.Run(() => _scanner.ScanDirectory(downloadsPath)
-                .Where(f => f.SourceType == "FileItem").ToList());
+            return await Task.Run(() =>
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                return _scanner.ScanDirectory(downloadsPath)
+                    .Where(f => f.SourceType == "FileItem").ToList();
+            }, cancellationToken);
         }
 
         private void ExecuteBack()
