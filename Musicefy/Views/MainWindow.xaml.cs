@@ -155,7 +155,7 @@ namespace Musicefy
             if (!_hasDraggedSignificantly && (Math.Abs(deltaX) > 5 || Math.Abs(deltaY) > 5))
                 _hasDraggedSignificantly = true;
 
-            double maxOffset = Math.Max(0, (this.ActualWidth - MiniPlayerBar.Width) / 2.0 - 16);
+            double maxOffset = double.IsNaN(MiniPlayerBar.Width) ? 0 : Math.Max(0, (this.ActualWidth - MiniPlayerBar.Width) / 2.0 - 16);
             double targetX = _dragStartTranslateX + deltaX;
             MiniPlayerTransform.X = Math.Max(-maxOffset, Math.Min(maxOffset, targetX));
 
