@@ -11,6 +11,8 @@ namespace Musicefy.Services
     {
         private static readonly HttpClient _httpClient = new HttpClient();
         private const long MaxDownloadSizeBytes = 500L * 1024L * 1024L; // 500 MB hard limit per-file toggle
+        private static long? _lastKnownCacheSize;
+        private static DateTime _lastCacheCheckTime;
 
         /// <summary>
         /// Downloads a file with progress reporting, cancellation, and pause/resume support.
@@ -158,6 +160,9 @@ namespace Musicefy.Services
 
         private static long GetDirectorySize(string path)
         {
+            if ((DateTime.UtcNow - _lastCacheCheckTime).TotalSeconds < 10 && _lastKnownCacheSize.HasValue)
+                return _lastKnownCacheSize.Value;
+
             if (!Directory.Exists(path)) return 0;
 
             long size = 0;
@@ -170,6 +175,8 @@ namespace Musicefy.Services
             {
                 Console.WriteLine($"Error calculating cache size: {ex.Message}");
             }
+            _lastKnownCacheSize = size;
+            _lastCacheCheckTime = DateTime.UtcNow;
             return size;
         }
     }
