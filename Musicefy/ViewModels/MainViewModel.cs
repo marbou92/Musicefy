@@ -1,8 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
@@ -14,11 +12,11 @@ using static Musicefy.Core.SourceTypes;
 
 namespace Musicefy.ViewModels
 {
-    public class MainViewModel : INotifyPropertyChanged
+    public class MainViewModel : ViewModelBase
     {
         private readonly ILibraryService _libraryService;
         private readonly IStreamingSourceManager _sourceManager;
-        private readonly PlaybackService _playback;
+        private readonly IAudioPlayer _playback;
 
         public ObservableCollection<ChartCard> BrowseCharts { get; }
         public ObservableCollection<TrackCard> QuickPicks { get; }
@@ -47,7 +45,7 @@ namespace Musicefy.ViewModels
 
         private CancellationTokenSource _reloadCts;
 
-        public MainViewModel(ILibraryService libraryService, IStreamingSourceManager sourceManager, PlaybackService playback)
+        public MainViewModel(ILibraryService libraryService, IStreamingSourceManager sourceManager, IAudioPlayer playback)
         {
             _libraryService = libraryService;
             _sourceManager = sourceManager;
@@ -60,7 +58,8 @@ namespace Musicefy.ViewModels
 
         public async Task ReloadAsync()
         {
-            _reloadCts?.Cancel();
+            try { _reloadCts?.Cancel(); } catch (ObjectDisposedException) { }
+            _reloadCts?.Dispose();
             _reloadCts = new CancellationTokenSource();
             var token = _reloadCts.Token;
 
@@ -102,7 +101,7 @@ namespace Musicefy.ViewModels
             if (token.IsCancellationRequested) return;
             if (!Settings.Default.DiscoverLibrary) return;
 
-            var recent = await _libraryService.GetHistoryTracksAsync(10);
+            var recent = await _libraryService.GetHistoryTracksAsync(10, token);
             if (token.IsCancellationRequested) return;
             foreach (var track in recent.Take(8))
                 QuickPicks.Add(CreateTrackCard(track));
@@ -153,7 +152,10 @@ namespace Musicefy.ViewModels
                     });
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[MainViewModel] LoadChartsFromSourceAsync failed: {ex.Message}");
+            }
         }
 
         private async Task LoadTopMusicVideosAsync(CancellationToken token)
@@ -190,7 +192,10 @@ namespace Musicefy.ViewModels
                     });
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[MainViewModel] LoadVideosFromSourceAsync failed: {ex.Message}");
+            }
         }
 
         private bool IsSourceEnabledForDiscover(string sourceType)
@@ -214,7 +219,10 @@ namespace Musicefy.ViewModels
                     if (extra != null)
                         foreach (var s in extra) enabled.Add(s);
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[MainViewModel] Failed to deserialize DiscoverExtraSources: {ex.Message}");
+                }
             }
 
             return enabled;
@@ -243,8 +251,8 @@ namespace Musicefy.ViewModels
                 _ = LoadStreamingCoverAsync(path).ContinueWith(t =>
                 {
                     if (t.Exception != null)
-                        System.Diagnostics.Debug.WriteLine($"Cover load failed: {t.Exception}");
-                }, TaskContinuationOptions.OnlyOnFaulted);
+                        System.Diagnostics.Debug.WriteLine($"[MainViewModel] Cover load failed: {t.Exception}");
+                }, CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, TaskScheduler.FromCurrentSynchronizationContext());
                 return DefaultCover();
             }
 
@@ -260,8 +268,9 @@ namespace Musicefy.ViewModels
                 img.EndInit();
                 return img;
             }
-            catch
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"[MainViewModel] LoadCoverImage failed: {ex.Message}");
                 return DefaultCover();
             }
         }
@@ -285,8 +294,9 @@ namespace Musicefy.ViewModels
                 img.Freeze();
                 return img;
             }
-            catch
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"[MainViewModel] LoadStreamingCoverAsync failed: {ex.Message}");
                 return DefaultCover();
             }
         }
@@ -302,9 +312,6 @@ namespace Musicefy.ViewModels
             return bmp;
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string name = null)
-            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 
     public class CategoryItem { public string Name { get; set; } }
