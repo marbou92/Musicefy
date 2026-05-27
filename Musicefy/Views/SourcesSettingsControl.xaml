@@ -63,22 +63,22 @@
 
                         <StackPanel Margin="0,0,0,12">
                             <TextBlock Text="Source Type" FontWeight="Bold" Margin="0,0,0,6" FontSize="13" Foreground="{DynamicResource ForegroundBrush}"/>
-                            <ComboBox x:Name="SourceTypeCombo" DisplayMemberPath="DisplayName" SelectionChanged="SourceTypeCombo_SelectionChanged"/>
+                            <ComboBox x:Name="SourceTypeCombo" DisplayMemberPath="DisplayName" SelectedItem="{Binding SelectedProvider}" SelectionChanged="SourceTypeCombo_SelectionChanged"/>
                         </StackPanel>
 
                         <StackPanel Margin="0,0,0,12">
                             <TextBlock Text="Connection Name" FontWeight="Bold" Margin="0,0,0,6" FontSize="13" Foreground="{DynamicResource ForegroundBrush}"/>
                             <Border Background="{DynamicResource SecondaryBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" Height="38">
-                                <TextBox x:Name="NameTextBox" VerticalAlignment="Center"/>
+                                <TextBox x:Name="NameTextBox" Text="{Binding SourceName, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center"/>
                             </Border>
                         </StackPanel>
 
                         <StackPanel x:Name="DynamicFieldsStack" Margin="0,0,0,12"/>
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4,0,0">
-                            <TextBlock x:Name="TestStatus" Visibility="Collapsed" FontSize="12" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                            <Button x:Name="TestButton" Content="Test Connection" Width="140" Margin="0,0,10,0" Click="TestButton_Click"/>
-                            <Button x:Name="AddButton" Content="Link Service" Width="140" Click="AddButton_Click"/>
+                            <TextBlock x:Name="TestStatus" Text="{Binding TestStatusText}" FontSize="12" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                            <Button x:Name="TestButton" Content="Test Connection" Width="140" Margin="0,0,10,0"/>
+                            <Button x:Name="AddButton" Content="Link Service" Width="140"/>
                         </StackPanel>
                     </StackPanel>
                 </Border>
