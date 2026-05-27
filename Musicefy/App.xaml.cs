@@ -98,7 +98,6 @@ namespace Musicefy
 
             // ViewModels (singleton so state persists across navigation)
             services.AddSingleton<MainViewModel>();
-            services.AddSingleton<MainWindowViewModel>();
             services.AddSingleton<SearchViewModel>();
             services.AddSingleton<LibraryViewModel>();
             services.AddSingleton<AppearanceSettingsViewModel>();
