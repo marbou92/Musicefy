@@ -325,7 +325,11 @@ namespace Musicefy.ViewModels
         private void ExecuteShowInExplorer()
         {
             if (SelectedTrack?.FilePath != null && File.Exists(SelectedTrack.FilePath))
-                Process.Start("explorer.exe", $"/select,\"{SelectedTrack.FilePath}\"");
+            {
+                var fullPath = Path.GetFullPath(SelectedTrack.FilePath);
+                if (fullPath.StartsWith("\\\\")) return;
+                Process.Start("explorer.exe", $"/select,\"{fullPath}\"");
+            }
         }
     }
 }
