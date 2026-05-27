@@ -54,10 +54,12 @@ namespace Musicefy.Services
                 string targetPath = Path.Combine(downloadsPath, fileName);
                 long existingLength = resume && File.Exists(targetPath) ? new FileInfo(targetPath).Length : 0;
 
-                if (resume && existingLength > 0)
-                    _httpClient.DefaultRequestHeaders.Range = new System.Net.Http.Headers.RangeHeaderValue(existingLength, null);
+                using (var request = new HttpRequestMessage(HttpMethod.Get, url))
+                {
+                    if (resume && existingLength > 0)
+                        request.Headers.Range = new System.Net.Http.Headers.RangeHeaderValue(existingLength, null);
 
-                using (var response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
+                    using (var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
                     {
                         response.EnsureSuccessStatusCode();
 
@@ -114,6 +116,7 @@ namespace Musicefy.Services
                             }
                         }
                     }
+                }
 
                 if (Musicefy.Properties.Settings.Default.AutoClearCache)
                 {
