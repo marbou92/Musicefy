@@ -17,6 +17,7 @@ namespace Musicefy.Views
         public LibraryControl()
         {
             InitializeComponent();
+            DataContext = App.Services.GetService<LibraryViewModel>();
             Loaded += LibraryControl_Loaded;
             Unloaded += LibraryControl_Unloaded;
         }
