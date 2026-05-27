@@ -357,7 +357,9 @@ namespace Musicefy.Core.Services
                     s.Username,
                     EncryptedPassword = EncryptPassword(s.Password),
                     s.IsConnected,
-                    Configuration = s.Configuration
+                    Configuration = s.Configuration != null
+                        ? new Dictionary<string, string>(s.Configuration.Where(kvp => !string.Equals(kvp.Key, "password", System.StringComparison.OrdinalIgnoreCase)))
+                        : null
                 }).ToList();
 
                 var json = JsonConvert.SerializeObject(sourcesToSave, Formatting.Indented);
