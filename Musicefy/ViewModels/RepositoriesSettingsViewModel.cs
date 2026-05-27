@@ -39,9 +39,9 @@ namespace Musicefy.ViewModels
         public ICommand InstallCommand { get; }
         public ICommand RefreshCommand { get; }
 
-        public RepositoriesSettingsViewModel()
+        public RepositoriesSettingsViewModel(IExtensionManager extensionManager)
         {
-            _extensionManager = App.Services.GetService<IExtensionManager>();
+            _extensionManager = extensionManager;
 
             AddRepoCommand = new RelayCommand(async _ => await AddRepoAsync());
             RemoveRepoCommand = new RelayCommand(async _ => await RemoveRepoAsync(_));
@@ -49,6 +49,11 @@ namespace Musicefy.ViewModels
             RefreshCommand = new RelayCommand(async _ => await LoadAsync());
 
             _ = LoadAsync();
+        }
+
+        public RepositoriesSettingsViewModel() : this(
+            App.Services.GetService<IExtensionManager>())
+        {
         }
 
         public async Task LoadAsync()
