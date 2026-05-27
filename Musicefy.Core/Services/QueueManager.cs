@@ -19,13 +19,22 @@ namespace Musicefy.Core.Services
         private readonly Random _random = new Random();
         private int _currentIndex = -1;
         private readonly object _lock = new object();
+        private IReadOnlyList<MusicFile> _tracksSnapshot;
 
         public event Action<MusicFile> TrackChanged;
         public event Action<int> IndexChanged;
 
         public IReadOnlyList<MusicFile> Tracks
         {
-            get { lock (_lock) return _tracks.ToList().AsReadOnly(); }
+            get
+            {
+                lock (_lock)
+                {
+                    if (_tracksSnapshot == null)
+                        _tracksSnapshot = _tracks.ToList().AsReadOnly();
+                    return _tracksSnapshot;
+                }
+            }
         }
         public int CurrentIndex
         {
@@ -106,6 +115,7 @@ namespace Musicefy.Core.Services
 
                 _tracks.Add(track);
                 _originalOrder.Add(track);
+                _tracksSnapshot = null;
 
                 if (_tracks.Count == 1)
                     _currentIndex = 0;
@@ -122,6 +132,7 @@ namespace Musicefy.Core.Services
                     if (!_trackSet.Add(track)) continue;
                     _tracks.Add(track);
                     _originalOrder.Add(track);
+                    _tracksSnapshot = null;
                     if (_tracks.Count == 1)
                         _currentIndex = 0;
                 }
@@ -138,6 +149,7 @@ namespace Musicefy.Core.Services
                 _tracks.Remove(track);
                 _originalOrder.Remove(track);
                 _trackSet.Remove(track);
+                _tracksSnapshot = null;
 
                 if (index < _currentIndex)
                 {
@@ -164,6 +176,7 @@ namespace Musicefy.Core.Services
                 _tracks.Insert(index, track);
                 _originalOrder.Insert(index, track);
                 _trackSet.Add(track);
+                _tracksSnapshot = null;
 
                 if (index <= _currentIndex)
                     _currentIndex++;
@@ -191,6 +204,7 @@ namespace Musicefy.Core.Services
                 _originalOrder.Clear();
                 _trackSet.Clear();
                 _currentIndex = -1;
+                _tracksSnapshot = null;
                 IndexChanged?.Invoke(-1);
             }
         }
@@ -224,6 +238,7 @@ namespace Musicefy.Core.Services
                     _currentIndex = _tracks.Count > 0 ? 0 : -1;
                 }
 
+                _tracksSnapshot = null;
                 ShuffleEnabled = true;
             }
         }
@@ -249,6 +264,7 @@ namespace Musicefy.Core.Services
                     _currentIndex = _tracks.Count > 0 ? 0 : -1;
                 }
 
+                _tracksSnapshot = null;
                 ShuffleEnabled = false;
             }
         }
@@ -279,6 +295,7 @@ namespace Musicefy.Core.Services
                     if (!_trackSet.Add(track)) continue;
                     _tracks.Add(track);
                     _originalOrder.Add(track);
+                    _tracksSnapshot = null;
                     if (_tracks.Count == 1)
                         _currentIndex = 0;
                 }
