@@ -102,6 +102,7 @@ namespace Musicefy.ViewModels
             if (!Settings.Default.DiscoverLibrary) return;
 
             var recent = await _libraryService.GetHistoryTracksAsync(10);
+            if (token.IsCancellationRequested) return;
             foreach (var track in recent.Take(8))
                 QuickPicks.Add(CreateTrackCard(track));
 
