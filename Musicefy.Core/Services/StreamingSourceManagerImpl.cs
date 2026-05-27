@@ -24,10 +24,19 @@ namespace Musicefy.Core.Services
         private readonly string _storageFilePath;
         private readonly IServiceProvider _serviceProvider;
         private readonly object _lock = new object();
+        private IReadOnlyList<StreamingSource> _sourcesSnapshot;
 
         public IReadOnlyList<StreamingSource> Sources
         {
-            get { lock (_lock) return _sources.ToList().AsReadOnly(); }
+            get
+            {
+                lock (_lock)
+                {
+                    if (_sourcesSnapshot == null)
+                        _sourcesSnapshot = _sources.ToList().AsReadOnly();
+                    return _sourcesSnapshot;
+                }
+            }
         }
 
         public StreamingSourceManagerImpl(IServiceProvider serviceProvider, IEnumerable<IMusicSourceProvider> providers)
@@ -76,6 +85,7 @@ namespace Musicefy.Core.Services
                 lock (_lock)
                 {
                     _sources.Add(source);
+                    _sourcesSnapshot = null;
                     _activeSessions[source.Id] = session;
                 }
                 SaveSources();
@@ -92,6 +102,7 @@ namespace Musicefy.Core.Services
                 lock (_lock)
                 {
                     _sources.Add(source);
+                    _sourcesSnapshot = null;
                     _activeSessions[source.Id] = session;
                 }
                 SaveSources();
@@ -108,6 +119,7 @@ namespace Musicefy.Core.Services
                 if (source == null) return;
 
                 _sources.Remove(source);
+                _sourcesSnapshot = null;
 
                 if (_activeSessions.TryGetValue(sourceId, out session))
                 {
@@ -222,8 +234,9 @@ namespace Musicefy.Core.Services
                     response.EnsureSuccessStatusCode();
                     return await response.Content.ReadAsByteArrayAsync();
                 }
-                catch
+                catch (Exception ex)
                 {
+                    System.Diagnostics.Debug.WriteLine($"[StreamingSourceManager] ResolveCoverArtAsync HTTP failed: {ex.Message}");
                     return null;
                 }
             }
@@ -297,7 +310,7 @@ namespace Musicefy.Core.Services
                         }
                         catch (Exception ex)
                         {
-                            System.Diagnostics.Debug.WriteLine($"Failed to restore session for {source.Name}: {ex.Message}");
+                            System.Diagnostics.Debug.WriteLine($"[StreamingSourceManager] Failed to restore session for {source.Name}: {ex.Message}");
                         }
                     }
                 }
@@ -321,8 +334,9 @@ namespace Musicefy.Core.Services
                 var plainBytes = ProtectedData.Unprotect(encryptedBytes, null, DataProtectionScope.CurrentUser);
                 return Encoding.UTF8.GetString(plainBytes);
             }
-            catch
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"[StreamingSourceManager] DecryptPassword failed: {ex.Message}");
                 return string.Empty;
             }
         }
@@ -389,6 +403,7 @@ namespace Musicefy.Core.Services
                         source.EnsureConfiguration();
                         _sources.Add(source);
                     }
+                    _sourcesSnapshot = null;
                 }
             }
             catch (Exception ex)
