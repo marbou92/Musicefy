@@ -17,11 +17,21 @@ namespace Musicefy.Views
         public SearchControl()
         {
             InitializeComponent();
-            Loaded += (s, e) =>
-            {
-                if (ViewModel != null)
-                    ViewModel.PropertyChanged += OnSearchPropertyChanged;
-            };
+            Loaded += OnLoaded;
+            Unloaded += OnUnloaded;
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            if (ViewModel != null)
+                ViewModel.PropertyChanged += OnSearchPropertyChanged;
+        }
+
+        private void OnUnloaded(object sender, RoutedEventArgs e)
+        {
+            if (ViewModel != null)
+                ViewModel.PropertyChanged -= OnSearchPropertyChanged;
+            StopSpinner();
         }
 
         private void OnSearchPropertyChanged(object sender, PropertyChangedEventArgs e)
