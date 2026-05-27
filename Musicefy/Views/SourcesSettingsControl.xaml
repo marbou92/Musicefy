@@ -7,8 +7,8 @@
         <Style TargetType="TextBox">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
-            <Setter Property="CaretBrush" Value="{DynamicResource ForegroundBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource OnSurfaceBrush}"/>
+            <Setter Property="CaretBrush" Value="{DynamicResource OnSurfaceBrush}"/>
             <Setter Property="Padding" Value="12,0"/>
             <Setter Property="Height" Value="38"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
@@ -18,35 +18,16 @@
         <Style TargetType="PasswordBox">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource OnSurfaceBrush}"/>
             <Setter Property="Padding" Value="12,0"/>
             <Setter Property="Height" Value="38"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="FontSize" Value="14"/>
         </Style>
 
-        <Style TargetType="Button">
-            <Setter Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}"/>
-            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
-            <Setter Property="Cursor" Value="Hand"/>
+        <Style TargetType="Button" BasedOn="{StaticResource TonalButtonStyle}">
             <Setter Property="Padding" Value="16,8"/>
             <Setter Property="Height" Value="36"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="BtnBorder" Background="{TemplateBinding Background}" CornerRadius="10" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="BtnBorder" Property="Background" Value="{DynamicResource AccentBrush}"/>
-                                <Setter Property="Foreground" Value="White"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
         </Style>
     </UserControl.Resources>
 
@@ -54,21 +35,21 @@
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
             <StackPanel Orientation="Vertical">
 
-                <TextBlock Text="Streaming Connections" FontSize="22" FontWeight="Bold" Margin="4,0,0,4" Foreground="{DynamicResource ForegroundBrush}"/>
-                <TextBlock Text="Add and manage remote music sources." Foreground="{DynamicResource MutedTextBrush}" Margin="4,0,0,20" FontSize="12"/>
+                <TextBlock Text="Streaming Connections" FontSize="22" FontWeight="Bold" Margin="4,0,0,4" Foreground="{DynamicResource OnSurfaceBrush}"/>
+                <TextBlock Text="Add and manage remote music sources." Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="4,0,0,20" FontSize="12"/>
 
-                <Border Background="{DynamicResource SecondaryBackgroundBrush}" CornerRadius="12" Padding="16" Margin="0,0,0,16">
+                <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="12" Padding="16" Margin="0,0,0,16">
                     <StackPanel>
-                        <TextBlock Text="Add New Source" FontWeight="Bold" FontSize="13" Margin="0,0,0,12" Foreground="{DynamicResource ForegroundBrush}"/>
+                        <TextBlock Text="Add New Source" FontWeight="Bold" FontSize="13" Margin="0,0,0,12" Foreground="{DynamicResource OnSurfaceBrush}"/>
 
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="Source Type" FontWeight="Bold" Margin="0,0,0,6" FontSize="13" Foreground="{DynamicResource ForegroundBrush}"/>
+                            <TextBlock Text="Source Type" FontWeight="Bold" Margin="0,0,0,6" FontSize="13" Foreground="{DynamicResource OnSurfaceBrush}"/>
                             <ComboBox x:Name="SourceTypeCombo" DisplayMemberPath="DisplayName" SelectedItem="{Binding SelectedProvider}" SelectionChanged="SourceTypeCombo_SelectionChanged"/>
                         </StackPanel>
 
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="Connection Name" FontWeight="Bold" Margin="0,0,0,6" FontSize="13" Foreground="{DynamicResource ForegroundBrush}"/>
-                            <Border Background="{DynamicResource SecondaryBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" Height="38">
+                            <TextBlock Text="Connection Name" FontWeight="Bold" Margin="0,0,0,6" FontSize="13" Foreground="{DynamicResource OnSurfaceBrush}"/>
+                            <Border Background="{DynamicResource SurfaceVariantBrush}" BorderBrush="{DynamicResource OutlineBrush}" BorderThickness="1" CornerRadius="10" Height="38">
                                 <TextBox x:Name="NameTextBox" Text="{Binding SourceName, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center"/>
                             </Border>
                         </StackPanel>
@@ -83,13 +64,13 @@
                     </StackPanel>
                 </Border>
 
-                <Border Background="{DynamicResource SecondaryBackgroundBrush}" CornerRadius="12" Padding="16" Margin="0,0,0,16">
+                <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="12" Padding="16" Margin="0,0,0,16">
                     <StackPanel>
-                        <TextBlock Text="Connected Sources" FontWeight="Bold" FontSize="13" Margin="0,0,0,12" Foreground="{DynamicResource ForegroundBrush}"/>
+                        <TextBlock Text="Connected Sources" FontWeight="Bold" FontSize="13" Margin="0,0,0,12" Foreground="{DynamicResource OnSurfaceBrush}"/>
                         <ItemsControl x:Name="SourcesList">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Background="{DynamicResource BackgroundBrush}" CornerRadius="10" Padding="12" Margin="0,4">
+                                    <Border Background="{DynamicResource SurfaceContainerLowBrush}" CornerRadius="10" Padding="12" Margin="0,4">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto"/>
@@ -98,7 +79,7 @@
                                             </Grid.ColumnDefinitions>
 
                                             <Border Grid.Column="0" Width="36" Height="36" CornerRadius="18"
-                                                    Background="{DynamicResource AccentBrush}" Margin="0,0,12,0">
+                                                    Background="{DynamicResource PrimaryBrush}" Margin="0,0,12,0">
                                                 <Path Data="{Binding Type, Converter={StaticResource IconGlyphConverter}}"
                                                       Width="18" Height="18" Stretch="Uniform"
                                                       Fill="White"
@@ -106,8 +87,8 @@
                                             </Border>
 
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource ForegroundBrush}"/>
-                                                <TextBlock Text="{Binding DisplayType}" FontSize="11" Foreground="{DynamicResource MutedTextBrush}"/>
+                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource OnSurfaceBrush}"/>
+                                                <TextBlock Text="{Binding DisplayType}" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"/>
                                             </StackPanel>
 
                                             <Button Grid.Column="2" Content="Remove" Click="RemoveSource_Click"
