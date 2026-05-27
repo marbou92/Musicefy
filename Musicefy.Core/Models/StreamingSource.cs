@@ -38,8 +38,8 @@ namespace Musicefy.Core.Models
             if (!string.IsNullOrEmpty(Username) && !Configuration.ContainsKey("username"))
                 Configuration["username"] = Username;
 
-            if (!string.IsNullOrEmpty(Password) && !Configuration.ContainsKey("password"))
-                Configuration["password"] = Password;
+            // Password is NOT copied into Configuration dict.
+            // It is stored in the Password property and encrypted separately via EncryptPassword.
 
             if (Type == SourceTypes.Local && !string.IsNullOrEmpty(Url) && !Configuration.ContainsKey("folderPath"))
                 Configuration["folderPath"] = Url;
