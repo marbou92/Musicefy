@@ -41,7 +41,7 @@ namespace Musicefy.Core.Models
             if (!string.IsNullOrEmpty(Password) && !Configuration.ContainsKey("password"))
                 Configuration["password"] = Password;
 
-            if (Type == "Local" && !string.IsNullOrEmpty(Url) && !Configuration.ContainsKey("folderPath"))
+            if (Type == SourceTypes.Local && !string.IsNullOrEmpty(Url) && !Configuration.ContainsKey("folderPath"))
                 Configuration["folderPath"] = Url;
         }
 
