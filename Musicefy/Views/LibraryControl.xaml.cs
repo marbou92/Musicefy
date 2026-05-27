@@ -31,7 +31,7 @@ namespace Musicefy.Views
                 {
                     var dialog = new CreatePlaylistWindow { Owner = Window.GetWindow(this) };
                     if (dialog.ShowDialog() == true)
-                        ViewModel.OnPlaylistNameReceived(dialog.ResultPlaylistName);
+                        _ = ViewModel.OnPlaylistNameReceived(dialog.ResultPlaylistName);
                 };
             }
         }
