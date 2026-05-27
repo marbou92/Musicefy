@@ -42,10 +42,14 @@ namespace Musicefy.Converters
         {
             var geometry = Geometry.Parse(
                 "M9 6.5C9 7.33 8.33 8 7.5 8S6 7.33 6 6.5 6.67 5 7.5 5 9 5.67 9 6.5zM16 7h-2v.82c-.42-.52-1.07-.82-1.82-.82C11.01 7 10 8.01 10 9.25c0 1.24 1.01 2.25 2.25 2.25.68 0 1.28-.3 1.7-.78.02.01.04.02.05.03V14H9V6.5C9 5.12 7.88 4 6.5 4S4 5.12 4 6.5 5.12 9 6.5 9c.38 0 .74-.07 1.07-.2.02.06.04.13.06.2h.01C7.6 10.17 7 11.27 7 12.5c0 2.48 2.02 4.5 4.5 4.5s4.5-2.02 4.5-4.5c0-1.23-.6-2.33-1.64-3 .01-.01.03-.02.04-.03.33.13.69.2 1.07.2 1.38 0 2.5-1.12 2.5-2.5S17.38 4 16 4s-2.5 1.12-2.5 2.5c0 .09.01.18.02.27.13.15.28.28.45.4L16 7.78V9h-1v3.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h-1z");
+            var penBrush = new SolidColorBrush(Color.FromArgb(60, 128, 128, 128));
+            penBrush.Freeze();
+            var pen = new Pen(penBrush, 1.2);
+            pen.Freeze();
             return new DrawingImage(new GeometryDrawing
             {
                 Geometry = geometry,
-                Pen = new Pen(new SolidColorBrush(Color.FromArgb(60, 128, 128, 128)), 1.2),
+                Pen = pen,
             });
         }
 
