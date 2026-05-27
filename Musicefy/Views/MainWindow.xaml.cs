@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -34,11 +35,7 @@ namespace Musicefy
 
             _viewModel = new MainWindowViewModel(playback, navService);
             _viewModel.SettingsRequested += OnSettingsRequested;
-            _viewModel.PropertyChanged += (s, e) =>
-            {
-                if (e.PropertyName == nameof(MainWindowViewModel.IsMiniPlayerVisible))
-                    MiniPlayerBar.Visibility = _viewModel.IsMiniPlayerVisible ? Visibility.Visible : Visibility.Collapsed;
-            };
+            _viewModel.PropertyChanged += OnMainWindowViewModelPropertyChanged;
 
             this.DataContext = _viewModel;
             InitializeComponent();
@@ -57,6 +54,12 @@ namespace Musicefy
 
             _isInitializing = false;
             SidebarList.SelectedIndex = 0;
+        }
+
+        private void OnMainWindowViewModelPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(MainWindowViewModel.IsMiniPlayerVisible))
+                MiniPlayerBar.Visibility = _viewModel.IsMiniPlayerVisible ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void OnSettingsRequested(object sender, EventArgs e)
@@ -249,9 +252,5 @@ namespace Musicefy
                 new DoubleAnimation(40, 0, TimeSpan.FromMilliseconds(350)) { EasingFunction = easeOut });
         }
 
-        protected override void OnClosed(EventArgs e)
-        {
-            base.OnClosed(e);
-        }
     }
 }
