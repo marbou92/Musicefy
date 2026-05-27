@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
-using System.Windows.Media;
 using System.Windows.Media.Animation;
 using Microsoft.Win32;
 
@@ -17,7 +16,6 @@ namespace Musicefy.Services
         {
             "/Themes/Base.xaml",
             "/Themes/ScrollbarTheme.xaml",
-            "/Themes/SidebarStyles.xaml",
             "/Themes/Modes/Light.xaml",
             "/Themes/Modes/Dark.xaml",
             "/Themes/Modes/DarkPure.xaml",
@@ -165,102 +163,7 @@ namespace Musicefy.Services
                 };
                 win.Opacity = 0;
                 win.BeginAnimation(UIElement.OpacityProperty, fadeAnim);
-                WireButtons(win);
             }
-        }
-
-        private static readonly HashSet<Window> _wiredWindows = new HashSet<Window>();
-
-        private static void WireButtons(Window win)
-        {
-            if (!_wiredWindows.Add(win)) return;
-            foreach (var child in FindVisualChildren<System.Windows.Controls.Button>(win))
-            {
-                child.MouseEnter += Button_MouseEnter;
-                child.PreviewMouseDown += Button_MouseDown;
-                child.MouseLeave += Button_MouseLeave;
-            }
-        }
-
-        private static void Button_MouseEnter(object sender, RoutedEventArgs e)
-        {
-            if (sender is System.Windows.Controls.Button btn &&
-                Application.Current.FindResource("AccentHoverBrush") is LinearGradientBrush brush)
-            {
-                AnimateButtonGradient(btn, brush.GradientStops[0].Color, brush.GradientStops[1].Color, 300);
-            }
-        }
-
-        private static void Button_MouseDown(object sender, RoutedEventArgs e)
-        {
-            if (sender is System.Windows.Controls.Button btn &&
-                Application.Current.FindResource("AccentPressedBrush") is LinearGradientBrush brush)
-            {
-                AnimateButtonGradient(btn, brush.GradientStops[0].Color, brush.GradientStops[1].Color, 200);
-            }
-        }
-
-        private static void Button_MouseLeave(object sender, RoutedEventArgs e)
-        {
-            if (sender is System.Windows.Controls.Button btn &&
-                Application.Current.FindResource("AccentBrush") is LinearGradientBrush brush)
-            {
-                AnimateButtonGradient(btn, brush.GradientStops[0].Color, brush.GradientStops[1].Color, 300);
-            }
-        }
-
-        private static void AnimateButtonGradient(System.Windows.Controls.Button btn, Color toStart, Color toEnd, int durationMs)
-        {
-            if (btn.Template != null && 
-                btn.Template.FindName("AccentStart", btn) is GradientStop start &&
-                btn.Template.FindName("AccentEnd", btn) is GradientStop end)
-            {
-                var anim1 = new ColorAnimation(toStart, TimeSpan.FromMilliseconds(durationMs));
-                var anim2 = new ColorAnimation(toEnd, TimeSpan.FromMilliseconds(durationMs));
-                start.BeginAnimation(GradientStop.ColorProperty, anim1);
-                end.BeginAnimation(GradientStop.ColorProperty, anim2);
-            }
-        }
-
-        private static IEnumerable<T> FindVisualChildren<T>(DependencyObject depObj) where T : DependencyObject
-        {
-            if (depObj == null) yield break;
-
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
-            {
-                DependencyObject child = VisualTreeHelper.GetChild(depObj, i);
-                if (child is T t)
-                    yield return t;
-
-                foreach (T childOfChild in FindVisualChildren<T>(child))
-                    yield return childOfChild;
-            }
-        }
-
-        public static Brush GetAccentBrush(string name)
-        {
-            Brush brush;
-            switch (name)
-            {
-                case "Default": 
-                    brush = new LinearGradientBrush(Colors.SkyBlue, Colors.DodgerBlue, 45); 
-                    break;
-                case "Catppuccin": 
-                    brush = new SolidColorBrush(Color.FromRgb(245, 194, 231)); 
-                    break;
-                case "GreenApple": 
-                    brush = new SolidColorBrush(Color.FromRgb(29, 185, 84)); 
-                    break;
-                case "Lavender": 
-                    brush = new SolidColorBrush(Color.FromRgb(181, 126, 220)); 
-                    break;
-                default: 
-                    brush = Brushes.Gray; 
-                    break;
-            }
-
-            brush.Freeze();
-            return brush;
         }
 
         private static void MergeDictionary(string path)
