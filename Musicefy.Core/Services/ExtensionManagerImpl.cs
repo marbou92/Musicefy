@@ -204,7 +204,7 @@ namespace Musicefy.Core.Services
             {
                 foreach (var dll in Directory.GetFiles(extDir, "*.dll"))
                 {
-                    var assembly = Assembly.LoadFrom(dll);
+                    var assembly = Assembly.Load(File.ReadAllBytes(dll));
                     foreach (var type in assembly.GetTypes())
                     {
                         if (typeof(IMusicSourceProvider).IsAssignableFrom(type) && !type.IsAbstract && type.IsClass)
