@@ -26,6 +26,8 @@ namespace Musicefy.Services
         private readonly ILibraryService _libraryService;
         private bool _atQueueEnd;
         private MusicFile _lastPlayedAtEndTrack;
+        private Dictionary<string, MusicFile> _libraryLookup;
+        private DateTime _libraryLookupTime;
 
         public event Action<MusicFile> TrackChanged;
         public event Action<TimeSpan, TimeSpan> ProgressChanged;
@@ -78,16 +80,21 @@ namespace Musicefy.Services
                 string directory = Path.GetDirectoryName(uri);
                 if (!string.IsNullOrEmpty(directory) && Directory.Exists(directory))
                 {
-                    Dictionary<string, MusicFile> libraryLookup = null;
-                    try
+                    Dictionary<string, MusicFile> libraryLookup = _libraryLookup;
+                    if (libraryLookup == null || (DateTime.UtcNow - _libraryLookupTime).TotalMinutes > 1)
                     {
-                        var allTracks = await _libraryService.GetAllTracksAsync();
-                        libraryLookup = allTracks.ToDictionary(
-                            t => t.FilePath, t => t, StringComparer.OrdinalIgnoreCase);
+                        try
+                        {
+                            var allTracks = await _libraryService.GetAllTracksAsync();
+                            _libraryLookup = allTracks.ToDictionary(
+                                t => t.FilePath, t => t, StringComparer.OrdinalIgnoreCase);
+                            _libraryLookupTime = DateTime.UtcNow;
+                            libraryLookup = _libraryLookup;
+                        }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[PlaybackService] Failed to load library lookup: {ex.Message}");
                     }
-                    catch
-                    {
-                        // Fall through — all siblings will use filename-only metadata
                     }
 
                     foreach (var file in Directory.EnumerateFiles(directory)
