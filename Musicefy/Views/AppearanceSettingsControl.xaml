@@ -7,8 +7,8 @@
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
             <StackPanel Orientation="Vertical">
 
-                <TextBlock Text="Theme" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource ForegroundBrush}" Margin="4,0,0,12"/>
-                <Border CornerRadius="22" BorderThickness="1.5" BorderBrush="{DynamicResource BorderBrush}" ClipToBounds="True" Margin="0,0,0,25" Height="44" Background="Transparent">
+                <TextBlock Text="Theme" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource OnSurfaceBrush}" Margin="4,0,0,12"/>
+                <Border CornerRadius="22" BorderThickness="1.5" BorderBrush="{DynamicResource OutlineBrush}" ClipToBounds="True" Margin="0,0,0,25" Height="44" Background="Transparent">
                     <UniformGrid Columns="3">
                         <RadioButton Content="System" Style="{StaticResource SegmentedTabStyle}" GroupName="ThemeGroup" 
                                      IsChecked="{Binding SelectedThemeIndex, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=0}"/>
@@ -19,7 +19,7 @@
                     </UniformGrid>
                 </Border>
 
-                <TextBlock Text="Palettes" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource ForegroundBrush}" Margin="4,0,0,15"/>
+                <TextBlock Text="Palettes" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource OnSurfaceBrush}" Margin="4,0,0,15"/>
                 <ListBox ItemsSource="{Binding ThemePreviews}" 
                          Background="Transparent" BorderThickness="0" Margin="0,0,0,20"
                          ScrollViewer.HorizontalScrollBarVisibility="Disabled">
@@ -48,7 +48,7 @@
                                             Background="{Binding BackgroundBrush}" 
                                             BorderBrush="{Binding HighlightBrush}" BorderThickness="2">
                                         <Grid Margin="12">
-                                            <Border Height="16" CornerRadius="8" Background="{DynamicResource BorderBrush}" VerticalAlignment="Top"/>
+                                            <Border Height="16" CornerRadius="8" Background="{DynamicResource OutlineBrush}" VerticalAlignment="Top"/>
                                             
                                             <Border Width="38" Height="26" CornerRadius="6" Background="{Binding AccentBrush}" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="2,-20,0,0"/>
                                             
@@ -56,34 +56,34 @@
                                                        Visibility="{Binding IsSelected, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                                         </Grid>
                                     </Border>
-                                    <TextBlock Text="{Binding CardName}" Foreground="{DynamicResource ForegroundBrush}" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                                    <TextBlock Text="{Binding CardName}" Foreground="{DynamicResource OnSurfaceBrush}" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,8,0,0"/>
                                 </StackPanel>
                             </Grid>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
 
-                <TextBlock Text="Pure Black Settings" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource ForegroundBrush}" Margin="4,5,0,12"/>
+                <TextBlock Text="Pure Black Settings" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource OnSurfaceBrush}" Margin="4,5,0,12"/>
                 
                 <CheckBox Style="{StaticResource ModernSettingRowStyle}" IsChecked="{Binding PureBlackMode}">
                     <StackPanel>
-                        <TextBlock Text="Enable Pure Black Dark Mode" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource ForegroundBrush}"/>
-                        <TextBlock Text="Applies an absolute blackout layout optimization matrix across your views" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" Margin="0,2,0,0"/>
+                        <TextBlock Text="Enable Pure Black Dark Mode" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource OnSurfaceBrush}"/>
+                        <TextBlock Text="Applies an absolute blackout layout optimization matrix across your views" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,2,0,0"/>
                     </StackPanel>
                     
                     <CheckBox.Tag>
                         <Path Data="M12 3c0.132 0 0.263 0.007 0.393 0.021a8.4 8.4 0 0 0-0.143 1.579c0 4.639 3.76 8.4 8.4 8.4 0.542 0 1.062-0.051 1.564-0.149A8.4 8.4 0 1 1 12 3z" 
-                              Fill="{DynamicResource MutedTextBrush}" Width="18" Height="18" Stretch="Uniform"/>
+                              Fill="{DynamicResource OnSurfaceVariantBrush}" Width="18" Height="18" Stretch="Uniform"/>
                     </CheckBox.Tag>
                 </CheckBox>
 
-                <TextBlock Text="Format Configurations" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource ForegroundBrush}" Margin="4,15,0,12"/>
-                <Border Background="{DynamicResource SecondaryBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="14" Padding="16,12">
+                <TextBlock Text="Format Configurations" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource OnSurfaceBrush}" Margin="4,15,0,12"/>
+                <Border Background="{DynamicResource SurfaceVariantBrush}" BorderBrush="{DynamicResource OutlineBrush}" BorderThickness="1" CornerRadius="14" Padding="16,12">
                     <DockPanel>
                         <ComboBox DockPanel.Dock="Right" ItemsSource="{Binding DateFormats}" SelectedItem="{Binding SelectedDateFormat}" Width="160" VerticalAlignment="Center"/>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="Application Date Format" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource ForegroundBrush}"/>
-                            <TextBlock Text="Updates string display values throughout global window listings" FontSize="11" Foreground="{DynamicResource MutedTextBrush}" Margin="0,2,0,0"/>
+                            <TextBlock Text="Application Date Format" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource OnSurfaceBrush}"/>
+                            <TextBlock Text="Updates string display values throughout global window listings" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
                     </DockPanel>
                 </Border>
