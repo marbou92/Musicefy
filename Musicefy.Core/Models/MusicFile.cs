@@ -63,7 +63,7 @@ namespace Musicefy.Core.Models
             Album = album;
             Year = year;
             SourceUri = sourceUri;
-            FilePath = filePath ?? sourceUri;
+            FilePath = filePath ?? sourceUri ?? string.Empty;
             Genre = genre;
             Duration = duration;
             TrackNumber = trackNumber;
