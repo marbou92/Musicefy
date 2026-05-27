@@ -51,7 +51,7 @@ namespace Musicefy.Core.Models
             string genre = null,
             TimeSpan duration = default,
             int trackNumber = 0,
-            string sourceType = "Local",
+            string sourceType = Musicefy.Core.SourceTypes.Local,
             int bitrate = 0,
             long fileSize = 0,
             string lyrics = null,
