@@ -80,7 +80,7 @@ namespace Musicefy.ViewModels
                 if (IsEmpty)
                 {
                     bool hasSources = _sourceManager.Sources.Any(s => s.IsConnected);
-                    bool hasLibraryTracks = (await _libraryService.GetAllTracksAsync(token)).Count > 0;
+                    bool hasLibraryTracks = (await _libraryService.GetAllTracksAsync(token))?.Count > 0;
                     if (hasLibraryTracks)
                         EmptyMessage = "All sources disabled in Discover settings. Enable some to see music here.";
                     else if (!hasSources)
@@ -103,7 +103,7 @@ namespace Musicefy.ViewModels
 
             var recent = await _libraryService.GetHistoryTracksAsync(10, token);
             if (token.IsCancellationRequested) return;
-            foreach (var track in recent.Take(8))
+            foreach (var track in (recent ?? Enumerable.Empty<MusicFile>()).Take(8))
                 QuickPicks.Add(CreateTrackCard(track));
 
             if (QuickPicks.Count > 0) return;
@@ -246,7 +246,7 @@ namespace Musicefy.ViewModels
                 return DefaultCover();
 
             // Subsonic-style cover ID: "sourceId:cover:artId"
-            if (path.Contains(":cover:"))
+            if (path == null || path.Contains(":cover:"))
             {
                 _ = LoadStreamingCoverAsync(path).ContinueWith(t =>
                 {
