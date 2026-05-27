@@ -2,7 +2,7 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Musicefy.Services;
+using Musicefy.Core.Interfaces;
 using Musicefy.Core.Models;
 
 namespace Musicefy.ViewModels
@@ -11,9 +11,9 @@ namespace Musicefy.ViewModels
     /// Central ViewModel for the main window shell. Owns navigation state,
     /// mini-player visibility, and coordinates child ViewModels.
     /// </summary>
-    public class MainWindowViewModel : ViewModelBase
+    public class MainWindowViewModel : ViewModelBase, IDisposable
     {
-        private readonly PlaybackService _playback;
+        private readonly IAudioPlayer _playback;
         private readonly NavigationService _navigationService;
 
         // ── Navigation state ────────────────────────────────────────────
@@ -75,9 +75,9 @@ namespace Musicefy.ViewModels
         public ICommand SettingsCommand { get; }
 
         // ── Playback service accessor (for child VMs) ───────────────────
-        public PlaybackService Playback => _playback;
+        public IAudioPlayer Playback => _playback;
 
-        public MainWindowViewModel(PlaybackService playback, NavigationService navigationService)
+        public MainWindowViewModel(IAudioPlayer playback, NavigationService navigationService)
         {
             _playback = playback ?? throw new ArgumentNullException(nameof(playback));
             _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
@@ -141,6 +141,12 @@ namespace Musicefy.ViewModels
         }
 
         public event EventHandler SettingsRequested;
+
+        public void Dispose()
+        {
+            _playback.TrackChanged -= OnTrackChanged;
+            _playback.PlaybackStateChanged -= OnPlaybackStateChanged;
+        }
 
         public void RequestSidebarReset()
         {
