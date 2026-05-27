@@ -143,6 +143,8 @@ namespace Musicefy.Core.Library
                     DROP INDEX IF EXISTS idx_tracks_title;
                     DROP INDEX IF EXISTS idx_tracks_isfavourite;
                     DROP INDEX IF EXISTS idx_tracks_lastplayed;
+                    DROP INDEX IF EXISTS idx_tracks_filepath;
+                    DROP INDEX IF EXISTS idx_tracks_sourcetype;
                 ");
 
                 // Full SQLite indexing for instant search and sort performance
@@ -167,6 +169,10 @@ namespace Musicefy.Core.Library
                     
                     -- Full-text search index for instant search across multiple fields
                     CREATE INDEX IF NOT EXISTS idx_tracks_search ON Tracks(Artist COLLATE NOCASE, Album COLLATE NOCASE, Title COLLATE NOCASE);
+                    
+                    -- Lookup indexes for fast file and source filtering
+                    CREATE INDEX IF NOT EXISTS idx_tracks_filepath  ON Tracks(FilePath);
+                    CREATE INDEX IF NOT EXISTS idx_tracks_sourcetype ON Tracks(SourceType);
                 ");
             }
         }
