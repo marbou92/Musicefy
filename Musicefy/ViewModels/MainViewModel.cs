@@ -10,6 +10,7 @@ using Musicefy.Core.Interfaces;
 using Musicefy.Core.Models;
 using Musicefy.Properties;
 using Musicefy.Services;
+using static Musicefy.Core.SourceTypes;
 
 namespace Musicefy.ViewModels
 {
@@ -200,9 +201,9 @@ namespace Musicefy.ViewModels
         private System.Collections.Generic.HashSet<string> GetEnabledDiscoverSources()
         {
             var enabled = new System.Collections.Generic.HashSet<string>();
-            if (Settings.Default.DiscoverLibrary) enabled.Add("Local");
-            if (Settings.Default.DiscoverYouTube) enabled.Add("YouTube");
-            if (Settings.Default.DiscoverSubsonic) enabled.Add("Subsonic");
+            if (Settings.Default.DiscoverLibrary) enabled.Add(Local);
+            if (Settings.Default.DiscoverYouTube) enabled.Add(YouTube);
+            if (Settings.Default.DiscoverSubsonic) enabled.Add(Subsonic);
 
             var extraJson = Settings.Default.DiscoverExtraSources;
             if (!string.IsNullOrEmpty(extraJson))
