@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Extensions.DependencyInjection;
+using Musicefy.Core;
 using Musicefy.Core.Interfaces;
 using Musicefy.Core.Models;
 using Musicefy.Properties;
