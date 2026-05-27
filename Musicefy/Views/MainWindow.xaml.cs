@@ -34,7 +34,6 @@ namespace Musicefy
             var navService = (NavigationService)services.GetService(typeof(NavigationService));
 
             _viewModel = new MainWindowViewModel(playback, navService);
-            _viewModel.SettingsRequested += OnSettingsRequested;
             _viewModel.PropertyChanged += OnMainWindowViewModelPropertyChanged;
 
             this.DataContext = _viewModel;
@@ -60,12 +59,6 @@ namespace Musicefy
         {
             if (e.PropertyName == nameof(MainWindowViewModel.IsMiniPlayerVisible))
                 MiniPlayerBar.Visibility = _viewModel.IsMiniPlayerVisible ? Visibility.Visible : Visibility.Collapsed;
-        }
-
-        private void OnSettingsRequested(object sender, EventArgs e)
-        {
-            new SettingsWindow { Owner = this }.ShowDialog();
-            _viewModel.RequestSidebarReset();
         }
 
         // ── Window chrome ────────────────────────────────────────────────
@@ -102,15 +95,6 @@ namespace Musicefy
         {
             if (SidebarList.SelectedItem == null) return;
             if (_isInitializing) return;
-
-            // Handle Settings separately
-            if (SidebarList.SelectedItem == SettingsItem)
-            {
-                OnSettingsRequested(this, EventArgs.Empty);
-                SidebarList.SelectedIndex = _viewModel.PreviousSidebarIndex;
-                return;
-            }
-
             if (MainContent == null) return;
 
             // Animate fade transition
@@ -126,6 +110,11 @@ namespace Musicefy
                 MainContent.BeginAnimation(OpacityProperty, fadeIn);
             };
             MainContent.BeginAnimation(OpacityProperty, fadeOut);
+        }
+
+        public void NavigateToSettings()
+        {
+            SidebarList.SelectedIndex = 3;
         }
 
         // ── Mini-player drag (purely visual animation) ───────────────────
