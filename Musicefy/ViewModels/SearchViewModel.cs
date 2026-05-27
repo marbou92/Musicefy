@@ -6,13 +6,12 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Musicefy.Core.Interfaces;
 using Musicefy.Core.Models;
-using Musicefy.Services;
 
 namespace Musicefy.ViewModels
 {
-    public class SearchViewModel : ViewModelBase
+    public class SearchViewModel : ViewModelBase, IDisposable
     {
-        private readonly PlaybackService _playback;
+        private readonly IAudioPlayer _playback;
         private readonly ILibraryService _libraryService;
         private readonly IStreamingSourceManager _sourceManager;
         private string _searchQuery;
@@ -86,7 +85,7 @@ namespace Musicefy.ViewModels
 
         public ICommand PlayTrackCommand { get; }
 
-        public SearchViewModel(PlaybackService playback, ILibraryService libraryService, IStreamingSourceManager sourceManager)
+        public SearchViewModel(IAudioPlayer playback, ILibraryService libraryService, IStreamingSourceManager sourceManager)
         {
             _playback = playback;
             _libraryService = libraryService;
@@ -98,7 +97,8 @@ namespace Musicefy.ViewModels
         {
             try
             {
-                _debounceCts?.Cancel();
+                try { _debounceCts?.Cancel(); } catch (ObjectDisposedException) { }
+                _debounceCts?.Dispose();
                 _debounceCts = new CancellationTokenSource();
                 var token = _debounceCts.Token;
 
@@ -118,7 +118,8 @@ namespace Musicefy.ViewModels
 
         private async Task PerformSearch()
         {
-            _searchCts?.Cancel();
+            try { _searchCts?.Cancel(); } catch (ObjectDisposedException) { }
+            _searchCts?.Dispose();
             _searchCts = new CancellationTokenSource();
             var token = _searchCts.Token;
 
@@ -138,11 +139,12 @@ namespace Musicefy.ViewModels
                 var localTask = _libraryService.SearchAsync(SearchQuery, token);
                 var sourceTask = _sourceManager.SearchAllSourcesAsync(SearchQuery, token);
 
-                await Task.WhenAll(localTask, sourceTask);
+                var localResults = await localTask;
+                var sourceResults = await sourceTask;
 
                 if (token.IsCancellationRequested) return;
 
-                var allResults = localTask.Result.Concat(sourceTask.Result).ToList();
+                var allResults = localResults.Concat(sourceResults).ToList();
 
                 // Deduplicate by FilePath
                 var seen = new System.Collections.Generic.HashSet<string>();
@@ -180,6 +182,14 @@ namespace Musicefy.ViewModels
         {
             get => _selectedResult;
             set => SetProperty(ref _selectedResult, value);
+        }
+
+        public void Dispose()
+        {
+            _debounceCts?.Cancel();
+            _debounceCts?.Dispose();
+            _searchCts?.Cancel();
+            _searchCts?.Dispose();
         }
 
         private void ExecutePlayTrack(object parameter)
