@@ -182,10 +182,22 @@ namespace Musicefy.ViewModels
             ThemePreviews.Add(new ThemePreview
             {
                 CardName = paletteName,
-                AccentBrush = ThemeManager.GetAccentBrush(paletteName),
+                AccentBrush = GetAccentBrush(paletteName),
                 BackgroundBrush = bg,
                 IsSelected = paletteName.Equals(activePalette, StringComparison.OrdinalIgnoreCase)
             });
+        }
+
+        private static Brush GetAccentBrush(string paletteName)
+        {
+            return paletteName switch
+            {
+                "Default" => new SolidColorBrush(Color.FromRgb(30, 136, 229)),
+                "Catppuccin" => new SolidColorBrush(Color.FromRgb(245, 194, 231)),
+                "GreenApple" => new SolidColorBrush(Color.FromRgb(29, 185, 84)),
+                "Lavender" => new SolidColorBrush(Color.FromRgb(181, 126, 220)),
+                _ => new SolidColorBrush(Colors.Gray),
+            };
         }
 
     }
