@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Animation;
 using Musicefy.Core.Models;
+using Musicefy.Services;
 using Musicefy.ViewModels;
 
 namespace Musicefy.Views
@@ -25,7 +26,7 @@ namespace Musicefy.Views
                 {
                     TrackListDisplayPanel.InitializeDataStream(
                         new System.Collections.Generic.List<MusicFile>(),
-                        ViewModel.PlaybackService);
+                        App.Services.GetService<PlaybackService>());
                 };
                 ViewModel.CreatePlaylistRequested += name =>
                 {
