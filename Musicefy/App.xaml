@@ -14,7 +14,6 @@
 
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
-            <conv:ThemeThumbnailConverter x:Key="ThemeThumbnailConverter"/>
             <conv:ThemePreviewConverter x:Key="ThemePreviewConverter"/>
             <conv:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
             <conv:PathToImageConverter x:Key="PathToImageConverter"/>
