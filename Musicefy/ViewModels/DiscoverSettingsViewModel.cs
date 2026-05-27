@@ -7,6 +7,7 @@ using Musicefy.Core.Models;
 using Musicefy.Properties;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+using static Musicefy.Core.SourceTypes;
 
 namespace Musicefy.ViewModels
 {
@@ -61,9 +62,9 @@ namespace Musicefy.ViewModels
 
                 bool enabled = provider.SourceType switch
                 {
-                    "Local" => Settings.Default.DiscoverLibrary,
-                    "YouTube" => Settings.Default.DiscoverYouTube,
-                    "Subsonic" => Settings.Default.DiscoverSubsonic,
+                    Local => Settings.Default.DiscoverLibrary,
+                    YouTube => Settings.Default.DiscoverYouTube,
+                    Subsonic => Settings.Default.DiscoverSubsonic,
                     _ => enabledExtra.Contains(provider.SourceType)
                 };
 
@@ -96,7 +97,7 @@ namespace Musicefy.ViewModels
 
         private bool IsProviderLinked(IMusicSourceProvider provider, HashSet<string> connectedTypes)
         {
-            if (provider.SourceType == "Local") return true;
+            if (provider.SourceType == Local) return true;
             return connectedTypes.Contains(provider.SourceType);
         }
 
@@ -108,13 +109,13 @@ namespace Musicefy.ViewModels
             {
                 switch (source.SourceType)
                 {
-                    case "Local":
+                    case Local:
                         Settings.Default.DiscoverLibrary = source.IsEnabled;
                         break;
-                    case "YouTube":
+                    case YouTube:
                         Settings.Default.DiscoverYouTube = source.IsEnabled;
                         break;
-                    case "Subsonic":
+                    case Subsonic:
                         Settings.Default.DiscoverSubsonic = source.IsEnabled;
                         break;
                     default:
