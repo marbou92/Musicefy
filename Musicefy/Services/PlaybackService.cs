@@ -286,8 +286,9 @@ namespace Musicefy.Services
         private void WasapiOut_PlaybackStopped(object sender, StoppedEventArgs e)
         {
             var capturedOut = _wasapiOut;
-            if (Application.Current?.Dispatcher == null) return;
-            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+            var dispatcher = Application.Current?.Dispatcher;
+            if (dispatcher == null) return;
+            dispatcher.BeginInvoke(new Action(() =>
             {
                 if (_wasapiOut != capturedOut)
                     return;
