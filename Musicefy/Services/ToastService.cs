@@ -109,8 +109,10 @@ namespace Musicefy.Services
 
                 // 7. Establish closure lifecycle timers to handle disposal loops safely
                 var lifeTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(durationMs) };
-                lifeTimer.Tick += (s, e) =>
+                EventHandler tickHandler = null;
+                tickHandler = (s, e) =>
                 {
+                    lifeTimer.Tick -= tickHandler;
                     lifeTimer.Stop();
 
                     var fadeOut = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromMilliseconds(250)));
@@ -119,26 +121,28 @@ namespace Musicefy.Services
                         EasingFunction = new CircleEase { EasingMode = EasingMode.EaseIn }
                     };
 
-                    fadeOut.Completed += (s2, e2) =>
+                    EventHandler completedHandler = null;
+                    completedHandler = (s2, e2) =>
                     {
+                        fadeOut.Completed -= completedHandler;
                         if (container.Children.Contains(toast))
                         {
                             container.Children.Remove(toast);
                         }
 
-                        // HIGH PERFORMANCE LIFECYCLE CLEANER: 
-                        // Wipes container tracking models out of layout trees when zero notifications exist
                         if (container.Children.Count == 0 && grid.Children.Contains(container))
                         {
                             grid.Children.Remove(container);
                             grid.UnregisterName("ToastContainer");
                         }
                     };
+                    fadeOut.Completed += completedHandler;
 
                     toast.BeginAnimation(UIElement.OpacityProperty, fadeOut);
                     toastTransform.BeginAnimation(TranslateTransform.XProperty, slideOut);
                 };
 
+                lifeTimer.Tick += tickHandler;
                 lifeTimer.Start();
 
             }), DispatcherPriority.Render);
