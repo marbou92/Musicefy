@@ -7,6 +7,7 @@ using System.Windows.Media;
 using Microsoft.Extensions.DependencyInjection;
 using Musicefy.Core.Interfaces;
 using Musicefy.Core.Models;
+using static Musicefy.Core.SourceTypes;
 
 namespace Musicefy.Views
 {
@@ -57,7 +58,7 @@ namespace Musicefy.Views
 
             foreach (var p in builtInProviders)
             {
-                if (p.SourceType == "Local" || installedSourceTypes.Contains(p.SourceType))
+                if (p.SourceType == Local || installedSourceTypes.Contains(p.SourceType))
                     _providers[p.SourceType] = p;
             }
 
