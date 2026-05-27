@@ -12,12 +12,13 @@ using Musicefy.Core.Interfaces;
 using Musicefy.Core.Models;
 using Musicefy.Models;
 using Musicefy.Services;
+using PlaybackService = Musicefy.Services.PlaybackService;
 
 namespace Musicefy.ViewModels
 {
     public class LibraryViewModel : ViewModelBase
     {
-        private readonly PlaybackService _playback;
+        private readonly IAudioPlayer _playback;
         private readonly ILibraryService _scanner;
 
         // ── Root cards ───────────────────────────────────────────────────
@@ -106,7 +107,7 @@ namespace Musicefy.ViewModels
 
         public event Action<string> CreatePlaylistRequested;
         public event Action RequestFolderInit;
-        public PlaybackService PlaybackService => _playback;
+        public IAudioPlayer PlaybackService => _playback;
 
         private MusicFile _selectedTrack;
         public MusicFile SelectedTrack
@@ -115,7 +116,7 @@ namespace Musicefy.ViewModels
             set { SetProperty(ref _selectedTrack, value); }
         }
 
-        public LibraryViewModel(PlaybackService playback, ILibraryService scanner)
+        public LibraryViewModel(IAudioPlayer playback, ILibraryService scanner)
         {
             _playback = playback;
             _scanner = scanner;
