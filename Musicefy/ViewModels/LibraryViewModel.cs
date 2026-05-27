@@ -252,11 +252,16 @@ namespace Musicefy.ViewModels
             }, cancellationToken);
         }
 
-        private void ExecuteBack()
+        public void ResetToRoot()
         {
             _currentMode = SpecialMode.None;
             SetHeaderState("Saved", false, false);
             ShowPanel("Cards");
+        }
+
+        private void ExecuteBack()
+        {
+            ResetToRoot();
         }
 
         private void ExecuteAddPlaylist()
