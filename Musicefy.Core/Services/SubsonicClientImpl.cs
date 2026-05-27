@@ -32,6 +32,8 @@ namespace Musicefy.Core.Services
             _apiVersion = "1.16.1";
             _clientName = "Musicefy";
 
+            ValidateServerUrl();
+
             if (!string.IsNullOrEmpty(source.Password))
             {
                 _password = new SecureString();
@@ -334,6 +336,22 @@ namespace Musicefy.Core.Services
             catch (Exception ex)
             {
                 throw new InvalidOperationException($"API request failed: {ex.Message}", ex);
+            }
+        }
+
+        private void ValidateServerUrl()
+        {
+            if (Uri.TryCreate(_source.Url, UriKind.Absolute, out var uri))
+            {
+                bool isLocalhost = uri.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase) ||
+                                   uri.Host.Equals("127.0.0.1") ||
+                                   uri.Host.Equals("::1");
+                if (!isLocalhost && !string.Equals(uri.Scheme, "https", StringComparison.OrdinalIgnoreCase))
+                {
+                    System.Diagnostics.Debug.WriteLine(
+                        $"WARNING: Subsonic server URL '{_source.Url}' does not use HTTPS. " +
+                        "Authentication tokens will be sent in plaintext over the network.");
+                }
             }
         }
 
