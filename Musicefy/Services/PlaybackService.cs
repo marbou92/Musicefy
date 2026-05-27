@@ -296,7 +296,10 @@ namespace Musicefy.Services
 
                 if (RepeatEnabled && CurrentAudioFile != null)
                 {
-                    PlayTrack(CurrentAudioFile);
+                    var track = CurrentAudioFile;
+                    Application.Current.Dispatcher.BeginInvoke(
+                        new Action(() => PlayTrack(track)),
+                        System.Windows.Threading.DispatcherPriority.Background);
                 }
                 else
                 {
