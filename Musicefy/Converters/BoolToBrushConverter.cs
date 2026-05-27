@@ -7,7 +7,7 @@ namespace Musicefy.Converters
 {
     public class BoolToBrushConverter : IValueConverter
     {
-        public Brush TrueBrush { get; set; } = Brushes.Red;
+        public Brush TrueBrush { get; set; } = Brushes.Green;
         public Brush FalseBrush { get; set; } = Brushes.Gray;
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
