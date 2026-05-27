@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Musicefy.Core.Interfaces;
 using Musicefy.Core.Models;
+using Musicefy.Services;
 
 namespace Musicefy.ViewModels
 {
