@@ -39,6 +39,7 @@ namespace Musicefy.Core.Interfaces
         /// <summary>
         /// Get the Subsonic client for a source (legacy)
         /// </summary>
+        [Obsolete("GetClient is deprecated. Use GetSession instead.")]
         ISubsonicClient GetClient(string sourceId);
 
         /// <summary>
