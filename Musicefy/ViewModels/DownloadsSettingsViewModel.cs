@@ -263,6 +263,12 @@ namespace Musicefy.ViewModels
             long warningThresholdBytes = Musicefy.Properties.Settings.Default.CacheWarningThreshold;
             long globalLimitBytes = Musicefy.Properties.Settings.Default.GlobalCacheLimit;
 
+            if (warningThresholdBytes <= 0 || globalLimitBytes <= 0)
+            {
+                CacheProgressPercent = 0;
+                return;
+            }
+
             if (size < warningThresholdBytes)
                 CacheProgressPercent = (double)size / warningThresholdBytes * 50;
             else if (size < globalLimitBytes)
