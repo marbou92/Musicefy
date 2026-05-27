@@ -85,9 +85,8 @@ namespace Musicefy.Views
 
         private void ShowAppearance()
         {
-            _appearanceVM = new AppearanceSettingsViewModel();
-            var control = new AppearanceSettingsControl { DataContext = _appearanceVM };
-            AnimateContentChange(control, "Appearance Settings", fromRight: false);
+            _appearanceVM = App.Services.GetService<AppearanceSettingsViewModel>();
+            AnimateContentChange(new AppearanceSettingsControl { DataContext = _appearanceVM }, "Appearance Settings", fromRight: false);
         }
 
         private void ShowDownloads()
@@ -108,13 +107,13 @@ namespace Musicefy.Views
 
         private void ShowRepositories()
         {
-            var vm = new RepositoriesSettingsViewModel();
+            var vm = App.Services.GetService<RepositoriesSettingsViewModel>();
             AnimateContentChange(new RepositoriesSettingsControl { DataContext = vm }, "Extension Repositories", fromRight: true);
         }
 
         private void ShowExtensions()
         {
-            var vm = new ExtensionsSettingsViewModel();
+            var vm = App.Services.GetService<ExtensionsSettingsViewModel>();
             AnimateContentChange(new ExtensionsSettingsControl { DataContext = vm }, "Extensions", fromRight: true);
         }
 
