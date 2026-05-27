@@ -55,7 +55,7 @@ namespace Musicefy.Core.Services
                 return;
 
             _repoUrls.Add(repoUrl);
-            await SaveReposAsync();
+            SaveRepos();
         }
 
         public bool RemoveRepo(string repoUrl)
@@ -296,12 +296,6 @@ namespace Musicefy.Core.Services
             {
                 System.Diagnostics.Debug.WriteLine($"Failed to save repos: {ex.Message}");
             }
-        }
-
-        private async Task SaveReposAsync()
-        {
-            SaveRepos();
-            await Task.CompletedTask;
         }
 
         private static string SanitizeExtensionId(string extensionId)
