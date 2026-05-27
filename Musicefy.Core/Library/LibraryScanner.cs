@@ -54,11 +54,7 @@ namespace Musicefy.Core.Library
         private readonly object _cacheLock = new object();
 
         // All formats MusicBee/foobar2000 support that TagLib# can read
-        private static readonly HashSet<string> ValidExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ".mp3", ".flac", ".wav", ".m4a", ".aac", ".ogg", ".opus",
-            ".wma", ".ape", ".mpc", ".wv", ".aiff", ".aif", ".dsf"
-        };
+        private static readonly HashSet<string> ValidExtensions = Musicefy.Core.Models.MusicFileExtensions.All;
 
         // Same artwork filename priority list as MusicBee
         private static readonly string[] FolderArtNames =
@@ -319,7 +315,13 @@ namespace Musicefy.Core.Library
                                             int toRemove = _metadataCache.Count / 10;
                                             if (toRemove < 1) toRemove = 1;
 
-                                            foreach (var key in _metadataCache.Keys.Take(toRemove).ToList())
+                                            var oldest = _metadataCache.Values
+                                                .OrderBy(e => e.CachedAt)
+                                                .Take(toRemove)
+                                                .Select(e => e.FilePath)
+                                                .ToList();
+
+                                            foreach (var key in oldest)
                                                 _metadataCache.TryRemove(key, out _);
                                         }
                                     }
