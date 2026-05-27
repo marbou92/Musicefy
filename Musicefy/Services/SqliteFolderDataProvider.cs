@@ -33,7 +33,7 @@ namespace Musicefy.Services
             await connection.OpenAsync(cancellationToken);
             var tracks = await connection.QueryAsync<MusicFile>(
                 "SELECT * FROM Tracks WHERE FilePath LIKE @Pattern ORDER BY Title",
-                new { Pattern = directoryPath + "\\%" });
+                new { Pattern = directoryPath.Replace(@"\", @"\\").Replace("%", @"\%").Replace("_", @"\_") + "\\%" });
             return tracks.ToList();
         }
     }
