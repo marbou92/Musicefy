@@ -184,7 +184,6 @@ namespace Musicefy.Core.Services
                 if (_activeDownloads.TryGetValue(url, out var cts))
                 {
                     cts.Cancel();
-                    cts.Dispose();
                     _activeDownloads.Remove(url);
                 }
             }
