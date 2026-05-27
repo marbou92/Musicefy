@@ -253,12 +253,12 @@ namespace Musicefy.ViewModels
             ShowPanel("Cards");
         }
 
-        private async void ExecuteAddPlaylist()
+        private void ExecuteAddPlaylist()
         {
             CreatePlaylistRequested?.Invoke(null);
         }
 
-        public async void OnPlaylistNameReceived(string playlistName)
+        public async Task OnPlaylistNameReceived(string playlistName)
         {
             if (string.IsNullOrWhiteSpace(playlistName)) return;
             try
