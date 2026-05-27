@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Musicefy.Core.Interfaces;
 using Musicefy.Core.Models;
 
@@ -13,7 +14,7 @@ namespace Musicefy.Core.Services
     {
         private readonly List<MusicFile> _tracks = new List<MusicFile>();
         private readonly List<MusicFile> _originalOrder = new List<MusicFile>();
-        private readonly HashSet<MusicFile> _trackSet = new HashSet<MusicFile>();
+        private readonly HashSet<MusicFile> _trackSet = new HashSet<MusicFile>(new ReferenceEqualityComparer());
         private readonly Random _random = new Random();
         private int _currentIndex = -1;
         private readonly object _lock = new object();
@@ -259,9 +260,8 @@ namespace Musicefy.Core.Services
             if (!System.IO.Directory.Exists(folderPath))
                 throw new System.IO.DirectoryNotFoundException($"Directory not found: {folderPath}");
 
-            var extensions = new[] { ".mp3", ".wav", ".flac", ".ogg", ".m4a", ".aac" };
             var files = System.IO.Directory.EnumerateFiles(folderPath, "*.*", System.IO.SearchOption.AllDirectories)
-                .Where(f => extensions.Any(e => f.EndsWith(e, StringComparison.OrdinalIgnoreCase)));
+                .Where(f => MusicFileExtensions.All.Contains(System.IO.Path.GetExtension(f)));
 
             lock (_lock)
             {
@@ -283,5 +283,11 @@ namespace Musicefy.Core.Services
                 }
             }
         }
+    }
+
+    internal class ReferenceEqualityComparer : IEqualityComparer<MusicFile>
+    {
+        public bool Equals(MusicFile x, MusicFile y) => ReferenceEquals(x, y);
+        public int GetHashCode(MusicFile obj) => RuntimeHelpers.GetHashCode(obj);
     }
 }
