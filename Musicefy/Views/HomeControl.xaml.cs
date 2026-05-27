@@ -127,8 +127,8 @@ namespace Musicefy.Views
 
         private void OpenSources_Click(object sender, RoutedEventArgs e)
         {
-            var settings = new SettingsWindow { Owner = Window.GetWindow(this) };
-            settings.ShowDialog();
+            if (Window.GetWindow(this) is MainWindow mainWindow)
+                mainWindow.NavigateToSettings();
             _ = _viewModel.ReloadAsync();
         }
     }
