@@ -25,18 +25,18 @@
         </Style>
 
         <Style x:Key="MaterialSecondaryButtonStyle" TargetType="Button" BasedOn="{StaticResource BaseControlButtonStyle}">
-            <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
-            <Setter Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}"/>
-            <Setter Property="Opacity" Value="0.8"/>
+            <Setter Property="Foreground" Value="{DynamicResource OnSurfaceBrush}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Height" Value="40"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="BgBorder" Background="{TemplateBinding Background}" CornerRadius="18" MinWidth="40" MinHeight="40" Padding="{TemplateBinding Padding}">
+                        <Border x:Name="BgBorder" Background="{TemplateBinding Background}" CornerRadius="20" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Opacity" Value="1.0"/>
                                 <Setter TargetName="BgBorder" Property="Background" Value="{DynamicResource HoverBrush}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
@@ -53,8 +53,52 @@
         </Style>
 
         <Style x:Key="MaterialPrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource BaseControlButtonStyle}">
+            <Setter Property="Foreground" Value="{DynamicResource OnPrimaryBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="BgBorder" Background="{TemplateBinding Background}" CornerRadius="28" Width="80" Height="80">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="16" ShadowDepth="4" Opacity="0.3" Color="Black"/>
+                            </Border.Effect>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="BgBorder" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.05" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetName="BgBorder" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.05" Duration="0:0:0.15"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="BgBorder" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.0" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetName="BgBorder" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.0" Duration="0:0:0.15"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="RenderTransform">
+                                    <Setter.Value>
+                                        <ScaleTransform ScaleX="0.92" ScaleY="0.92"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="MaterialPrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource BaseControlButtonStyle}">
             <Setter Property="Foreground" Value="{DynamicResource BackgroundBrush}"/>
-            <Setter Property="Background" Value="{DynamicResource TextBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource OnSurfaceBrush}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -94,7 +138,7 @@
         </Style>
         
         <Style x:Key="TransportIconStyle" TargetType="Button" BasedOn="{StaticResource BaseControlButtonStyle}">
-            <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource OnSurfaceBrush}"/>
             <Setter Property="Width" Value="48"/>
             <Setter Property="Height" Value="48"/>
             <Setter Property="Template">
@@ -137,7 +181,7 @@
                 </Button>
                 
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <TextBlock Text="Now Playing" FontSize="14" Foreground="{DynamicResource TextBrush}" FontWeight="Medium" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Now Playing" FontSize="14" Foreground="{DynamicResource OnSurfaceBrush}" FontWeight="Medium" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Grid>
 
@@ -172,8 +216,8 @@
                         </Grid.ColumnDefinitions>
                         
                         <StackPanel Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="0,0,10,0">
-                            <TextBlock Text="{Binding NowPlaying.Title, FallbackValue='Not Playing'}" FontSize="28" FontWeight="Bold" Foreground="{DynamicResource TextBrush}" TextTrimming="CharacterEllipsis"/>
-                            <TextBlock Text="{Binding NowPlaying.Artist, FallbackValue='Unknown Artist'}" FontSize="16" Foreground="{DynamicResource MutedTextBrush}" TextTrimming="CharacterEllipsis" Margin="0,4,0,0"/>
+                            <TextBlock Text="{Binding NowPlaying.Title, FallbackValue='Not Playing'}" FontSize="28" FontWeight="Bold" Foreground="{DynamicResource OnSurfaceBrush}" TextTrimming="CharacterEllipsis"/>
+                            <TextBlock Text="{Binding NowPlaying.Artist, FallbackValue='Unknown Artist'}" FontSize="16" Foreground="{DynamicResource OnSurfaceVariantBrush}" TextTrimming="CharacterEllipsis" Margin="0,4,0,0"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
@@ -189,7 +233,7 @@
                                                 <Setter Property="Foreground" Value="Crimson"/>
                                             </DataTrigger>
                                             <DataTrigger Binding="{Binding IsFavoriteTrack}" Value="False">
-                                                <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                                                <Setter Property="Foreground" Value="{DynamicResource OnSurfaceBrush}"/>
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
@@ -231,8 +275,8 @@
                     <StackPanel Grid.Row="2" Margin="4,0,4,20">
                         <Slider x:Name="ProgressSlider" Minimum="0" Maximum="100" Value="{Binding ProgressValue}" Style="{StaticResource {x:Type Slider}}" Height="24" Thumb.DragStarted="Slider_DragStarted" Thumb.DragCompleted="Slider_DragCompleted"/>
                         <Grid Margin="4,2,4,0">
-                            <TextBlock Text="{Binding CurrentTimeText}" FontSize="12" Foreground="{DynamicResource MutedTextBrush}" FontWeight="Medium"/>
-                            <TextBlock Text="{Binding TotalTimeText}" FontSize="12" Foreground="{DynamicResource MutedTextBrush}" HorizontalAlignment="Right" FontWeight="Medium"/>
+                            <TextBlock Text="{Binding CurrentTimeText}" FontSize="12" Foreground="{DynamicResource OnSurfaceVariantBrush}" FontWeight="Medium"/>
+                            <TextBlock Text="{Binding TotalTimeText}" FontSize="12" Foreground="{DynamicResource OnSurfaceVariantBrush}" HorizontalAlignment="Right" FontWeight="Medium"/>
                         </Grid>
                     </StackPanel>
 
@@ -243,10 +287,10 @@
                                      <Style TargetType="Button" BasedOn="{StaticResource TransportIconStyle}">
                                          <Style.Triggers>
                                              <DataTrigger Binding="{Binding IsShuffleEnabled}" Value="True">
-                                                 <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+                                                 <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
                                              </DataTrigger>
                                              <DataTrigger Binding="{Binding IsShuffleEnabled}" Value="False">
-                                                 <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                                                 <Setter Property="Foreground" Value="{DynamicResource OnSurfaceBrush}"/>
                                              </DataTrigger>
                                          </Style.Triggers>
                                      </Style>
@@ -293,10 +337,10 @@
                                      <Style TargetType="Button" BasedOn="{StaticResource TransportIconStyle}">
                                          <Style.Triggers>
                                              <DataTrigger Binding="{Binding IsRepeatEnabled}" Value="True">
-                                                 <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+                                                 <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
                                              </DataTrigger>
                                              <DataTrigger Binding="{Binding IsRepeatEnabled}" Value="False">
-                                                 <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                                                 <Setter Property="Foreground" Value="{DynamicResource OnSurfaceBrush}"/>
                                              </DataTrigger>
                                          </Style.Triggers>
                                      </Style>
@@ -345,7 +389,7 @@
                                           VirtualizingStackPanel.VirtualizationMode="Recycling">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding}" FontSize="26" FontWeight="Bold" Foreground="{DynamicResource TextBrush}" Opacity="0.3" TextAlignment="Left" TextWrapping="Wrap" Margin="0,14,0,14" Cursor="Hand">
+                                        <TextBlock Text="{Binding}" FontSize="26" FontWeight="Bold" Foreground="{DynamicResource OnSurfaceBrush}" Opacity="0.3" TextAlignment="Left" TextWrapping="Wrap" Margin="0,14,0,14" Cursor="Hand">
                                             <TextBlock.Style>
                                                 <Style TargetType="TextBlock">
                                                     <Style.Triggers>
@@ -369,7 +413,7 @@
                               <RowDefinition Height="*"/>
                           </Grid.RowDefinitions>
                           
-                          <TextBlock Grid.Row="0" Text="Up Next" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextBrush}" Margin="0,4,0,20"/>
+                          <TextBlock Grid.Row="0" Text="Up Next" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource OnSurfaceBrush}" Margin="0,4,0,20"/>
                           
                           <ScrollViewer x:Name="QueueScrollViewer" Grid.Row="1" VerticalScrollBarVisibility="Auto" PanningMode="VerticalOnly" MouseEnter="QueueScrollViewer_MouseEnter" MouseLeave="QueueScrollViewer_MouseLeave">
                                <ItemsControl x:Name="QueueItemsControl" ItemsSource="{Binding QueueItems}">
@@ -381,7 +425,7 @@
                                               </Border.InputBindings>
                                               <Border.Style>
                                                   <Style TargetType="Border">
-                                                      <Setter Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}"/>
+                                                      <Setter Property="Background" Value="{DynamicResource SurfaceVariantBrush}"/>
                                                       <Setter Property="BorderThickness" Value="0"/>
                                                       <Style.Triggers>
                                                           <Trigger Property="IsMouseOver" Value="True">
@@ -396,7 +440,7 @@
                                                               </DataTrigger.Binding>
                                                               <Setter Property="Background" Value="{DynamicResource BorderBrush}"/>
                                                               <Setter Property="BorderThickness" Value="3,0,0,0"/>
-                                                              <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                                                              <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
                                                           </DataTrigger>
                                                       </Style.Triggers>
                                                   </Style>
@@ -453,8 +497,8 @@
                                                       </Image.Clip>
                                                   </Image>
                                                   <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                      <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextBrush}" TextTrimming="CharacterEllipsis"/>
-                                                      <TextBlock Text="{Binding Artist}" FontSize="12" Foreground="{DynamicResource MutedTextBrush}" TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
+                                                      <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource OnSurfaceBrush}" TextTrimming="CharacterEllipsis"/>
+                                                      <TextBlock Text="{Binding Artist}" FontSize="12" Foreground="{DynamicResource OnSurfaceVariantBrush}" TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
                                                   </StackPanel>
                                               </Grid>
                                           </Border>
