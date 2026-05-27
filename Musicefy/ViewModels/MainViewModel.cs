@@ -238,7 +238,11 @@ namespace Musicefy.ViewModels
             // Subsonic-style cover ID: "sourceId:cover:artId"
             if (path.Contains(":cover:"))
             {
-                _ = LoadStreamingCoverAsync(path);
+                _ = LoadStreamingCoverAsync(path).ContinueWith(t =>
+                {
+                    if (t.Exception != null)
+                        System.Diagnostics.Debug.WriteLine($"Cover load failed: {t.Exception}");
+                }, TaskContinuationOptions.OnlyOnFaulted);
                 return DefaultCover();
             }
 
