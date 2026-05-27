@@ -234,7 +234,7 @@ namespace Musicefy.ViewModels
         public void ResumeDownload()
         {
             if (_resumeMode)
-                StartTestDownload();
+                _ = StartTestDownload();
         }
 
         public void CancelDownload()
