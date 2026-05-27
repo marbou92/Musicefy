@@ -156,7 +156,11 @@ namespace Musicefy.ViewModels
             ShowInExplorerCommand = new RelayCommand(_ =>
             {
                 if (NowPlaying?.FilePath != null && System.IO.File.Exists(NowPlaying.FilePath))
-                    System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{NowPlaying.FilePath}\"");
+                {
+                    var fullPath = System.IO.Path.GetFullPath(NowPlaying.FilePath);
+                    if (!fullPath.StartsWith("\\\\"))
+                        System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{fullPath}\"");
+                }
             });
             ToggleLyricsCommand = new RelayCommand(_ => ToggleRightPanel(RightViewMode.Lyrics));
             ToggleQueueCommand = new RelayCommand(_ => ToggleRightPanel(RightViewMode.Queue));
