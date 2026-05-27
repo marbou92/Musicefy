@@ -141,7 +141,7 @@ namespace Musicefy.ViewModels
             }
         }
 
-        public async void ClearCache()
+        public void ClearCache()
         {
             var result = MessageBox.Show(
                 "Are you sure you want to clear all downloads? This action cannot be undone.",
@@ -161,7 +161,7 @@ namespace Musicefy.ViewModels
             }
         }
 
-        public async void StartTestDownload()
+        public async Task StartTestDownload()
         {
             string testUrl = "https://speed.hetzner.de/100MB.bin";
             string fileName = "TestDownload.bin";
