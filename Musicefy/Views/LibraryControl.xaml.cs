@@ -25,6 +25,7 @@ namespace Musicefy.Views
         {
             if (ViewModel != null)
             {
+                ViewModel.ResetToRoot();
                 _folderInitHandler = () =>
                 {
                     TrackListDisplayPanel.InitializeDataStream(
