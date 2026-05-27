@@ -17,6 +17,8 @@ namespace Musicefy.Core.Services
         private readonly string _downloadsPath;
         private static readonly HttpClient _httpClient = new HttpClient();
         private readonly Dictionary<string, CancellationTokenSource> _activeDownloads = new Dictionary<string, CancellationTokenSource>();
+        private long? _lastKnownCacheSize;
+        private DateTime _lastCacheCheckTime;
 
         public DownloadServiceImpl()
         {
@@ -143,6 +145,9 @@ namespace Musicefy.Core.Services
 
         public long GetCacheSize()
         {
+            if ((DateTime.UtcNow - _lastCacheCheckTime).TotalSeconds < 10 && _lastKnownCacheSize.HasValue)
+                return _lastKnownCacheSize.Value;
+
             if (!Directory.Exists(_downloadsPath)) return 0;
 
             long size = 0;
@@ -155,6 +160,8 @@ namespace Musicefy.Core.Services
             {
                 // Best-effort cache size calculation
             }
+            _lastKnownCacheSize = size;
+            _lastCacheCheckTime = DateTime.UtcNow;
             return size;
         }
 
