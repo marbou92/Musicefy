@@ -221,8 +221,8 @@ namespace Musicefy.Services
                     _audioStream = new AudioFileReader(uri);
                 }
 
-                var enumerator = new MMDeviceEnumerator();
-                MMDevice defaultDevice = enumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+                using var enumerator = new MMDeviceEnumerator();
+                using MMDevice defaultDevice = enumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
 
                 _wasapiOut = new WasapiOut(defaultDevice, AudioClientShareMode.Shared, true, 100);
 
@@ -253,7 +253,8 @@ namespace Musicefy.Services
             catch (Exception ex)
             {
                 StopPlayback();
-                MessageBox.Show($"Playback Error:\n{ex.Message}", "Playback Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                if (Application.Current != null)
+                    MessageBox.Show($"Playback Error:\n{ex.Message}", "Playback Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -281,6 +282,7 @@ namespace Musicefy.Services
         private void WasapiOut_PlaybackStopped(object sender, StoppedEventArgs e)
         {
             var capturedOut = _wasapiOut;
+            if (Application.Current?.Dispatcher == null) return;
             Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
                 if (_wasapiOut != capturedOut)
