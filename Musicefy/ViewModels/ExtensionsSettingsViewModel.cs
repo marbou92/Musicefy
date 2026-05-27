@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,6 +14,7 @@ namespace Musicefy.ViewModels
     public class ExtensionsSettingsViewModel : ViewModelBase
     {
         private readonly IExtensionManager _extensionManager;
+        private readonly IServiceProvider _serviceProvider;
         private bool _isLoading;
         private ObservableCollection<IMusicSourceProvider> _builtInProviders = new ObservableCollection<IMusicSourceProvider>();
         private ObservableCollection<ExtensionManifest> _installedExtensions = new ObservableCollection<ExtensionManifest>();
@@ -46,9 +48,10 @@ namespace Musicefy.ViewModels
         public ICommand UninstallCommand { get; }
         public ICommand RefreshCommand { get; }
 
-        public ExtensionsSettingsViewModel()
+        public ExtensionsSettingsViewModel(IExtensionManager extensionManager, IServiceProvider serviceProvider)
         {
-            _extensionManager = App.Services.GetService<IExtensionManager>();
+            _extensionManager = extensionManager;
+            _serviceProvider = serviceProvider;
 
             InstallCommand = new RelayCommand(async _ => await InstallAsync(_));
             UninstallCommand = new RelayCommand(async _ => await UninstallAsync(_));
@@ -59,9 +62,15 @@ namespace Musicefy.ViewModels
             _ = LoadAsync();
         }
 
+        public ExtensionsSettingsViewModel() : this(
+            App.Services.GetService<IExtensionManager>(),
+            App.Services)
+        {
+        }
+
         private void LoadBuiltInProviders()
         {
-            var providers = App.Services.GetServices<IMusicSourceProvider>();
+            var providers = _serviceProvider.GetServices<IMusicSourceProvider>();
             var local = providers.FirstOrDefault(p => p.SourceType == Local);
             BuiltInProviders = new ObservableCollection<IMusicSourceProvider>();
             if (local != null)
@@ -70,9 +79,9 @@ namespace Musicefy.ViewModels
 
         private void LoadAvailableExtensions()
         {
-            var providers = App.Services.GetServices<IMusicSourceProvider>();
+            var providers = _serviceProvider.GetServices<IMusicSourceProvider>();
             var installed = _extensionManager.GetInstalledExtensions();
-            var installedIds = new System.Collections.Generic.HashSet<string>(installed.Select(e => e.Id));
+            var installedIds = new HashSet<string>(installed.Select(e => e.Id));
 
             var available = new ObservableCollection<ExtensionManifest>();
             foreach (var p in providers)
