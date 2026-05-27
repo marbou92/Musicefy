@@ -10,6 +10,7 @@ using Musicefy.Core.Library;
 using Musicefy.Core.Services;
 using Musicefy.Services;
 using Musicefy.ViewModels;
+using Musicefy.Views;
 
 namespace Musicefy
 {
