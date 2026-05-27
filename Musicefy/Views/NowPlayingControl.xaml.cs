@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -7,9 +8,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using Musicefy.Core.Interfaces;
-using Musicefy.Services;
 using Musicefy.ViewModels;
-using Musicefy.Core.Models;
 
 namespace Musicefy.Views
 {
@@ -28,39 +27,54 @@ namespace Musicefy.Views
             _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
 
             this.DataContext = _viewModel;
-            _viewModel.RequestCollapse += () => RequestCollapse?.Invoke();
-            _viewModel.PropertyChanged += (s, e) =>
-            {
-                if (e.PropertyName == nameof(NowPlayingViewModel.IsLyricsPanelVisible) ||
-                    e.PropertyName == nameof(NowPlayingViewModel.IsQueuePanelVisible) ||
-                    e.PropertyName == nameof(NowPlayingViewModel.IsRightPanelVisible))
-                {
-                    ApplyLayoutCalculations();
-                }
-
-                if (e.PropertyName == nameof(NowPlayingViewModel.NowPlaying))
-                {
-                    if (_isMouseOverQueue)
-                        _queueScrollTimer.Stop();
-                    else
-                        ScrollToNowPlaying();
-                }
-            };
-
-            this.SizeChanged += (s, e) =>
-            {
-                _viewModel.UpdateActualWidth(this.ActualWidth);
-                ApplyLayoutCalculations();
-            };
+            _viewModel.RequestCollapse += OnRequestCollapse;
+            _viewModel.PropertyChanged += OnViewModelPropertyChanged;
+            this.SizeChanged += OnControlSizeChanged;
+            this.Unloaded += OnUnloaded;
 
             _queueScrollTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(7) };
-            _queueScrollTimer.Tick += (s, e) =>
-            {
-                _queueScrollTimer.Stop();
-                ScrollToNowPlaying();
-            };
+            _queueScrollTimer.Tick += OnQueueScrollTimerTick;
+        }
 
-            if (_playback.CurrentTrack != null) OnTrackChanged(_playback.CurrentTrack);
+        private void OnUnloaded(object sender, RoutedEventArgs e)
+        {
+            _viewModel.RequestCollapse -= OnRequestCollapse;
+            _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
+            this.SizeChanged -= OnControlSizeChanged;
+            _queueScrollTimer.Tick -= OnQueueScrollTimerTick;
+            _queueScrollTimer.Stop();
+        }
+
+        private void OnRequestCollapse() => RequestCollapse?.Invoke();
+
+        private void OnViewModelPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(NowPlayingViewModel.IsLyricsPanelVisible) ||
+                e.PropertyName == nameof(NowPlayingViewModel.IsQueuePanelVisible) ||
+                e.PropertyName == nameof(NowPlayingViewModel.IsRightPanelVisible))
+            {
+                ApplyLayoutCalculations();
+            }
+
+            if (e.PropertyName == nameof(NowPlayingViewModel.NowPlaying))
+            {
+                if (_isMouseOverQueue)
+                    _queueScrollTimer.Stop();
+                else
+                    ScrollToNowPlaying();
+            }
+        }
+
+        private void OnControlSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            _viewModel.UpdateActualWidth(this.ActualWidth);
+            ApplyLayoutCalculations();
+        }
+
+        private void OnQueueScrollTimerTick(object sender, EventArgs e)
+        {
+            _queueScrollTimer.Stop();
+            ScrollToNowPlaying();
         }
 
         private void ScrollToNowPlaying()
@@ -191,6 +205,5 @@ namespace Musicefy.Views
             _viewModel.SeekToPercent(ProgressSlider.Value);
         }
 
-        private void OnTrackChanged(MusicFile track) { }
     }
 }
