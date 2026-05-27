@@ -37,12 +37,6 @@ namespace Musicefy.Core.Interfaces
         IMusicSourceSession GetSession(string sourceId);
 
         /// <summary>
-        /// Get the Subsonic client for a source (legacy)
-        /// </summary>
-        [Obsolete("GetClient is deprecated. Use GetSession instead.")]
-        ISubsonicClient GetClient(string sourceId);
-
-        /// <summary>
         /// Resolve a resource ID to a playable stream URL
         /// </summary>
         Task<string> ResolveStreamUrlAsync(string resourceId);
