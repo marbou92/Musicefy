@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Musicefy.Core.Interfaces;
 using Musicefy.Core.Models;
+using static Musicefy.Core.SourceTypes;
 
 namespace Musicefy.Core.Services
 {
@@ -274,7 +275,7 @@ namespace Musicefy.Core.Services
                 Duration = ParseDuration(element.Attribute("duration")?.Value),
                 Year = int.TryParse(element.Attribute("year")?.Value, out var year) ? year : 0,
                 TrackNumber = int.TryParse(element.Attribute("track")?.Value, out var track) ? track : 0,
-                SourceType = "Subsonic",
+                SourceType = Subsonic,
                 CoverPath = coverAttr != null ? $"{_source.Id}:cover:{coverAttr}" : null
             };
         }
