@@ -6,6 +6,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
+using Musicefy.Core.Interfaces;
 using Musicefy.Services;
 using Musicefy.ViewModels;
 using Musicefy.Core.Models;
@@ -14,13 +15,13 @@ namespace Musicefy.Views
 {
     public partial class NowPlayingControl : UserControl
     {
-        private readonly PlaybackService _playback;
+        private readonly IAudioPlayer _playback;
         private readonly NowPlayingViewModel _viewModel;
         private bool _isMouseOverQueue;
         private DispatcherTimer _queueScrollTimer;
         public event Action RequestCollapse;
 
-        public NowPlayingControl(PlaybackService playback, NowPlayingViewModel viewModel)
+        public NowPlayingControl(IAudioPlayer playback, NowPlayingViewModel viewModel)
         {
             InitializeComponent();
             _playback = playback;
