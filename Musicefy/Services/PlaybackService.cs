@@ -57,11 +57,7 @@ namespace Musicefy.Services
             _timer.Tick += Timer_Tick;
         }
 
-        private static readonly HashSet<string> AudioExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ".mp3", ".flac", ".wav", ".m4a", ".aac", ".ogg", ".opus",
-            ".wma", ".ape", ".mpc", ".wv", ".aiff", ".aif", ".dsf"
-        };
+        private static readonly HashSet<string> AudioExtensions = Musicefy.Core.Models.MusicFileExtensions.All;
 
         /// <summary>
         /// Plays a track and enqueues sibling files from the same directory as the queue.
