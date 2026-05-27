@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Musicefy.Core.Interfaces;
 using Musicefy.Core.Models;
+using static Musicefy.Core.SourceTypes;
 
 namespace Musicefy.Core.Services
 {
@@ -273,7 +274,7 @@ namespace Musicefy.Core.Services
                         Artist = "Local",
                         FilePath = file,
                         SourceUri = file,
-                        SourceType = "Local"
+                        SourceType = Local
                     };
                     if (!_trackSet.Add(track)) continue;
                     _tracks.Add(track);
