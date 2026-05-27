@@ -10,7 +10,7 @@ namespace Musicefy.Views
     public partial class DownloadsSettingsControl : UserControl, ISettingsControl
     {
         private DownloadsSettingsViewModel ViewModel => DataContext as DownloadsSettingsViewModel;
-        private EventHandler _exitHandler;
+        private ExitEventHandler _exitHandler;
 
         public void Save()
         {
