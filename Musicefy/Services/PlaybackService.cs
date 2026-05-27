@@ -11,6 +11,7 @@ using Musicefy.Core.Models;
 using NAudio.CoreAudioApi;
 using NAudio.Wave;
 using IOFile = System.IO.File;
+using static Musicefy.Core.SourceTypes;
 
 namespace Musicefy.Services
 {
@@ -105,7 +106,7 @@ namespace Musicefy.Services
                                 Artist = "Unknown Artist",
                                 FilePath = file,
                                 SourceUri = file,
-                                SourceType = "Local"
+                                SourceType = Local
                             };
                         }
 
