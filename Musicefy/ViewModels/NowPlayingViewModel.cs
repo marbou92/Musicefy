@@ -4,13 +4,12 @@ using System.Windows;
 using System.Windows.Input;
 using Musicefy.Core.Interfaces;
 using Musicefy.Core.Models;
-using Musicefy.Services;
 
 namespace Musicefy.ViewModels
 {
     public class NowPlayingViewModel : ViewModelBase, IDisposable
     {
-        private readonly PlaybackService _playback;
+        private readonly IAudioPlayer _playback;
         private readonly ILibraryService _libraryService;
 
         private MusicFile _nowPlaying;
@@ -123,7 +122,7 @@ namespace Musicefy.ViewModels
 
         public event Action RequestCollapse;
 
-        public NowPlayingViewModel(PlaybackService playback, ILibraryService libraryService)
+        public NowPlayingViewModel(IAudioPlayer playback, ILibraryService libraryService)
         {
             _playback = playback ?? throw new ArgumentNullException(nameof(playback));
             _libraryService = libraryService;
