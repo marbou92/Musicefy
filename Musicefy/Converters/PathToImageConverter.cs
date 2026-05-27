@@ -89,23 +89,27 @@ namespace Musicefy.Converters
             BitmapImage bitmap = null;
             try
             {
-                bitmap = await System.Threading.Tasks.Task.Run(() =>
+                // Streaming source cover ID
+                if (coverPath.Contains(":cover:"))
                 {
-                    try
+                    bitmap = await LoadStreamingCoverAsync(coverPath);
+                }
+                else
+                {
+                    bitmap = await System.Threading.Tasks.Task.Run(() =>
                     {
-                        // Streaming source cover ID
-                        if (coverPath.Contains(":cover:"))
-                            return LoadStreamingCover(coverPath);
+                        try
+                        {
+                            // HTTP URL
+                            if (coverPath.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                                return LoadHttpImage(coverPath, decodeWidth);
 
-                        // HTTP URL
-                        if (coverPath.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-                            return LoadHttpImage(coverPath, decodeWidth);
-
-                        // Local file path
-                        return LoadDiskImage(coverPath, decodeWidth);
-                    }
-                    catch { return null; }
-                });
+                            // Local file path
+                            return LoadDiskImage(coverPath, decodeWidth);
+                        }
+                        catch { return null; }
+                    });
+                }
             }
             finally
             {
@@ -191,12 +195,11 @@ namespace Musicefy.Converters
             return bmp;
         }
 
-        private static BitmapImage LoadStreamingCover(string coverId)
+        private static async System.Threading.Tasks.Task<BitmapImage> LoadStreamingCoverAsync(string coverId)
         {
             if (_sourceManager == null) return null;
 
-            var bytes = System.Threading.Tasks.Task.Run(() =>
-                _sourceManager.ResolveCoverArtAsync(coverId)).GetAwaiter().GetResult();
+            var bytes = await _sourceManager.ResolveCoverArtAsync(coverId);
 
             if (bytes == null || bytes.Length == 0) return null;
 
