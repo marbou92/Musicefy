@@ -47,7 +47,7 @@ namespace Musicefy.Core.Services
         {
             private readonly string _folderPath;
             private readonly string _sourceId;
-            private static readonly string[] _extensions = { ".mp3", ".wav", ".flac", ".ogg", ".m4a", ".aac", ".wma" };
+            private static readonly HashSet<string> _extensions = MusicFileExtensions.All;
 
             public LocalSourceSession(IReadOnlyDictionary<string, string> config, string sourceId)
             {
@@ -63,7 +63,7 @@ namespace Musicefy.Core.Services
                     return Task.FromResult<IReadOnlyList<MusicFile>>(results);
 
                 var files = Directory.EnumerateFiles(_folderPath, "*.*", SearchOption.AllDirectories)
-                    .Where(f => _extensions.Any(e => f.EndsWith(e, StringComparison.OrdinalIgnoreCase)));
+                    .Where(f => _extensions.Contains(System.IO.Path.GetExtension(f)));
 
                 foreach (var file in files)
                 {
