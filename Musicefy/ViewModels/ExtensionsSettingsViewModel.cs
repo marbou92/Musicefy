@@ -6,6 +6,7 @@ using System.Windows.Input;
 using Musicefy.Core.Interfaces;
 using Musicefy.Core.Models;
 using Microsoft.Extensions.DependencyInjection;
+using static Musicefy.Core.SourceTypes;
 
 namespace Musicefy.ViewModels
 {
@@ -61,7 +62,7 @@ namespace Musicefy.ViewModels
         private void LoadBuiltInProviders()
         {
             var providers = App.Services.GetServices<IMusicSourceProvider>();
-            var local = providers.FirstOrDefault(p => p.SourceType == "Local");
+            var local = providers.FirstOrDefault(p => p.SourceType == Local);
             BuiltInProviders = new ObservableCollection<IMusicSourceProvider>();
             if (local != null)
                 BuiltInProviders.Add(local);
@@ -76,7 +77,7 @@ namespace Musicefy.ViewModels
             var available = new ObservableCollection<ExtensionManifest>();
             foreach (var p in providers)
             {
-                if (p.SourceType == "Local")
+                if (p.SourceType == Local)
                     continue;
 
                 var id = $"builtin_{p.SourceType.ToLower()}";
