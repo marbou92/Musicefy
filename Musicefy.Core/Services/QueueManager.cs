@@ -200,7 +200,15 @@ namespace Musicefy.Core.Services
                 var currentTrack = _currentIndex >= 0 && _currentIndex < _tracks.Count ? _tracks[_currentIndex] : null;
 
                 _tracks.Clear();
-                _tracks.AddRange(_originalOrder.OrderBy(_ => _random.Next()));
+                _tracks.AddRange(_originalOrder);
+                // Fisher-Yates shuffle
+                for (int i = _tracks.Count - 1; i > 0; i--)
+                {
+                    int j = _random.Next(i + 1);
+                    var tmp = _tracks[i];
+                    _tracks[i] = _tracks[j];
+                    _tracks[j] = tmp;
+                }
                 _trackSet.Clear();
                 _trackSet.UnionWith(_tracks);
 
