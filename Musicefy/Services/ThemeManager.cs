@@ -13,15 +13,36 @@ namespace Musicefy.Services
         private static readonly string[] Modes = { "System", "Light", "Dark", "DarkPure" };
         private static readonly string[] Palettes = { "Default", "Catppuccin", "GreenApple", "Lavender" };
 
+        private static readonly HashSet<string> _themeUris = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "/Themes/Base.xaml",
+            "/Themes/ScrollbarTheme.xaml",
+            "/Themes/SidebarStyles.xaml",
+            "/Themes/Modes/Light.xaml",
+            "/Themes/Modes/Dark.xaml",
+            "/Themes/Modes/DarkPure.xaml",
+            "/Themes/Palettes/Default.Light.xaml",
+            "/Themes/Palettes/Default.Dark.xaml",
+            "/Themes/Palettes/Catppuccin.xaml",
+            "/Themes/Palettes/GreenApple.xaml",
+            "/Themes/Palettes/Lavender.xaml",
+        };
+
         public static void ApplyTheme(string mode, string palette)
         {
-            // Wipe runtime theme dictionaries to avoid asset collection collision states
-            Application.Current.Resources.MergedDictionaries.Clear();
+            // Remove only known theme dictionaries so third-party resources survive
+            var merged = Application.Current.Resources.MergedDictionaries;
+            for (int i = merged.Count - 1; i >= 0; i--)
+            {
+                var source = merged[i].Source;
+                if (source != null && _themeUris.Contains(source.OriginalString))
+                    merged.RemoveAt(i);
+            }
         
             // Inject foundational underlying design rules first
             MergeDictionary("/Themes/Base.xaml");
         
-            // Force re-inject your custom layout template here so it survives the Clear() sweep!
+            // Force re-inject your custom layout template here
             MergeDictionary("/Themes/ScrollbarTheme.xaml");
         
             // Process hardware-level environmental tracking vectors
@@ -145,18 +166,17 @@ namespace Musicefy.Services
             {
                 win.Opacity = 0;
                 win.BeginAnimation(UIElement.OpacityProperty, fadeAnim);
-                AnimateButtons(win);
+                WireButtons(win);
             }
         }
 
-        private static void AnimateButtons(Window win)
+        private static readonly HashSet<Window> _wiredWindows = new HashSet<Window>();
+
+        private static void WireButtons(Window win)
         {
+            if (!_wiredWindows.Add(win)) return;
             foreach (var child in FindVisualChildren<System.Windows.Controls.Button>(win))
             {
-                child.MouseEnter -= Button_MouseEnter;
-                child.PreviewMouseDown -= Button_MouseDown;
-                child.MouseLeave -= Button_MouseLeave;
-
                 child.MouseEnter += Button_MouseEnter;
                 child.PreviewMouseDown += Button_MouseDown;
                 child.MouseLeave += Button_MouseLeave;
