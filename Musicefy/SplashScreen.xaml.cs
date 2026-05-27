@@ -75,9 +75,9 @@ namespace Musicefy
                 LogoGlow.Color = accentThemeColor;
                 BottomProgress.Foreground = new SolidColorBrush(accentThemeColor);
             }
-            catch
+            catch (Exception ex)
             {
-                // Silent fail-safe guard: If settings file layout is corrupted, fallback gracefully to default layout colors
+                System.Diagnostics.Debug.WriteLine($"[SplashScreen] Theme application failed: {ex.Message}");
             }
         }
 
