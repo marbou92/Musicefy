@@ -276,29 +276,46 @@ namespace Musicefy.Core.Library
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    var batch = allFiles.Skip(batchStart).Take(batchSize).ToList();
+                    int batchEnd = Math.Min(batchStart + batchSize, total);
 
                     using (var tx = connection.BeginTransaction())
                     {
-                        foreach (var file in batch)
+                        for (int i = batchStart; i < batchEnd; i++)
                         {
+                            var file = allFiles[i];
                             cancellationToken.ThrowIfCancellationRequested();
 
-                            string diskStamp = File.GetLastWriteTimeUtc(file).ToString("o");
-                            long fileSize = new FileInfo(file).Length;
-                            
-                            // Check cache first for metadata caching optimization
                             bool cached = _metadataCache.TryGetValue(file, out var cacheEntry);
                             bool exists = existingMap.TryGetValue(file, out var dbStamp);
                             
-                            // Use cached metadata if available and file hasn't changed
-                            bool changed = !exists || dbStamp != diskStamp;
+                            bool changed = !exists;
+                            string diskStamp = null;
+                            long fileSize = 0;
+
+                            if (exists)
+                            {
+                                try
+                                {
+                                    diskStamp = File.GetLastWriteTimeUtc(file).ToString("o");
+                                    fileSize = new FileInfo(file).Length;
+                                }
+                                catch
+                                {
+                                    processed++;
+                                    continue;
+                                }
+                                changed = dbStamp != diskStamp;
+                            }
                             
                             if (changed)
                             {
                                 try
                                 {
-                                    // Extract metadata (with caching)
+                                    if (diskStamp == null)
+                                    {
+                                        diskStamp = File.GetLastWriteTimeUtc(file).ToString("o");
+                                        fileSize = new FileInfo(file).Length;
+                                    }
                                     var track = await Task.Run(
                                         () => ExtractMetadataWithCache(file, diskStamp, fileSize), cancellationToken);
 
@@ -311,25 +328,6 @@ namespace Musicefy.Core.Library
                                     {
                                         await connection.ExecuteAsync(insertSql, track, transaction: tx);
                                         added++;
-                                    }
-                                    
-                                    // Update cache entry
-                                    if (_metadataCache.Count >= _maxCacheSize)
-                                    {
-                                        lock (_cacheLock)
-                                        {
-                                            int toRemove = _metadataCache.Count / 10;
-                                            if (toRemove < 1) toRemove = 1;
-
-                                            var oldest = _metadataCache.Values
-                                                .OrderBy(e => e.CachedAt)
-                                                .Take(toRemove)
-                                                .Select(e => e.FilePath)
-                                                .ToList();
-
-                                            foreach (var key in oldest)
-                                                _metadataCache.TryRemove(key, out _);
-                                        }
                                     }
                                     
                                     _metadataCache[file] = new MetadataCacheEntry
@@ -347,11 +345,6 @@ namespace Musicefy.Core.Library
                                         $"[LibraryScanner] Failed to index {file}: {ex.Message}");
                                 }
                             }
-                            else if (cached && cacheEntry.Metadata != null)
-                            {
-                                // File unchanged, skip TagLib read entirely - major performance win
-                                // Just update progress without re-reading metadata
-                            }
 
                             processed++;
                             progress?.Report(new ScanProgressInfo
@@ -366,6 +359,25 @@ namespace Musicefy.Core.Library
                         }
 
                         tx.Commit();
+                    }
+
+                    // Evict cache if over capacity (once per batch, not per file)
+                    if (_metadataCache.Count >= _maxCacheSize)
+                    {
+                        lock (_cacheLock)
+                        {
+                            int toRemove = _metadataCache.Count / 10;
+                            if (toRemove < 1) toRemove = 1;
+
+                            var oldest = _metadataCache.Values
+                                .OrderBy(e => e.CachedAt)
+                                .Take(toRemove)
+                                .Select(e => e.FilePath)
+                                .ToList();
+
+                            foreach (var key in oldest)
+                                _metadataCache.TryRemove(key, out _);
+                        }
                     }
                 }
 
