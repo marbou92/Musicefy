@@ -94,20 +94,22 @@ namespace Musicefy.ViewModels
             PlayTrackCommand = new RelayCommand(ExecutePlayTrack);
         }
 
-        private void DebounceSearch()
+        private async void DebounceSearch()
         {
             _debounceCts?.Cancel();
             _debounceCts = new CancellationTokenSource();
             var token = _debounceCts.Token;
 
-            Task.Delay(200, token).ContinueWith(t =>
+            try
             {
-                if (!t.IsCanceled)
-                    PerformSearch();
-            }, TaskScheduler.FromCurrentSynchronizationContext());
+                await Task.Delay(200, token);
+                if (!token.IsCancellationRequested)
+                    await PerformSearch();
+            }
+            catch (OperationCanceledException) { }
         }
 
-        private async void PerformSearch()
+        private async Task PerformSearch()
         {
             _searchCts?.Cancel();
             _searchCts = new CancellationTokenSource();
