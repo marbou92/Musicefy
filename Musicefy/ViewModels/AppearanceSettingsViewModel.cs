@@ -174,7 +174,9 @@ namespace Musicefy.ViewModels
             }
             else
             {
-                bg = new SolidColorBrush(Color.FromRgb(36, 36, 36)); // Comfort gray layer fallback
+                var comfortGray = new SolidColorBrush(Color.FromRgb(36, 36, 36));
+                comfortGray.Freeze();
+                bg = comfortGray;
             }
 
             ThemePreviews.Add(new ThemePreview
