@@ -29,25 +29,33 @@ namespace Musicefy.ViewModels
     public class DiscoverSettingsViewModel : ViewModelBase
     {
         private readonly IStreamingSourceManager _sourceManager;
+        private readonly IServiceProvider _serviceProvider;
 
         public ObservableCollection<DiscoverSourceItem> Sources { get; } = new ObservableCollection<DiscoverSourceItem>();
 
         public ICommand SaveCommand { get; }
         public ICommand ResetCommand { get; }
 
-        public DiscoverSettingsViewModel()
+        public DiscoverSettingsViewModel(IStreamingSourceManager sourceManager, IServiceProvider serviceProvider)
         {
-            _sourceManager = App.Services.GetService<IStreamingSourceManager>();
+            _sourceManager = sourceManager;
+            _serviceProvider = serviceProvider;
             Load();
             SaveCommand = new RelayCommand(_ => Save());
             ResetCommand = new RelayCommand(_ => ResetDefaults());
+        }
+
+        public DiscoverSettingsViewModel() : this(
+            App.Services.GetService<IStreamingSourceManager>(),
+            App.Services)
+        {
         }
 
         public void Load()
         {
             Sources.Clear();
 
-            var providers = App.Services.GetServices<IMusicSourceProvider>();
+            var providers = _serviceProvider.GetServices<IMusicSourceProvider>();
             var connectedTypes = _sourceManager != null
                 ? new HashSet<string>(_sourceManager.Sources
                     .Where(s => s.IsConnected)
@@ -79,7 +87,8 @@ namespace Musicefy.ViewModels
             }
 
             // Also show extension providers that aren't built-in but are linked
-            foreach (var extProvider in App.Services.GetService<IExtensionManager>()?.ExtensionProviders ?? new List<IMusicSourceProvider>())
+            var extensionManager = _serviceProvider.GetService<IExtensionManager>();
+            foreach (var extProvider in extensionManager?.ExtensionProviders ?? new List<IMusicSourceProvider>())
             {
                 if (Sources.Any(s => s.SourceType == extProvider.SourceType)) continue;
                 if (!connectedTypes.Contains(extProvider.SourceType)) continue;
@@ -145,7 +154,7 @@ namespace Musicefy.ViewModels
             var json = Settings.Default.DiscoverExtraSources;
             if (string.IsNullOrEmpty(json)) return new HashSet<string>();
             try { var list = JsonConvert.DeserializeObject<List<string>>(json); return list != null ? new HashSet<string>(list) : new HashSet<string>(); }
-            catch { return new HashSet<string>(); }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[DiscoverSettings] Failed to deserialize DiscoverExtraSources: {ex.Message}"); return new HashSet<string>(); }
         }
     }
 }
