@@ -9,6 +9,7 @@ namespace Musicefy.Services
 {
     public static class DownloadManager
     {
+        private static readonly HttpClient _httpClient = new HttpClient();
         private const long MaxDownloadSizeBytes = 500L * 1024L * 1024L; // 500 MB hard limit per-file toggle
 
         /// <summary>
@@ -51,12 +52,10 @@ namespace Musicefy.Services
                 string targetPath = Path.Combine(downloadsPath, fileName);
                 long existingLength = resume && File.Exists(targetPath) ? new FileInfo(targetPath).Length : 0;
 
-                using (var client = new HttpClient())
-                {
-                    if (resume && existingLength > 0)
-                        client.DefaultRequestHeaders.Range = new System.Net.Http.Headers.RangeHeaderValue(existingLength, null);
+                if (resume && existingLength > 0)
+                    _httpClient.DefaultRequestHeaders.Range = new System.Net.Http.Headers.RangeHeaderValue(existingLength, null);
 
-                    using (var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
+                using (var response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
                     {
                         response.EnsureSuccessStatusCode();
 
@@ -113,7 +112,6 @@ namespace Musicefy.Services
                             }
                         }
                     }
-                }
 
                 if (Musicefy.Properties.Settings.Default.AutoClearCache)
                 {
