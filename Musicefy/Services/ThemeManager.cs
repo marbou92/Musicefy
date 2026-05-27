@@ -156,14 +156,13 @@ namespace Musicefy.Services
 
         public static void AnimateWindowsFade()
         {
-            var fadeAnim = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(400))
-            {
-                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut }
-            };
-
             var windows = Application.Current.Windows.Cast<Window>().ToArray();
             foreach (Window win in windows)
             {
+                var fadeAnim = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(400))
+                {
+                    EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut }
+                };
                 win.Opacity = 0;
                 win.BeginAnimation(UIElement.OpacityProperty, fadeAnim);
                 WireButtons(win);
