@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -25,6 +26,7 @@ namespace Musicefy.Core.Services
         private readonly IServiceProvider _serviceProvider;
         private readonly object _lock = new object();
         private IReadOnlyList<StreamingSource> _sourcesSnapshot;
+        private static readonly HttpClient _httpClient = new HttpClient();
 
         public IReadOnlyList<StreamingSource> Sources
         {
@@ -223,8 +225,7 @@ namespace Musicefy.Core.Services
             {
                 try
                 {
-                    using var client = new System.Net.Http.HttpClient();
-                    var response = await client.GetAsync(resourceId);
+                    var response = await _httpClient.GetAsync(resourceId);
                     response.EnsureSuccessStatusCode();
                     return await response.Content.ReadAsByteArrayAsync();
                 }
@@ -335,6 +336,15 @@ namespace Musicefy.Core.Services
             }
         }
 
+        private static bool TryParseBool(object value, out bool result)
+        {
+            if (value is bool b) { result = b; return true; }
+            if (value is string s) return bool.TryParse(s, out result);
+            if (value is int i) { result = i != 0; return true; }
+            result = false;
+            return false;
+        }
+
         private void SaveSources()
         {
             try
@@ -382,13 +392,13 @@ namespace Musicefy.Core.Services
                     {
                         var source = new StreamingSource
                         {
-                            Id = sourceData["Id"].ToString(),
-                            Name = sourceData["Name"].ToString(),
-                            Type = sourceData["Type"].ToString(),
+                            Id = sourceData.ContainsKey("Id") ? sourceData["Id"].ToString() : Guid.NewGuid().ToString(),
+                            Name = sourceData.ContainsKey("Name") ? sourceData["Name"].ToString() : "Unknown",
+                            Type = sourceData.ContainsKey("Type") ? sourceData["Type"].ToString() : SourceTypes.Local,
                             Url = sourceData.ContainsKey("Url") ? sourceData["Url"].ToString() : "",
                             Username = sourceData.ContainsKey("Username") ? sourceData["Username"].ToString() : "",
                             Password = sourceData.ContainsKey("EncryptedPassword") ? DecryptPassword(sourceData["EncryptedPassword"].ToString()) : "",
-                            IsConnected = sourceData.ContainsKey("IsConnected") && (bool)sourceData["IsConnected"]
+                            IsConnected = sourceData.ContainsKey("IsConnected") && TryParseBool(sourceData["IsConnected"], out var connected) && connected
                         };
 
                         if (sourceData.ContainsKey("Configuration") && sourceData["Configuration"] is Newtonsoft.Json.Linq.JObject configObj)
