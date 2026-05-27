@@ -10,6 +10,7 @@ namespace Musicefy.Views
     public partial class DownloadsSettingsControl : UserControl, ISettingsControl
     {
         private DownloadsSettingsViewModel ViewModel => DataContext as DownloadsSettingsViewModel;
+        private EventHandler _exitHandler;
 
         public void Save()
         {
@@ -24,11 +25,26 @@ namespace Musicefy.Views
         public DownloadsSettingsControl()
         {
             InitializeComponent();
-            Loaded += (s, e) =>
+            Loaded += OnLoaded;
+            Unloaded += OnUnloaded;
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is DownloadsSettingsViewModel vm)
             {
-                if (DataContext is DownloadsSettingsViewModel vm)
-                    Application.Current.Exit += (_, _) => vm.OnAppExit();
-            };
+                _exitHandler = (_, _) => vm.OnAppExit();
+                Application.Current.Exit += _exitHandler;
+            }
+        }
+
+        private void OnUnloaded(object sender, RoutedEventArgs e)
+        {
+            if (_exitHandler != null)
+            {
+                Application.Current.Exit -= _exitHandler;
+                _exitHandler = null;
+            }
         }
 
         private void Browse_Click(object sender, RoutedEventArgs e)
@@ -41,9 +57,9 @@ namespace Musicefy.Views
             ViewModel?.ClearCache();
         }
 
-        private void TestDownload_Click(object sender, RoutedEventArgs e)
+        private async void TestDownload_Click(object sender, RoutedEventArgs e)
         {
-            ViewModel?.StartTestDownload();
+            if (ViewModel != null) await ViewModel.StartTestDownload();
         }
 
         private void PauseDownload_Click(object sender, RoutedEventArgs e)
