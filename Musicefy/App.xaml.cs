@@ -28,6 +28,7 @@ namespace Musicefy
 
             this.DispatcherUnhandledException += App_DispatcherUnhandledException;
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+            TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
 
             try
             {
@@ -53,8 +54,8 @@ namespace Musicefy
             }
             catch (Exception ex)
             {
-                LogException(ex);
-                MessageBox.Show($"Theme load error: {ex.Message}\nSee crash.log for details.",
+                string logPath = LogException(ex);
+                MessageBox.Show($"Theme load error: {ex.Message}\n\nCrash log written to:\n{logPath}",
                     "Musicefy Theme Error", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
@@ -130,8 +131,8 @@ namespace Musicefy
 
         private void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
-            LogException(e.Exception);
-            MessageBox.Show($"Unexpected error: {e.Exception.Message}\nSee crash.log for details.",
+            string logPath = LogException(e.Exception);
+            MessageBox.Show($"Unexpected error: {e.Exception.GetType().Name}\n{e.Exception.Message}\n\nCrash log written to:\n{logPath}",
                 "Musicefy Crash", MessageBoxButton.OK, MessageBoxImage.Error);
             e.Handled = true;
         }
@@ -139,23 +140,55 @@ namespace Musicefy
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             if (e.ExceptionObject is Exception ex)
-                LogException(ex);
+            {
+                string logPath = LogException(ex);
+                try
+                {
+                    MessageBox.Show($"Fatal error: {ex.GetType().Name}\n{ex.Message}\n\nCrash log written to:\n{logPath}",
+                        "Musicefy Fatal Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                catch { }
+            }
         }
 
-        private void LogException(Exception ex)
+        private void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
         {
+            string logPath = LogException(e.Exception);
+            e.SetObserved();
             try
             {
-                string appDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Musicefy");
-                if (!Directory.Exists(appDataPath))
-                    Directory.CreateDirectory(appDataPath);
-                string logPath = Path.Combine(appDataPath, "crash.log");
-                File.AppendAllText(logPath, $"[{DateTime.Now}] {ex}\n---------------------------------\n");
+                MessageBox.Show($"Unhandled task error: {e.Exception.GetType().Name}\n{e.Exception.Message}\n\nCrash log written to:\n{logPath}",
+                    "Musicefy Task Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-            catch (Exception logEx)
+            catch { }
+        }
+
+        private string LogException(Exception ex)
+        {
+            string[] candidates =
             {
-                System.Diagnostics.Debug.WriteLine($"[App] Failed to write crash log: {logEx.Message}");
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "crash.log"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Musicefy", "crash.log"),
+                Path.Combine(Path.GetTempPath(), "Musicefy", "crash.log")
+            };
+
+            foreach (var logPath in candidates)
+            {
+                try
+                {
+                    string dir = Path.GetDirectoryName(logPath);
+                    if (!Directory.Exists(dir))
+                        Directory.CreateDirectory(dir);
+                    File.AppendAllText(logPath, $"[{DateTime.Now}] {ex}\n---------------------------------\n");
+                    return logPath;
+                }
+                catch
+                {
+                    // try next fallback
+                }
             }
+
+            return candidates[0];
         }
 
         protected override void OnExit(ExitEventArgs e)
