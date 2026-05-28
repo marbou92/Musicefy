@@ -80,7 +80,8 @@
             <Border DockPanel.Dock="Left" Width="80" 
                     Background="{DynamicResource SurfaceContainerLowBrush}" 
                     BorderBrush="{DynamicResource OutlineBrush}" 
-                    BorderThickness="0,0,1,0">
+                    BorderThickness="0,0,1,0"
+                    Padding="0,12,0,12">
                 <ListBox x:Name="SidebarList" Background="Transparent" BorderThickness="0"
                          ItemContainerStyle="{StaticResource SidebarIconButtonStyle}"
                          SelectionChanged="Sidebar_SelectionChanged">
