@@ -29,8 +29,15 @@ namespace Musicefy.Views
 
             Loaded += async (s, e) =>
             {
-                await _viewModel.ReloadAsync();
-                UpdateViewState();
+                try
+                {
+                    await _viewModel.ReloadAsync();
+                    UpdateViewState();
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[HomeControl] Loaded handler failed: {ex}");
+                }
             };
         }
 
