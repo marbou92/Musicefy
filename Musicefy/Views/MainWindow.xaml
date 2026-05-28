@@ -112,12 +112,19 @@
 
     <Grid>
         <DockPanel LastChildFill="True">
-            <Border DockPanel.Dock="Left" Width="80" 
+            <Border x:Name="SidebarBorder" DockPanel.Dock="Left" Width="80" 
                     Background="{DynamicResource SurfaceContainerLowBrush}" 
                     BorderBrush="{DynamicResource OutlineBrush}" 
                     BorderThickness="0,0,1,0"
-                    Padding="0,12,0,12">
+                    Padding="0,12,0,12"
+                    RenderTransformOrigin="0.5,0.5"
+                    MouseEnter="SidebarBorder_MouseEnter"
+                    MouseLeave="SidebarBorder_MouseLeave">
+                <Border.RenderTransform>
+                    <ScaleTransform x:Name="SidebarScale" ScaleX="1" ScaleY="1"/>
+                </Border.RenderTransform>
                 <ListBox x:Name="SidebarList" Background="Transparent" BorderThickness="0"
+                         VerticalAlignment="Center"
                          ItemContainerStyle="{StaticResource SidebarIconButtonStyle}"
                          SelectionChanged="Sidebar_SelectionChanged">
                     <ListBoxItem ToolTip="Home" Tag="M12 3c-.46 0-.93.18-1.28.53L3.53 10.72c-.7.7-.2 1.9.78 1.9H5v5c0 1.1.9 2 2 2h2c.55 0 1-.45 1-1v-4h4v4c0 .55.45 1 1 1h2c1.1 0 2-.9 2-2v-5h.69c.98 0 1.48-1.2.78-1.9l-7.19-7.19C12.93 3.18 12.46 3 12 3z"/>
@@ -127,10 +134,15 @@
                 </ListBox>
             </Border>
 
-            <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+            <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch" ClipToBounds="True">
                 <ContentControl x:Name="MainContent"
-                                  Content="{Binding CurrentPage}"
-                VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
+                                Content="{Binding CurrentPage}"
+                                VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                                RenderTransformOrigin="0.5,0.5">
+                    <ContentControl.RenderTransform>
+                        <TranslateTransform x:Name="PageSlideTransform"/>
+                    </ContentControl.RenderTransform>
+                </ContentControl>
             </Grid>
         </DockPanel>
 
@@ -158,7 +170,15 @@
                 <Border.RenderTransform>
                     <TranslateTransform x:Name="MiniPlayerTransform"/>
                 </Border.RenderTransform>
-                
+
+                <!-- Mini player progress bar -->
+                <Border VerticalAlignment="Top" Height="3" Margin="0" CornerRadius="0">
+                    <Border.Background>
+                        <SolidColorBrush Color="{Binding MiniProgressColor, FallbackValue=#3C8CE7}" Opacity="0.6"/>
+                    </Border.Background>
+                    <Border HorizontalAlignment="Left" Width="{Binding MiniProgressWidth, FallbackValue=0}" Background="{DynamicResource DynamicPrimaryBrush}" Height="3"/>
+                </Border>
+
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
