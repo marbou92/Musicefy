@@ -111,7 +111,7 @@
         <!-- Circular recently played card template -->
         <DataTemplate x:Key="CircleCardTemplate">
             <Border x:Name="CardBorder" Margin="0,0,18,0" Width="100" Cursor="Hand" SnapsToDevicePixels="True"
-                    MouseDoubleClick="RecentlyPlayed_DoubleClick">
+                    MouseDown="RecentlyPlayed_MouseDown">
                 <StackPanel>
                     <Border Width="100" Height="100" CornerRadius="50" ClipToBounds="True"
                             Background="{DynamicResource SurfaceVariantBrush}">
