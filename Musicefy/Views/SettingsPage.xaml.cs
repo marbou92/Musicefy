@@ -83,6 +83,14 @@ namespace Musicefy.Views
 
         private void AnimateContentChange(UserControl newContent, string title, bool fromRight)
         {
+            if (SettingsContent == null || SectionTitle == null)
+            {
+                SettingsContent.Content = newContent;
+                SectionTitle.Text = title;
+                this.UpdateLayout();
+                return;
+            }
+
             void BeginInwardAnimation()
             {
                 SettingsContent.Content = newContent;
