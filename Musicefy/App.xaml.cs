@@ -43,6 +43,14 @@ namespace Musicefy
                     mode = "DarkPure";
 
                 ThemeManager.ApplyTheme(mode, palette);
+                ThemeManager.ApplyDynamicColors(new Musicefy.Core.Services.ExtractedColors
+                {
+                    Primary = System.Windows.Media.Color.FromRgb(60, 140, 231),
+                    Vibrant = System.Windows.Media.Color.FromRgb(60, 140, 231),
+                    Muted = System.Windows.Media.Color.FromRgb(80, 100, 140),
+                    OnPrimary = System.Windows.Media.Colors.White,
+                    Surface = System.Windows.Media.Color.FromRgb(20, 25, 40)
+                });
 
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
