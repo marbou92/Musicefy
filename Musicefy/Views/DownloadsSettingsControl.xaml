@@ -54,7 +54,7 @@
                             <TextBlock x:Name="CacheStatusLabel" Text="Cache size: 0.00 MB" FontWeight="Bold" Foreground="{DynamicResource OnSurfaceBrush}"/>
                         </DockPanel>
                         
-                        <ProgressBar x:Name="CacheProgressBar" Height="8" Maximum="100" Value="0" BorderThickness="0" Background="#202020" Margin="0,0,0,16"/>
+                        <ProgressBar x:Name="CacheProgressBar" Height="8" Maximum="100" Value="0" BorderThickness="0" Background="{DynamicResource OutlineBrush}" Margin="0,0,0,16"/>
                         
                         <WrapPanel Orientation="Horizontal" HorizontalAlignment="Left">
                             <Button x:Name="ClearNowButton" Content="Clear Cache" Padding="14,6" Margin="0,0,8,0" Click="ClearNow_Click"/>
