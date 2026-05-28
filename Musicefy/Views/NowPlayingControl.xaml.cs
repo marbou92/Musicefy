@@ -42,6 +42,12 @@ namespace Musicefy.Views
             _queueScrollTimer.Stop();
         }
 
+        private void OnQueueScrollTimerTick(object sender, EventArgs e)
+        {
+            _queueScrollTimer.Stop();
+            ScrollToNowPlaying();
+        }
+
         private void OnRequestCollapse() => RequestCollapse?.Invoke();
 
         private void OnViewModelPropertyChanged(object sender, PropertyChangedEventArgs e)
