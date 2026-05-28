@@ -134,10 +134,9 @@ namespace Musicefy.Views
             _playback.PlayTrack(tracks[0]);
         }
 
-        private void RecentlyPlayed_DoubleClick(object sender, MouseButtonEventArgs e)
+        private void RecentlyPlayed_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            var border = sender as Border;
-            if (border?.DataContext is TrackCard selected && selected.SourceTrack != null)
+            if (e.ClickCount == 2 && sender is Border border && border.DataContext is TrackCard selected && selected.SourceTrack != null)
                 _playback.PlayTrack(selected.SourceTrack);
         }
 
