@@ -2,7 +2,6 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 using Musicefy.Core.Interfaces;
 using Musicefy.Core.Models;
 using Musicefy.Services;
@@ -61,20 +60,6 @@ namespace Musicefy.ViewModels
             set { SetProperty(ref _isFullPanelOpen, value); OnPropertyChanged(nameof(IsMiniPlayerVisible)); }
         }
 
-        private double _miniProgressWidth;
-        public double MiniProgressWidth
-        {
-            get => _miniProgressWidth;
-            private set { SetProperty(ref _miniProgressWidth, value); }
-        }
-
-        private Color _miniProgressColor = Color.FromRgb(60, 140, 231);
-        public Color MiniProgressColor
-        {
-            get => _miniProgressColor;
-            private set { SetProperty(ref _miniProgressColor, value); }
-        }
-
         // ── Commands ────────────────────────────────────────────────────
         public ICommand MiniPlayCommand { get; }
         public ICommand MiniPreviousCommand { get; }
@@ -98,7 +83,6 @@ namespace Musicefy.ViewModels
 
             // Wire playback events
             _playback.TrackChanged += OnTrackChanged;
-            _playback.ProgressChanged += OnProgressChanged;
             _playback.PlaybackStateChanged += OnPlaybackStateChanged;
 
             // Navigate to home on startup
@@ -118,17 +102,6 @@ namespace Musicefy.ViewModels
             });
         }
 
-        private void OnProgressChanged(TimeSpan current, TimeSpan total)
-        {
-            Application.Current?.Dispatcher.Invoke(() =>
-            {
-                if (total > TimeSpan.Zero)
-                    MiniProgressWidth = (current.TotalSeconds / total.TotalSeconds) * 520;
-                else
-                    MiniProgressWidth = 0;
-            });
-        }
-
         private void OnPlaybackStateChanged(bool isPlaying)
         {
             Application.Current?.Dispatcher.Invoke(() =>
@@ -145,7 +118,6 @@ namespace Musicefy.ViewModels
         public void Dispose()
         {
             _playback.TrackChanged -= OnTrackChanged;
-            _playback.ProgressChanged -= OnProgressChanged;
             _playback.PlaybackStateChanged -= OnPlaybackStateChanged;
         }
     }
