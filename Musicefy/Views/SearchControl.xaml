@@ -28,7 +28,7 @@
                                 <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource SurfaceContainerHighBrush}"/>
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource BorderBrush}"/>
+                                <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource PrimaryContainerBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -123,17 +123,18 @@
 
             <!-- Circular loading spinner -->
             <Grid x:Name="SearchSpinner" Visibility="Collapsed" VerticalAlignment="Center" HorizontalAlignment="Center">
-                <Grid Width="48" Height="48">
-                    <Path Stroke="{DynamicResource BorderBrush}" StrokeThickness="3" Width="42" Height="42" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.3">
+                <Grid Width="40" Height="40">
+                    <!-- Outer track -->
+                    <Path Stroke="{DynamicResource OutlineBrush}" StrokeThickness="3" Opacity="0.3">
                         <Path.Data>
-                            <EllipseGeometry RadiusX="19" RadiusY="19" Center="21,21"/>
+                            <EllipseGeometry RadiusX="17" RadiusY="17" Center="20,20"/>
                         </Path.Data>
                     </Path>
-                    <Path x:Name="SpinnerArc" Stroke="{DynamicResource AccentBrush}" StrokeThickness="3"
-                          StrokeDashArray="30, 100" StrokeDashCap="Round"
-                          Width="42" Height="42" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <!-- Foreground arc -->
+                    <Path x:Name="SpinnerArc" Stroke="{DynamicResource PrimaryBrush}" StrokeThickness="3"
+                          StrokeDashArray="40,200" StrokeDashCap="Round">
                         <Path.Data>
-                            <EllipseGeometry RadiusX="19" RadiusY="19" Center="21,21"/>
+                            <EllipseGeometry RadiusX="17" RadiusY="17" Center="20,20"/>
                         </Path.Data>
                         <Path.RenderTransform>
                             <RotateTransform x:Name="SpinnerRotate" Angle="0"/>
@@ -141,7 +142,7 @@
                     </Path>
                 </Grid>
                 <TextBlock Text="Searching..." FontSize="13" Foreground="{DynamicResource OnSurfaceVariantBrush}"
-                           HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,56,0,0"/>
+                           HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,48,0,0"/>
             </Grid>
 
             <ListView x:Name="SearchResultsListView"
