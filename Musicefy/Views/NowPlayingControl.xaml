@@ -345,7 +345,7 @@
         </Grid>
 
         <!-- Layer 4: Lyrics overlay (bottom sheet) -->
-        <Grid x:Name="LyricsOverlay" Visibility="Collapsed" VerticalAlignment="Bottom" Height="55%" 
+        <Grid x:Name="LyricsOverlay" Visibility="Collapsed" VerticalAlignment="Bottom" MaxHeight="500"
               Margin="28,0,28,0" Opacity="0">
             <Grid.RenderTransform>
                 <TranslateTransform Y="100"/>
@@ -383,7 +383,7 @@
         </Grid>
 
         <!-- Layer 5: Queue overlay (bottom sheet) -->
-        <Grid x:Name="QueueOverlay" Visibility="Collapsed" VerticalAlignment="Bottom" Height="55%"
+        <Grid x:Name="QueueOverlay" Visibility="Collapsed" VerticalAlignment="Bottom" MaxHeight="500"
               Margin="28,0,28,0" Opacity="0">
             <Grid.RenderTransform>
                 <TranslateTransform Y="100"/>
