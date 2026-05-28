@@ -148,8 +148,9 @@ namespace Musicefy.ViewModels
                 var chartsTask = LoadBrowseChartsAsync(token);
                 var videosTask = LoadTopMusicVideosAsync(token);
                 var recentTask = LoadRecentlyPlayedAsync(token);
+                var heroTask = LoadHeroTrackAsync(token);
 
-                await Task.WhenAll(quickPicksTask, chartsTask, videosTask, recentTask);
+                await Task.WhenAll(quickPicksTask, chartsTask, videosTask, recentTask, heroTask);
 
                 IsEmpty = QuickPicks.Count == 0 && BrowseCharts.Count == 0 && TopMusicVideos.Count == 0;
                 if (IsEmpty)
@@ -184,8 +185,33 @@ namespace Musicefy.ViewModels
             {
                 var card = CreateTrackCard(track);
                 RecentlyPlayed.Add(card);
-                if (HeroTrack == null)
-                    HeroTrack = card;
+            }
+        }
+
+        private async Task LoadHeroTrackAsync(CancellationToken token)
+        {
+            if (token.IsCancellationRequested) return;
+            if (!Settings.Default.DiscoverLibrary) return;
+
+            var allTracks = await _libraryService.GetAllTracksAsync(token);
+            if (token.IsCancellationRequested) return;
+
+            var topTrack = allTracks?
+                .Where(t => t.PlayCount > 0)
+                .OrderByDescending(t => t.PlayCount)
+                .ThenByDescending(t => t.LastPlayed)
+                .FirstOrDefault();
+
+            if (topTrack != null)
+            {
+                HeroTrack = CreateTrackCard(topTrack);
+            }
+            else
+            {
+                var recent = await _libraryService.GetHistoryTracksAsync(1, token);
+                var fallback = recent?.FirstOrDefault() ?? allTracks?.FirstOrDefault();
+                if (fallback != null)
+                    HeroTrack = CreateTrackCard(fallback);
             }
         }
 
