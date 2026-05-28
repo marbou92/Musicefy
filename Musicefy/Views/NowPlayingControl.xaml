@@ -96,32 +96,7 @@
             </Setter>
         </Style>
         
-        <Style x:Key="TransportIconStyle" TargetType="Button" BasedOn="{StaticResource BaseControlButtonStyle}">
-            <Setter Property="Foreground" Value="{DynamicResource OnSurfaceBrush}"/>
-            <Setter Property="Width" Value="48"/>
-            <Setter Property="Height" Value="48"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="Transparent">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Opacity" Value="0.7"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter Property="RenderTransform">
-                                    <Setter.Value>
-                                        <ScaleTransform ScaleX="0.85" ScaleY="0.85"/>
-                                    </Setter.Value>
-                                </Setter>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+        <Style x:Key="TransportIconStyle" TargetType="Button" BasedOn="{StaticResource TransportIconButtonStyle}"/>
 
     </UserControl.Resources>
 
@@ -163,7 +138,7 @@
                         <Grid.Effect>
                             <DropShadowEffect BlurRadius="40" ShadowDepth="10" Opacity="0.4" Color="Black"/>
                         </Grid.Effect>
-                        <Border x:Name="CoverArtBorder" CornerRadius="32" ClipToBounds="True" Background="#030303" MaxHeight="390" Width="{Binding ActualHeight, RelativeSource={RelativeSource Self}}">
+                        <Border x:Name="CoverArtBorder" CornerRadius="32" ClipToBounds="True" Background="{DynamicResource SurfaceBrush}" MaxHeight="390" Width="{Binding ActualHeight, RelativeSource={RelativeSource Self}}">
                             <Image Source="{Binding NowPlaying.CoverPath, Converter={StaticResource PathToImageConverter}}" Stretch="UniformToFill"/>
                         </Border>
                     </Grid>
@@ -189,7 +164,7 @@
                                     <Style TargetType="Button" BasedOn="{StaticResource MaterialSecondaryButtonStyle}">
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding IsFavoriteTrack}" Value="True">
-                                                <Setter Property="Foreground" Value="Crimson"/>
+                                                <Setter Property="Foreground" Value="{DynamicResource ErrorBrush}"/>
                                             </DataTrigger>
                                             <DataTrigger Binding="{Binding IsFavoriteTrack}" Value="False">
                                                 <Setter Property="Foreground" Value="{DynamicResource OnSurfaceBrush}"/>
