@@ -113,10 +113,18 @@ namespace Musicefy.Views
 
         private void PlayAllQuickPicks_Click(object sender, RoutedEventArgs e)
         {
-            var tracks = _viewModel.QuickPicks
+            var tracks = _viewModel.FilteredQuickPicks
                 .Where(c => c.SourceTrack != null)
                 .Select(c => c.SourceTrack)
                 .ToList();
+
+            if (tracks.Count == 0)
+            {
+                tracks = _viewModel.QuickPicks
+                    .Where(c => c.SourceTrack != null)
+                    .Select(c => c.SourceTrack)
+                    .ToList();
+            }
 
             if (tracks.Count == 0) return;
 
@@ -126,10 +134,17 @@ namespace Musicefy.Views
             _playback.PlayTrack(tracks[0]);
         }
 
-        private void MoreVideos_Click(object sender, RoutedEventArgs e)
+        private void RecentlyPlayed_DoubleClick(object sender, MouseButtonEventArgs e)
         {
-            MessageBox.Show("Video engine coming soon!", "Musicefy",
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            var border = sender as Border;
+            if (border?.DataContext is TrackCard selected && selected.SourceTrack != null)
+                _playback.PlayTrack(selected.SourceTrack);
+        }
+
+        private void HeroCard_DoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (_viewModel.HeroTrack?.SourceTrack != null)
+                _playback.PlayTrack(_viewModel.HeroTrack.SourceTrack);
         }
 
         private void OpenSources_Click(object sender, RoutedEventArgs e)
