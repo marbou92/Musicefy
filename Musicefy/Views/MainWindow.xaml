@@ -171,15 +171,16 @@
                     <TranslateTransform x:Name="MiniPlayerTransform"/>
                 </Border.RenderTransform>
 
-                <!-- Mini player progress bar -->
-                <Border VerticalAlignment="Top" Height="3" Margin="0" CornerRadius="0">
-                    <Border.Background>
-                        <SolidColorBrush Color="{Binding MiniProgressColor, FallbackValue=#3C8CE7}" Opacity="0.6"/>
-                    </Border.Background>
-                    <Border HorizontalAlignment="Left" Width="{Binding MiniProgressWidth, FallbackValue=0}" Background="{DynamicResource DynamicPrimaryBrush}" Height="3"/>
-                </Border>
-
                 <Grid>
+                    <!-- Mini player progress bar -->
+                    <Border VerticalAlignment="Top" Height="3" Margin="0" CornerRadius="0">
+                        <Border.Background>
+                            <SolidColorBrush Color="{Binding MiniProgressColor, FallbackValue=#3C8CE7}" Opacity="0.6"/>
+                        </Border.Background>
+                        <Border HorizontalAlignment="Left" Width="{Binding MiniProgressWidth, FallbackValue=0}" Background="{DynamicResource DynamicPrimaryBrush}" Height="3"/>
+                    </Border>
+
+                    <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
@@ -237,6 +238,7 @@
                         </Button>
                     </StackPanel>
                 </Grid>
+            </Grid>
             </Border>
 
                 <Grid x:Name="FullNowPlayingContainer" 
