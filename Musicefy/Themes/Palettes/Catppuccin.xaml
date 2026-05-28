@@ -22,4 +22,5 @@
     <SolidColorBrush x:Key="AccentBrush" Color="#F5C2E7"/>
     <SolidColorBrush x:Key="AccentHoverBrush" Color="#DDB6F2"/>
     <SolidColorBrush x:Key="AccentPressedBrush" Color="#C08ACF"/>
+    <SolidColorBrush x:Key="AccentGlowBrush" Color="#F5C2E7"/>
 </ResourceDictionary>
