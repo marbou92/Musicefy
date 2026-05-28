@@ -241,7 +241,6 @@
                         </Button>
                     </StackPanel>
                 </Grid>
-            </Grid>
             </Border>
 
                 <Grid x:Name="FullNowPlayingContainer" 
