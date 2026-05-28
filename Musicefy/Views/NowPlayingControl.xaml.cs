@@ -1,6 +1,5 @@
 using System;
 using System.ComponentModel;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -29,7 +28,6 @@ namespace Musicefy.Views
             this.DataContext = _viewModel;
             _viewModel.RequestCollapse += OnRequestCollapse;
             _viewModel.PropertyChanged += OnViewModelPropertyChanged;
-            this.SizeChanged += OnControlSizeChanged;
             this.Unloaded += OnUnloaded;
 
             _queueScrollTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(7) };
@@ -40,21 +38,19 @@ namespace Musicefy.Views
         {
             _viewModel.RequestCollapse -= OnRequestCollapse;
             _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
-            this.SizeChanged -= OnControlSizeChanged;
             _queueScrollTimer.Tick -= OnQueueScrollTimerTick;
             _queueScrollTimer.Stop();
         }
 
         private void OnRequestCollapse() => RequestCollapse?.Invoke();
 
-        private void OnViewModelPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void OnViewModelPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(NowPlayingViewModel.IsLyricsPanelVisible) ||
-                e.PropertyName == nameof(NowPlayingViewModel.IsQueuePanelVisible) ||
-                e.PropertyName == nameof(NowPlayingViewModel.IsRightPanelVisible))
-            {
-                ApplyLayoutCalculations();
-            }
+            if (e.PropertyName == nameof(NowPlayingViewModel.IsLyricsPanelVisible))
+                ToggleLyricsOverlay(_viewModel.IsLyricsPanelVisible);
+
+            if (e.PropertyName == nameof(NowPlayingViewModel.IsQueuePanelVisible))
+                ToggleQueueOverlay(_viewModel.IsQueuePanelVisible);
 
             if (e.PropertyName == nameof(NowPlayingViewModel.NowPlaying))
             {
@@ -65,16 +61,65 @@ namespace Musicefy.Views
             }
         }
 
-        private void OnControlSizeChanged(object sender, SizeChangedEventArgs e)
+        private void ToggleLyricsOverlay(bool show)
         {
-            _viewModel.UpdateActualWidth(this.ActualWidth);
-            ApplyLayoutCalculations();
+            if (LyricsOverlay == null) return;
+
+            if (show)
+            {
+                QueueOverlay.Visibility = Visibility.Collapsed;
+                QueueOverlay.Opacity = 0;
+                if (QueueOverlay.RenderTransform is TranslateTransform qt) qt.Y = 100;
+
+                LyricsOverlay.Visibility = Visibility.Visible;
+                var slideUp = new DoubleAnimation(100, 0, TimeSpan.FromMilliseconds(350))
+                { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
+                var fadeIn = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(300));
+                LyricsOverlay.BeginAnimation(OpacityProperty, fadeIn);
+                if (LyricsOverlay.RenderTransform is TranslateTransform lt)
+                    lt.BeginAnimation(TranslateTransform.YProperty, slideUp);
+            }
+            else
+            {
+                var slideDown = new DoubleAnimation(0, 100, TimeSpan.FromMilliseconds(250))
+                { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn } };
+                var fadeOut = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(200));
+                fadeOut.Completed += (s, e) => LyricsOverlay.Visibility = Visibility.Collapsed;
+                LyricsOverlay.BeginAnimation(OpacityProperty, fadeOut);
+                if (LyricsOverlay.RenderTransform is TranslateTransform lt)
+                    lt.BeginAnimation(TranslateTransform.YProperty, slideDown);
+            }
         }
 
-        private void OnQueueScrollTimerTick(object sender, EventArgs e)
+        private void ToggleQueueOverlay(bool show)
         {
-            _queueScrollTimer.Stop();
-            ScrollToNowPlaying();
+            if (QueueOverlay == null) return;
+
+            if (show)
+            {
+                LyricsOverlay.Visibility = Visibility.Collapsed;
+                LyricsOverlay.Opacity = 0;
+                if (LyricsOverlay.RenderTransform is TranslateTransform lt) lt.Y = 100;
+
+                QueueOverlay.Visibility = Visibility.Visible;
+                ScheduleQueueScroll();
+                var slideUp = new DoubleAnimation(100, 0, TimeSpan.FromMilliseconds(350))
+                { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
+                var fadeIn = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(300));
+                QueueOverlay.BeginAnimation(OpacityProperty, fadeIn);
+                if (QueueOverlay.RenderTransform is TranslateTransform qt)
+                    qt.BeginAnimation(TranslateTransform.YProperty, slideUp);
+            }
+            else
+            {
+                var slideDown = new DoubleAnimation(0, 100, TimeSpan.FromMilliseconds(250))
+                { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn } };
+                var fadeOut = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(200));
+                fadeOut.Completed += (s, e) => QueueOverlay.Visibility = Visibility.Collapsed;
+                QueueOverlay.BeginAnimation(OpacityProperty, fadeOut);
+                if (QueueOverlay.RenderTransform is TranslateTransform qt)
+                    qt.BeginAnimation(TranslateTransform.YProperty, slideDown);
+            }
         }
 
         private void ScrollToNowPlaying()
@@ -107,95 +152,6 @@ namespace Musicefy.Views
             ScheduleQueueScroll();
         }
 
-        private void ApplyLayoutCalculations()
-        {
-            var targetMode = _viewModel.IsLyricsPanelVisible ? NowPlayingViewModel.RightViewMode.Lyrics :
-                             _viewModel.IsQueuePanelVisible ? NowPlayingViewModel.RightViewMode.Queue :
-                             NowPlayingViewModel.RightViewMode.None;
-            UpdateLayoutState(targetMode);
-        }
-
-        private void UpdateLayoutState(NowPlayingViewModel.RightViewMode targetMode)
-        {
-            if (RightPanelRoot == null || LeftPlayerColumn == null || RightPanelColumn == null) return;
-
-            Brush activeAccent = (Brush)FindResource("AccentBrush");
-            BtnToggleLyrics.ClearValue(Control.ForegroundProperty);
-            BtnToggleQueue.ClearValue(Control.ForegroundProperty);
-
-            bool isVisible = targetMode != NowPlayingViewModel.RightViewMode.None;
-
-            if (!isVisible)
-            {
-                LeftPlayerColumn.Width = new GridLength(1, GridUnitType.Star);
-                RightPanelColumn.Width = new GridLength(0);
-                AnimateFadeOutCollapse(RightPanelRoot);
-                PlayerDeckRoot.Visibility = Visibility.Visible;
-                PlayerDeckRoot.HorizontalAlignment = HorizontalAlignment.Center;
-            }
-            else
-            {
-                if (targetMode == NowPlayingViewModel.RightViewMode.Lyrics)
-                {
-                    LyricsPanelContainer.Visibility = Visibility.Visible;
-                    QueuePanelContainer.Visibility = Visibility.Collapsed;
-                    BtnToggleLyrics.Foreground = activeAccent;
-                }
-                else if (targetMode == NowPlayingViewModel.RightViewMode.Queue)
-                {
-                    QueuePanelContainer.Visibility = Visibility.Visible;
-                    LyricsPanelContainer.Visibility = Visibility.Collapsed;
-                    BtnToggleQueue.Foreground = activeAccent;
-                    ScheduleQueueScroll();
-                }
-
-                if (this.ActualWidth < 840)
-                {
-                    LeftPlayerColumn.Width = new GridLength(0);
-                    RightPanelColumn.Width = new GridLength(1, GridUnitType.Star);
-                    PlayerDeckRoot.Visibility = Visibility.Collapsed;
-                    RightPanelRoot.Margin = new Thickness(0, 10, 0, 10);
-                }
-                else
-                {
-                    LeftPlayerColumn.Width = new GridLength(4.5, GridUnitType.Star);
-                    RightPanelColumn.Width = new GridLength(5.5, GridUnitType.Star);
-                    PlayerDeckRoot.Visibility = Visibility.Visible;
-                    PlayerDeckRoot.HorizontalAlignment = HorizontalAlignment.Center;
-                    RightPanelRoot.Margin = new Thickness(44, 10, 0, 10);
-                }
-
-                if (RightPanelRoot.Visibility != Visibility.Visible)
-                    AnimateFadeInExpand(RightPanelRoot);
-                else
-                {
-                    RightPanelRoot.Visibility = Visibility.Visible;
-                    RightPanelRoot.Opacity = 1.0;
-                    if (RightPanelRoot.RenderTransform is TranslateTransform tt) tt.X = 0;
-                }
-            }
-        }
-
-        private void AnimateFadeInExpand(FrameworkElement element)
-        {
-            element.Visibility = Visibility.Visible;
-            var fadeIn = new DoubleAnimation(0.0, 1.0, TimeSpan.FromMilliseconds(350))
-                { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
-            var slideIn = new DoubleAnimation(30, 0, TimeSpan.FromMilliseconds(400))
-                { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
-            element.BeginAnimation(OpacityProperty, fadeIn);
-            if (element.RenderTransform is TranslateTransform translate)
-                translate.BeginAnimation(TranslateTransform.XProperty, slideIn);
-        }
-
-        private void AnimateFadeOutCollapse(FrameworkElement element)
-        {
-            var fadeOut = new DoubleAnimation(1.0, 0.0, TimeSpan.FromMilliseconds(250))
-                { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn } };
-            fadeOut.Completed += (s, e) => { element.Visibility = Visibility.Collapsed; };
-            element.BeginAnimation(OpacityProperty, fadeOut);
-        }
-
         private void Slider_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
             => _viewModel.IsUserScrubbing = true;
 
@@ -204,6 +160,5 @@ namespace Musicefy.Views
             _viewModel.IsUserScrubbing = false;
             _viewModel.SeekToPercent(ProgressSlider.Value);
         }
-
     }
 }
