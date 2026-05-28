@@ -278,10 +278,7 @@ namespace Musicefy.ViewModels
                 GradientStops = new GradientStopCollection
                 {
                     new GradientStop(DominantColor, 0.0),
-                    new GradientStop(DominantColor, 0.15)
-                    {
-                        IsFrozen = false
-                    },
+                    new GradientStop(DominantColor, 0.15),
                     new GradientStop(Color.FromRgb(24, 24, 24), 1.0)
                 }
             };
