@@ -138,7 +138,7 @@
         <!-- Hero card template -->
         <DataTemplate x:Key="HeroCardTemplate">
             <Border x:Name="HeroBorder" CornerRadius="20" Height="280" Cursor="Hand" ClipToBounds="True"
-                    MouseDoubleClick="HeroCard_DoubleClick">
+                    MouseDown="HeroCard_MouseDown">
                 <Grid>
                     <Image Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}}" Stretch="UniformToFill"/>
                     <Border Background="{DynamicResource BackgroundBrush}" Opacity="0.05"/>
