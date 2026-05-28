@@ -79,30 +79,7 @@
         </Style>
 
         <!-- Small icon-only pill button -->
-        <Style x:Key="IconPillButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Width" Value="40"/>
-            <Setter Property="Height" Value="40"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="Pill" Background="Transparent" CornerRadius="20">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Pill" Property="Background" Value="{DynamicResource SurfaceVariantBrush}"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Pill" Property="Background" Value="{DynamicResource OutlineBrush}"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+        <!-- Uses global IconButtonStyle from Base.xaml -->
 
         <!-- Track row favourite-heart inline button -->
         <Style x:Key="HeartButtonStyle" TargetType="Button">
@@ -114,9 +91,17 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="Transparent" CornerRadius="18">
+                        <Border x:Name="HeartBg" Background="Transparent" CornerRadius="18">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="HeartBg" Property="Background" Value="{DynamicResource SurfaceVariantBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="HeartBg" Property="Background" Value="{DynamicResource OutlineBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
@@ -139,10 +124,10 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource SurfaceVariantBrush}"/>
+                                <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource SurfaceContainerHighBrush}"/>
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource OutlineBrush}"/>
+                                <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource PrimaryContainerBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -160,7 +145,7 @@
         <!-- ── Header bar ────────────────────────────────────────────────── -->
         <Grid Grid.Row="0" Margin="4,0,4,24">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
-                <Button x:Name="BtnBack" Style="{StaticResource IconPillButtonStyle}"
+                <Button x:Name="BtnBack" Style="{StaticResource IconButtonStyle}"
                         Margin="0,0,12,0"
                         Visibility="{Binding IsBackVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                         Command="{Binding BackCommand}">
@@ -175,7 +160,7 @@
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                 <!-- Only visible when viewing a special playlist — refreshes the list -->
-                <Button x:Name="BtnRefreshSpecial" Style="{StaticResource IconPillButtonStyle}"
+                <Button x:Name="BtnRefreshSpecial" Style="{StaticResource IconButtonStyle}"
                         Margin="0,0,8,0"
                         Visibility="{Binding IsRefreshVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                         Command="{Binding RefreshCommand}" ToolTip="Refresh">
@@ -183,7 +168,7 @@
                           Fill="{DynamicResource OnSurfaceVariantBrush}" Stretch="Uniform" Width="18" Height="18"/>
                 </Button>
 
-                <Button x:Name="BtnAddPlaylist" Style="{StaticResource IconPillButtonStyle}"
+                <Button x:Name="BtnAddPlaylist" Style="{StaticResource IconButtonStyle}"
                         Command="{Binding AddPlaylistCommand}" ToolTip="New Playlist">
                     <Path Data="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"
                           Fill="{DynamicResource OnSurfaceBrush}" Stretch="Uniform" Width="20" Height="20"/>
