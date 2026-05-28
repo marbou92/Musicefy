@@ -2,8 +2,12 @@ using System;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using Musicefy.Core.Interfaces;
 using Musicefy.Core.Models;
+using Musicefy.Core.Services;
+using Musicefy.Services;
 
 namespace Musicefy.ViewModels
 {
@@ -88,6 +92,41 @@ namespace Musicefy.ViewModels
         {
             get => _isFavoriteTrack;
             set { SetProperty(ref _isFavoriteTrack, value); }
+        }
+
+        private Color _dominantColor = Colors.Transparent;
+        public Color DominantColor
+        {
+            get => _dominantColor;
+            private set { SetProperty(ref _dominantColor, value); }
+        }
+
+        private Color _vibrantColor = Colors.Transparent;
+        public Color VibrantColor
+        {
+            get => _vibrantColor;
+            private set { SetProperty(ref _vibrantColor, value); }
+        }
+
+        private Color _mutedColor = Colors.Transparent;
+        public Color MutedColor
+        {
+            get => _mutedColor;
+            private set { SetProperty(ref _mutedColor, value); }
+        }
+
+        private SolidColorBrush _dynamicPrimaryBrush = new SolidColorBrush(Colors.Transparent);
+        public SolidColorBrush DynamicPrimaryBrush
+        {
+            get => _dynamicPrimaryBrush;
+            private set { SetProperty(ref _dynamicPrimaryBrush, value); }
+        }
+
+        private SolidColorBrush _dynamicSurfaceBrush = new SolidColorBrush(Colors.Transparent);
+        public SolidColorBrush DynamicSurfaceBrush
+        {
+            get => _dynamicSurfaceBrush;
+            private set { SetProperty(ref _dynamicSurfaceBrush, value); }
         }
 
         public ObservableCollection<MusicFile> QueueItems { get; } = new ObservableCollection<MusicFile>();
@@ -193,7 +232,43 @@ namespace Musicefy.ViewModels
             {
                 NowPlaying = track;
                 IsFavoriteTrack = track?.IsFavourite ?? false;
+                ExtractColorsFromTrack(track);
             });
+        }
+
+        private void ExtractColorsFromTrack(MusicFile track)
+        {
+            try
+            {
+                if (track == null || string.IsNullOrEmpty(track.CoverPath))
+                {
+                    ThemeManager.ClearDynamicColors();
+                    return;
+                }
+
+                BitmapSource cover = null;
+                if (track.CoverPath.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                    return;
+
+                if (System.IO.File.Exists(track.CoverPath))
+                {
+                    cover = new BitmapImage(new Uri(track.CoverPath, UriKind.Absolute));
+                }
+
+                if (cover == null) return;
+
+                var colors = ColorExtractor.Extract(cover);
+                DominantColor = colors.Primary;
+                VibrantColor = colors.Vibrant;
+                MutedColor = colors.Muted;
+                DynamicPrimaryBrush = new SolidColorBrush(colors.Primary);
+                DynamicSurfaceBrush = new SolidColorBrush(colors.Surface);
+                ThemeManager.ApplyDynamicColors(colors);
+            }
+            catch
+            {
+                // Color extraction is non-critical
+            }
         }
 
         private void OnProgressChanged(TimeSpan current, TimeSpan total)
