@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using System.Windows.Media;
 using System.Windows.Media.Animation;
 using Microsoft.Win32;
+using Musicefy.Core.Services;
 
 namespace Musicefy.Services
 {
@@ -164,6 +166,103 @@ namespace Musicefy.Services
                 win.Opacity = 0;
                 win.BeginAnimation(UIElement.OpacityProperty, fadeAnim);
             }
+        }
+
+        private static ResourceDictionary _dynamicColorDict;
+
+        public static void ApplyDynamicColors(ExtractedColors colors)
+        {
+            var merged = Application.Current.Resources.MergedDictionaries;
+
+            if (_dynamicColorDict != null)
+                merged.Remove(_dynamicColorDict);
+
+            _dynamicColorDict = new ResourceDictionary();
+
+            var primary = colors.Primary;
+            var vibrant = colors.Vibrant;
+            var muted = colors.Muted;
+            var onPrimary = colors.OnPrimary;
+            var surface = colors.Surface;
+
+            var vibrantLight = Lighten(vibrant, 0.25);
+            var vibrantDark = Darken(vibrant, 0.35);
+            var surfaceLight = Lighten(surface, 0.15);
+            var surfaceVariant = Lighten(surface, 0.08);
+
+            _dynamicColorDict["DynamicPrimaryBrush"] = new SolidColorBrush(primary);
+            _dynamicColorDict["DynamicVibrantBrush"] = new SolidColorBrush(vibrant);
+            _dynamicColorDict["DynamicVibrantLightBrush"] = new SolidColorBrush(vibrantLight);
+            _dynamicColorDict["DynamicVibrantDarkBrush"] = new SolidColorBrush(vibrantDark);
+            _dynamicColorDict["DynamicMutedBrush"] = new SolidColorBrush(muted);
+            _dynamicColorDict["DynamicOnPrimaryBrush"] = new SolidColorBrush(onPrimary);
+            _dynamicColorDict["DynamicSurfaceBrush"] = new SolidColorBrush(surface);
+            _dynamicColorDict["DynamicSurfaceLightBrush"] = new SolidColorBrush(surfaceLight);
+            _dynamicColorDict["DynamicSurfaceVariantBrush"] = new SolidColorBrush(surfaceVariant);
+
+            merged.Add(_dynamicColorDict);
+        }
+
+        public static void ClearDynamicColors()
+        {
+            if (_dynamicColorDict != null)
+            {
+                Application.Current.Resources.MergedDictionaries.Remove(_dynamicColorDict);
+                _dynamicColorDict = null;
+            }
+        }
+
+        private static Color Lighten(Color c, double factor)
+        {
+            return Color.FromRgb(
+                (byte)(c.R + (255 - c.R) * factor),
+                (byte)(c.G + (255 - c.G) * factor),
+                (byte)(c.B + (255 - c.B) * factor));
+        }
+
+        private static Color Darken(Color c, double factor)
+        {
+            return Color.FromRgb(
+                (byte)(c.R * (1 - factor)),
+                (byte)(c.G * (1 - factor)),
+                (byte)(c.B * (1 - factor)));
+        }
+
+        public static LinearGradientBrush CreateVerticalGradient(Color topColor, Color bottomColor, double topOpacity = 1.0, double bottomOpacity = 1.0)
+        {
+            var top = topColor;
+            var bottom = bottomColor;
+            if (topOpacity < 1.0)
+                top = Color.FromArgb((byte)(topOpacity * 255), top.R, top.G, top.B);
+            if (bottomOpacity < 1.0)
+                bottom = Color.FromArgb((byte)(bottomOpacity * 255), bottom.R, bottom.G, bottom.B);
+
+            return new LinearGradientBrush
+            {
+                StartPoint = new Point(0, 0),
+                EndPoint = new Point(0, 1),
+                GradientStops = new GradientStopCollection
+                {
+                    new GradientStop(top, 0.0),
+                    new GradientStop(bottom, 1.0)
+                }
+            };
+        }
+
+        public static LinearGradientBrush CreateHomeGradient(Color dominantColor)
+        {
+            var surface = Color.FromRgb(24, 24, 24);
+            return new LinearGradientBrush
+            {
+                StartPoint = new Point(0, 0),
+                EndPoint = new Point(0, 1),
+                GradientStops = new GradientStopCollection
+                {
+                    new GradientStop(dominantColor, 0.0),
+                    new GradientStop(dominantColor, 0.15),
+                    new GradientStop(surface, 1.0)
+                }
+            };
         }
 
         private static void MergeDictionary(string path)
