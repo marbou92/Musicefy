@@ -62,7 +62,7 @@
                                             <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource OnSurfaceBrush}"/>
                                             <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,2,0,0"/>
                                         </StackPanel>
-                                        <Border Grid.Column="1" Background="#2c3e50" CornerRadius="4" Padding="8,2" VerticalAlignment="Center" Margin="0,0,8,0">
+                                        <Border Grid.Column="1" Background="{DynamicResource PrimaryContainerBrush}" CornerRadius="4" Padding="8,2" VerticalAlignment="Center" Margin="0,0,8,0">
                                             <Border.Style>
                                                 <Style TargetType="Border">
                                                     <Setter Property="Visibility" Value="Collapsed"/>
@@ -73,7 +73,7 @@
                                                     </Style.Triggers>
                                                 </Style>
                                             </Border.Style>
-                                            <TextBlock Text="Official" FontSize="10" FontWeight="Bold" Foreground="White"/>
+                                            <TextBlock Text="Official" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource OnPrimaryBrush}"/>
                                         </Border>
                                         <TextBlock Grid.Column="2" Text="{Binding Url}" FontSize="9" Foreground="{DynamicResource OnSurfaceVariantBrush}" VerticalAlignment="Center" MaxWidth="200" TextTrimming="CharacterEllipsis"/>
                                     </Grid>
@@ -93,7 +93,7 @@
                                                                 Background="{DynamicResource PrimaryBrush}" Margin="0,0,10,0">
                                                             <Path Data="{Binding SourceType, Converter={StaticResource IconGlyphConverter}}"
                                                                   Width="14" Height="14" Stretch="Uniform"
-                                                                  Fill="White"
+                                                                  Fill="{DynamicResource OnPrimaryBrush}"
                                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                         </Border>
 
@@ -115,7 +115,7 @@
                                     <Button Content="Remove Repo" HorizontalAlignment="Right" Margin="0,6,0,0"
                                             Command="{Binding DataContext.RemoveRepoCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                             CommandParameter="{Binding}"
-                                            Foreground="#e74c3c" Background="Transparent" FontSize="11" Padding="10,4">
+                                            Foreground="{DynamicResource ErrorBrush}" Background="Transparent" FontSize="11" Padding="10,4">
                                         <Button.Style>
                                             <Style TargetType="Button">
                                                 <Setter Property="Visibility" Value="Visible"/>
