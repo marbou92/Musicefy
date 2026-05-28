@@ -115,10 +115,12 @@
                 <StackPanel>
                     <Border Width="100" Height="100" CornerRadius="50" ClipToBounds="True"
                             Background="{DynamicResource SurfaceVariantBrush}">
-                        <Image Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}}" Stretch="UniformToFill"/>
-                        <Border x:Name="PlayOverlay" Background="#80000000" CornerRadius="50" Opacity="0">
-                            <Path Data="M38,34V66L62,50L38,34Z" Fill="White" Width="16" Height="16" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
+                        <Grid>
+                            <Image Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}}" Stretch="UniformToFill"/>
+                            <Border x:Name="PlayOverlay" Background="#80000000" CornerRadius="50" Opacity="0">
+                                <Path Data="M38,34V66L62,50L38,34Z" Fill="White" Width="16" Height="16" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </Grid>
                     </Border>
                     <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource OnSurfaceBrush}"
                                TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" HorizontalAlignment="Center" Margin="0,8,0,0" MaxWidth="90"/>
