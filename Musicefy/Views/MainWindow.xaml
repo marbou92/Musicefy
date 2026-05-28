@@ -72,28 +72,6 @@
                                     </BeginStoryboard>
                                 </Trigger.ExitActions>
                             </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Trigger.EnterActions>
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <DoubleAnimation Storyboard.TargetName="ItemScale" Storyboard.TargetProperty="ScaleX" To="0.92" Duration="0:0:0.08"/>
-                                            <DoubleAnimation Storyboard.TargetName="ItemScale" Storyboard.TargetProperty="ScaleY" To="0.92" Duration="0:0:0.08"/>
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </Trigger.EnterActions>
-                                <Trigger.ExitActions>
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <DoubleAnimation Storyboard.TargetName="ItemScale" Storyboard.TargetProperty="ScaleX" To="1.0" Duration="0:0:0.1">
-                                                <DoubleAnimation.EasingFunction><QuadraticEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
-                                            </DoubleAnimation>
-                                            <DoubleAnimation Storyboard.TargetName="ItemScale" Storyboard.TargetProperty="ScaleY" To="1.0" Duration="0:0:0.1">
-                                                <DoubleAnimation.EasingFunction><QuadraticEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
-                                            </DoubleAnimation>
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </Trigger.ExitActions>
-                            </Trigger>
                             <Trigger Property="IsSelected" Value="True">
                                 <Setter TargetName="Pill" Property="Background" Value="{DynamicResource SurfaceContainerHighBrush}"/>
                                 <Setter TargetName="IconPath" Property="Fill" Value="{DynamicResource PrimaryBrush}"/>
