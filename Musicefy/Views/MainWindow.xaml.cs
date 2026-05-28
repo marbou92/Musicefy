@@ -90,6 +90,26 @@ namespace Musicefy
             else SystemCommands.MaximizeWindow(this);
         }
 
+        private void SidebarBorder_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            var scaleUp = new DoubleAnimation(1.0, new Duration(TimeSpan.FromMilliseconds(200)))
+            {
+                EasingFunction = new System.Windows.Media.Animation.QuadraticEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut }
+            };
+            SidebarScale.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleXProperty, scaleUp);
+            SidebarScale.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleYProperty, scaleUp);
+        }
+
+        private void SidebarBorder_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            var scaleDown = new DoubleAnimation(0.85, new Duration(TimeSpan.FromMilliseconds(300)))
+            {
+                EasingFunction = new System.Windows.Media.Animation.QuadraticEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut }
+            };
+            SidebarScale.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleXProperty, scaleDown);
+            SidebarScale.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleYProperty, scaleDown);
+        }
+
         // ── Sidebar navigation ─────────────────────────────────────────
         private void Sidebar_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -97,19 +117,40 @@ namespace Musicefy
             if (_isInitializing) return;
             if (MainContent == null) return;
 
-            // Animate fade transition
-            var fadeOut = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(150));
+            // Animate fade + slide transition
+            var duration = TimeSpan.FromMilliseconds(180);
+            var fadeOut = new DoubleAnimation(1, 0, duration)
+            {
+                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseIn }
+            };
+            var slideOut = new DoubleAnimation(0, -30, duration)
+            {
+                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseIn }
+            };
+
             fadeOut.Completed += (s, ev) =>
             {
                 // Navigate to the selected page
                 int index = SidebarList.SelectedIndex;
                 _viewModel.NavigateToPage(index);
                 MainContent.Content = _viewModel.CurrentPage;
+                PageSlideTransform.Y = 30;
                 this.UpdateLayout();
-                var fadeIn = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(200));
+
+                var fadeIn = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(250))
+                {
+                    EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
+                };
+                var slideIn = new DoubleAnimation(30, 0, TimeSpan.FromMilliseconds(300))
+                {
+                    EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
+                };
                 MainContent.BeginAnimation(OpacityProperty, fadeIn);
+                PageSlideTransform.BeginAnimation(TranslateTransform.YProperty, slideIn);
             };
+
             MainContent.BeginAnimation(OpacityProperty, fadeOut);
+            PageSlideTransform.BeginAnimation(TranslateTransform.YProperty, slideOut);
         }
 
         public void NavigateToSettings()
