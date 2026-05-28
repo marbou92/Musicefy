@@ -118,14 +118,18 @@ namespace Musicefy
             if (MainContent == null) return;
 
             // Animate fade + slide transition
-            var duration = TimeSpan.FromMilliseconds(180);
-            var fadeOut = new DoubleAnimation(1, 0, duration)
+            var durationOut = TimeSpan.FromMilliseconds(120);
+            var durationIn = TimeSpan.FromMilliseconds(240);
+            var easeOut = new CubicEase { EasingMode = EasingMode.EaseOut };
+            var easeIn = new CubicEase { EasingMode = EasingMode.EaseIn };
+
+            var fadeOut = new DoubleAnimation(1, 0, durationOut)
             {
-                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseIn }
+                EasingFunction = easeIn
             };
-            var slideOut = new DoubleAnimation(0, -30, duration)
+            var slideOut = new DoubleAnimation(0, -20, durationOut)
             {
-                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseIn }
+                EasingFunction = easeIn
             };
 
             fadeOut.Completed += (s, ev) =>
@@ -134,16 +138,16 @@ namespace Musicefy
                 int index = SidebarList.SelectedIndex;
                 _viewModel.NavigateToPage(index);
                 MainContent.Content = _viewModel.CurrentPage;
-                PageSlideTransform.Y = 30;
+                PageSlideTransform.Y = 20;
                 this.UpdateLayout();
 
-                var fadeIn = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(250))
+                var fadeIn = new DoubleAnimation(0, 1, durationIn)
                 {
-                    EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
+                    EasingFunction = easeOut
                 };
-                var slideIn = new DoubleAnimation(30, 0, TimeSpan.FromMilliseconds(300))
+                var slideIn = new DoubleAnimation(20, 0, durationIn)
                 {
-                    EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
+                    EasingFunction = easeOut
                 };
                 MainContent.BeginAnimation(OpacityProperty, fadeIn);
                 PageSlideTransform.BeginAnimation(TranslateTransform.YProperty, slideIn);
