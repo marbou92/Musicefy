@@ -8,7 +8,7 @@
         Opacity="0"
         Background="Transparent">
 
-    <Border x:Name="MainRootBorder" CornerRadius="28" Background="#121212" RenderTransformOrigin="0.5,0.5">
+    <Border x:Name="MainRootBorder" CornerRadius="28" Background="{DynamicResource SurfaceBrush}" RenderTransformOrigin="0.5,0.5">
         <Border.RenderTransform>
             <TransformGroup>
                 <ScaleTransform x:Name="RootScale" ScaleX="0.95" ScaleY="0.95"/>
@@ -35,7 +35,7 @@
                 </Grid>
 
                 <TextBlock x:Name="TxtBrandTitle" Text="Musicefy" FontSize="36" FontWeight="Bold" 
-                           Foreground="White" HorizontalAlignment="Center"
+                           Foreground="{DynamicResource OnSurfaceBrush}" HorizontalAlignment="Center"
                            FontFamily="Segoe UI">
                     <TextBlock.Effect>
                         <DropShadowEffect BlurRadius="8" Opacity="0.3" ShadowDepth="2" Color="Black"/>
@@ -43,7 +43,7 @@
                 </TextBlock>
 
                 <TextBlock x:Name="TxtSubMarker" Text="INITIALIZING AUDIO ENGINE" FontSize="10" FontWeight="Bold" 
-                           Foreground="#6A6A6A" Margin="0,16,0,0" HorizontalAlignment="Center"
+                           Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,16,0,0" HorizontalAlignment="Center"
                            RenderTransformOrigin="0.5,0.5">
                     <TextBlock.RenderTransform>
                         <ScaleTransform ScaleX="1.05"/>
@@ -52,10 +52,10 @@
             </StackPanel>
 
             <Grid VerticalAlignment="Bottom" Margin="48,0,48,44">
-                <Border x:Name="ProgressBarTrack" Height="3" Background="#1A1A1A" CornerRadius="1.5"/>
+                <Border x:Name="ProgressBarTrack" Height="3" Background="{DynamicResource OutlineBrush}" CornerRadius="1.5"/>
                 
                 <ProgressBar x:Name="BottomProgress" Height="3" 
-                             Background="Transparent" BorderThickness="0" Foreground="#1DB954"
+                             Background="Transparent" BorderThickness="0" Foreground="{DynamicResource PrimaryBrush}"
                              Value="0" Maximum="100"/>
             </Grid>
         </Grid>
