@@ -140,9 +140,9 @@ namespace Musicefy.Views
                 _playback.PlayTrack(selected.SourceTrack);
         }
 
-        private void HeroCard_DoubleClick(object sender, MouseButtonEventArgs e)
+        private void HeroCard_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (_viewModel.HeroTrack?.SourceTrack != null)
+            if (e.ClickCount == 2 && _viewModel.HeroTrack?.SourceTrack != null)
                 _playback.PlayTrack(_viewModel.HeroTrack.SourceTrack);
         }
 
