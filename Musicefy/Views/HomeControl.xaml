@@ -83,7 +83,7 @@
                 <TextBlock Text="Welcome to Musicefy" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource OnSurfaceBrush}" HorizontalAlignment="Center"/>
                 <TextBlock Text="{Binding EmptyMessage}" FontSize="14" Foreground="{DynamicResource OnSurfaceVariantBrush}" HorizontalAlignment="Center" TextWrapping="Wrap" MaxWidth="400" TextAlignment="Center" Margin="0,12,0,20"/>
                 <Button Content="Open Settings" Width="160" Height="38" Click="OpenSources_Click"
-                        Background="{DynamicResource PrimaryBrush}" Foreground="White"
+                        Background="{DynamicResource PrimaryBrush}" Foreground="{DynamicResource OnPrimaryBrush}"
                         FontWeight="SemiBold" FontSize="13" Cursor="Hand"
                         HorizontalAlignment="Center" BorderThickness="0">
                     <Button.Template>
@@ -174,7 +174,7 @@
 
         <!-- Content area -->
         <ScrollViewer x:Name="ContentArea" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled">
-            <StackPanel Margin="30,20,30,30">
+            <StackPanel Margin="40,24,40,24">
                 
                 <Grid Margin="6,0,0,16">
                     <StackPanel>
