@@ -56,18 +56,27 @@ namespace Musicefy
                 ProgressBarTrack.Background = new SolidColorBrush(trackRailColor);
 
                 // 3. Resolve dynamic accent colors matching user palettes
-                Color accentThemeColor = Color.FromRgb(29, 185, 84); // Default Spotify Green fallback token
+                Color accentThemeColor;
+
+                if (mode.Equals("Light", StringComparison.OrdinalIgnoreCase))
+                {
+                    accentThemeColor = Color.FromRgb(21, 101, 192); // Default Light blue
+                }
+                else
+                {
+                    accentThemeColor = Color.FromRgb(60, 140, 231); // Default Dark blue
+                }
 
                 switch (palette.ToLower())
                 {
                     case "catppuccin":
-                        accentThemeColor = Color.FromRgb(245, 194, 231); // Catppuccin Pink
+                        accentThemeColor = Color.FromRgb(245, 194, 231);
                         break;
                     case "greenapple":
-                        accentThemeColor = Color.FromRgb(139, 195, 74); // Vibrant Lime Green
+                        accentThemeColor = Color.FromRgb(76, 175, 80);
                         break;
                     case "lavender":
-                        accentThemeColor = Color.FromRgb(183, 189, 248); // Soothing Lavender Blue
+                        accentThemeColor = Color.FromRgb(181, 126, 220);
                         break;
                 }
 
