@@ -56,7 +56,8 @@ namespace Musicefy.Core.Services
                         if (r > 240 && g > 240 && b > 240) continue;
 
                         int key = ((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3);
-                        colorBuckets[key] = colorBuckets.GetValueOrDefault(key) + 1;
+                        colorBuckets.TryGetValue(key, out int count);
+                        colorBuckets[key] = count + 1;
                     }
                 }
 
