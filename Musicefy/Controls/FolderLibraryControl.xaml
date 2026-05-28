@@ -157,10 +157,10 @@
                         Visibility="Collapsed" Click="BtnClearFolder_Click">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"
-                              Fill="#FF6B6B" Width="14" Height="14"
+                              Fill="{DynamicResource ErrorBrush}" Width="14" Height="14"
                               Stretch="Uniform" Margin="0,0,8,0" VerticalAlignment="Center"/>
                         <TextBlock Text="Clear Link" FontSize="13" FontWeight="SemiBold"
-                                   Foreground="#FF6B6B" VerticalAlignment="Center"/>
+                                   Foreground="{DynamicResource ErrorBrush}" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button>
             </StackPanel>
@@ -176,11 +176,23 @@
         <!-- ── Content area ──────────────────────────────────────────────── -->
         <Grid Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
 
-            <!-- Loading skeleton -->
+            <!-- Loading skeleton with shimmer -->
             <Grid x:Name="LoadingSkeleton" Visibility="Collapsed" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                <Grid.Resources>
+                    <Storyboard x:Key="ShimmerStory" RepeatBehavior="Forever" AutoReverse="True">
+                        <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0.15" To="0.45" Duration="0:0:1.2"/>
+                    </Storyboard>
+                </Grid.Resources>
                 <ScrollViewer VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled">
                     <StackPanel Margin="0,0,0,20">
                         <WrapPanel Orientation="Horizontal" Margin="0,0,-16,24">
+                            <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="20" Width="150" Height="190" Margin="0,0,16,20" Opacity="0.25">
+                                <StackPanel>
+                                    <Border CornerRadius="16" Height="150" Background="{DynamicResource OutlineBrush}" Opacity="0.5"/>
+                                    <Border CornerRadius="4" Height="12" Margin="8,10,24,4" Background="{DynamicResource OutlineBrush}" Opacity="0.4"/>
+                                    <Border CornerRadius="3" Height="10" Margin="8,0,48,0" Background="{DynamicResource OutlineBrush}" Opacity="0.3"/>
+                                </StackPanel>
+                            </Border>
                             <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="20" Width="150" Height="190" Margin="0,0,16,20" Opacity="0.2">
                                 <StackPanel>
                                     <Border CornerRadius="16" Height="150" Background="{DynamicResource OutlineBrush}" Opacity="0.5"/>
@@ -195,21 +207,23 @@
                                     <Border CornerRadius="3" Height="10" Margin="8,0,48,0" Background="{DynamicResource OutlineBrush}" Opacity="0.3"/>
                                 </StackPanel>
                             </Border>
-                            <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="20" Width="150" Height="190" Margin="0,0,16,20" Opacity="0.1">
-                                <StackPanel>
-                                    <Border CornerRadius="16" Height="150" Background="{DynamicResource OutlineBrush}" Opacity="0.5"/>
-                                    <Border CornerRadius="4" Height="12" Margin="8,10,24,4" Background="{DynamicResource OutlineBrush}" Opacity="0.4"/>
-                                    <Border CornerRadius="3" Height="10" Margin="8,0,48,0" Background="{DynamicResource OutlineBrush}" Opacity="0.3"/>
-                                </StackPanel>
-                            </Border>
                         </WrapPanel>
                         <StackPanel Margin="0,0,0,16">
+                            <Border CornerRadius="6" Height="32" Margin="0,0,0,8" Background="{DynamicResource SurfaceVariantBrush}" Opacity="0.2"/>
                             <Border CornerRadius="6" Height="32" Margin="0,0,0,8" Background="{DynamicResource SurfaceVariantBrush}" Opacity="0.15"/>
-                            <Border CornerRadius="6" Height="32" Margin="0,0,0,8" Background="{DynamicResource SurfaceVariantBrush}" Opacity="0.12"/>
                             <Border CornerRadius="6" Height="32" Background="{DynamicResource SurfaceVariantBrush}" Opacity="0.1"/>
                         </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
+                <Grid.Triggers>
+                    <EventTrigger RoutedEvent="Grid.Loaded">
+                        <BeginStoryboard>
+                            <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+                                <DoubleAnimation Storyboard.Target="{Binding ElementName=LoadingSkeleton}" Storyboard.TargetProperty="Opacity" From="0.15" To="0.45" Duration="0:0:1.2"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Grid.Triggers>
             </Grid>
 
             <!-- Empty state -->
@@ -255,14 +269,14 @@
                         <Style TargetType="ListViewItem">
                             <Setter Property="Background" Value="Transparent"/>
                             <Setter Property="BorderThickness" Value="0"/>
-                            <Setter Property="Margin" Value="0,4"/>
+                            <Setter Property="Margin" Value="0,3"/>
                             <Setter Property="Padding" Value="0"/>
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="ListViewItem">
-                                        <Border x:Name="RowBorder" CornerRadius="16"
-                                                Background="{TemplateBinding Background}"
-                                                Padding="16,12" SnapsToDevicePixels="True">
+                                                <Border x:Name="RowBorder" CornerRadius="14"
+                                                        Background="{TemplateBinding Background}"
+                                                        Padding="12,8" SnapsToDevicePixels="True">
                                             <ContentPresenter/>
                                         </Border>
                                         <ControlTemplate.Triggers>
@@ -280,7 +294,7 @@
                     </ListView.ItemContainerStyle>
                     <ListView.ItemTemplate>
                         <DataTemplate>
-                            <Grid Height="40">
+                            <Grid Height="52">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="220"/>
@@ -307,11 +321,11 @@
                                         </Grid>
                                     </Border>
                                     <StackPanel VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="Medium"
+                                        <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="Medium"
                                                    Foreground="{DynamicResource OnSurfaceBrush}"
                                                    TextTrimming="CharacterEllipsis"/>
                                         <TextBlock x:Name="ListSubtitleGenre" Text="{Binding Genre}"
-                                                   FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                                                   FontSize="12" Foreground="{DynamicResource OnSurfaceVariantBrush}"
                                                    TextTrimming="CharacterEllipsis" Margin="0,1,0,0"/>
                                     </StackPanel>
                                 </StackPanel>
@@ -371,7 +385,7 @@
                                 <Setter.Value>
                                     <ControlTemplate TargetType="ListBoxItem">
                                         <Border x:Name="CardBorder" Background="Transparent"
-                                                CornerRadius="24" Padding="12"
+                                                CornerRadius="16" Padding="12"
                                                 RenderTransformOrigin="0.5,0.5" Margin="0,0,16,24">
                                             <Border.RenderTransform>
                                                 <ScaleTransform x:Name="CardScale" ScaleX="1" ScaleY="1"/>
@@ -394,8 +408,8 @@
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Width="150" Background="Transparent">
-                                <Border Background="{DynamicResource SurfaceVariantBrush}"
-                                        Height="150" CornerRadius="20" ClipToBounds="True"
+                                        <Border Background="{DynamicResource SurfaceVariantBrush}"
+                                                Height="150" CornerRadius="12" ClipToBounds="True"
                                         Margin="0,0,0,14" SnapsToDevicePixels="True">
                                     <Grid>
                                         <Grid x:Name="GridFolderContainer" Visibility="Collapsed">
