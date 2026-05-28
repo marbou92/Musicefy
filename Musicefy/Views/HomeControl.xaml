@@ -6,6 +6,7 @@
 
     <UserControl.Resources>
         <conv:PathToImageConverter x:Key="PathToImageConverter"/>
+
         <Style x:Key="CleanListBoxItemStyle" TargetType="ListBoxItem">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -28,6 +29,39 @@
             <Setter Property="Focusable" Value="False"/>
         </Style>
 
+        <!-- Mood chip pill button -->
+        <Style x:Key="MoodChipStyle" TargetType="RadioButton">
+            <Setter Property="Background" Value="{DynamicResource SurfaceVariantBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource OnSurfaceVariantBrush}"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Padding" Value="20,8"/>
+            <Setter Property="Margin" Value="0,0,10,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="ChipBg" Background="{TemplateBinding Background}" CornerRadius="20"
+                                BorderBrush="{DynamicResource OutlineBrush}" BorderThickness="1">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="ChipBg" Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+                                <Setter TargetName="ChipBg" Property="BorderThickness" Value="0"/>
+                                <Setter Property="Foreground" Value="{DynamicResource OnPrimaryBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ChipBg" Property="Background" Value="{DynamicResource HoverBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Chart card template (vertical) -->
         <DataTemplate x:Key="ChartCardTemplate">
             <Border x:Name="CardBorder" Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="16" Margin="0,0,18,0" Width="170" Height="250" Cursor="Hand" SnapsToDevicePixels="True">
                 <Border.Effect>
@@ -51,6 +85,7 @@
             </DataTemplate.Triggers>
         </DataTemplate>
 
+        <!-- Track card template (horizontal) -->
         <DataTemplate x:Key="TrackCardTemplate">
             <Border x:Name="CardBorder" Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="12" Margin="6" Padding="12" Width="290" Cursor="Hand" SnapsToDevicePixels="True">
                 <Grid>
@@ -73,9 +108,76 @@
             </DataTemplate.Triggers>
         </DataTemplate>
 
+        <!-- Circular recently played card template -->
+        <DataTemplate x:Key="CircleCardTemplate">
+            <Border x:Name="CardBorder" Margin="0,0,18,0" Width="100" Cursor="Hand" SnapsToDevicePixels="True"
+                    MouseDoubleClick="RecentlyPlayed_DoubleClick">
+                <StackPanel>
+                    <Border Width="100" Height="100" CornerRadius="50" ClipToBounds="True"
+                            Background="{DynamicResource SurfaceVariantBrush}">
+                        <Image Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}}" Stretch="UniformToFill"/>
+                        <Border x:Name="PlayOverlay" Background="#80000000" CornerRadius="50" Opacity="0">
+                            <Path Data="M38,34V66L62,50L38,34Z" Fill="White" Width="16" Height="16" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </Border>
+                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource OnSurfaceBrush}"
+                               TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" HorizontalAlignment="Center" Margin="0,8,0,0" MaxWidth="90"/>
+                    <TextBlock Text="{Binding Artist}" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                               TextTrimming="CharacterEllipsis" HorizontalAlignment="Center" Margin="0,2,0,0" MaxWidth="90"/>
+                </StackPanel>
+            </Border>
+            <DataTemplate.Triggers>
+                <Trigger Property="IsMouseOver" SourceName="CardBorder" Value="True">
+                    <Setter TargetName="PlayOverlay" Property="Opacity" Value="1"/>
+                </Trigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+
+        <!-- Hero card template -->
+        <DataTemplate x:Key="HeroCardTemplate">
+            <Border x:Name="HeroBorder" CornerRadius="20" Height="280" Cursor="Hand" ClipToBounds="True"
+                    MouseDoubleClick="HeroCard_DoubleClick">
+                <Grid>
+                    <Image Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}}" Stretch="UniformToFill"/>
+                    <Border Background="{DynamicResource BackgroundBrush}" Opacity="0.05"/>
+                    <Border VerticalAlignment="Bottom" Height="120">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                <GradientStop Color="Transparent" Offset="0"/>
+                                <GradientStop Color="#E0000000" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                    </Border>
+                    <StackPanel VerticalAlignment="Bottom" Margin="24,0,24,24">
+                        <TextBlock Text="{Binding Title}" FontSize="28" FontWeight="Bold" Foreground="White"
+                                   TextTrimming="CharacterEllipsis" MaxWidth="500"/>
+                        <TextBlock Text="{Binding Artist}" FontSize="15" Foreground="White" Opacity="0.7"
+                                   TextTrimming="CharacterEllipsis" Margin="0,4,0,0" MaxWidth="400"/>
+                    </StackPanel>
+                    <Border x:Name="HoverGlow" CornerRadius="20" Background="{DynamicResource SurfaceBrush}" Opacity="0.0"/>
+                </Grid>
+            </Border>
+            <DataTemplate.Triggers>
+                <Trigger Property="IsMouseOver" SourceName="HeroBorder" Value="True">
+                    <Setter TargetName="HoverGlow" Property="Opacity" Value="0.15"/>
+                </Trigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+
     </UserControl.Resources>
 
     <Grid>
+        <!-- Dynamic gradient background -->
+        <Rectangle IsHitTestVisible="False" Opacity="0.12">
+            <Rectangle.Fill>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="{Binding DominantColor, FallbackValue=#3C8CE7}" Offset="0.0"/>
+                    <GradientStop Color="{Binding DominantColor, FallbackValue=#3C8CE7}" Offset="0.2"/>
+                    <GradientStop Color="Transparent" Offset="0.5"/>
+                </LinearGradientBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+
         <!-- Empty state -->
         <Border x:Name="EmptyState" Visibility="Collapsed" VerticalAlignment="Center" HorizontalAlignment="Center">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="40">
@@ -111,63 +213,28 @@
                 </Storyboard>
             </ScrollViewer.Resources>
             <StackPanel Margin="30,20,30,30">
+                <!-- Hero skeleton -->
+                <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="20" Height="280" Margin="0,0,0,28" Opacity="0.15"/>
+                <!-- Recently played header + circles -->
+                <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="8" Width="200" Height="24" Margin="6,0,0,20" Opacity="0.25"/>
+                <StackPanel Orientation="Horizontal" Margin="6,0,0,36">
+                    <Border Width="100" Height="100" CornerRadius="50" Background="{DynamicResource SurfaceVariantBrush}" Margin="0,0,18,0" Opacity="0.2"/>
+                    <Border Width="100" Height="100" CornerRadius="50" Background="{DynamicResource SurfaceVariantBrush}" Margin="0,0,18,0" Opacity="0.15"/>
+                    <Border Width="100" Height="100" CornerRadius="50" Background="{DynamicResource SurfaceVariantBrush}" Margin="0,0,18,0" Opacity="0.1"/>
+                </StackPanel>
                 <!-- Charts header skeleton -->
-                <Border Name="SkelChartsHeader" Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="8" Width="180" Height="28" Margin="6,0,0,20" Opacity="0.25"/>
-                <!-- Charts cards skeleton -->
+                <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="8" Width="180" Height="28" Margin="6,0,0,20" Opacity="0.25"/>
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,36">
-                    <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="24" Width="170" Height="240" Margin="0,0,14,0" Opacity="0.2">
-                        <StackPanel>
-                            <Border CornerRadius="16" Height="146" Margin="10,10,10,8" Background="{DynamicResource BorderBrush}" Opacity="0.5"/>
-                            <Border CornerRadius="4" Height="12" Margin="14,0,48,6" Background="{DynamicResource BorderBrush}" Opacity="0.4"/>
-                            <Border CornerRadius="4" Height="10" Margin="14,0,72,0" Background="{DynamicResource BorderBrush}" Opacity="0.3"/>
-                        </StackPanel>
-                    </Border>
-                    <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="24" Width="170" Height="240" Margin="0,0,14,0" Opacity="0.15">
-                        <StackPanel>
-                            <Border CornerRadius="16" Height="146" Margin="10,10,10,8" Background="{DynamicResource BorderBrush}" Opacity="0.5"/>
-                            <Border CornerRadius="4" Height="12" Margin="14,0,48,6" Background="{DynamicResource BorderBrush}" Opacity="0.4"/>
-                            <Border CornerRadius="4" Height="10" Margin="14,0,72,0" Background="{DynamicResource BorderBrush}" Opacity="0.3"/>
-                        </StackPanel>
-                    </Border>
-                    <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="24" Width="170" Height="240" Margin="0,0,14,0" Opacity="0.1">
-                        <StackPanel>
-                            <Border CornerRadius="16" Height="146" Margin="10,10,10,8" Background="{DynamicResource BorderBrush}" Opacity="0.5"/>
-                            <Border CornerRadius="4" Height="12" Margin="14,0,48,6" Background="{DynamicResource BorderBrush}" Opacity="0.4"/>
-                            <Border CornerRadius="4" Height="10" Margin="14,0,72,0" Background="{DynamicResource BorderBrush}" Opacity="0.3"/>
-                        </StackPanel>
-                    </Border>
+                    <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="24" Width="170" Height="240" Margin="0,0,14,0" Opacity="0.2"/>
+                    <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="24" Width="170" Height="240" Margin="0,0,14,0" Opacity="0.15"/>
+                    <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="24" Width="170" Height="240" Margin="0,0,14,0" Opacity="0.1"/>
                 </StackPanel>
                 <!-- Quick Picks header skeleton -->
-                <Border Name="SkelQuickPicksHeader" Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="8" Width="160" Height="28" Margin="6,0,6,20" Opacity="0.25"/>
-                <!-- Quick Picks cards skeleton -->
+                <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="8" Width="160" Height="28" Margin="6,0,6,20" Opacity="0.25"/>
                 <WrapPanel Orientation="Horizontal" Margin="0,0,0,20">
-                    <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="14" Width="290" Height="72" Margin="4,4,8,4" Opacity="0.2">
-                        <DockPanel Margin="8">
-                            <Border CornerRadius="10" Width="48" Height="48" DockPanel.Dock="Left" Background="{DynamicResource BorderBrush}" Opacity="0.5"/>
-                            <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
-                                <Border CornerRadius="3" Height="12" Margin="0,0,60,8" Background="{DynamicResource BorderBrush}" Opacity="0.4"/>
-                                <Border CornerRadius="3" Height="10" Margin="0,0,100,0" Background="{DynamicResource BorderBrush}" Opacity="0.3"/>
-                            </StackPanel>
-                        </DockPanel>
-                    </Border>
-                    <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="14" Width="290" Height="72" Margin="4,4,8,4" Opacity="0.15">
-                        <DockPanel Margin="8">
-                            <Border CornerRadius="10" Width="48" Height="48" DockPanel.Dock="Left" Background="{DynamicResource BorderBrush}" Opacity="0.5"/>
-                            <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
-                                <Border CornerRadius="3" Height="12" Margin="0,0,60,8" Background="{DynamicResource BorderBrush}" Opacity="0.4"/>
-                                <Border CornerRadius="3" Height="10" Margin="0,0,100,0" Background="{DynamicResource BorderBrush}" Opacity="0.3"/>
-                            </StackPanel>
-                        </DockPanel>
-                    </Border>
-                    <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="14" Width="290" Height="72" Margin="4,4,8,4" Opacity="0.1">
-                        <DockPanel Margin="8">
-                            <Border CornerRadius="10" Width="48" Height="48" DockPanel.Dock="Left" Background="{DynamicResource BorderBrush}" Opacity="0.5"/>
-                            <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
-                                <Border CornerRadius="3" Height="12" Margin="0,0,60,8" Background="{DynamicResource BorderBrush}" Opacity="0.4"/>
-                                <Border CornerRadius="3" Height="10" Margin="0,0,100,0" Background="{DynamicResource BorderBrush}" Opacity="0.3"/>
-                            </StackPanel>
-                        </DockPanel>
-                    </Border>
+                    <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="14" Width="290" Height="72" Margin="4,4,8,4" Opacity="0.2"/>
+                    <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="14" Width="290" Height="72" Margin="4,4,8,4" Opacity="0.15"/>
+                    <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="14" Width="290" Height="72" Margin="4,4,8,4" Opacity="0.1"/>
                 </WrapPanel>
             </StackPanel>
         </ScrollViewer>
@@ -175,79 +242,124 @@
         <!-- Content area -->
         <ScrollViewer x:Name="ContentArea" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled">
             <StackPanel Margin="40,24,40,24">
-                
-                <Grid Margin="6,0,0,16">
-                    <StackPanel>
-                        <TextBlock Text="Charts for you" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource OnSurfaceBrush}"/>
-                        <TextBlock Text="Curated tunes from your connected sources" FontSize="12" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,2,0,0"/>
-                    </StackPanel>
-                </Grid>
-                <ListBox x:Name="ChartsList" 
-                         ItemsSource="{Binding BrowseCharts}" 
-                         ItemTemplate="{StaticResource ChartCardTemplate}" 
-                         ItemContainerStyle="{StaticResource CleanListBoxItemStyle}"
-                         Background="Transparent" BorderThickness="0" Margin="0,0,0,32">
-                    <ListBox.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <VirtualizingStackPanel Orientation="Horizontal"/>
-                        </ItemsPanelTemplate>
-                    </ListBox.ItemsPanel>
-                </ListBox>
 
-                <ListBox x:Name="QuickPicksList" 
-                         ItemsSource="{Binding QuickPicks}" 
-                         ItemTemplate="{StaticResource TrackCardTemplate}" 
-                         ItemContainerStyle="{StaticResource CleanListBoxItemStyle}"
-                         Background="Transparent" BorderThickness="0" Margin="0,0,0,32"
-                         MouseDoubleClick="QuickPicksList_DoubleClick">
-                    <ListBox.ItemsPanel>
+                <!-- Mood filter chips -->
+                <ItemsControl ItemsSource="{Binding MoodFilterChips}" Margin="0,0,0,24">
+                    <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <WrapPanel Orientation="Horizontal"/>
                         </ItemsPanelTemplate>
-                    </ListBox.ItemsPanel>
-                    <ListBox.Template>
-                        <ControlTemplate TargetType="ListBox">
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="*"/>
-                                </Grid.RowDefinitions>
-                                <Grid Grid.Row="0" Margin="6,0,6,16">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel Grid.Column="0">
-                                        <TextBlock Text="Quick Picks" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource OnSurfaceBrush}"/>
-                                        <TextBlock Text="Recently played and favourites" FontSize="12" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,2,0,0"/>
-                                    </StackPanel>
-                                    <Button Grid.Column="1" Content="Play All" Style="{StaticResource HeaderActionButtonStyle}" Click="PlayAllQuickPicks_Click" VerticalAlignment="Center"/>
-                                </Grid>
-                                <ItemsPresenter Grid.Row="1"/>
-                            </Grid>
-                        </ControlTemplate>
-                    </ListBox.Template>
-                </ListBox>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <RadioButton Content="{Binding Name}"
+                                         Style="{StaticResource MoodChipStyle}"
+                                         IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                         GroupName="MoodFilter"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
 
-                <Grid Margin="6,0,6,16">
-                    <StackPanel>
-                        <TextBlock Text="Top Music Videos" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource OnSurfaceBrush}"/>
-                        <TextBlock Text="Streaming suggestions from your sources" FontSize="12" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,2,0,0"/>
-                    </StackPanel>
-                </Grid>
-                
-                <ListBox x:Name="VideosList" 
-                         ItemsSource="{Binding TopMusicVideos}" 
-                         ItemTemplate="{StaticResource TrackCardTemplate}"
-                         ItemContainerStyle="{StaticResource CleanListBoxItemStyle}"
-                         Background="Transparent" BorderThickness="0">
-                    <ListBox.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <VirtualizingStackPanel Orientation="Horizontal"/>
-                        </ItemsPanelTemplate>
-                    </ListBox.ItemsPanel>
-                </ListBox>
-                
+                <!-- Hero card (most recently played) -->
+                <ContentControl Content="{Binding HeroTrack}"
+                                ContentTemplate="{StaticResource HeroCardTemplate}"
+                                Margin="0,0,0,28"
+                                Visibility="{Binding HasHeroTrack, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                <!-- Recently Played -->
+                <StackPanel Margin="0,0,0,32">
+                    <Grid Margin="6,0,6,16">
+                        <TextBlock Text="Recently Played" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource OnSurfaceBrush}"/>
+                    </Grid>
+                    <ListBox ItemsSource="{Binding RecentlyPlayed}"
+                             ItemTemplate="{StaticResource CircleCardTemplate}"
+                             ItemContainerStyle="{StaticResource CleanListBoxItemStyle}"
+                             Background="Transparent" BorderThickness="0">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <VirtualizingStackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                    </ListBox>
+                </StackPanel>
+
+                <!-- Charts for you -->
+                <StackPanel Margin="0,0,0,32">
+                    <Grid Margin="6,0,6,16">
+                        <StackPanel>
+                            <TextBlock Text="Charts for you" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource OnSurfaceBrush}"/>
+                            <TextBlock Text="Curated tunes from your connected sources" FontSize="12" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </Grid>
+                    <ListBox ItemsSource="{Binding BrowseCharts}"
+                             ItemTemplate="{StaticResource ChartCardTemplate}"
+                             ItemContainerStyle="{StaticResource CleanListBoxItemStyle}"
+                             Background="Transparent" BorderThickness="0">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <VirtualizingStackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                    </ListBox>
+                </StackPanel>
+
+                <!-- Quick Picks (filtered by mood) -->
+                <StackPanel Margin="0,0,0,32">
+                    <ListBox x:Name="QuickPicksList" ItemsSource="{Binding FilteredQuickPicks}"
+                             ItemTemplate="{StaticResource TrackCardTemplate}"
+                             ItemContainerStyle="{StaticResource CleanListBoxItemStyle}"
+                             Background="Transparent" BorderThickness="0"
+                             MouseDoubleClick="QuickPicksList_DoubleClick">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                        <ListBox.Template>
+                            <ControlTemplate TargetType="ListBox">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid Grid.Row="0" Margin="6,0,6,16">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="Quick Picks" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource OnSurfaceBrush}"/>
+                                            <TextBlock Text="Suggested for you" FontSize="12" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,2,0,0"/>
+                                        </StackPanel>
+                                        <Button Grid.Column="1" Content="Play All" Style="{StaticResource HeaderActionButtonStyle}" Click="PlayAllQuickPicks_Click" VerticalAlignment="Center"/>
+                                    </Grid>
+                                    <ItemsPresenter Grid.Row="1"/>
+                                </Grid>
+                            </ControlTemplate>
+                        </ListBox.Template>
+                    </ListBox>
+                </StackPanel>
+
+                <!-- Top Music Videos -->
+                <StackPanel Margin="0,0,0,24">
+                    <Grid Margin="6,0,6,16">
+                        <StackPanel>
+                            <TextBlock Text="Top Music Videos" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource OnSurfaceBrush}"/>
+                            <TextBlock Text="Streaming suggestions from your sources" FontSize="12" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </Grid>
+                    <ListBox ItemsSource="{Binding TopMusicVideos}"
+                             ItemTemplate="{StaticResource TrackCardTemplate}"
+                             ItemContainerStyle="{StaticResource CleanListBoxItemStyle}"
+                             Background="Transparent" BorderThickness="0">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <VirtualizingStackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                    </ListBox>
+                </StackPanel>
+
             </StackPanel>
         </ScrollViewer>
     </Grid>
