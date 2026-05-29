@@ -94,6 +94,13 @@ namespace Musicefy.ViewModels
             set { SetProperty(ref _isFavoriteTrack, value); }
         }
 
+        private string _audioFormatText;
+        public string AudioFormatText
+        {
+            get => _audioFormatText;
+            private set => SetProperty(ref _audioFormatText, value);
+        }
+
         private Color _dominantColor = Colors.Transparent;
         public Color DominantColor
         {
@@ -157,6 +164,7 @@ namespace Musicefy.ViewModels
         public ICommand ToggleLyricsCommand { get; }
         public ICommand ToggleQueueCommand { get; }
         public ICommand CollapseCommand { get; }
+        public ICommand SleepTimerCommand { get; }
         public ICommand QueueItemClickCommand { get; }
         public ICommand GoToArtistCommand { get; }
         public ICommand GoToAlbumCommand { get; }
@@ -208,6 +216,7 @@ namespace Musicefy.ViewModels
             ToggleLyricsCommand = new RelayCommand(_ => ToggleRightPanel(RightViewMode.Lyrics));
             ToggleQueueCommand = new RelayCommand(_ => ToggleRightPanel(RightViewMode.Queue));
             CollapseCommand = new RelayCommand(_ => RequestCollapse?.Invoke());
+            SleepTimerCommand = new RelayCommand(_ => System.Windows.MessageBox.Show("Sleep timer coming soon", "Coming Soon"));
             QueueItemClickCommand = new RelayCommand(p =>
             {
                 if (p is MusicFile track)
@@ -247,7 +256,35 @@ namespace Musicefy.ViewModels
                 NowPlaying = track;
                 IsFavoriteTrack = track?.IsFavourite ?? false;
                 ExtractColorsFromTrack(track);
+                UpdateAudioFormatText(track);
             });
+        }
+
+        private void UpdateAudioFormatText(MusicFile track)
+        {
+            try
+            {
+                if (track == null)
+                {
+                    AudioFormatText = null;
+                    return;
+                }
+
+                string format = string.IsNullOrEmpty(track.SourceType) ? "Audio" : track.SourceType.ToUpperInvariant();
+                if (track.Bitrate > 0)
+                {
+                    double mb = Math.Round(track.FileSize / 1048576.0, 0);
+                    AudioFormatText = $"{format} \u2022 {track.Bitrate} kbps \u2022 48.0 kHz \u2022 {mb} MB";
+                }
+                else
+                {
+                    AudioFormatText = format;
+                }
+            }
+            catch
+            {
+                AudioFormatText = null;
+            }
         }
 
         private void ExtractColorsFromTrack(MusicFile track)
