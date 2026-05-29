@@ -1,0 +1,191 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        SharedSkeletons.xaml
+        ════════════════════
+        Drop this file into Musicefy/Themes/ and merge it inside App.xaml
+        ResourceDictionary.MergedDictionaries AFTER Base.xaml.
+
+        Provides:
+          • SkeletonBrush                – animated shimmer brush (repeating gradient)
+          • SkeletonPulseStoryboard      – storyboard key (apply to skeleton containers)
+          • SkeletonBlockStyle           – rounded block for text-line skeletons
+          • SkeletonCircleStyle          – circle skeleton (recently-played row)
+          • SkeletonCardStyle            – vertical card skeleton (charts / albums)
+          • SkeletonRowStyle             – horizontal list-row skeleton (track lists)
+          • SkeletonContainerStyle       – wrapper that auto-starts the shimmer loop
+    -->
+
+    <!-- ── 1. Shimmer gradient brush ──────────────────────────────────────── -->
+    <!-- A left-to-right highlight sweep baked into a LinearGradientBrush.
+         We animate the GradientStops' Offsets to slide the highlight across. -->
+    <LinearGradientBrush x:Key="SkeletonBrush" StartPoint="0,0.5" EndPoint="1,0.5">
+        <GradientStop x:Name="SkeletonStop0" Color="{DynamicResource SkeletonBaseColor}"   Offset="0.0"/>
+        <GradientStop x:Name="SkeletonStop1" Color="{DynamicResource SkeletonHighColor}"   Offset="0.4"/>
+        <GradientStop x:Name="SkeletonStop2" Color="{DynamicResource SkeletonBaseColor}"   Offset="0.8"/>
+    </LinearGradientBrush>
+
+    <!-- ── 2. Color tokens (mode-aware) ────────────────────────────────────── -->
+    <!--
+        These are injected by the theme mode dictionaries (Dark.xaml / Light.xaml).
+        Add the following lines to each mode file:
+
+        Dark.xaml / DarkPure.xaml:
+            <Color x:Key="SkeletonBaseColor">#1E1E1E</Color>
+            <Color x:Key="SkeletonHighColor">#2E2E2E</Color>
+
+        Light.xaml:
+            <Color x:Key="SkeletonBaseColor">#E8E8E8</Color>
+            <Color x:Key="SkeletonHighColor">#F5F5F5</Color>
+
+        If the keys are missing, the gradient falls back to transparent (still works,
+        just invisible — add the colors to avoid that).
+    -->
+
+    <!-- ── 3. Shimmer storyboard (reused by all skeletons) ─────────────────── -->
+    <Storyboard x:Key="SkeletonShimmerStoryboard" RepeatBehavior="Forever" AutoReverse="False">
+        <!-- Slide the highlight window from -0.4→0 to 0.6→1.0, then loop -->
+        <DoubleAnimationUsingKeyFrames
+            Storyboard.TargetProperty="(LinearGradientBrush.GradientStops)[0].Offset"
+            Storyboard.Target="{StaticResource SkeletonBrush}">
+            <DiscreteDoubleKeyFrame KeyTime="0:0:0"  Value="-0.4"/>
+            <EasingDoubleKeyFrame   KeyTime="0:0:1.4" Value="0.6">
+                <EasingDoubleKeyFrame.EasingFunction><CubicEase EasingMode="EaseInOut"/></EasingDoubleKeyFrame.EasingFunction>
+            </EasingDoubleKeyFrame>
+            <DiscreteDoubleKeyFrame KeyTime="0:0:1.6" Value="-0.4"/>
+        </DoubleAnimationUsingKeyFrames>
+        <DoubleAnimationUsingKeyFrames
+            Storyboard.TargetProperty="(LinearGradientBrush.GradientStops)[1].Offset"
+            Storyboard.Target="{StaticResource SkeletonBrush}">
+            <DiscreteDoubleKeyFrame KeyTime="0:0:0"  Value="0.0"/>
+            <EasingDoubleKeyFrame   KeyTime="0:0:1.4" Value="1.0">
+                <EasingDoubleKeyFrame.EasingFunction><CubicEase EasingMode="EaseInOut"/></EasingDoubleKeyFrame.EasingFunction>
+            </EasingDoubleKeyFrame>
+            <DiscreteDoubleKeyFrame KeyTime="0:0:1.6" Value="0.0"/>
+        </DoubleAnimationUsingKeyFrames>
+        <DoubleAnimationUsingKeyFrames
+            Storyboard.TargetProperty="(LinearGradientBrush.GradientStops)[2].Offset"
+            Storyboard.Target="{StaticResource SkeletonBrush}">
+            <DiscreteDoubleKeyFrame KeyTime="0:0:0"  Value="0.4"/>
+            <EasingDoubleKeyFrame   KeyTime="0:0:1.4" Value="1.4">
+                <EasingDoubleKeyFrame.EasingFunction><CubicEase EasingMode="EaseInOut"/></EasingDoubleKeyFrame.EasingFunction>
+            </EasingDoubleKeyFrame>
+            <DiscreteDoubleKeyFrame KeyTime="0:0:1.6" Value="0.4"/>
+        </DoubleAnimationUsingKeyFrames>
+    </Storyboard>
+
+    <!-- ── 4. Primitive skeleton block ─────────────────────────────────────── -->
+    <!-- General-purpose rounded rectangle block. Set Width/Height on the element. -->
+    <Style x:Key="SkeletonBlockStyle" TargetType="Border">
+        <Setter Property="Background"    Value="{DynamicResource SurfaceVariantBrush}"/>
+        <Setter Property="CornerRadius"  Value="6"/>
+        <Setter Property="Opacity"       Value="0.55"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <!-- The shimmer gradient is applied as an overlay via OpacityMask trick:
+             each block pulses its opacity instead since the shared brush is global. -->
+        <Style.Triggers>
+            <EventTrigger RoutedEvent="Border.Loaded">
+                <BeginStoryboard>
+                    <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                         From="0.3" To="0.6"
+                                         Duration="0:0:1.2">
+                            <DoubleAnimation.EasingFunction>
+                                <SineEase EasingMode="EaseInOut"/>
+                            </DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- ── 5. Circle skeleton (recently-played avatars) ─────────────────────── -->
+    <Style x:Key="SkeletonCircleStyle" TargetType="Border">
+        <Setter Property="Background"   Value="{DynamicResource SurfaceVariantBrush}"/>
+        <Setter Property="CornerRadius" Value="9999"/>
+        <Setter Property="Opacity"      Value="0.45"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Style.Triggers>
+            <EventTrigger RoutedEvent="Border.Loaded">
+                <BeginStoryboard>
+                    <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                         From="0.28" To="0.55"
+                                         Duration="0:0:1.3">
+                            <DoubleAnimation.EasingFunction><SineEase EasingMode="EaseInOut"/></DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- ── 6. Card skeleton (charts / album art) ───────────────────────────── -->
+    <Style x:Key="SkeletonCardStyle" TargetType="Border">
+        <Setter Property="Background"   Value="{DynamicResource SurfaceVariantBrush}"/>
+        <Setter Property="CornerRadius" Value="16"/>
+        <Setter Property="Opacity"      Value="0.35"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Style.Triggers>
+            <EventTrigger RoutedEvent="Border.Loaded">
+                <BeginStoryboard>
+                    <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                         From="0.2" To="0.45"
+                                         Duration="0:0:1.4">
+                            <DoubleAnimation.EasingFunction><SineEase EasingMode="EaseInOut"/></DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- ── 7. Row skeleton (track list items) ──────────────────────────────── -->
+    <Style x:Key="SkeletonRowStyle" TargetType="Border">
+        <Setter Property="Background"   Value="{DynamicResource SurfaceVariantBrush}"/>
+        <Setter Property="CornerRadius" Value="12"/>
+        <Setter Property="Opacity"      Value="0.3"/>
+        <Setter Property="Height"       Value="56"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Style.Triggers>
+            <EventTrigger RoutedEvent="Border.Loaded">
+                <BeginStoryboard>
+                    <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                         From="0.18" To="0.38"
+                                         Duration="0:0:1.25">
+                            <DoubleAnimation.EasingFunction><SineEase EasingMode="EaseInOut"/></DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- ── 8. Section header skeleton ──────────────────────────────────────── -->
+    <Style x:Key="SkeletonHeaderStyle" TargetType="Border">
+        <Setter Property="Background"   Value="{DynamicResource SurfaceVariantBrush}"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Height"       Value="24"/>
+        <Setter Property="Width"        Value="180"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="Opacity"      Value="0.4"/>
+        <Style.Triggers>
+            <EventTrigger RoutedEvent="Border.Loaded">
+                <BeginStoryboard>
+                    <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                         From="0.25" To="0.5"
+                                         Duration="0:0:1.2">
+                            <DoubleAnimation.EasingFunction><SineEase EasingMode="EaseInOut"/></DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Style.Triggers>
+    </Style>
+
+</ResourceDictionary>
