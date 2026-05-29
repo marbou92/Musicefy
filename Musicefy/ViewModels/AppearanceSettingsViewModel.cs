@@ -6,16 +6,17 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using Musicefy.Core.Color;
 using Musicefy.Services;
 
 namespace Musicefy.ViewModels
 {
     public class AppearanceSettingsViewModel : ViewModelBase
     {
-
         private int _selectedThemeIndex;
         private string _selectedDateFormat;
-        private bool _isSuppressingThemeApplication = false;
+        private bool _isSuppressingThemeApplication;
+        private string _activePaletteName;
 
         public AppearanceSettingsViewModel()
         {
@@ -33,7 +34,7 @@ namespace Musicefy.ViewModels
                 _ => 2
             };
 
-            ThemePreviews = new ObservableCollection<ThemePreview>();
+            FamilyGroups = new ObservableCollection<FamilyGroup>();
             DateFormats = new ObservableCollection<string> { "MM/dd/yyyy", "dd/MM/yyyy", "yyyy-MM-dd" };
             _selectedDateFormat = Musicefy.Properties.Settings.Default.DateFormat ?? DateFormats[0];
 
@@ -77,13 +78,26 @@ namespace Musicefy.ViewModels
             }
         }
 
-        public ObservableCollection<ThemePreview> ThemePreviews { get; }
+        public ObservableCollection<FamilyGroup> FamilyGroups { get; }
         public ObservableCollection<string> DateFormats { get; }
 
         public string SelectedDateFormat
         {
             get => _selectedDateFormat;
             set { _selectedDateFormat = value; OnPropertyChanged(); }
+        }
+
+        public bool DynamicColorsEnabled
+        {
+            get => Musicefy.Properties.Settings.Default.DynamicColorsEnabled;
+            set
+            {
+                if (Musicefy.Properties.Settings.Default.DynamicColorsEnabled != value)
+                {
+                    Musicefy.Properties.Settings.Default.DynamicColorsEnabled = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
         public bool PureBlackMode
@@ -100,19 +114,6 @@ namespace Musicefy.ViewModels
             }
         }
 
-        public ThemePreview SelectedPalettePreview
-        {
-            get => ThemePreviews.FirstOrDefault(p => p.IsSelected);
-            set
-            {
-                if (value != null && !value.IsSelected)
-                {
-                    SelectPalette(value.CardName);
-                    OnPropertyChanged();
-                }
-            }
-        }
-
         public ICommand CustomThemeCommand { get; }
         public ICommand ImportThemeCommand { get; }
 
@@ -124,10 +125,11 @@ namespace Musicefy.ViewModels
 
         public void Save()
         {
-            string themeString = $"{GetModeFromIndex(_selectedThemeIndex)}|{GetCurrentPalette()}";
-            ThemeManager.SaveTheme(themeString);
+            string themeString = $"{GetModeFromIndex(_selectedThemeIndex)}|{_activePaletteName}";
+            ThemeManager.SaveTheme(GetModeFromIndex(_selectedThemeIndex), _activePaletteName);
 
             Musicefy.Properties.Settings.Default.Theme = themeString;
+            Musicefy.Properties.Settings.Default.DynamicColorsEnabled = DynamicColorsEnabled;
             Musicefy.Properties.Settings.Default.DateFormat = _selectedDateFormat;
             Musicefy.Properties.Settings.Default.Save();
         }
@@ -151,7 +153,9 @@ namespace Musicefy.ViewModels
 
         private string GetCurrentPalette()
         {
-            var selected = ThemePreviews.FirstOrDefault(tp => tp.IsSelected);
+            var selected = FamilyGroups
+                .SelectMany(g => g.Previews)
+                .FirstOrDefault(p => p.IsSelected);
             return selected?.CardName ?? "Default";
         }
 
@@ -159,82 +163,124 @@ namespace Musicefy.ViewModels
         {
             string mode = GetModeFromIndex(_selectedThemeIndex);
             string palette = GetCurrentPalette();
-
+            _activePaletteName = palette;
             ThemeManager.ApplyTheme(mode, palette);
             RefreshPreviews(palette);
         }
 
         private void RefreshPreviews(string activePalette)
         {
-            ThemePreviews.Clear();
+            FamilyGroups.Clear();
 
             string mode = GetModeFromIndex(_selectedThemeIndex);
             if (mode.Equals("System", StringComparison.OrdinalIgnoreCase))
-            {
                 mode = ThemeManager.IsSystemDarkMode() ? "Dark" : "Light";
-            }
 
-            AddPreviewCard("Default", mode, activePalette);
-            AddPreviewCard("Catppuccin", mode, activePalette);
-            AddPreviewCard("GreenApple", mode, activePalette);
-            AddPreviewCard("Lavender", mode, activePalette);
+            var grouped = SeedPalettes.All
+                .GroupBy(s => s.Family)
+                .OrderBy(g => (int)g.Key);
+
+            foreach (var grp in grouped)
+            {
+                var familyGroup = new FamilyGroup
+                {
+                    FamilyName = FormatFamilyName(grp.Key),
+                    IsExpanded = true
+                };
+
+                foreach (var seed in grp)
+                {
+                    bool isSelected = seed.Name.Equals(activePalette, StringComparison.OrdinalIgnoreCase);
+                    if (isSelected) _activePaletteName = seed.Name;
+
+                    var preview = new ThemePreview
+                    {
+                        CardName = seed.Name,
+                        Family = seed.Family,
+                        IsSelected = isSelected,
+                        PrimarySeed = SeedToColor(seed.PrimaryHue, seed.PrimaryChroma),
+                        SecondarySeed = SeedToColor(
+                            seed.PrimaryHue + seed.SecondaryHueOffset,
+                            seed.PrimaryChroma * seed.SecondaryChromaRatio),
+                        TertiarySeed = SeedToColor(
+                            seed.PrimaryHue + seed.TertiaryHueOffset,
+                            seed.PrimaryChroma * seed.TertiaryChromaRatio),
+                        NeutralSeed = SeedToColor(seed.PrimaryHue, seed.NeutralChroma),
+                    };
+
+                    familyGroup.Previews.Add(preview);
+                }
+
+                FamilyGroups.Add(familyGroup);
+            }
         }
 
-        private void AddPreviewCard(string paletteName, string mode, string activePalette)
+        private static Color SeedToColor(double hue, double chroma)
         {
-            Brush bg;
-            Color darkColor;
-            if (mode.Equals("Light", StringComparison.OrdinalIgnoreCase))
-            {
-                bg = Brushes.White;
-                darkColor = Color.FromRgb(224, 224, 224);
-            }
-            else if (mode.Equals("DarkPure", StringComparison.OrdinalIgnoreCase))
-            {
-                bg = Brushes.Black;
-                darkColor = Color.FromRgb(0, 0, 0);
-            }
-            else
-            {
-                var comfortGray = new SolidColorBrush(Color.FromRgb(36, 36, 36));
-                comfortGray.Freeze();
-                bg = comfortGray;
-                darkColor = Color.FromRgb(26, 26, 26);
-            }
-
-            var preview = new ThemePreview
-            {
-                CardName = paletteName,
-                AccentBrush = GetAccentBrush(paletteName),
-                BackgroundBrush = bg,
-                IsSelected = paletteName.Equals(activePalette, StringComparison.OrdinalIgnoreCase),
-                DarkColor = darkColor
-            };
-
-            ThemePreviews.Add(preview);
+            int argb = Hct.From(hue, Math.Max(chroma, 0.5), 60).ToInt();
+            return Color.FromArgb(255,
+                (byte)((argb >> 16) & 0xFF),
+                (byte)((argb >> 8) & 0xFF),
+                (byte)(argb & 0xFF));
         }
 
-        private static Brush GetAccentBrush(string paletteName)
+        private static string FormatFamilyName(ColorFamily family)
         {
-            return paletteName switch
+            return family switch
             {
-                "Default" => new SolidColorBrush(Color.FromRgb(30, 136, 229)),
-                "Catppuccin" => new SolidColorBrush(Color.FromRgb(245, 194, 231)),
-                "GreenApple" => new SolidColorBrush(Color.FromRgb(29, 185, 84)),
-                "Lavender" => new SolidColorBrush(Color.FromRgb(181, 126, 220)),
-                _ => new SolidColorBrush(Colors.Gray),
+                ColorFamily.Reds => "Reds",
+                ColorFamily.Oranges => "Oranges",
+                ColorFamily.Yellows => "Yellows",
+                ColorFamily.Greens => "Greens",
+                ColorFamily.Teals => "Teals",
+                ColorFamily.Blues => "Blues",
+                ColorFamily.Indigos => "Indigos",
+                ColorFamily.Purples => "Purples",
+                ColorFamily.Pinks => "Pinks",
+                ColorFamily.Earth => "Earth & Neutral Warm",
+                ColorFamily.Seasonal => "Seasonal",
+                ColorFamily.Vibrant => "Vibrant",
+                ColorFamily.Neutral => "Neutral Cool",
+                _ => family.ToString()
             };
         }
+    }
 
+    public class FamilyGroup : INotifyPropertyChanged
+    {
+        private bool _isExpanded = true;
+
+        public string FamilyName { get; set; }
+        public ObservableCollection<ThemePreview> Previews { get; } = new ObservableCollection<ThemePreview>();
+
+        public bool IsExpanded
+        {
+            get => _isExpanded;
+            set
+            {
+                if (_isExpanded != value)
+                {
+                    _isExpanded = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string name = null)
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 
     public class ThemePreview : INotifyPropertyChanged
     {
         private bool _isSelected;
+
         public string CardName { get; set; }
-        public Brush AccentBrush { get; set; }
-        public Brush BackgroundBrush { get; set; }
-        public Color DarkColor { get; set; }
+        public ColorFamily Family { get; set; }
+        public Color PrimarySeed { get; set; }
+        public Color SecondarySeed { get; set; }
+        public Color TertiarySeed { get; set; }
+        public Color NeutralSeed { get; set; }
 
         public bool IsSelected
         {
@@ -245,12 +291,12 @@ namespace Musicefy.ViewModels
                 {
                     _isSelected = value;
                     OnPropertyChanged();
-                    OnPropertyChanged(nameof(HighlightBrush));
+                    OnPropertyChanged(nameof(BorderBrush));
                 }
             }
         }
 
-        public Brush HighlightBrush => IsSelected
+        public Brush BorderBrush => IsSelected
             ? (Brush)Application.Current.FindResource("AccentBrush")
             : Brushes.Transparent;
 
