@@ -159,7 +159,9 @@ namespace Musicefy.Core.Services
 
             try
             {
-                using var response = await _httpClient.GetAsync(url, cancellationToken);
+                using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                timeoutCts.CancelAfter(TimeSpan.FromSeconds(8));
+                using var response = await _httpClient.GetAsync(url, timeoutCts.Token);
                 response.EnsureSuccessStatusCode();
                 return await response.Content.ReadAsByteArrayAsync();
             }
@@ -323,7 +325,9 @@ namespace Musicefy.Core.Services
 
             try
             {
-                using var response = await _httpClient.GetAsync(url, cancellationToken);
+                using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                timeoutCts.CancelAfter(TimeSpan.FromSeconds(10));
+                using var response = await _httpClient.GetAsync(url, timeoutCts.Token);
                 response.EnsureSuccessStatusCode();
 
                 var content = await response.Content.ReadAsStringAsync();
