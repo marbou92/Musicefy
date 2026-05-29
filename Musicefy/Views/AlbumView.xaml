@@ -56,7 +56,16 @@
                         HorizontalAlignment="Right"
                         Background="{DynamicResource PrimaryBrush}" Foreground="White"
                         BorderThickness="0" Padding="20,10" Cursor="Hand"
-                        FontSize="14" FontWeight="SemiBold" CornerRadius="20"/>
+                        FontSize="14" FontWeight="SemiBold">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}"
+                                    CornerRadius="20" Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
             </Grid>
 
             <ListView Grid.Row="2" x:Name="TracksList"
