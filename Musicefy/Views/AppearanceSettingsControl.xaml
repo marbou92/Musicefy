@@ -207,6 +207,17 @@
                     </Grid>
                 </Border>
 
+                <!-- Color Palette section header -->
+                <Border Background="Transparent" Padding="4,8,4,8" Margin="0,0,0,4"
+                        Visibility="{Binding IsCustomThemeEditorHidden, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Data="M18 3H6C4.9 3 4 3.9 4 5V19C4 20.1 4.9 21 6 21H18C19.1 21 20 20.1 20 19V5C20 3.9 19.1 3 18 3ZM18 19H6V5H18V19ZM16 7H8V9H16V7ZM10 12H8V14H10V12ZM16 12H12V14H16V12Z"
+                              Fill="{DynamicResource OnSurfaceVariantBrush}" Width="18" Height="18" Stretch="Uniform" Margin="0,0,8,0"/>
+                        <TextBlock Text="Color Palette" FontWeight="Bold" FontSize="15"
+                                   Foreground="{DynamicResource OnSurfaceBrush}"/>
+                    </StackPanel>
+                </Border>
+
                 <!-- Family group palette scroller -->
                 <ItemsControl ItemsSource="{Binding FamilyGroups}" Margin="0,0,0,12"
                               Visibility="{Binding IsCustomThemeEditorHidden, Converter={StaticResource BooleanToVisibilityConverter}}">
@@ -230,13 +241,18 @@
                                                         <Grid.Clip>
                                                             <RectangleGeometry Rect="0,0,76,76" RadiusX="38" RadiusY="38"/>
                                                         </Grid.Clip>
-                                                        <Ellipse Fill="{Binding PrimarySeed}" Width="76" Height="76"/>
-                                                        <Ellipse Fill="{Binding SecondarySeed}" Width="26" Height="26"
-                                                                 HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,5,5,0"/>
-                                                        <Ellipse Fill="{Binding TertiarySeed}" Width="26" Height="26"
-                                                                 HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,5,0,0"/>
-                                                        <Ellipse Stroke="{Binding NeutralSeed}" StrokeThickness="3" Fill="Transparent"
+                                                        <!-- Primary: full circle (ArchiveTune style) -->
+                                                        <Ellipse Fill="{Binding PrimaryBrush}" Width="76" Height="76"/>
+                                                        <!-- Secondary: bottom-right offset circle (like ArchiveTune) -->
+                                                        <Ellipse Fill="{Binding SecondaryBrush}" Width="22" Height="22"
+                                                                 HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,4,4"/>
+                                                        <!-- Tertiary: bottom-left offset circle (like ArchiveTune) -->
+                                                        <Ellipse Fill="{Binding TertiaryBrush}" Width="22" Height="22"
+                                                                 HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="4,0,0,4"/>
+                                                        <!-- Neutral: ring stroke -->
+                                                        <Ellipse Stroke="{Binding NeutralBrush}" StrokeThickness="2.5" Fill="Transparent"
                                                                  Width="76" Height="76"/>
+                                                        <!-- Selection overlay with check -->
                                                         <Border Background="#CC000000"
                                                                 Visibility="{Binding IsSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
                                                             <Path Data="M9,16.17L4.83,12L3.41,13.41L9,19L21,7L19.59,5.59L9,16.17Z"
@@ -270,17 +286,17 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" Orientation="Horizontal">
                                 <Border Width="40" Height="40" CornerRadius="20" Margin="0,0,8,0"
-                                        Background="{Binding CustomPrimaryColor}">
+                                        Background="{Binding CustomPrimaryBrush}">
                                     <Border.Clip>
                                         <RectangleGeometry Rect="0,0,40,40" RadiusX="20" RadiusY="20"/>
                                     </Border.Clip>
                                     <Grid>
-                                        <Ellipse Fill="{Binding CustomPrimaryColor}" Width="40" Height="40"/>
-                                        <Ellipse Fill="{Binding CustomSecondaryColor}" Width="14" Height="14"
+                                        <Ellipse Fill="{Binding CustomPrimaryBrush}" Width="40" Height="40"/>
+                                        <Ellipse Fill="{Binding CustomSecondaryBrush}" Width="14" Height="14"
                                                  HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,2,2,0"/>
-                                        <Ellipse Fill="{Binding CustomTertiaryColor}" Width="14" Height="14"
+                                        <Ellipse Fill="{Binding CustomTertiaryBrush}" Width="14" Height="14"
                                                  HorizontalAlignment="Left" VerticalAlignment="Top" Margin="2,2,0,0"/>
-                                        <Ellipse Stroke="{Binding CustomNeutralColor}" StrokeThickness="2" Fill="Transparent"
+                                        <Ellipse Stroke="{Binding CustomNeutralBrush}" StrokeThickness="2" Fill="Transparent"
                                                  Width="40" Height="40"/>
                                     </Grid>
                                 </Border>
