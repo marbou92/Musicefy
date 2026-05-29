@@ -53,6 +53,25 @@ namespace Musicefy.Core.Hct
             return new DynamicScheme(seed, primary, secondary, tertiary, neutral, neutralVariant, error, isDark, isDarkPure);
         }
 
+        public static DynamicScheme FromColors(int primaryArgb, int secondaryArgb, int tertiaryArgb, int neutralArgb, bool isDark, bool isDarkPure)
+        {
+            var pHct = Hct.FromInt(primaryArgb);
+            var sHct = Hct.FromInt(secondaryArgb);
+            var tHct = Hct.FromInt(tertiaryArgb);
+            var nHct = Hct.FromInt(neutralArgb);
+
+            double chromaFactor = isDarkPure ? 0.6 : 1.0;
+
+            var primary = TonalPalette.FromHueAndChroma(pHct.Hue, pHct.Chroma * chromaFactor);
+            var secondary = TonalPalette.FromHueAndChroma(sHct.Hue, sHct.Chroma * chromaFactor);
+            var tertiary = TonalPalette.FromHueAndChroma(tHct.Hue, tHct.Chroma * chromaFactor);
+            var neutral = TonalPalette.FromHueAndChroma(nHct.Hue, nHct.Chroma * chromaFactor);
+            var neutralVariant = TonalPalette.FromHueAndChroma(nHct.Hue, nHct.Chroma * 2.0 * chromaFactor);
+            var error = TonalPalette.FromHueAndChroma(25.0, 84.0);
+
+            return new DynamicScheme(null, primary, secondary, tertiary, neutral, neutralVariant, error, isDark, isDarkPure);
+        }
+
         public double GetTone(ToneRole role)
         {
             bool dark = IsDark;
