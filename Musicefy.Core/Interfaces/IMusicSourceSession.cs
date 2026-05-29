@@ -11,5 +11,8 @@ namespace Musicefy.Core.Interfaces
         Task<string> GetStreamUrlAsync(string trackId);
         Task<byte[]> GetCoverArtAsync(string coverId);
         Task<IReadOnlyList<MusicFile>> GetRandomSongsAsync(int count = 50);
+        Task<IReadOnlyList<MusicFile>> GetAlbumListAsync(int count = 50);
+        Task<IReadOnlyList<MusicFile>> GetAlbumAsync(string albumId);
+        Task<IReadOnlyList<MusicFile>> GetArtistAsync(string artistId);
     }
 }
