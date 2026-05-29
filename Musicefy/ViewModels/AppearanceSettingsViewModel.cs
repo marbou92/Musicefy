@@ -40,10 +40,15 @@ namespace Musicefy.ViewModels
 
             RefreshPreviews(palette);
 
+            OpenPaletteSubspaceCommand = new RelayCommand(_ => IsPaletteSubspaceOpen = true);
+            ClosePaletteSubspaceCommand = new RelayCommand(_ => { IsPaletteSubspaceOpen = false; IsCustomThemeEditorOpen = false; });
+            SelectSeedRoleCommand = new RelayCommand(o => SelectSeedRole(Convert.ToInt32(o)));
             CustomThemeCommand = new RelayCommand(_ => ExecuteCustomTheme());
             ImportThemeCommand = new RelayCommand(_ => ExecuteImportTheme());
             ApplyCustomThemeCommand = new RelayCommand(_ => ExecuteApplyCustomTheme());
             CloseCustomThemeCommand = new RelayCommand(_ => ExecuteCloseCustomTheme());
+
+            InitCustomColorsFromDefault();
 
             _isSuppressingThemeApplication = false;
         }
@@ -51,26 +56,26 @@ namespace Musicefy.ViewModels
         private void ExecuteCustomTheme()
         {
             IsCustomThemeEditorOpen = true;
-            RefreshCustomPreviewColors();
+            SelectedSeedRole = 0;
+            SyncRgbFromSeed(0);
         }
 
         private void ExecuteApplyCustomTheme()
         {
-            var seed = new SeedPalette(
-                "_Custom",
-                ColorFamily.Vibrant,
-                _customHue, _customChroma,
-                _customSecondaryOffset, 1.1,
-                _customTertiaryOffset, 0.8,
-                _customNeutralChroma);
+            int pArgb = ColorToArgb(CustomPrimaryColor);
+            int sArgb = ColorToArgb(CustomSecondaryColor);
+            int tArgb = ColorToArgb(CustomTertiaryColor);
+            int nArgb = ColorToArgb(CustomNeutralColor);
 
-            ThemeManager.ApplyCustom(GetModeFromIndex(_selectedThemeIndex), seed);
+            ThemeManager.ApplyCustomFromColors(GetModeFromIndex(_selectedThemeIndex), pArgb, sArgb, tArgb, nArgb);
             IsCustomThemeEditorOpen = false;
         }
 
         private void ExecuteCloseCustomTheme()
         {
             IsCustomThemeEditorOpen = false;
+            SelectedSeedRole = 0;
+            SyncRgbFromSeed(0);
         }
 
         private void ExecuteImportTheme()
@@ -136,19 +141,42 @@ namespace Musicefy.ViewModels
             }
         }
 
+        public ICommand OpenPaletteSubspaceCommand { get; }
+        public ICommand ClosePaletteSubspaceCommand { get; }
+        public ICommand SelectSeedRoleCommand { get; }
         public ICommand CustomThemeCommand { get; }
         public ICommand ImportThemeCommand { get; }
         public ICommand ApplyCustomThemeCommand { get; }
         public ICommand CloseCustomThemeCommand { get; }
 
-        #region Custom Theme Editor
+        #region Palette Subspace
+
+        private bool _isPaletteSubspaceOpen;
+
+        public bool IsPaletteSubspaceOpen
+        {
+            get => _isPaletteSubspaceOpen;
+            set
+            {
+                _isPaletteSubspaceOpen = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsMainSettingsVisible));
+                OnPropertyChanged(nameof(IsPaletteSubspaceVisible));
+            }
+        }
+
+        public bool IsMainSettingsVisible => !_isPaletteSubspaceOpen;
+        public bool IsPaletteSubspaceVisible => _isPaletteSubspaceOpen;
+
+        #endregion
+
+        #region Custom Theme Editor (RGB)
 
         private bool _isCustomThemeEditorOpen;
-        private double _customHue = 264;
-        private double _customChroma = 44;
-        private double _customSecondaryOffset = 30;
-        private double _customTertiaryOffset = 60;
-        private double _customNeutralChroma = 4;
+        private int _selectedSeedRole;
+        private int _customR;
+        private int _customG;
+        private int _customB;
 
         public bool IsCustomThemeEditorOpen
         {
@@ -163,60 +191,90 @@ namespace Musicefy.ViewModels
 
         public bool IsCustomThemeEditorHidden => !_isCustomThemeEditorOpen;
 
-        public double CustomHue
+        public int SelectedSeedRole
         {
-            get => _customHue;
+            get => _selectedSeedRole;
             set
             {
-                _customHue = Math.Max(0, Math.Min(360, value));
-                OnPropertyChanged();
-                RefreshCustomPreviewColors();
+                if (_selectedSeedRole != value)
+                {
+                    _selectedSeedRole = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(IsPrimarySelected));
+                    OnPropertyChanged(nameof(IsSecondarySelected));
+                    OnPropertyChanged(nameof(IsTertiarySelected));
+                    OnPropertyChanged(nameof(IsNeutralSelected));
+                    OnPropertyChanged(nameof(SeedRoleLabel));
+                    SyncRgbFromSeed(value);
+                }
             }
         }
 
-        public double CustomChroma
+        public bool IsPrimarySelected => _selectedSeedRole == 0;
+        public bool IsSecondarySelected => _selectedSeedRole == 1;
+        public bool IsTertiarySelected => _selectedSeedRole == 2;
+        public bool IsNeutralSelected => _selectedSeedRole == 3;
+
+        public string SeedRoleLabel => _selectedSeedRole switch
         {
-            get => _customChroma;
+            0 => "Primary",
+            1 => "Secondary",
+            2 => "Tertiary",
+            3 => "Neutral",
+            _ => "Primary"
+        };
+
+        public int CustomR
+        {
+            get => _customR;
             set
             {
-                _customChroma = Math.Max(0, Math.Min(200, value));
-                OnPropertyChanged();
-                RefreshCustomPreviewColors();
+                value = Math.Max(0, Math.Min(255, value));
+                if (_customR != value)
+                {
+                    _customR = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(CustomRDisplay));
+                    UpdateSeedFromRgb();
+                }
             }
         }
 
-        public double CustomSecondaryOffset
+        public int CustomG
         {
-            get => _customSecondaryOffset;
+            get => _customG;
             set
             {
-                _customSecondaryOffset = Math.Max(-180, Math.Min(180, value));
-                OnPropertyChanged();
-                RefreshCustomPreviewColors();
+                value = Math.Max(0, Math.Min(255, value));
+                if (_customG != value)
+                {
+                    _customG = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(CustomGDisplay));
+                    UpdateSeedFromRgb();
+                }
             }
         }
 
-        public double CustomTertiaryOffset
+        public int CustomB
         {
-            get => _customTertiaryOffset;
+            get => _customB;
             set
             {
-                _customTertiaryOffset = Math.Max(-180, Math.Min(180, value));
-                OnPropertyChanged();
-                RefreshCustomPreviewColors();
+                value = Math.Max(0, Math.Min(255, value));
+                if (_customB != value)
+                {
+                    _customB = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(CustomBDisplay));
+                    UpdateSeedFromRgb();
+                }
             }
         }
 
-        public double CustomNeutralChroma
-        {
-            get => _customNeutralChroma;
-            set
-            {
-                _customNeutralChroma = Math.Max(0, Math.Min(20, value));
-                OnPropertyChanged();
-                RefreshCustomPreviewColors();
-            }
-        }
+        public string CustomRDisplay => _customR.ToString();
+        public string CustomGDisplay => _customG.ToString();
+        public string CustomBDisplay => _customB.ToString();
 
         public Color CustomPrimaryColor { get; private set; }
         public Color CustomSecondaryColor { get; private set; }
@@ -228,12 +286,22 @@ namespace Musicefy.ViewModels
         public Brush CustomTertiaryBrush => new SolidColorBrush(CustomTertiaryColor);
         public Brush CustomNeutralBrush => new SolidColorBrush(CustomNeutralColor);
 
-        private void RefreshCustomPreviewColors()
+        public Brush ActiveSeedBrush => _selectedSeedRole switch
         {
-            CustomPrimaryColor = SeedToColor(_customHue, _customChroma);
-            CustomSecondaryColor = SeedToColor(_customHue + _customSecondaryOffset, _customChroma * 1.1);
-            CustomTertiaryColor = SeedToColor(_customHue + _customTertiaryOffset, _customChroma * 0.8);
-            CustomNeutralColor = SeedToColor(_customHue, _customNeutralChroma);
+            0 => CustomPrimaryBrush,
+            1 => CustomSecondaryBrush,
+            2 => CustomTertiaryBrush,
+            3 => CustomNeutralBrush,
+            _ => CustomPrimaryBrush
+        };
+
+        private void InitCustomColorsFromDefault()
+        {
+            var firstSeed = SeedPalettes.All[0];
+            CustomPrimaryColor = SeedToColor(firstSeed.PrimaryHue, firstSeed.PrimaryChroma);
+            CustomSecondaryColor = SeedToColor(firstSeed.PrimaryHue + firstSeed.SecondaryHueOffset, firstSeed.PrimaryChroma * firstSeed.SecondaryChromaRatio);
+            CustomTertiaryColor = SeedToColor(firstSeed.PrimaryHue + firstSeed.TertiaryHueOffset, firstSeed.PrimaryChroma * firstSeed.TertiaryChromaRatio);
+            CustomNeutralColor = SeedToColor(firstSeed.PrimaryHue, firstSeed.NeutralChroma);
             OnPropertyChanged(nameof(CustomPrimaryColor));
             OnPropertyChanged(nameof(CustomSecondaryColor));
             OnPropertyChanged(nameof(CustomTertiaryColor));
@@ -242,6 +310,64 @@ namespace Musicefy.ViewModels
             OnPropertyChanged(nameof(CustomSecondaryBrush));
             OnPropertyChanged(nameof(CustomTertiaryBrush));
             OnPropertyChanged(nameof(CustomNeutralBrush));
+        }
+
+        private void SyncRgbFromSeed(int roleIndex)
+        {
+            Color c = roleIndex switch
+            {
+                0 => CustomPrimaryColor,
+                1 => CustomSecondaryColor,
+                2 => CustomTertiaryColor,
+                3 => CustomNeutralColor,
+                _ => CustomPrimaryColor
+            };
+
+            _customR = c.R;
+            _customG = c.G;
+            _customB = c.B;
+            OnPropertyChanged(nameof(CustomR));
+            OnPropertyChanged(nameof(CustomG));
+            OnPropertyChanged(nameof(CustomB));
+            OnPropertyChanged(nameof(CustomRDisplay));
+            OnPropertyChanged(nameof(CustomGDisplay));
+            OnPropertyChanged(nameof(CustomBDisplay));
+        }
+
+        private void UpdateSeedFromRgb()
+        {
+            Color newColor = Color.FromArgb(255, (byte)_customR, (byte)_customG, (byte)_customB);
+
+            switch (_selectedSeedRole)
+            {
+                case 0:
+                    CustomPrimaryColor = newColor;
+                    OnPropertyChanged(nameof(CustomPrimaryColor));
+                    OnPropertyChanged(nameof(CustomPrimaryBrush));
+                    break;
+                case 1:
+                    CustomSecondaryColor = newColor;
+                    OnPropertyChanged(nameof(CustomSecondaryColor));
+                    OnPropertyChanged(nameof(CustomSecondaryBrush));
+                    break;
+                case 2:
+                    CustomTertiaryColor = newColor;
+                    OnPropertyChanged(nameof(CustomTertiaryColor));
+                    OnPropertyChanged(nameof(CustomTertiaryBrush));
+                    break;
+                case 3:
+                    CustomNeutralColor = newColor;
+                    OnPropertyChanged(nameof(CustomNeutralColor));
+                    OnPropertyChanged(nameof(CustomNeutralBrush));
+                    break;
+            }
+
+            OnPropertyChanged(nameof(ActiveSeedBrush));
+        }
+
+        private void SelectSeedRole(int roleIndex)
+        {
+            SelectedSeedRole = roleIndex;
         }
 
         #endregion
@@ -351,6 +477,11 @@ namespace Musicefy.ViewModels
                 (byte)((argb >> 16) & 0xFF),
                 (byte)((argb >> 8) & 0xFF),
                 (byte)(argb & 0xFF));
+        }
+
+        private static int ColorToArgb(Color c)
+        {
+            return (255 << 24) | (c.R << 16) | (c.G << 8) | c.B;
         }
 
         private static string FormatFamilyName(ColorFamily family)
