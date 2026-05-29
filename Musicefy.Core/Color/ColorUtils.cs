@@ -1,6 +1,6 @@
 using System;
 
-namespace Musicefy.Core.Color
+namespace Musicefy.Core.Hct
 {
     internal static class ColorUtils
     {
