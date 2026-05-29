@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media;
 using Musicefy.Services;
 
@@ -14,11 +15,10 @@ namespace Musicefy.ViewModels
 
         private int _selectedThemeIndex;
         private string _selectedDateFormat;
-        private bool _isSuppressingThemeApplication = false; 
+        private bool _isSuppressingThemeApplication = false;
 
         public AppearanceSettingsViewModel()
         {
-            // 1. Enter initialization suppression mode to prevent event loop race conditions
             _isSuppressingThemeApplication = true;
 
             string savedTheme = Musicefy.Properties.Settings.Default.Theme ?? "Dark|Default";
@@ -26,7 +26,6 @@ namespace Musicefy.ViewModels
             string mode = parts.Length > 0 ? parts[0] : "Dark";
             string palette = parts.Length > 1 ? parts[1] : "Default";
 
-            // Map index states strictly to mirror saved user configuration strings
             _selectedThemeIndex = mode switch
             {
                 "System" => 0,
@@ -38,11 +37,30 @@ namespace Musicefy.ViewModels
             DateFormats = new ObservableCollection<string> { "MM/dd/yyyy", "dd/MM/yyyy", "yyyy-MM-dd" };
             _selectedDateFormat = Musicefy.Properties.Settings.Default.DateFormat ?? DateFormats[0];
 
-            // 2. Hydrate the initial collection layout previews matching the active state safely
             RefreshPreviews(palette);
 
-            // 3. Initialization complete. Lift suppression safely before interactions trigger.
+            CustomThemeCommand = new RelayCommand(_ => ExecuteCustomTheme());
+            ImportThemeCommand = new RelayCommand(_ => ExecuteImportTheme());
+
             _isSuppressingThemeApplication = false;
+        }
+
+        private void ExecuteCustomTheme()
+        {
+            System.Windows.MessageBox.Show("Custom theme editor coming soon", "Coming Soon");
+        }
+
+        private void ExecuteImportTheme()
+        {
+            var dialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Filter = "Theme files (*.json)|*.json|All files (*.*)|*.*",
+                Title = "Import Theme"
+            };
+            if (dialog.ShowDialog() == true)
+            {
+                System.Windows.MessageBox.Show($"Theme imported from:\n{dialog.FileName}", "Theme Imported");
+            }
         }
 
         public int SelectedThemeIndex
@@ -94,7 +112,10 @@ namespace Musicefy.ViewModels
                 }
             }
         }
-        
+
+        public ICommand CustomThemeCommand { get; }
+        public ICommand ImportThemeCommand { get; }
+
         public void SelectPalette(string paletteName)
         {
             ThemeManager.ApplyTheme(GetModeFromIndex(_selectedThemeIndex), paletteName);
@@ -139,7 +160,6 @@ namespace Musicefy.ViewModels
             string mode = GetModeFromIndex(_selectedThemeIndex);
             string palette = GetCurrentPalette();
 
-            // Refactored to let your central theme orchestrator coordinate modifications safely
             ThemeManager.ApplyTheme(mode, palette);
             RefreshPreviews(palette);
         }
@@ -162,30 +182,36 @@ namespace Musicefy.ViewModels
 
         private void AddPreviewCard(string paletteName, string mode, string activePalette)
         {
-            // FIXED: Dynamically matches true background colors across all layout combinations
             Brush bg;
+            Color darkColor;
             if (mode.Equals("Light", StringComparison.OrdinalIgnoreCase))
             {
                 bg = Brushes.White;
+                darkColor = Color.FromRgb(224, 224, 224);
             }
             else if (mode.Equals("DarkPure", StringComparison.OrdinalIgnoreCase))
             {
                 bg = Brushes.Black;
+                darkColor = Color.FromRgb(0, 0, 0);
             }
             else
             {
                 var comfortGray = new SolidColorBrush(Color.FromRgb(36, 36, 36));
                 comfortGray.Freeze();
                 bg = comfortGray;
+                darkColor = Color.FromRgb(26, 26, 26);
             }
 
-            ThemePreviews.Add(new ThemePreview
+            var preview = new ThemePreview
             {
                 CardName = paletteName,
                 AccentBrush = GetAccentBrush(paletteName),
                 BackgroundBrush = bg,
-                IsSelected = paletteName.Equals(activePalette, StringComparison.OrdinalIgnoreCase)
-            });
+                IsSelected = paletteName.Equals(activePalette, StringComparison.OrdinalIgnoreCase),
+                DarkColor = darkColor
+            };
+
+            ThemePreviews.Add(preview);
         }
 
         private static Brush GetAccentBrush(string paletteName)
@@ -208,6 +234,7 @@ namespace Musicefy.ViewModels
         public string CardName { get; set; }
         public Brush AccentBrush { get; set; }
         public Brush BackgroundBrush { get; set; }
+        public Color DarkColor { get; set; }
 
         public bool IsSelected
         {
@@ -223,8 +250,8 @@ namespace Musicefy.ViewModels
             }
         }
 
-        public Brush HighlightBrush => IsSelected 
-            ? (Brush)Application.Current.FindResource("AccentBrush") 
+        public Brush HighlightBrush => IsSelected
+            ? (Brush)Application.Current.FindResource("AccentBrush")
             : Brushes.Transparent;
 
         public event PropertyChangedEventHandler PropertyChanged;
