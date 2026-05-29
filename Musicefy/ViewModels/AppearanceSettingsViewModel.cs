@@ -376,14 +376,15 @@ namespace Musicefy.ViewModels
         {
             ThemeManager.ApplyTheme(GetModeFromIndex(_selectedThemeIndex), paletteName);
             RefreshPreviews(paletteName);
+            IsPaletteSubspaceOpen = false;
         }
 
         public void Save()
         {
-            string themeString = $"{GetModeFromIndex(_selectedThemeIndex)}|{_activePaletteName}";
-            ThemeManager.SaveTheme(GetModeFromIndex(_selectedThemeIndex), _activePaletteName);
+            string mode = GetModeFromIndex(_selectedThemeIndex);
+            ThemeManager.SaveTheme(mode, _activePaletteName);
 
-            Musicefy.Properties.Settings.Default.Theme = themeString;
+            Musicefy.Properties.Settings.Default.Theme = $"{mode}|{_activePaletteName}";
             Musicefy.Properties.Settings.Default.DynamicColorsEnabled = DynamicColorsEnabled;
             Musicefy.Properties.Settings.Default.DateFormat = _selectedDateFormat;
             Musicefy.Properties.Settings.Default.Save();
@@ -403,7 +404,7 @@ namespace Musicefy.ViewModels
         {
             if (index == 0) return "System";
             if (index == 1) return "Light";
-            return PureBlackMode ? "DarkPure" : "Dark";
+            return "Dark";
         }
 
         private string GetCurrentPalette()
