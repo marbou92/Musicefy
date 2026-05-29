@@ -100,6 +100,15 @@ namespace Musicefy.Views
             }
         }
 
+        private void SearchBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter && ViewModel != null)
+            {
+                e.Handled = true;
+                ViewModel.SearchNow();
+            }
+        }
+
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (ViewModel != null)
