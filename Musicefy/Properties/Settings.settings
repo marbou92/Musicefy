@@ -34,6 +34,11 @@
       <Value Profile="(Default)">419430400</Value> <!-- 400 MB -->
     </Setting>
 
+    <!-- Dynamic album-art colors -->
+    <Setting Name="DynamicColorsEnabled" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+
     <!-- Discover / Feed settings -->
     <Setting Name="DiscoverLibrary" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
