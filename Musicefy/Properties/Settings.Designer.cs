@@ -98,6 +98,15 @@ namespace Musicefy.Properties {
             set => this["DynamicColorsEnabled"] = value;
         }
 
+        // Player background gradient style (DEFAULT, GRADIENT, COLORING, GLOW)
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("GRADIENT")]
+        public string PlayerBackgroundStyle {
+            get => ((string)(this["PlayerBackgroundStyle"]));
+            set => this["PlayerBackgroundStyle"] = value;
+        }
+
         // Discover: show local library on home
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
