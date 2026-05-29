@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using System.Windows.Media;
 using Musicefy.Core.Interfaces;
 using Musicefy.Core.Models;
 using Musicefy.Core.Services;
@@ -44,6 +45,19 @@ namespace Musicefy.ViewModels
 
         public bool IsTracksTab => !_isAlbumsTab;
 
+        public int SongsCount => Tracks.Count > 15 ? 15 : Tracks.Count;
+        public string SongsCountText => Tracks.Count > 15 ? "15+" : Tracks.Count.ToString();
+
+        public int AlbumsCountVal => Albums.Count;
+        public string AlbumsCountText => Albums.Count.ToString();
+
+        private Brush _backgroundGradient;
+        public Brush BackgroundGradient
+        {
+            get => _backgroundGradient;
+            set => SetProperty(ref _backgroundGradient, value);
+        }
+
         public ObservableCollection<MusicFile> Tracks { get; } = new ObservableCollection<MusicFile>();
         public ObservableCollection<AlbumInfo> Albums { get; } = new ObservableCollection<AlbumInfo>();
 
@@ -52,6 +66,10 @@ namespace Musicefy.ViewModels
         public ICommand AlbumClickCommand { get; }
         public ICommand SwitchToAlbumsCommand { get; }
         public ICommand SwitchToTracksCommand { get; }
+        public ICommand SubscribeCommand { get; }
+        public ICommand RadioCommand { get; }
+        public ICommand ShufflePlayCommand { get; }
+        public ICommand TrackMoreCommand { get; }
 
         public event Action<AlbumInfo> RequestNavigateToAlbum;
 
@@ -65,6 +83,14 @@ namespace Musicefy.ViewModels
             AlbumClickCommand = new RelayCommand(p => { if (p is AlbumInfo a) RequestNavigateToAlbum?.Invoke(a); });
             SwitchToAlbumsCommand = new RelayCommand(_ => IsAlbumsTab = true);
             SwitchToTracksCommand = new RelayCommand(_ => IsAlbumsTab = false);
+            SubscribeCommand = new RelayCommand(_ => System.Windows.MessageBox.Show("Subscribe feature coming soon", "Coming Soon"));
+            RadioCommand = new RelayCommand(_ => System.Windows.MessageBox.Show("Radio feature coming soon", "Coming Soon"));
+            ShufflePlayCommand = new RelayCommand(_ => ExecuteShufflePlay());
+            TrackMoreCommand = new RelayCommand(p =>
+            {
+                if (p is MusicFile t)
+                    System.Windows.MessageBox.Show($"{t.Title} - {t.Artist}", "Track Options");
+            });
         }
 
         public async Task LoadAsync(string artistName)
@@ -93,6 +119,10 @@ namespace Musicefy.ViewModels
             finally
             {
                 IsLoading = false;
+                OnPropertyChanged(nameof(SongsCount));
+                OnPropertyChanged(nameof(SongsCountText));
+                OnPropertyChanged(nameof(AlbumsCountVal));
+                OnPropertyChanged(nameof(AlbumsCountText));
             }
         }
 
@@ -100,6 +130,15 @@ namespace Musicefy.ViewModels
         {
             if (Tracks.Count > 0)
                 _playback.SetQueue(Tracks, startPlaying: true);
+        }
+
+        private void ExecuteShufflePlay()
+        {
+            if (Tracks.Count > 0)
+            {
+                _playback.ShuffleQueue();
+                _playback.SetQueue(Tracks, startPlaying: true);
+            }
         }
     }
 }
