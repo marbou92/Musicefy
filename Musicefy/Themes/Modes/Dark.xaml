@@ -19,4 +19,8 @@
     <SolidColorBrush x:Key="TextBrush" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="MutedTextBrush" Color="#9E9E9E"/>
     <SolidColorBrush x:Key="BorderBrush" Color="#2F2F2F"/>
+
+    <!-- Skeleton / shimmer colors -->
+    <Color x:Key="SkeletonBaseColor">#1E1E1E</Color>
+    <Color x:Key="SkeletonHighColor">#2E2E2E</Color>
 </ResourceDictionary>
