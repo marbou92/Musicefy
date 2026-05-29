@@ -116,6 +116,11 @@ namespace Musicefy
             services.AddTransient<DiscoverSettingsViewModel>();
             services.AddTransient<SourcesSettingsViewModel>();
 
+            // Artist/Album browsing
+            services.AddSingleton<ArtistAlbumService>();
+            services.AddTransient<ArtistViewModel>();
+            services.AddTransient<AlbumViewModel>();
+
             _serviceProvider = services.BuildServiceProvider();
 
             // Load extension DLLs after container is built
