@@ -411,11 +411,11 @@
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
                                         <RadioButton Grid.Column="0" Content="Primary"
-                                                     GroupName="SeedRoleGroup" IsChecked="{Binding IsPrimarySelected}"
+                                                     GroupName="SeedRoleGroup" IsChecked="{Binding IsPrimarySelected, Mode=OneWay}"
                                                      Style="{StaticResource SeedChipButton}"
                                                      Command="{Binding SelectSeedRoleCommand}" CommandParameter="0"/>
                                         <RadioButton Grid.Column="2" Content="Secondary"
-                                                     GroupName="SeedRoleGroup" IsChecked="{Binding IsSecondarySelected}"
+                                                     GroupName="SeedRoleGroup" IsChecked="{Binding IsSecondarySelected, Mode=OneWay}"
                                                      Style="{StaticResource SeedChipButton}"
                                                      Command="{Binding SelectSeedRoleCommand}" CommandParameter="1"/>
                                     </Grid>
@@ -426,11 +426,11 @@
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
                                         <RadioButton Grid.Column="0" Content="Tertiary"
-                                                     GroupName="SeedRoleGroup" IsChecked="{Binding IsTertiarySelected}"
+                                                     GroupName="SeedRoleGroup" IsChecked="{Binding IsTertiarySelected, Mode=OneWay}"
                                                      Style="{StaticResource SeedChipButton}"
                                                      Command="{Binding SelectSeedRoleCommand}" CommandParameter="2"/>
                                         <RadioButton Grid.Column="2" Content="Neutral"
-                                                     GroupName="SeedRoleGroup" IsChecked="{Binding IsNeutralSelected}"
+                                                     GroupName="SeedRoleGroup" IsChecked="{Binding IsNeutralSelected, Mode=OneWay}"
                                                      Style="{StaticResource SeedChipButton}"
                                                      Command="{Binding SelectSeedRoleCommand}" CommandParameter="3"/>
                                     </Grid>
