@@ -309,6 +309,59 @@ namespace Musicefy.Core.Services
             return false;
         }
 
+        public async Task<List<AlbumInfo>> GetAllAlbumsAsync(CancellationToken cancellationToken = default)
+        {
+            List<KeyValuePair<string, IMusicSourceSession>> activeSessions;
+            lock (_lock) activeSessions = _activeSessions.Where(s => _sources.Any(src => src.Id == s.Key && src.IsConnected)).ToList();
+
+            if (activeSessions.Count == 0)
+                return new List<AlbumInfo>();
+
+            var allTracks = new List<MusicFile>();
+            var tasks = activeSessions.Select(kvp => GetTracksFromSourceAsync(kvp.Key, kvp.Value, cancellationToken));
+            var results = await Task.WhenAll(tasks);
+
+            foreach (var tracks in results.Where(r => r != null))
+                allTracks.AddRange(tracks);
+
+            return allTracks
+                .Where(t => !string.IsNullOrEmpty(t.Album))
+                .GroupBy(t => new { t.Album, t.Artist })
+                .Select(g => new AlbumInfo
+                {
+                    Name = g.Key.Album,
+                    Artist = g.Key.Artist,
+                    Year = g.Max(t => t.Year),
+                    CoverPath = g.FirstOrDefault(t => !string.IsNullOrEmpty(t.CoverPath))?.CoverPath,
+                    SourceType = g.FirstOrDefault()?.SourceType,
+                    Tracks = g.OrderBy(t => t.TrackNumber).ToList()
+                })
+                .OrderBy(a => a.Artist).ThenBy(a => a.Name)
+                .ToList();
+        }
+
+        private async Task<List<MusicFile>> GetTracksFromSourceAsync(string sourceId, IMusicSourceSession session, CancellationToken cancellationToken)
+        {
+            if (cancellationToken.IsCancellationRequested)
+                return new List<MusicFile>();
+
+            try
+            {
+                var songs = await session.SearchAsync("", 200);
+                return songs?.ToList() ?? new List<MusicFile>();
+            }
+            catch (OperationCanceledException)
+            {
+                return new List<MusicFile>();
+            }
+            catch (Exception ex)
+            {
+                var source = GetSource(sourceId);
+                System.Diagnostics.Debug.WriteLine($"Error getting tracks from {source?.Name ?? sourceId}: {ex.Message}");
+                return new List<MusicFile>();
+            }
+        }
+
         private static string GetConfig(StreamingSource source, string key)
         {
             if (source.Configuration != null && source.Configuration.TryGetValue(key, out var val))
