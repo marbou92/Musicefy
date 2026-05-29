@@ -43,38 +43,6 @@
         just invisible — add the colors to avoid that).
     -->
 
-    <!-- ── 3. Shimmer storyboard (reused by all skeletons) ─────────────────── -->
-    <Storyboard x:Key="SkeletonShimmerStoryboard" RepeatBehavior="Forever" AutoReverse="False">
-        <!-- Slide the highlight window from -0.4→0 to 0.6→1.0, then loop -->
-        <DoubleAnimationUsingKeyFrames
-            Storyboard.TargetProperty="(LinearGradientBrush.GradientStops)[0].Offset"
-            Storyboard.Target="{StaticResource SkeletonBrush}">
-            <DiscreteDoubleKeyFrame KeyTime="0:0:0"  Value="-0.4"/>
-            <EasingDoubleKeyFrame   KeyTime="0:0:1.4" Value="0.6">
-                <EasingDoubleKeyFrame.EasingFunction><CubicEase EasingMode="EaseInOut"/></EasingDoubleKeyFrame.EasingFunction>
-            </EasingDoubleKeyFrame>
-            <DiscreteDoubleKeyFrame KeyTime="0:0:1.6" Value="-0.4"/>
-        </DoubleAnimationUsingKeyFrames>
-        <DoubleAnimationUsingKeyFrames
-            Storyboard.TargetProperty="(LinearGradientBrush.GradientStops)[1].Offset"
-            Storyboard.Target="{StaticResource SkeletonBrush}">
-            <DiscreteDoubleKeyFrame KeyTime="0:0:0"  Value="0.0"/>
-            <EasingDoubleKeyFrame   KeyTime="0:0:1.4" Value="1.0">
-                <EasingDoubleKeyFrame.EasingFunction><CubicEase EasingMode="EaseInOut"/></EasingDoubleKeyFrame.EasingFunction>
-            </EasingDoubleKeyFrame>
-            <DiscreteDoubleKeyFrame KeyTime="0:0:1.6" Value="0.0"/>
-        </DoubleAnimationUsingKeyFrames>
-        <DoubleAnimationUsingKeyFrames
-            Storyboard.TargetProperty="(LinearGradientBrush.GradientStops)[2].Offset"
-            Storyboard.Target="{StaticResource SkeletonBrush}">
-            <DiscreteDoubleKeyFrame KeyTime="0:0:0"  Value="0.4"/>
-            <EasingDoubleKeyFrame   KeyTime="0:0:1.4" Value="1.4">
-                <EasingDoubleKeyFrame.EasingFunction><CubicEase EasingMode="EaseInOut"/></EasingDoubleKeyFrame.EasingFunction>
-            </EasingDoubleKeyFrame>
-            <DiscreteDoubleKeyFrame KeyTime="0:0:1.6" Value="0.4"/>
-        </DoubleAnimationUsingKeyFrames>
-    </Storyboard>
-
     <!-- ── 4. Primitive skeleton block ─────────────────────────────────────── -->
     <!-- General-purpose rounded rectangle block. Set Width/Height on the element. -->
     <Style x:Key="SkeletonBlockStyle" TargetType="Border">
