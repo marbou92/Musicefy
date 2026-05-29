@@ -250,10 +250,10 @@ namespace Musicefy.Services
 
             if (newScheme.IsDarkPure)
             {
-                AnimateBrushColor(resources, "SurfaceBrush", 0xFF000000);
-                AnimateBrushColor(resources, "BackgroundBrush", 0xFF000000);
-                AnimateBrushColor(resources, "SurfaceContainerLowBrush", 0xFF000000);
-                AnimateBrushColor(resources, "SurfaceContainerHighBrush", 0xFF000000);
+                AnimateBrushColor(resources, "SurfaceBrush", (int)0xFF000000);
+                AnimateBrushColor(resources, "BackgroundBrush", (int)0xFF000000);
+                AnimateBrushColor(resources, "SurfaceContainerLowBrush", (int)0xFF000000);
+                AnimateBrushColor(resources, "SurfaceContainerHighBrush", (int)0xFF000000);
             }
 
             SetPlayerGradientBrush(resources, newScheme, GetPlayerBackgroundStyle());
