@@ -26,6 +26,23 @@ namespace Musicefy.Views
                 vm.Cancel();
         }
 
+        private void ColorPaletteButton_Click(object sender, MouseButtonEventArgs e)
+        {
+            if (DataContext is AppearanceSettingsViewModel vm)
+            {
+                vm.IsPaletteSubspaceOpen = true;
+            }
+        }
+
+        private void PaletteBackButton_Click(object sender, MouseButtonEventArgs e)
+        {
+            if (DataContext is AppearanceSettingsViewModel vm)
+            {
+                vm.IsPaletteSubspaceOpen = false;
+                vm.IsCustomThemeEditorOpen = false;
+            }
+        }
+
         private void PaletteCard_Click(object sender, MouseButtonEventArgs e)
         {
             if (sender is FrameworkElement element && element.DataContext is ThemePreview clickedPalette)
