@@ -66,6 +66,12 @@ namespace Musicefy.Views
                 mainWindow.NavigateToAlbum(albumName, artistName);
         }
 
+        private void ArtistText_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if (_viewModel.NowPlaying != null && !string.IsNullOrEmpty(_viewModel.NowPlaying.Artist))
+                OnRequestNavigateToArtist(_viewModel.NowPlaying.Artist);
+        }
+
         private void OnViewModelPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(NowPlayingViewModel.IsLyricsPanelVisible))
@@ -106,7 +112,7 @@ namespace Musicefy.Views
                 var slideDown = new DoubleAnimation(0, 100, TimeSpan.FromMilliseconds(250))
                 { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn } };
                 var fadeOut = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(200));
-                fadeOut.Completed += (s, e) => LyricsOverlay.Visibility = Visibility.Collapsed;
+                fadeOut.Completed += (s, args) => LyricsOverlay.Visibility = Visibility.Collapsed;
                 LyricsOverlay.BeginAnimation(OpacityProperty, fadeOut);
                 if (LyricsOverlay.RenderTransform is TranslateTransform lt)
                     lt.BeginAnimation(TranslateTransform.YProperty, slideDown);
@@ -137,7 +143,7 @@ namespace Musicefy.Views
                 var slideDown = new DoubleAnimation(0, 100, TimeSpan.FromMilliseconds(250))
                 { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn } };
                 var fadeOut = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(200));
-                fadeOut.Completed += (s, e) => QueueOverlay.Visibility = Visibility.Collapsed;
+                fadeOut.Completed += (s, args) => QueueOverlay.Visibility = Visibility.Collapsed;
                 QueueOverlay.BeginAnimation(OpacityProperty, fadeOut);
                 if (QueueOverlay.RenderTransform is TranslateTransform qt)
                     qt.BeginAnimation(TranslateTransform.YProperty, slideDown);
@@ -181,69 +187,6 @@ namespace Musicefy.Views
         {
             _viewModel.IsUserScrubbing = false;
             _viewModel.SeekToPercent(ProgressSlider.Value);
-        }
-
-        // Artist name click handler
-        private void ArtistName_Click(object sender, MouseButtonEventArgs e)
-        {
-            if (_viewModel.NowPlaying != null && !string.IsNullOrEmpty(_viewModel.NowPlaying.Artist))
-            {
-                OnRequestNavigateToArtist(_viewModel.NowPlaying.Artist);
-            }
-        }
-
-        // Menu popup handlers
-        private void BtnMenu_Click(object sender, RoutedEventArgs e)
-        {
-            MenuPopup.IsOpen = !MenuPopup.IsOpen;
-        }
-
-        private void MenuGoToArtist_Click(object sender, RoutedEventArgs e)
-        {
-            MenuPopup.IsOpen = false;
-            if (_viewModel.NowPlaying != null && !string.IsNullOrEmpty(_viewModel.NowPlaying.Artist))
-            {
-                OnRequestNavigateToArtist(_viewModel.NowPlaying.Artist);
-            }
-        }
-
-        private void MenuGoToAlbum_Click(object sender, RoutedEventArgs e)
-        {
-            MenuPopup.IsOpen = false;
-            if (_viewModel.NowPlaying != null && !string.IsNullOrEmpty(_viewModel.NowPlaying.Album))
-            {
-                OnRequestNavigateToAlbum(_viewModel.NowPlaying.Album, _viewModel.NowPlaying.Artist);
-            }
-        }
-
-        private void MenuToggleQueue_Click(object sender, RoutedEventArgs e)
-        {
-            MenuPopup.IsOpen = false;
-            _viewModel.ToggleQueueCommand.Execute(null);
-        }
-
-        private void MenuToggleLyrics_Click(object sender, RoutedEventArgs e)
-        {
-            MenuPopup.IsOpen = false;
-            _viewModel.ToggleLyricsCommand.Execute(null);
-        }
-
-        private void MenuFavorite_Click(object sender, RoutedEventArgs e)
-        {
-            MenuPopup.IsOpen = false;
-            _viewModel.FavoriteCommand.Execute(null);
-        }
-
-        private void MenuShare_Click(object sender, RoutedEventArgs e)
-        {
-            MenuPopup.IsOpen = false;
-            _viewModel.ShareCommand.Execute(null);
-        }
-
-        private void MenuShowInExplorer_Click(object sender, RoutedEventArgs e)
-        {
-            MenuPopup.IsOpen = false;
-            _viewModel.ShowInExplorerCommand.Execute(null);
         }
     }
 }
