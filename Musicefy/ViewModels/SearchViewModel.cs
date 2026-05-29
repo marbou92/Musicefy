@@ -104,7 +104,7 @@ namespace Musicefy.ViewModels
 
                 try
                 {
-                    await Task.Delay(200, token);
+                    await Task.Delay(120, token);
                     if (!token.IsCancellationRequested)
                         await PerformSearch();
                 }
