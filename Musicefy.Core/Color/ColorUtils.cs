@@ -140,7 +140,7 @@ namespace Musicefy.Core.Hct
         public static int ArgbFromXyzInSrgbGamut(double x, double y, double z)
         {
             int rgb = ArgbFromXyz(x, y, z);
-            if (!IsOpaque(rgb)) return 0xFF000000;
+            if (!IsOpaque(rgb)) return (int)0xFF000000;
             int r = RedFromArgb(rgb), g = GreenFromArgb(rgb), b = BlueFromArgb(rgb);
             return ArgbFromRgb(
                 MathUtils.ClampInt(0, 255, r),
