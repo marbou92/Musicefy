@@ -88,6 +88,33 @@ namespace Musicefy.Services
             ApplySchemeToResources(_currentScheme);
         }
 
+        public static void ApplyCustomFromColors(string mode, int primaryArgb, int secondaryArgb, int tertiaryArgb, int neutralArgb)
+        {
+            var merged = Application.Current.Resources.MergedDictionaries;
+            for (int i = merged.Count - 1; i >= 0; i--)
+            {
+                var source = merged[i].Source;
+                if (source != null && _themeUris.Contains(source.OriginalString))
+                    merged.RemoveAt(i);
+            }
+
+            MergeDictionary("/Themes/Base.xaml");
+            MergeDictionary("/Themes/ScrollbarTheme.xaml");
+
+            if (mode.Equals("System", StringComparison.OrdinalIgnoreCase))
+                mode = IsSystemDarkMode() ? "Dark" : "Light";
+
+            bool isDarkPure = mode.Equals("DarkPure", StringComparison.OrdinalIgnoreCase);
+            if (isDarkPure)
+                MergeDictionary("/Themes/Modes/DarkPure.xaml");
+            else
+                MergeDictionary($"/Themes/Modes/{mode}.xaml");
+
+            bool isDark = mode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase);
+            _currentScheme = DynamicScheme.FromColors(primaryArgb, secondaryArgb, tertiaryArgb, neutralArgb, isDark, isDarkPure);
+            ApplySchemeToResources(_currentScheme);
+        }
+
         public static void ApplyThemeFromString(string themeString)
         {
             if (string.IsNullOrWhiteSpace(themeString))
