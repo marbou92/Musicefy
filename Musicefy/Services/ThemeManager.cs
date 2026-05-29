@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using Color = System.Windows.Media.Color;
 using Microsoft.Win32;
 using Musicefy.Core.Color;
 using Musicefy.Core.Services;
