@@ -121,6 +121,21 @@ namespace Musicefy.Core.Services
                 return await _client.GetRandomSongsAsync(count);
             }
 
+            public async Task<IReadOnlyList<MusicFile>> GetAlbumListAsync(int count = 50)
+            {
+                return await _client.GetAlbumList2Async("newest", count);
+            }
+
+            public async Task<IReadOnlyList<MusicFile>> GetAlbumAsync(string albumId)
+            {
+                return await _client.GetAlbumAsync(albumId);
+            }
+
+            public async Task<IReadOnlyList<MusicFile>> GetArtistAsync(string artistId)
+            {
+                return await _client.GetArtistAsync(artistId);
+            }
+
             public void Dispose()
             {
                 _client?.Dispose();
