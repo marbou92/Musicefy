@@ -159,6 +159,15 @@ namespace Musicefy.Core.Services
                 return results.SelectMany(r => r).Distinct().Take(count).ToList();
             }
 
+            public Task<IReadOnlyList<MusicFile>> GetAlbumListAsync(int count = 50)
+                => Task.FromResult<IReadOnlyList<MusicFile>>(new List<MusicFile>());
+
+            public Task<IReadOnlyList<MusicFile>> GetAlbumAsync(string albumId)
+                => Task.FromResult<IReadOnlyList<MusicFile>>(new List<MusicFile>());
+
+            public Task<IReadOnlyList<MusicFile>> GetArtistAsync(string artistId)
+                => Task.FromResult<IReadOnlyList<MusicFile>>(new List<MusicFile>());
+
             public void Dispose()
             {
                 _youtube?.Dispose();
