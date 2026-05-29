@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Musicefy.Core.Color
+namespace Musicefy.Core.Hct
 {
     public class TonalPalette
     {
