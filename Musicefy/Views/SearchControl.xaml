@@ -122,19 +122,19 @@
                        Visibility="{Binding IsNoResultsVisible, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 
             <!-- Circular loading spinner -->
-            <Grid x:Name="SearchSpinner" Visibility="Collapsed" VerticalAlignment="Center" HorizontalAlignment="Center">
-                <Grid Width="40" Height="40">
+            <Grid x:Name="SearchSpinner" Visibility="Collapsed" VerticalAlignment="Center" HorizontalAlignment="Center" Opacity="0">
+                <Grid Width="48" Height="48">
                     <!-- Outer track -->
-                    <Path Stroke="{DynamicResource OutlineBrush}" StrokeThickness="3" Opacity="0.3">
+                    <Path Stroke="{DynamicResource OutlineBrush}" StrokeThickness="4" Opacity="0.25">
                         <Path.Data>
-                            <EllipseGeometry RadiusX="17" RadiusY="17" Center="20,20"/>
+                            <EllipseGeometry RadiusX="20" RadiusY="20" Center="24,24"/>
                         </Path.Data>
                     </Path>
                     <!-- Foreground arc -->
-                    <Path x:Name="SpinnerArc" Stroke="{DynamicResource PrimaryBrush}" StrokeThickness="3"
-                          StrokeDashArray="40,200" StrokeDashCap="Round">
+                    <Path x:Name="SpinnerArc" Stroke="{DynamicResource PrimaryBrush}" StrokeThickness="4"
+                          StrokeDashArray="60,240" StrokeDashCap="Round">
                         <Path.Data>
-                            <EllipseGeometry RadiusX="17" RadiusY="17" Center="20,20"/>
+                            <EllipseGeometry RadiusX="20" RadiusY="20" Center="24,24"/>
                         </Path.Data>
                         <Path.RenderTransform>
                             <RotateTransform x:Name="SpinnerRotate" Angle="0"/>
@@ -142,7 +142,7 @@
                     </Path>
                 </Grid>
                 <TextBlock Text="Searching..." FontSize="13" Foreground="{DynamicResource OnSurfaceVariantBrush}"
-                           HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,48,0,0"/>
+                           HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,52,0,0"/>
             </Grid>
 
             <ListView x:Name="SearchResultsListView"
