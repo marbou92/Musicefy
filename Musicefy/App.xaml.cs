@@ -33,14 +33,10 @@ namespace Musicefy
             try
             {
                 string savedTheme = Musicefy.Properties.Settings.Default.Theme ?? "Dark|Default";
-                bool isPureBlack = Musicefy.Properties.Settings.Default.PureBlackMode;
 
                 var parts = savedTheme.Split('|');
                 string mode = parts.Length > 0 ? parts[0] : "Dark";
                 string palette = parts.Length > 1 ? parts[1] : "Default";
-
-                if (mode.Equals("Dark", StringComparison.OrdinalIgnoreCase) && isPureBlack)
-                    mode = "DarkPure";
 
                 ThemeManager.ApplyTheme(mode, palette);
                 ThemeManager.ApplyDynamicColors(new Musicefy.Core.Services.ExtractedColors
