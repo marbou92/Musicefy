@@ -337,8 +337,8 @@
             <!-- Utility buttons row -->
             <StackPanel Grid.Row="4" Orientation="Horizontal"
                         HorizontalAlignment="Center" Margin="0,18,0,0">
-                <Button x:Name="BtnToggleQueue" Style="{StaticResource NowPlayingIconButton}"
-                        Command="{Binding ToggleQueueCommand}" Margin="0,0,20,0" ToolTip="Queue">
+                <Button x:Name="BtnToggleQueue" Command="{Binding ToggleQueueCommand}"
+                        Margin="0,0,20,0" ToolTip="Queue">
                     <Button.Style>
                         <Style TargetType="Button" BasedOn="{StaticResource NowPlayingIconButton}">
                             <Style.Triggers>
@@ -357,8 +357,8 @@
                     <Path Data="M12,3c0.132 0 0.263 0.007 0.393 0.021a8.4 8.4 0 0 0-0.143 1.579c0 4.639 3.76 8.4 8.4 8.4 0.542 0 1.062-0.051 1.564-0.149A8.4 8.4 0 1 1 12 3z"
                           Fill="White" Width="20" Height="20" Stretch="Uniform"/>
                 </Button>
-                <Button x:Name="BtnToggleLyrics" Style="{StaticResource NowPlayingIconButton}"
-                        Command="{Binding ToggleLyricsCommand}" Margin="0,0,20,0" ToolTip="Lyrics">
+                <Button x:Name="BtnToggleLyrics" Command="{Binding ToggleLyricsCommand}"
+                        Margin="0,0,20,0" ToolTip="Lyrics">
                     <Button.Style>
                         <Style TargetType="Button" BasedOn="{StaticResource NowPlayingIconButton}">
                             <Style.Triggers>
@@ -372,8 +372,8 @@
                           Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                           Width="20" Height="20" Stretch="Uniform"/>
                 </Button>
-                <Button x:Name="BtnRepeat" Style="{StaticResource NowPlayingIconButton}"
-                        Command="{Binding RepeatCommand}" Margin="0,0,20,0" ToolTip="Repeat">
+                <Button x:Name="BtnRepeat" Command="{Binding RepeatCommand}"
+                        Margin="0,0,20,0" ToolTip="Repeat">
                     <Button.Style>
                         <Style TargetType="Button" BasedOn="{StaticResource NowPlayingIconButton}">
                             <Style.Triggers>
@@ -387,8 +387,8 @@
                           Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                           Width="20" Height="20" Stretch="Uniform"/>
                 </Button>
-                <Button x:Name="BtnShuffle" Style="{StaticResource NowPlayingIconButton}"
-                        Command="{Binding ShuffleCommand}" ToolTip="Shuffle">
+                <Button x:Name="BtnShuffle" Command="{Binding ShuffleCommand}"
+                        ToolTip="Shuffle">
                     <Button.Style>
                         <Style TargetType="Button" BasedOn="{StaticResource NowPlayingIconButton}">
                             <Style.Triggers>
