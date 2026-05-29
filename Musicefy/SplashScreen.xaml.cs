@@ -43,7 +43,7 @@ namespace Musicefy
                     secondaryTextColor = Color.FromRgb(140, 140, 140);
                     trackRailColor = Color.FromRgb(220, 220, 220);
                 }
-                else if (isPureBlack || mode.Equals("DarkPure", StringComparison.OrdinalIgnoreCase))
+                else if (isPureBlack && mode.Equals("Dark", StringComparison.OrdinalIgnoreCase))
                 {
                     backgroundCardColor = Colors.Black; // Absolute OLED deep ink black frame canvas
                     trackRailColor = Color.FromRgb(20, 20, 20);
