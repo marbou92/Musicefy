@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -34,7 +33,6 @@ public partial class FolderLibraryControl : UserControl, IDisposable
     private CancellationTokenSource? _scanCts;
     private bool                    _isScanToastVisible           = false;
     private bool                    _isLibraryLoaded;
-    private Storyboard?             _libraryShimmer;
 
     private readonly ILibraryService _libraryScanner;
     private readonly IFolderDataProvider _dataProvider;
@@ -90,33 +88,17 @@ public partial class FolderLibraryControl : UserControl, IDisposable
         }
     }
 
-    // ── Skeleton shimmer ───────────────────────────────────────────────────
     private void ShowLibrarySkeleton()
     {
         LoadingSkeleton.Visibility = Visibility.Visible;
         EmptyLibraryStateContainer.Visibility = Visibility.Collapsed;
         ListViewContainer.Visibility = Visibility.Collapsed;
         GridViewContainer.Visibility = Visibility.Collapsed;
-        if (_libraryShimmer != null) return;
-        _libraryShimmer = new Storyboard();
-        var pulse = new DoubleAnimation
-        {
-            From = 0.15,
-            To = 0.5,
-            Duration = new Duration(TimeSpan.FromSeconds(1.4)),
-            AutoReverse = true,
-            RepeatBehavior = RepeatBehavior.Forever
-        };
-        Storyboard.SetTargetProperty(pulse, new PropertyPath("Opacity"));
-        _libraryShimmer.Children.Add(pulse);
-        _libraryShimmer.Begin(LoadingSkeleton, true);
     }
 
     private void HideLibrarySkeleton()
     {
         LoadingSkeleton.Visibility = Visibility.Collapsed;
-        _libraryShimmer?.Stop(LoadingSkeleton);
-        _libraryShimmer = null;
     }
 
     // ── Collection + view state ────────────────────────────────────────────
