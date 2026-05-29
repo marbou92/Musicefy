@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using Microsoft.Win32;
+using Musicefy.Core.Color;
 using Musicefy.Core.Services;
 
 namespace Musicefy.Services
@@ -12,7 +13,6 @@ namespace Musicefy.Services
     public static class ThemeManager
     {
         private static readonly string[] Modes = { "System", "Light", "Dark", "DarkPure" };
-        private static readonly string[] Palettes = { "Default", "Catppuccin", "GreenApple", "Lavender" };
 
         private static readonly HashSet<string> _themeUris = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -21,16 +21,12 @@ namespace Musicefy.Services
             "/Themes/Modes/Light.xaml",
             "/Themes/Modes/Dark.xaml",
             "/Themes/Modes/DarkPure.xaml",
-            "/Themes/Palettes/Default.Light.xaml",
-            "/Themes/Palettes/Default.Dark.xaml",
-            "/Themes/Palettes/Catppuccin.xaml",
-            "/Themes/Palettes/GreenApple.xaml",
-            "/Themes/Palettes/Lavender.xaml",
         };
 
-        public static void ApplyTheme(string mode, string palette)
+        private static DynamicScheme _currentScheme;
+
+        public static void ApplyTheme(string mode, string paletteName)
         {
-            // Remove only known theme dictionaries so third-party resources survive
             var merged = Application.Current.Resources.MergedDictionaries;
             for (int i = merged.Count - 1; i >= 0; i--)
             {
@@ -38,42 +34,29 @@ namespace Musicefy.Services
                 if (source != null && _themeUris.Contains(source.OriginalString))
                     merged.RemoveAt(i);
             }
-        
-            // Inject foundational underlying design rules first
+
             MergeDictionary("/Themes/Base.xaml");
-        
-            // Force re-inject your custom layout template here
             MergeDictionary("/Themes/ScrollbarTheme.xaml");
-        
-            // Process hardware-level environmental tracking vectors
+
             if (mode.Equals("System", StringComparison.OrdinalIgnoreCase))
-            {
                 mode = IsSystemDarkMode() ? "Dark" : "Light";
-            }
-        
-            // Route execution flows to handle pure black vs classic gray layouts dynamically
-            if (mode.Equals("DarkPure", StringComparison.OrdinalIgnoreCase))
-            {
+
+            bool isDarkPure = mode.Equals("DarkPure", StringComparison.OrdinalIgnoreCase);
+            if (isDarkPure)
                 MergeDictionary("/Themes/Modes/DarkPure.xaml");
-            }
             else
-            {
                 MergeDictionary($"/Themes/Modes/{mode}.xaml");
-            }
-        
-            // Resolve palette adaptations cleanly
-            if (palette.Equals("Default", StringComparison.OrdinalIgnoreCase))
-            {
-                string paletteFile = mode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase)
-                    ? "Default.Dark.xaml"
-                    : "Default.Light.xaml";
-        
-                MergeDictionary($"/Themes/Palettes/{paletteFile}");
-            }
-            else
-            {
-                MergeDictionary($"/Themes/Palettes/{palette}.xaml");
-            }
+
+            bool isDark = mode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase);
+
+            var seed = SeedPalettes.All.Find(p =>
+                string.Equals(p.Name, paletteName, StringComparison.OrdinalIgnoreCase));
+
+            if (seed == null)
+                seed = SeedPalettes.All[0];
+
+            _currentScheme = DynamicScheme.FromSeed(seed, isDark, isDarkPure);
+            ApplySchemeToResources(_currentScheme);
         }
 
         public static void ApplyTheme(string mode) => ApplyTheme(mode, "Default");
@@ -88,31 +71,19 @@ namespace Musicefy.Services
 
             var parts = themeString.Split('|');
             string mode = parts.Length > 0 ? parts[0] : "Dark";
-            string palette = parts.Length > 1 ? parts[1] : "Default";
+            string paletteName = parts.Length > 1 ? parts[1] : "Default";
 
-            // Automatically maps the persistent config flags on startup if user choice matches pure black
             if (mode.Equals("DarkPure", StringComparison.OrdinalIgnoreCase))
-            {
                 Musicefy.Properties.Settings.Default.PureBlackMode = true;
-            }
             else if (mode.Equals("Dark", StringComparison.OrdinalIgnoreCase))
-            {
                 Musicefy.Properties.Settings.Default.PureBlackMode = false;
-            }
 
-            ApplyTheme(mode, palette);
+            ApplyTheme(mode, paletteName);
         }
 
-        public static IEnumerable<string> GetAvailableThemes()
+        public static void SaveTheme(string mode, string paletteName)
         {
-            foreach (var mode in Modes)
-                foreach (var palette in Palettes)
-                    yield return $"{mode}|{palette}";
-        }
-
-        public static void SaveTheme(string themeString)
-        {
-            Musicefy.Properties.Settings.Default.Theme = themeString;
+            Musicefy.Properties.Settings.Default.Theme = $"{mode}|{paletteName}";
             Musicefy.Properties.Settings.Default.Save();
         }
 
@@ -126,11 +97,8 @@ namespace Musicefy.Services
                         return intVal == 0;
                 }
             }
-            catch
-            {
-                // Registry read failed; default to dark mode
-            }
-            
+            catch { }
+
             return true;
         }
 
@@ -140,7 +108,6 @@ namespace Musicefy.Services
             {
                 if (e.Category == UserPreferenceCategory.General)
                 {
-                    // FIXED: Dispatched to UI thread. Registry change events fire cross-thread and would crash App Resource updates.
                     Application.Current.Dispatcher.BeginInvoke(new Action(() =>
                     {
                         string savedTheme = Musicefy.Properties.Settings.Default.Theme ?? "System|Default";
@@ -168,64 +135,85 @@ namespace Musicefy.Services
             }
         }
 
-        private static ResourceDictionary _dynamicColorDict;
+        private static void ApplySchemeToResources(DynamicScheme scheme)
+        {
+            var resources = Application.Current.Resources;
+
+            SetBrush(resources, "PrimaryBrush", scheme, ToneRole.Primary);
+            SetBrush(resources, "OnPrimaryBrush", scheme, ToneRole.OnPrimary);
+            SetBrush(resources, "PrimaryContainerBrush", scheme, ToneRole.PrimaryContainer);
+            SetBrush(resources, "OnPrimaryContainerBrush", scheme, ToneRole.OnPrimaryContainer);
+
+            SetBrush(resources, "SecondaryBrush", scheme, ToneRole.Secondary);
+            SetBrush(resources, "OnSecondaryBrush", scheme, ToneRole.OnSecondary);
+            SetBrush(resources, "SecondaryContainerBrush", scheme, ToneRole.SecondaryContainer);
+            SetBrush(resources, "OnSecondaryContainerBrush", scheme, ToneRole.OnSecondaryContainer);
+
+            SetBrush(resources, "TertiaryBrush", scheme, ToneRole.Tertiary);
+            SetBrush(resources, "OnTertiaryBrush", scheme, ToneRole.OnTertiary);
+            SetBrush(resources, "TertiaryContainerBrush", scheme, ToneRole.TertiaryContainer);
+            SetBrush(resources, "OnTertiaryContainerBrush", scheme, ToneRole.OnTertiaryContainer);
+
+            SetBrush(resources, "ErrorBrush", scheme, ToneRole.Error);
+            SetBrush(resources, "OnErrorBrush", scheme, ToneRole.OnError);
+            SetBrush(resources, "ErrorContainerBrush", scheme, ToneRole.ErrorContainer);
+            SetBrush(resources, "OnErrorContainerBrush", scheme, ToneRole.OnErrorContainer);
+
+            SetBrushFromArgb(resources, "AccentBrush", scheme.GetAccentArgb(AccentVariant.Default));
+            SetBrushFromArgb(resources, "AccentHoverBrush", scheme.GetAccentArgb(AccentVariant.Hover));
+            SetBrushFromArgb(resources, "AccentPressedBrush", scheme.GetAccentArgb(AccentVariant.Pressed));
+            SetBrushFromArgb(resources, "AccentGlowBrush", scheme.GetAccentArgb(AccentVariant.Glow));
+        }
+
+        private static void SetBrush(ResourceDictionary resources, string key, DynamicScheme scheme, ToneRole role)
+        {
+            int argb = scheme.GetArgb(role);
+            var brush = new SolidColorBrush(Color.FromArgb(
+                (byte)((argb >> 24) & 0xFF),
+                (byte)((argb >> 16) & 0xFF),
+                (byte)((argb >> 8) & 0xFF),
+                (byte)(argb & 0xFF)));
+            brush.Freeze();
+            resources[key] = brush;
+        }
+
+        private static void SetBrushFromArgb(ResourceDictionary resources, string key, int argb)
+        {
+            var brush = new SolidColorBrush(Color.FromArgb(
+                (byte)((argb >> 24) & 0xFF),
+                (byte)((argb >> 16) & 0xFF),
+                (byte)((argb >> 8) & 0xFF),
+                (byte)(argb & 0xFF)));
+            brush.Freeze();
+            resources[key] = brush;
+        }
 
         public static void ApplyDynamicColors(ExtractedColors colors)
         {
-            var merged = Application.Current.Resources.MergedDictionaries;
+            if (_currentScheme == null)
+            {
+                ApplyTheme("Dark", "Default");
+            }
 
-            if (_dynamicColorDict != null)
-                merged.Remove(_dynamicColorDict);
+            int argb = (255 << 24) | (colors.Primary.R << 16) | (colors.Primary.G << 8) | colors.Primary.B;
+            var hct = Hct.FromInt(argb);
 
-            _dynamicColorDict = new ResourceDictionary();
+            var seed = new SeedPalette(
+                "_Dynamic",
+                ColorFamily.Vibrant,
+                hct.Hue, Math.Max(hct.Chroma, 20));
 
-            var primary = colors.Primary;
-            var vibrant = colors.Vibrant;
-            var muted = colors.Muted;
-            var onPrimary = colors.OnPrimary;
-            var surface = colors.Surface;
+            bool isDark = _currentScheme != null && _currentScheme.IsDark;
+            bool isDarkPure = _currentScheme != null && _currentScheme.IsDarkPure;
 
-            var vibrantLight = Lighten(vibrant, 0.25);
-            var vibrantDark = Darken(vibrant, 0.35);
-            var surfaceLight = Lighten(surface, 0.15);
-            var surfaceVariant = Lighten(surface, 0.08);
-
-            _dynamicColorDict["DynamicPrimaryBrush"] = new SolidColorBrush(primary);
-            _dynamicColorDict["DynamicVibrantBrush"] = new SolidColorBrush(vibrant);
-            _dynamicColorDict["DynamicVibrantLightBrush"] = new SolidColorBrush(vibrantLight);
-            _dynamicColorDict["DynamicVibrantDarkBrush"] = new SolidColorBrush(vibrantDark);
-            _dynamicColorDict["DynamicMutedBrush"] = new SolidColorBrush(muted);
-            _dynamicColorDict["DynamicOnPrimaryBrush"] = new SolidColorBrush(onPrimary);
-            _dynamicColorDict["DynamicSurfaceBrush"] = new SolidColorBrush(surface);
-            _dynamicColorDict["DynamicSurfaceLightBrush"] = new SolidColorBrush(surfaceLight);
-            _dynamicColorDict["DynamicSurfaceVariantBrush"] = new SolidColorBrush(surfaceVariant);
-
-            merged.Add(_dynamicColorDict);
+            var scheme = DynamicScheme.FromSeed(seed, isDark, isDarkPure);
+            ApplySchemeToResources(scheme);
         }
 
         public static void ClearDynamicColors()
         {
-            if (_dynamicColorDict != null)
-            {
-                Application.Current.Resources.MergedDictionaries.Remove(_dynamicColorDict);
-                _dynamicColorDict = null;
-            }
-        }
-
-        private static Color Lighten(Color c, double factor)
-        {
-            return Color.FromRgb(
-                (byte)(c.R + (255 - c.R) * factor),
-                (byte)(c.G + (255 - c.G) * factor),
-                (byte)(c.B + (255 - c.B) * factor));
-        }
-
-        private static Color Darken(Color c, double factor)
-        {
-            return Color.FromRgb(
-                (byte)(c.R * (1 - factor)),
-                (byte)(c.G * (1 - factor)),
-                (byte)(c.B * (1 - factor)));
+            string savedTheme = Musicefy.Properties.Settings.Default.Theme ?? "Dark|Default";
+            ApplyThemeFromString(savedTheme);
         }
 
         public static LinearGradientBrush CreateVerticalGradient(Color topColor, Color bottomColor, double topOpacity = 1.0, double bottomOpacity = 1.0)
