@@ -3,6 +3,81 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Background="Transparent">
 
+    <UserControl.Resources>
+        <Style x:Key="PaletteExpanderStyle" TargetType="Expander">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Expander">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition x:Name="ContentRow" Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <Border x:Name="HeaderBorder" Background="Transparent" Padding="4,6,4,6" Cursor="Hand">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path x:Name="ExpandChevron"
+                                          Data="M8,0L16,10L0,10Z"
+                                          Fill="{DynamicResource OnSurfaceVariantBrush}"
+                                          Width="10" Height="10" Stretch="Uniform"
+                                          RenderTransformOrigin="0.5,0.5"
+                                          Margin="0,0,8,0">
+                                        <Path.RenderTransform>
+                                            <RotateTransform Angle="0"/>
+                                        </Path.RenderTransform>
+                                    </Path>
+                                    <TextBlock Text="{TemplateBinding Header}"
+                                               FontWeight="SemiBold" FontSize="14"
+                                               Foreground="{DynamicResource OnSurfaceVariantBrush}"/>
+                                </StackPanel>
+                            </Border>
+
+                            <ContentPresenter x:Name="ContentSite"
+                                              Grid.Row="1" Content="{TemplateBinding Content}"
+                                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                                              Visibility="Collapsed"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsExpanded" Value="True">
+                                <Setter TargetName="ContentSite" Property="Visibility" Value="Visible"/>
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="ExpandChevron"
+                                                             Storyboard.TargetProperty="(Path.RenderTransform).(RotateTransform.Angle)"
+                                                             To="180" Duration="0:0:0.15">
+                                                <DoubleAnimation.EasingFunction>
+                                                    <QuadraticEase EasingMode="EaseOut"/>
+                                                </DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="ExpandChevron"
+                                                             Storyboard.TargetProperty="(Path.RenderTransform).(RotateTransform.Angle)"
+                                                             To="0" Duration="0:0:0.15">
+                                                <DoubleAnimation.EasingFunction>
+                                                    <QuadraticEase EasingMode="EaseOut"/>
+                                                </DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
     <Grid Margin="10,0,10,10">
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
             <StackPanel Orientation="Vertical">
@@ -22,28 +97,24 @@
                 <!-- Block 1: Theme Preview Card -->
                 <Border CornerRadius="20" Background="{DynamicResource SurfaceVariantBrush}" Padding="20" Margin="0,0,0,20">
                     <Grid Height="160">
-                        <!-- Top-left area -->
                         <Border Width="56" Height="56" CornerRadius="10"
                                 Background="{DynamicResource PrimaryBrush}"
                                 HorizontalAlignment="Left" VerticalAlignment="Top"/>
                         <Rectangle Width="100" Height="5" RadiusX="3" RadiusY="3"
                                    Fill="{DynamicResource PrimaryBrush}"
                                    HorizontalAlignment="Left" Margin="0,66,0,0"/>
-                        <!-- Top-right play button -->
                         <Border Width="52" Height="52" CornerRadius="26"
                                 Background="{DynamicResource PrimaryBrush}"
                                 HorizontalAlignment="Right" VerticalAlignment="Top">
                             <Path Data="M8,5V19L19,12L8,5Z" Fill="{DynamicResource OnPrimaryBrush}"
                                   Width="20" Height="20" Stretch="Uniform" Margin="2,0,0,0"/>
                         </Border>
-                        <!-- Color swatches -->
                         <Ellipse Width="52" Height="52" Fill="{DynamicResource PrimaryBrush}"
                                  HorizontalAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Center"/>
                         <Ellipse Width="44" Height="44" Fill="{DynamicResource PrimaryBrush}" Opacity="0.6"
                                  HorizontalAlignment="Left" Margin="28,0,0,0" VerticalAlignment="Center"/>
                         <Ellipse Width="44" Height="44" Fill="{DynamicResource SecondaryBrush}"
                                  HorizontalAlignment="Left" Margin="52,0,0,0" VerticalAlignment="Center"/>
-                        <!-- Bottom pills -->
                         <Border CornerRadius="20" Height="32" Width="80"
                                 Background="{DynamicResource OutlineBrush}" Opacity="0.5"
                                 HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="0,0,0,0"/>
@@ -53,12 +124,12 @@
                         <Border CornerRadius="20" Height="32" Width="80"
                                 Background="{DynamicResource OutlineBrush}" Opacity="0.5"
                                 HorizontalAlignment="Right" VerticalAlignment="Bottom"/>
-                        <!-- Default button -->
-                        <Button x:Name="BtnDefaultPalette" Content="Default" Click="BtnDefaultPalette_Click"
+                        <Button Content="Reset Palette"
                                 HorizontalAlignment="Right" VerticalAlignment="Bottom"
                                 Background="{DynamicResource PrimaryBrush}" Foreground="{DynamicResource OnPrimaryBrush}"
                                 BorderThickness="0" Padding="12,6" FontSize="11" FontWeight="SemiBold"
-                                Cursor="Hand" Margin="0,0,0,36">
+                                Cursor="Hand" Margin="0,0,0,36"
+                                Click="BtnResetPalette_Click">
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
                                     <Border Background="{TemplateBinding Background}"
@@ -71,58 +142,55 @@
                     </Grid>
                 </Border>
 
-                <!-- Block 2: Horizontal palette scroller -->
-                <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" Margin="0,0,0,12">
-                    <ItemsControl ItemsSource="{Binding ThemePreviews}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel Orientation="Horizontal"/>
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border Width="80" Height="80" CornerRadius="18" Margin="0,0,12,0"
-                                        Cursor="Hand"
-                                        BorderBrush="{Binding HighlightBrush}" BorderThickness="1"
-                                        MouseLeftButtonUp="PaletteCard_Click">
-                                    <Grid Width="80" Height="80" ClipToBounds="True">
-                                        <Ellipse Width="80" Height="80" Fill="{Binding BackgroundBrush}"/>
-                                        <Border Width="40" Height="80" HorizontalAlignment="Right"
-                                                Background="{Binding AccentBrush}"/>
-                                        <Border Width="80" Height="80" CornerRadius="18"
-                                                Background="#CC000000"
-                                                Visibility="{Binding IsSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                            <Path Data="M9,16.17L4.83,12L3.41,13.41L9,19L21,7L19.59,5.59L9,16.17Z"
-                                                  Fill="White" Width="24" Height="24" Stretch="Uniform"/>
-                                        </Border>
-                                    </Grid>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
-
-                <!-- Dot indicators -->
-                <ItemsControl ItemsSource="{Binding ThemePreviews}" HorizontalAlignment="Center" Margin="0,10,0,20">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <WrapPanel Orientation="Horizontal"/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
+                <!-- Block 2: Family group palette scroller -->
+                <ItemsControl ItemsSource="{Binding FamilyGroups}" Margin="0,0,0,12">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Ellipse Width="8" Height="8" Margin="3,0">
-                                <Ellipse.Style>
-                                    <Style TargetType="Ellipse">
-                                        <Setter Property="Fill" Value="{DynamicResource OutlineBrush}"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                                <Setter Property="Fill" Value="{DynamicResource PrimaryBrush}"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Ellipse.Style>
-                            </Ellipse>
+                            <Expander Header="{Binding FamilyName}" Style="{StaticResource PaletteExpanderStyle}"
+                                      IsExpanded="{Binding IsExpanded}">
+                                <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" Margin="0,4,0,0">
+                                    <ItemsControl ItemsSource="{Binding Previews}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Orientation="Horizontal"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Width="80" Height="80" CornerRadius="18" Margin="0,0,12,0"
+                                                        Cursor="Hand"
+                                                        BorderBrush="{Binding BorderBrush}" BorderThickness="2"
+                                                        MouseLeftButtonUp="PaletteCard_Click">
+                                                    <Grid Width="80" Height="80">
+                                                        <Grid.Clip>
+                                                            <RectangleGeometry Rect="0,0,80,80" RadiusX="18" RadiusY="18"/>
+                                                        </Grid.Clip>
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition Height="40"/>
+                                                            <RowDefinition Height="40"/>
+                                                        </Grid.RowDefinitions>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="40"/>
+                                                            <ColumnDefinition Width="40"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <Border Grid.Row="0" Grid.Column="0" Background="{Binding PrimarySeed}"/>
+                                                        <Border Grid.Row="0" Grid.Column="1" Background="{Binding SecondarySeed}"/>
+                                                        <Border Grid.Row="1" Grid.Column="0" Background="{Binding TertiarySeed}"/>
+                                                        <Border Grid.Row="1" Grid.Column="1" Background="{Binding NeutralSeed}"/>
+
+                                                        <Border Grid.RowSpan="2" Grid.ColumnSpan="2"
+                                                                Background="#CC000000"
+                                                                Visibility="{Binding IsSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                            <Path Data="M9,16.17L4.83,12L3.41,13.41L9,19L21,7L19.59,5.59L9,16.17Z"
+                                                                  Fill="White" Width="24" Height="24" Stretch="Uniform"/>
+                                                        </Border>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </Expander>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
@@ -169,16 +237,30 @@
                     </Button>
                 </StackPanel>
 
+                <TextBlock Text="Dynamic Colors" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource OnSurfaceBrush}" Margin="4,25,0,12"/>
+
+                <CheckBox Style="{StaticResource ModernSettingRowStyle}" IsChecked="{Binding DynamicColorsEnabled}">
+                    <StackPanel>
+                        <TextBlock Text="Dynamic Album Colors" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource OnSurfaceBrush}"/>
+                        <TextBlock Text="Automatically theme the app using colors extracted from the currently playing album art" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,2,0,0"/>
+                    </StackPanel>
+
+                    <CheckBox.Tag>
+                        <Path Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-3.5l6-4.5-6-4.5v9z"
+                              Fill="{DynamicResource OnSurfaceVariantBrush}" Width="18" Height="18" Stretch="Uniform"/>
+                    </CheckBox.Tag>
+                </CheckBox>
+
                 <TextBlock Text="Pure Black Settings" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource OnSurfaceBrush}" Margin="4,25,0,12"/>
-                
+
                 <CheckBox Style="{StaticResource ModernSettingRowStyle}" IsChecked="{Binding PureBlackMode}">
                     <StackPanel>
                         <TextBlock Text="Enable Pure Black Dark Mode" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource OnSurfaceBrush}"/>
                         <TextBlock Text="Applies an absolute blackout layout optimization matrix across your views" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,2,0,0"/>
                     </StackPanel>
-                    
+
                     <CheckBox.Tag>
-                        <Path Data="M12 3c0.132 0 0.263 0.007 0.393 0.021a8.4 8.4 0 0 0-0.143 1.579c0 4.639 3.76 8.4 8.4 8.4 0.542 0 1.062-0.051 1.564-0.149A8.4 8.4 0 1 1 12 3z" 
+                        <Path Data="M12 3c0.132 0 0.263 0.007 0.393 0.021a8.4 8.4 0 0 0-0.143 1.579c0 4.639 3.76 8.4 8.4 8.4 0.542 0 1.062-0.051 1.564-0.149A8.4 8.4 0 1 1 12 3z"
                               Fill="{DynamicResource OnSurfaceVariantBrush}" Width="18" Height="18" Stretch="Uniform"/>
                     </CheckBox.Tag>
                 </CheckBox>
