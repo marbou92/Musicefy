@@ -18,7 +18,6 @@ namespace Musicefy
         private readonly ILibraryService _libService;
         private bool _isInitializing = true;
 
-        // Animation-only state (purely visual, stays in code-behind)
         private NowPlayingControl _nowPlayingView;
         private bool _isDraggingMiniPlayer = false;
         private Point _dragStartPoint;
@@ -38,15 +37,11 @@ namespace Musicefy
 
             this.DataContext = _viewModel;
             InitializeComponent();
-
             InitializeWindowChromeCommands();
 
-            // CRITICAL: Initialize with Home page immediately
-            // This ensures the content area is populated before the window is shown
             _viewModel.NavigateToPage(0);
             MainContent.Content = _viewModel.CurrentPage;
 
-            // Start fade-in animation for the content
             MainContent.Opacity = 0;
             var fadeIn = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(300));
             MainContent.BeginAnimation(OpacityProperty, fadeIn);
@@ -61,7 +56,6 @@ namespace Musicefy
                 MiniPlayerBar.Visibility = _viewModel.IsMiniPlayerVisible ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        // ── Window chrome ────────────────────────────────────────────────
         private void InitializeWindowChromeCommands()
         {
             this.CommandBindings.Add(new CommandBinding(SystemCommands.MinimizeWindowCommand, (s, e) => SystemCommands.MinimizeWindow(this)));
@@ -73,7 +67,6 @@ namespace Musicefy
         public override void OnApplyTemplate()
         {
             base.OnApplyTemplate();
-
             if (GetTemplateChild("BtnShellMinimize") is Button btnMinimize)
             { btnMinimize.Click -= MinimizeHandler; btnMinimize.Click += MinimizeHandler; }
             if (GetTemplateChild("BtnShellMaximize") is Button btnMaximize)
@@ -90,65 +83,51 @@ namespace Musicefy
             else SystemCommands.MaximizeWindow(this);
         }
 
-        private void SidebarBorder_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
-        {
-            var scaleUp = new DoubleAnimation(1.0, new Duration(TimeSpan.FromMilliseconds(200)))
-            {
-                EasingFunction = new System.Windows.Media.Animation.QuadraticEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut }
-            };
-            SidebarScale.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleXProperty, scaleUp);
-            SidebarScale.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleYProperty, scaleUp);
-        }
-
-        private void SidebarBorder_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
-        {
-            var scaleDown = new DoubleAnimation(0.85, new Duration(TimeSpan.FromMilliseconds(300)))
-            {
-                EasingFunction = new System.Windows.Media.Animation.QuadraticEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut }
-            };
-            SidebarScale.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleXProperty, scaleDown);
-            SidebarScale.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleYProperty, scaleDown);
-        }
-
-        // ── Sidebar navigation ─────────────────────────────────────────
+        // ── Navigation ListBox (Home / Search / Library) ─────────────────────
         private void Sidebar_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (SidebarList.SelectedItem == null) return;
             if (_isInitializing) return;
+
+            // Deselect settings when main nav is chosen
+            SettingsSidebarList.SelectedIndex = -1;
+
+            AnimateToPage(SidebarList.SelectedIndex);
+        }
+
+        // ── Settings ListBox (pinned at bottom) ───────────────────────────────
+        private void SettingsSidebar_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (SettingsSidebarList.SelectedItem == null) return;
+            if (_isInitializing) return;
+
+            // Deselect main nav when settings is chosen
+            SidebarList.SelectedIndex = -1;
+
+            AnimateToPage(3); // Settings is page index 3
+        }
+
+        private void AnimateToPage(int index)
+        {
             if (MainContent == null) return;
 
-            // Animate fade + slide transition
-            var durationOut = TimeSpan.FromMilliseconds(120);
-            var durationIn = TimeSpan.FromMilliseconds(240);
+            var durationOut = TimeSpan.FromMilliseconds(110);
+            var durationIn  = TimeSpan.FromMilliseconds(220);
             var easeOut = new CubicEase { EasingMode = EasingMode.EaseOut };
-            var easeIn = new CubicEase { EasingMode = EasingMode.EaseIn };
+            var easeIn  = new CubicEase { EasingMode = EasingMode.EaseIn };
 
-            var fadeOut = new DoubleAnimation(1, 0, durationOut)
-            {
-                EasingFunction = easeIn
-            };
-            var slideOut = new DoubleAnimation(0, -20, durationOut)
-            {
-                EasingFunction = easeIn
-            };
+            var fadeOut = new DoubleAnimation(1, 0, durationOut) { EasingFunction = easeIn };
+            var slideOut = new DoubleAnimation(0, -16, durationOut) { EasingFunction = easeIn };
 
             fadeOut.Completed += (s, ev) =>
             {
-                // Navigate to the selected page
-                int index = SidebarList.SelectedIndex;
                 _viewModel.NavigateToPage(index);
                 MainContent.Content = _viewModel.CurrentPage;
-                PageSlideTransform.Y = 20;
+                PageSlideTransform.Y = 16;
                 this.UpdateLayout();
 
-                var fadeIn = new DoubleAnimation(0, 1, durationIn)
-                {
-                    EasingFunction = easeOut
-                };
-                var slideIn = new DoubleAnimation(20, 0, durationIn)
-                {
-                    EasingFunction = easeOut
-                };
+                var fadeIn  = new DoubleAnimation(0, 1, durationIn) { EasingFunction = easeOut };
+                var slideIn = new DoubleAnimation(16, 0, durationIn) { EasingFunction = easeOut };
                 MainContent.BeginAnimation(OpacityProperty, fadeIn);
                 PageSlideTransform.BeginAnimation(TranslateTransform.YProperty, slideIn);
             };
@@ -159,13 +138,13 @@ namespace Musicefy
 
         public void NavigateToSettings()
         {
-            SidebarList.SelectedIndex = 3;
+            SidebarList.SelectedIndex = -1;
+            SettingsSidebarList.SelectedIndex = 0;
         }
 
-        // ── Mini-player drag (purely visual animation) ───────────────────
+        // ── Mini-player drag ──────────────────────────────────────────────────
         private void MiniPlayerBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            // Stop any running animations so local value assignments in MouseMove take effect
             MiniPlayerTransform.BeginAnimation(TranslateTransform.XProperty, null);
             MiniPlayerTransform.BeginAnimation(TranslateTransform.YProperty, null);
             MiniPlayerBar.BeginAnimation(OpacityProperty, null);
@@ -190,8 +169,7 @@ namespace Musicefy
                 _hasDraggedSignificantly = true;
 
             double maxOffset = double.IsNaN(MiniPlayerBar.Width) ? 0 : Math.Max(0, (this.ActualWidth - MiniPlayerBar.Width) / 2.0 - 16);
-            double targetX = _dragStartTranslateX + deltaX;
-            MiniPlayerTransform.X = Math.Max(-maxOffset, Math.Min(maxOffset, targetX));
+            MiniPlayerTransform.X = Math.Max(-maxOffset, Math.Min(maxOffset, _dragStartTranslateX + deltaX));
 
             if (deltaY > 0)
             {
@@ -211,12 +189,9 @@ namespace Musicefy
             _isDraggingMiniPlayer = false;
             MiniPlayerBar.ReleaseMouseCapture();
 
-            if (MiniPlayerTransform.Y > 45)
-                DismissMiniPlayer();
-            else if (!_hasDraggedSignificantly)
-                OpenFullNowPlaying();
-            else if (MiniPlayerTransform.Y > 0)
-                SnapMiniPlayerBack();
+            if (MiniPlayerTransform.Y > 45) DismissMiniPlayer();
+            else if (!_hasDraggedSignificantly) OpenFullNowPlaying();
+            else if (MiniPlayerTransform.Y > 0) SnapMiniPlayerBack();
         }
 
         private void DismissMiniPlayer()
@@ -267,7 +242,7 @@ namespace Musicefy
         private void CollapseFullNowPlaying()
         {
             MiniPlayerBar.Visibility = Visibility.Visible;
-            var easeIn = new CubicEase { EasingMode = EasingMode.EaseIn };
+            var easeIn  = new CubicEase { EasingMode = EasingMode.EaseIn };
             var easeOut = new CubicEase { EasingMode = EasingMode.EaseOut };
 
             var slideDown = new DoubleAnimation(0, this.ActualHeight, TimeSpan.FromMilliseconds(350)) { EasingFunction = easeIn };
@@ -285,6 +260,5 @@ namespace Musicefy
             MiniPlayerTransform.BeginAnimation(TranslateTransform.YProperty,
                 new DoubleAnimation(40, 0, TimeSpan.FromMilliseconds(350)) { EasingFunction = easeOut });
         }
-
     }
 }
