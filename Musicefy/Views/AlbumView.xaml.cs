@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using Musicefy.ViewModels;
 
 namespace Musicefy.Views
@@ -8,6 +9,8 @@ namespace Musicefy.Views
     public partial class AlbumView : UserControl
     {
         private readonly AlbumViewModel _viewModel;
+
+        public event Action<string> RequestNavigateToArtist;
 
         public AlbumView(AlbumViewModel viewModel)
         {
@@ -25,6 +28,16 @@ namespace Musicefy.Views
         {
             if (Window.GetWindow(this) is MainWindow mainWindow)
                 mainWindow.NavigateBack();
+        }
+
+        private void ArtistText_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if (!string.IsNullOrEmpty(_viewModel.ArtistName))
+            {
+                RequestNavigateToArtist?.Invoke(_viewModel.ArtistName);
+                if (Window.GetWindow(this) is MainWindow mainWindow)
+                    mainWindow.NavigateToArtist(_viewModel.ArtistName);
+            }
         }
     }
 }
