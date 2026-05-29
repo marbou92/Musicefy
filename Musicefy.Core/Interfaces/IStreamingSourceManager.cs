@@ -55,6 +55,11 @@ namespace Musicefy.Core.Interfaces
         /// Test connection to a source
         /// </summary>
         Task<bool> TestConnectionAsync(string sourceId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Get all albums from all connected sources
+        /// </summary>
+        Task<List<AlbumInfo>> GetAllAlbumsAsync(CancellationToken cancellationToken = default);
     }
 
     /// <summary>
