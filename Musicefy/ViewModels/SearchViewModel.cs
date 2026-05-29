@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
@@ -24,6 +26,16 @@ namespace Musicefy.ViewModels
         private bool _isResultsVisible;
         private bool _isSearching;
         private int _searchCount;
+
+        private static readonly ConcurrentDictionary<string, CachedSearchResult> _searchCache
+            = new ConcurrentDictionary<string, CachedSearchResult>(StringComparer.OrdinalIgnoreCase);
+        private static readonly TimeSpan SearchCacheTtl = TimeSpan.FromSeconds(30);
+
+        private class CachedSearchResult
+        {
+            public List<MusicFile> Results { get; set; }
+            public DateTime Timestamp { get; set; }
+        }
 
         public string SearchQuery
         {
@@ -93,6 +105,14 @@ namespace Musicefy.ViewModels
             PlayTrackCommand = new RelayCommand(ExecutePlayTrack);
         }
 
+        public void SearchNow()
+        {
+            try { _debounceCts?.Cancel(); } catch (ObjectDisposedException) { }
+            _debounceCts?.Dispose();
+            _debounceCts = null;
+            _ = PerformSearch();
+        }
+
         private async void DebounceSearch()
         {
             try
@@ -123,9 +143,20 @@ namespace Musicefy.ViewModels
             _searchCts = new CancellationTokenSource();
             var token = _searchCts.Token;
 
-            if (string.IsNullOrWhiteSpace(SearchQuery))
+            var query = SearchQuery?.Trim() ?? "";
+            if (string.IsNullOrWhiteSpace(query))
             {
                 SearchResults.Clear();
+                UpdateVisibility();
+                return;
+            }
+
+            // Check cache
+            if (_searchCache.TryGetValue(query, out var cached) && (DateTime.UtcNow - cached.Timestamp) < SearchCacheTtl)
+            {
+                SearchResults.Clear();
+                foreach (var item in cached.Results)
+                    SearchResults.Add(item);
                 UpdateVisibility();
                 return;
             }
@@ -146,17 +177,29 @@ namespace Musicefy.ViewModels
 
                 var allResults = localResults.Concat(sourceResults).ToList();
 
-                // Deduplicate by FilePath
+                // Deduplicate by FilePath using batch
                 var seen = new System.Collections.Generic.HashSet<string>();
+                var batch = new List<MusicFile>(allResults.Count);
                 foreach (var item in allResults)
                 {
                     if (token.IsCancellationRequested) return;
                     if (string.IsNullOrEmpty(item.FilePath) || seen.Add(item.FilePath))
                     {
-                        SearchResults.Add(item);
+                        batch.Add(item);
                         _searchCount++;
                     }
                 }
+
+                SearchResults.Clear();
+                foreach (var item in batch)
+                    SearchResults.Add(item);
+
+                // Store in cache
+                _searchCache[query] = new CachedSearchResult
+                {
+                    Results = batch,
+                    Timestamp = DateTime.UtcNow
+                };
             }
             catch (OperationCanceledException) { }
             finally
