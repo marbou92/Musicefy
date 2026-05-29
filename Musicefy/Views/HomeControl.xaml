@@ -207,36 +207,35 @@
             </StackPanel>
         </Border>
 
-        <!-- Loading skeleton with shimmer -->
+        <!-- Loading skeleton with shimmer (shared styles from SharedSkeletons.xaml) -->
         <Grid x:Name="LoadingSkeleton" Visibility="Collapsed">
             <ScrollViewer VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled">
                 <StackPanel Margin="30,20,30,30">
                     <!-- Hero skeleton -->
-                    <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="20" Height="280" Margin="0,0,0,28" Opacity="0.15"/>
+                    <Border Style="{StaticResource SkeletonCardStyle}" Height="280" Margin="0,0,0,28"/>
                     <!-- Recently played header + circles -->
-                    <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="8" Width="200" Height="24" Margin="6,0,0,20" Opacity="0.25"/>
+                    <Border Style="{StaticResource SkeletonHeaderStyle}" Width="200" Margin="6,0,0,20"/>
                     <StackPanel Orientation="Horizontal" Margin="6,0,0,36">
-                        <Border Width="100" Height="100" CornerRadius="50" Background="{DynamicResource SurfaceVariantBrush}" Margin="0,0,18,0" Opacity="0.2"/>
-                        <Border Width="100" Height="100" CornerRadius="50" Background="{DynamicResource SurfaceVariantBrush}" Margin="0,0,18,0" Opacity="0.15"/>
-                        <Border Width="100" Height="100" CornerRadius="50" Background="{DynamicResource SurfaceVariantBrush}" Margin="0,0,18,0" Opacity="0.1"/>
+                        <Border Style="{StaticResource SkeletonCircleStyle}" Margin="0,0,18,0"/>
+                        <Border Style="{StaticResource SkeletonCircleStyle}" Margin="0,0,18,0"/>
+                        <Border Style="{StaticResource SkeletonCircleStyle}" Margin="0,0,18,0"/>
                     </StackPanel>
                     <!-- Charts header skeleton -->
-                    <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="8" Width="180" Height="28" Margin="6,0,0,20" Opacity="0.25"/>
+                    <Border Style="{StaticResource SkeletonHeaderStyle}" Width="180" Margin="6,0,0,20"/>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,36">
-                        <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="24" Width="170" Height="240" Margin="0,0,14,0" Opacity="0.2"/>
-                        <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="24" Width="170" Height="240" Margin="0,0,14,0" Opacity="0.15"/>
-                        <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="24" Width="170" Height="240" Margin="0,0,14,0" Opacity="0.1"/>
+                        <Border Style="{StaticResource SkeletonCardStyle}" Width="170" Height="240" Margin="0,0,14,0"/>
+                        <Border Style="{StaticResource SkeletonCardStyle}" Width="170" Height="240" Margin="0,0,14,0"/>
+                        <Border Style="{StaticResource SkeletonCardStyle}" Width="170" Height="240" Margin="0,0,14,0"/>
                     </StackPanel>
                     <!-- Quick Picks header skeleton -->
-                    <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="8" Width="160" Height="28" Margin="6,0,6,20" Opacity="0.25"/>
+                    <Border Style="{StaticResource SkeletonHeaderStyle}" Width="160" Margin="6,0,6,20"/>
                     <WrapPanel Orientation="Horizontal" Margin="0,0,0,20">
-                        <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="14" Width="290" Height="72" Margin="4,4,8,4" Opacity="0.2"/>
-                        <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="14" Width="290" Height="72" Margin="4,4,8,4" Opacity="0.15"/>
-                        <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="14" Width="290" Height="72" Margin="4,4,8,4" Opacity="0.1"/>
+                        <Border Style="{StaticResource SkeletonRowStyle}" Width="290" Height="72" Margin="4,4,8,4"/>
+                        <Border Style="{StaticResource SkeletonRowStyle}" Width="290" Height="72" Margin="4,4,8,4"/>
+                        <Border Style="{StaticResource SkeletonRowStyle}" Width="290" Height="72" Margin="4,4,8,4"/>
                     </WrapPanel>
                 </StackPanel>
             </ScrollViewer>
-            <Rectangle x:Name="ShimmerOverlay" IsHitTestVisible="False"/>
         </Grid>
 
         <!-- Content area -->
