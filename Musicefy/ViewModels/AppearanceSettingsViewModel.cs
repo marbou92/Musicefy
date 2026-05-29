@@ -298,10 +298,10 @@ namespace Musicefy.ViewModels
         private void InitCustomColorsFromDefault()
         {
             var firstSeed = SeedPalettes.All[0];
-            CustomPrimaryColor = SeedToColor(firstSeed.PrimaryHue, firstSeed.PrimaryChroma);
-            CustomSecondaryColor = SeedToColor(firstSeed.PrimaryHue + firstSeed.SecondaryHueOffset, firstSeed.PrimaryChroma * firstSeed.SecondaryChromaRatio);
-            CustomTertiaryColor = SeedToColor(firstSeed.PrimaryHue + firstSeed.TertiaryHueOffset, firstSeed.PrimaryChroma * firstSeed.TertiaryChromaRatio);
-            CustomNeutralColor = SeedToColor(firstSeed.PrimaryHue, firstSeed.NeutralChroma);
+            CustomPrimaryColor = ArgbToColor(firstSeed.PrimaryArgb);
+            CustomSecondaryColor = ArgbToColor(firstSeed.SecondaryArgb);
+            CustomTertiaryColor = ArgbToColor(firstSeed.TertiaryArgb);
+            CustomNeutralColor = ArgbToColor(firstSeed.NeutralArgb);
             OnPropertyChanged(nameof(CustomPrimaryColor));
             OnPropertyChanged(nameof(CustomSecondaryColor));
             OnPropertyChanged(nameof(CustomTertiaryColor));
@@ -453,14 +453,10 @@ namespace Musicefy.ViewModels
                         CardName = seed.Name,
                         Family = seed.Family,
                         IsSelected = isSelected,
-                        PrimarySeed = SeedToColor(seed.PrimaryHue, seed.PrimaryChroma),
-                        SecondarySeed = SeedToColor(
-                            seed.PrimaryHue + seed.SecondaryHueOffset,
-                            seed.PrimaryChroma * seed.SecondaryChromaRatio),
-                        TertiarySeed = SeedToColor(
-                            seed.PrimaryHue + seed.TertiaryHueOffset,
-                            seed.PrimaryChroma * seed.TertiaryChromaRatio),
-                        NeutralSeed = SeedToColor(seed.PrimaryHue, seed.NeutralChroma),
+                        PrimarySeed = ArgbToColor(seed.PrimaryArgb),
+                        SecondarySeed = ArgbToColor(seed.SecondaryArgb),
+                        TertiarySeed = ArgbToColor(seed.TertiaryArgb),
+                        NeutralSeed = ArgbToColor(seed.NeutralArgb),
                     };
 
                     familyGroup.Previews.Add(preview);
@@ -470,9 +466,8 @@ namespace Musicefy.ViewModels
             }
         }
 
-        private static Color SeedToColor(double hue, double chroma)
+        private static Color ArgbToColor(int argb)
         {
-            int argb = Hct.From(hue, Math.Max(chroma, 0.5), 60).ToInt();
             return Color.FromArgb(255,
                 (byte)((argb >> 16) & 0xFF),
                 (byte)((argb >> 8) & 0xFF),
