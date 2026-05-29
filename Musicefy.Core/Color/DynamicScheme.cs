@@ -98,6 +98,13 @@ namespace Musicefy.Core.Hct
                 ToneRole.ErrorContainer => dark ? 30 : 90,
                 ToneRole.OnErrorContainer => dark ? 90 : 10,
 
+                ToneRole.Surface => dark ? 6 : 98,
+                ToneRole.OnSurface => dark ? 90 : 10,
+                ToneRole.SurfaceVariant => dark ? 30 : 90,
+                ToneRole.OnSurfaceVariant => dark ? 80 : 30,
+                ToneRole.Outline => dark ? 60 : 50,
+                ToneRole.OutlineVariant => dark ? 30 : 80,
+
                 _ => 50
             };
         }
@@ -121,6 +128,12 @@ namespace Musicefy.Core.Hct
                 ToneRole.Error or ToneRole.OnError
                     or ToneRole.ErrorContainer or ToneRole.OnErrorContainer
                     => ErrorPalette,
+
+                ToneRole.Surface or ToneRole.OnSurface or ToneRole.Outline
+                    => NeutralPalette,
+
+                ToneRole.SurfaceVariant or ToneRole.OnSurfaceVariant or ToneRole.OutlineVariant
+                    => NeutralVariantPalette,
 
                 _ => PrimaryPalette
             };
@@ -158,7 +171,13 @@ namespace Musicefy.Core.Hct
         Error,
         OnError,
         ErrorContainer,
-        OnErrorContainer
+        OnErrorContainer,
+        Surface,
+        OnSurface,
+        SurfaceVariant,
+        OnSurfaceVariant,
+        Outline,
+        OutlineVariant
     }
 
     public enum AccentVariant
