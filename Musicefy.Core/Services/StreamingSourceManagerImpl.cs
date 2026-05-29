@@ -155,10 +155,39 @@ namespace Musicefy.Core.Services
             if (activeSessions.Count == 0)
                 return new List<MusicFile>();
 
-            var tasks = activeSessions.Select(kvp => SearchSourceAsync(kvp.Key, kvp.Value, query, cancellationToken));
-            var results = await Task.WhenAll(tasks);
+            var tasks = activeSessions.Select(kvp => SearchSourceWithTimeoutAsync(kvp.Key, kvp.Value, query, cancellationToken));
 
-            return results.Where(r => r != null).SelectMany(r => r).ToList();
+            var allTask = Task.WhenAll(tasks);
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeoutCts.CancelAfter(TimeSpan.FromSeconds(8));
+            var overallTimeout = Task.Delay(-1, timeoutCts.Token);
+
+            var completed = await Task.WhenAny(allTask, overallTimeout);
+
+            if (completed == overallTimeout)
+            {
+                System.Diagnostics.Debug.WriteLine("[Search] Overall search timed out after 8s — returning partial results");
+            }
+
+            return tasks.Where(t => t.IsCompletedSuccessfully)
+                        .SelectMany(t => t.Result)
+                        .Where(r => r != null)
+                        .ToList();
+        }
+
+        private async Task<List<MusicFile>> SearchSourceWithTimeoutAsync(string sourceId, IMusicSourceSession session, string query, CancellationToken cancellationToken)
+        {
+            var searchTask = SearchSourceAsync(sourceId, session, query, cancellationToken);
+            var timeoutTask = Task.Delay(5000, cancellationToken);
+            var completed = await Task.WhenAny(searchTask, timeoutTask);
+
+            if (completed == timeoutTask)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Search] Source {sourceId} timed out after 5s");
+                return new List<MusicFile>();
+            }
+
+            return await searchTask;
         }
 
         private async Task<List<MusicFile>> SearchSourceAsync(string sourceId, IMusicSourceSession session, string query, CancellationToken cancellationToken)
@@ -225,7 +254,8 @@ namespace Musicefy.Core.Services
             {
                 try
                 {
-                    var response = await _httpClient.GetAsync(resourceId);
+                    using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(8));
+                    var response = await _httpClient.GetAsync(resourceId, timeoutCts.Token);
                     response.EnsureSuccessStatusCode();
                     return await response.Content.ReadAsByteArrayAsync();
                 }
