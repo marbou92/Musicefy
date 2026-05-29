@@ -36,8 +36,8 @@ namespace Musicefy.Core.Hct
 
         private static int SolveToInt(double hue, double chroma, double tone)
         {
-            if (tone <= 0.0) return 0xFF000000;
-            if (tone >= 100.0) return 0xFFFFFFFF;
+            if (tone <= 0.0) return (int)0xFF000000;
+            if (tone >= 100.0) return (int)0xFFFFFFFF;
 
             chroma = Math.Max(chroma, 0.0);
 
