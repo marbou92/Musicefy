@@ -47,15 +47,18 @@ namespace Musicefy.Views
 
         private void StartSpinner()
         {
-            SearchSpinner.Visibility = Visibility.Visible;
             if (_spinnerStoryboard != null) return;
+            SearchSpinner.BeginAnimation(OpacityProperty, null);
+            SearchSpinner.Visibility = Visibility.Visible;
+            SearchSpinner.Opacity = 1;
             _spinnerStoryboard = new Storyboard();
             var rotate = new DoubleAnimation
             {
                 From = 0,
                 To = 360,
-                Duration = new Duration(TimeSpan.FromSeconds(1.2)),
-                RepeatBehavior = RepeatBehavior.Forever
+                Duration = new Duration(TimeSpan.FromSeconds(0.8)),
+                RepeatBehavior = RepeatBehavior.Forever,
+                EasingFunction = new SineEase { EasingMode = EasingMode.EaseInOut }
             };
             Storyboard.SetTargetName(rotate, "SpinnerArc");
             Storyboard.SetTargetProperty(rotate, new PropertyPath("(Path.RenderTransform).(RotateTransform.Angle)"));
@@ -68,7 +71,15 @@ namespace Musicefy.Views
             if (_spinnerStoryboard == null) return;
             _spinnerStoryboard.Stop(SearchSpinner);
             _spinnerStoryboard = null;
-            SearchSpinner.Visibility = Visibility.Collapsed;
+            var fadeOut = new DoubleAnimation
+            {
+                From = 1,
+                To = 0,
+                Duration = new Duration(TimeSpan.FromMilliseconds(150)),
+                EasingFunction = new SineEase { EasingMode = EasingMode.EaseIn }
+            };
+            fadeOut.Completed += (s, a) => SearchSpinner.Visibility = Visibility.Collapsed;
+            SearchSpinner.BeginAnimation(OpacityProperty, fadeOut);
         }
 
         private void SearchBox_GotFocus(object sender, RoutedEventArgs e)
@@ -92,7 +103,13 @@ namespace Musicefy.Views
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (ViewModel != null)
+            {
                 ViewModel.SearchQuery = SearchBox.Text == "Search..." ? "" : SearchBox.Text;
+                if (!string.IsNullOrWhiteSpace(SearchBox.Text) && SearchBox.Text != "Search...")
+                    StartSpinner();
+                else
+                    StopSpinner();
+            }
         }
 
         private void BtnClear_Click(object sender, RoutedEventArgs e)
