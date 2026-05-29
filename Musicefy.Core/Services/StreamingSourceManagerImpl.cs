@@ -169,7 +169,7 @@ namespace Musicefy.Core.Services
                 System.Diagnostics.Debug.WriteLine("[Search] Overall search timed out after 8s — returning partial results");
             }
 
-            return tasks.Where(t => t.IsCompletedSuccessfully)
+            return tasks.Where(t => t.IsCompleted && t.Status == TaskStatus.RanToCompletion)
                         .SelectMany(t => t.Result)
                         .Where(r => r != null)
                         .ToList();
