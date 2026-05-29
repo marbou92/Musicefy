@@ -1,4 +1,3 @@
-using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -37,11 +36,14 @@ namespace Musicefy.Views
             }
         }
 
-        private void BtnDefaultPalette_Click(object sender, RoutedEventArgs e)
+        private void BtnResetPalette_Click(object sender, RoutedEventArgs e)
         {
             if (DataContext is AppearanceSettingsViewModel viewModel)
             {
-                viewModel.SelectPalette("Default");
+                var firstGroup = viewModel.FamilyGroups?.FirstOrDefault();
+                var firstPreview = firstGroup?.Previews?.FirstOrDefault();
+                if (firstPreview != null)
+                    viewModel.SelectPalette(firstPreview.CardName);
             }
         }
     }
