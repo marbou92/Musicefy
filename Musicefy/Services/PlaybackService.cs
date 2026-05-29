@@ -175,6 +175,13 @@ namespace Musicefy.Services
 
         private void PlayInternal(MusicFile track, string uri)
         {
+            if (string.IsNullOrEmpty(uri))
+            {
+                System.Diagnostics.Debug.WriteLine("[PlaybackService] Cannot play track: resolved URI is null or empty");
+                StopPlayback();
+                return;
+            }
+
             if (string.IsNullOrEmpty(track.CoverPath))
             {
                 string expectedCover = LibraryScanner.GetArtworkCachePath(uri);
