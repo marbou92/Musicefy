@@ -22,6 +22,8 @@ namespace Musicefy.Converters
         private static readonly ConcurrentDictionary<string, byte> _inFlight
             = new ConcurrentDictionary<string, byte>(StringComparer.OrdinalIgnoreCase);
 
+        private static readonly ConcurrentQueue<string> _cacheOrder = new ConcurrentQueue<string>();
+
         private static readonly SemaphoreSlim _throttle = new SemaphoreSlim(4, 4);
 
         private static readonly ImageSource _fallbackImage;
@@ -93,26 +95,40 @@ namespace Musicefy.Converters
             BitmapImage bitmap = null;
             try
             {
-                // Streaming source cover ID
+                // Streaming source cover ID — fetches bytes asynchronously, creates BitmapImage on UI thread
                 if (coverPath.Contains(":cover:"))
                 {
                     bitmap = await LoadStreamingCoverAsync(coverPath);
                 }
-                else
+                else if (coverPath.StartsWith("http", StringComparison.OrdinalIgnoreCase))
                 {
-                    bitmap = await System.Threading.Tasks.Task.Run(() =>
+                    // Download bytes on BG thread
+                    var bytes = await System.Threading.Tasks.Task.Run(() =>
                     {
                         try
                         {
-                            // HTTP URL
-                            if (coverPath.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-                                return LoadHttpImage(coverPath, decodeWidth);
-
-                            // Local file path
-                            return LoadDiskImage(coverPath, decodeWidth);
+                            using var client = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(8) };
+                            var response = client.GetAsync(coverPath).Result;
+                            response.EnsureSuccessStatusCode();
+                            return response.Content.ReadAsByteArrayAsync().Result;
                         }
                         catch { return null; }
                     });
+
+                    if (bytes != null && bytes.Length > 0)
+                        bitmap = await CreateBitmapOnUiThread(bytes, decodeWidth);
+                }
+                else
+                {
+                    // Local file — read bytes on BG thread, create BitmapImage on UI thread
+                    var bytes = await System.Threading.Tasks.Task.Run(() =>
+                    {
+                        try { return System.IO.File.ReadAllBytes(coverPath); }
+                        catch { return null; }
+                    });
+
+                    if (bytes != null && bytes.Length > 0)
+                        bitmap = await CreateBitmapOnUiThread(bytes, decodeWidth);
                 }
             }
             finally
@@ -124,6 +140,7 @@ namespace Musicefy.Converters
             if (bitmap != null)
             {
                 _cache[coverPath] = bitmap;
+                _cacheOrder.Enqueue(coverPath);
                 EvictIfNeeded();
             }
 
@@ -134,12 +151,40 @@ namespace Musicefy.Converters
                 System.Windows.Threading.DispatcherPriority.ApplicationIdle);
         }
 
+        private static System.Threading.Tasks.Task<BitmapImage> CreateBitmapOnUiThread(byte[] bytes, int decodeWidth)
+        {
+            var tcs = new System.Threading.Tasks.TaskCompletionSource<BitmapImage>();
+            Application.Current?.Dispatcher.BeginInvoke((Action)(() =>
+            {
+                try
+                {
+                    var bmp = new BitmapImage();
+                    using (var ms = new MemoryStream(bytes))
+                    {
+                        bmp.BeginInit();
+                        bmp.CacheOption = BitmapCacheOption.OnLoad;
+                        bmp.DecodePixelWidth = decodeWidth;
+                        bmp.CreateOptions = BitmapCreateOptions.IgnoreColorProfile;
+                        bmp.StreamSource = ms;
+                        bmp.EndInit();
+                    }
+                    bmp.Freeze();
+                    tcs.SetResult(bmp);
+                }
+                catch (Exception ex) { tcs.SetException(ex); }
+            }), System.Windows.Threading.DispatcherPriority.Normal);
+            return tcs.Task;
+        }
+
         private static void EvictIfNeeded()
         {
             if (_cache.Count <= MaxCacheEntries) return;
             int toRemove = MaxCacheEntries / 5;
-            foreach (var key in _cache.Keys.Take(toRemove))
-                _cache.TryRemove(key, out _);
+            for (int i = 0; i < toRemove; i++)
+            {
+                if (_cacheOrder.TryDequeue(out var key))
+                    _cache.TryRemove(key, out _);
+            }
         }
 
         private static void RefreshImages(string coverPath)
@@ -161,7 +206,7 @@ namespace Musicefy.Converters
             for (int i = 0; i < children; i++)
             {
                 var child = VisualTreeHelper.GetChild(parent, i);
-                if (child is Image img && ReferenceEquals(img.Source, _fallbackImage))
+                if (child is Image img && (ReferenceEquals(img.Source, _fallbackImage) || img.Source == null))
                 {
                     var dc = (child as FrameworkElement)?.DataContext as Musicefy.Core.Models.MusicFile;
                     if (dc?.CoverPath != null &&
@@ -175,32 +220,6 @@ namespace Musicefy.Converters
                     child is System.Windows.Controls.ItemsPresenter || child is System.Windows.Controls.Border)
                     WalkAndUpdate(child, coverPath, depth + 1);
             }
-        }
-
-        private static BitmapImage LoadDiskImage(string filePath, int decodeWidth)
-        {
-            var bmp = new BitmapImage();
-            bmp.BeginInit();
-            bmp.UriSource = new Uri(Path.GetFullPath(filePath), UriKind.Absolute);
-            bmp.CacheOption = BitmapCacheOption.OnLoad;
-            bmp.DecodePixelWidth = decodeWidth;
-            bmp.CreateOptions = BitmapCreateOptions.IgnoreColorProfile;
-            bmp.EndInit();
-            bmp.Freeze();
-            return bmp;
-        }
-
-        private static BitmapImage LoadHttpImage(string url, int decodeWidth)
-        {
-            var bmp = new BitmapImage();
-            bmp.BeginInit();
-            bmp.UriSource = new Uri(url, UriKind.Absolute);
-            bmp.CacheOption = BitmapCacheOption.OnLoad;
-            bmp.DecodePixelWidth = decodeWidth;
-            bmp.CreateOptions = BitmapCreateOptions.IgnoreColorProfile;
-            bmp.EndInit();
-            bmp.Freeze();
-            return bmp;
         }
 
         private static async System.Threading.Tasks.Task<BitmapImage> LoadStreamingCoverAsync(string coverId)
