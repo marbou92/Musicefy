@@ -7,7 +7,6 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Themes/Modes/System.xaml"/>
-                <ResourceDictionary Source="Themes/Palettes/Default.xaml"/>
                 <ResourceDictionary Source="Themes/Base.xaml"/>
                 <ResourceDictionary Source="Themes/SharedSkeletons.xaml"/>
                 <ResourceDictionary Source="Themes/ScrollbarTheme.xaml"/>
