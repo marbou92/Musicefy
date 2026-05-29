@@ -1,4 +1,4 @@
-namespace Musicefy.Core.Color
+namespace Musicefy.Core.Hct
 {
     public class SeedPalette
     {
