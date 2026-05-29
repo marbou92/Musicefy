@@ -27,6 +27,8 @@ namespace Musicefy.Views
 
             this.DataContext = _viewModel;
             _viewModel.RequestCollapse += OnRequestCollapse;
+            _viewModel.RequestNavigateToArtist += OnRequestNavigateToArtist;
+            _viewModel.RequestNavigateToAlbum += OnRequestNavigateToAlbum;
             _viewModel.PropertyChanged += OnViewModelPropertyChanged;
             this.Unloaded += OnUnloaded;
 
@@ -37,6 +39,8 @@ namespace Musicefy.Views
         private void OnUnloaded(object sender, RoutedEventArgs e)
         {
             _viewModel.RequestCollapse -= OnRequestCollapse;
+            _viewModel.RequestNavigateToArtist -= OnRequestNavigateToArtist;
+            _viewModel.RequestNavigateToAlbum -= OnRequestNavigateToAlbum;
             _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
             _queueScrollTimer.Tick -= OnQueueScrollTimerTick;
             _queueScrollTimer.Stop();
@@ -49,6 +53,18 @@ namespace Musicefy.Views
         }
 
         private void OnRequestCollapse() => RequestCollapse?.Invoke();
+
+        private void OnRequestNavigateToArtist(string artistName)
+        {
+            if (Window.GetWindow(this) is MainWindow mainWindow)
+                mainWindow.NavigateToArtist(artistName);
+        }
+
+        private void OnRequestNavigateToAlbum(string albumName, string artistName)
+        {
+            if (Window.GetWindow(this) is MainWindow mainWindow)
+                mainWindow.NavigateToAlbum(albumName, artistName);
+        }
 
         private void OnViewModelPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
