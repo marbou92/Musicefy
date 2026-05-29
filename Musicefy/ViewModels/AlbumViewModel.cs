@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using System.Windows.Media;
 using Musicefy.Core.Interfaces;
 using Musicefy.Core.Models;
 using Musicefy.Core.Services;
@@ -49,10 +50,51 @@ namespace Musicefy.ViewModels
             set => SetProperty(ref _isLoading, value);
         }
 
+        private Brush _backgroundGradient;
+        public Brush BackgroundGradient
+        {
+            get => _backgroundGradient;
+            set => SetProperty(ref _backgroundGradient, value);
+        }
+
+        private bool _isFavourited;
+        public bool IsFavourited
+        {
+            get => _isFavourited;
+            set => SetProperty(ref _isFavourited, value);
+        }
+
+        private TimeSpan _totalDuration;
+        public TimeSpan TotalDuration
+        {
+            get => _totalDuration;
+            private set => SetProperty(ref _totalDuration, value);
+        }
+
+        public string TotalDurationText
+        {
+            get
+            {
+                if (TotalDuration.TotalHours >= 1)
+                    return $"{(int)TotalDuration.TotalHours}:{TotalDuration.Minutes:D2}:{TotalDuration.Seconds:D2}";
+                return $"{TotalDuration.Minutes}:{TotalDuration.Seconds:D2}";
+            }
+        }
+
+        public string SongsCountText => $"{Tracks.Count} songs";
+
+        public string YearText => Year > 0 ? Year.ToString() : "";
+
         public ObservableCollection<MusicFile> Tracks { get; } = new ObservableCollection<MusicFile>();
 
         public ICommand PlayAllCommand { get; }
         public ICommand PlayTrackCommand { get; }
+        public ICommand FavouriteCommand { get; }
+        public ICommand DownloadCommand { get; }
+        public ICommand MoreCommand { get; }
+        public ICommand ShuffleAlbumCommand { get; }
+
+        public event Action<string> RequestNavigateToArtist;
 
         public AlbumViewModel(IAudioPlayer playback, ArtistAlbumService artistAlbumService)
         {
@@ -61,6 +103,14 @@ namespace Musicefy.ViewModels
 
             PlayAllCommand = new RelayCommand(_ => ExecutePlayAll());
             PlayTrackCommand = new RelayCommand(p => { if (p is MusicFile t) _playback.PlayTrack(t); });
+            FavouriteCommand = new RelayCommand(_ => IsFavourited = !IsFavourited);
+            DownloadCommand = new RelayCommand(_ => System.Windows.MessageBox.Show("Download feature coming soon", "Coming Soon"));
+            MoreCommand = new RelayCommand(p =>
+            {
+                if (p is MusicFile t)
+                    System.Windows.MessageBox.Show($"{t.Title} - {t.Artist}", "Track Options");
+            });
+            ShuffleAlbumCommand = new RelayCommand(_ => ExecuteShuffleAlbum());
         }
 
         public async Task LoadAsync(string albumName, string artistName = null)
@@ -88,7 +138,11 @@ namespace Musicefy.ViewModels
             }
             finally
             {
+                TotalDuration = TimeSpan.FromTicks(Tracks.Sum(t => t.Duration.Ticks));
                 IsLoading = false;
+                OnPropertyChanged(nameof(TotalDurationText));
+                OnPropertyChanged(nameof(SongsCountText));
+                OnPropertyChanged(nameof(YearText));
             }
         }
 
@@ -96,6 +150,15 @@ namespace Musicefy.ViewModels
         {
             if (Tracks.Count > 0)
                 _playback.SetQueue(Tracks, startPlaying: true);
+        }
+
+        private void ExecuteShuffleAlbum()
+        {
+            if (Tracks.Count > 0)
+            {
+                _playback.ShuffleQueue();
+                _playback.SetQueue(Tracks, startPlaying: true);
+            }
         }
     }
 }
