@@ -260,5 +260,31 @@ namespace Musicefy
             MiniPlayerTransform.BeginAnimation(TranslateTransform.YProperty,
                 new DoubleAnimation(40, 0, TimeSpan.FromMilliseconds(350)) { EasingFunction = easeOut });
         }
+
+        public void NavigateToArtist(string artistName)
+        {
+            var services = App.Services;
+            var viewModel = (ArtistViewModel)services.GetService(typeof(ArtistViewModel));
+            var artistView = new ArtistView(viewModel);
+            ArtistOverlay.Content = artistView;
+            ArtistOverlay.Visibility = Visibility.Visible;
+            artistView.LoadArtist(artistName);
+        }
+
+        public void NavigateToAlbum(string albumName, string artistName)
+        {
+            var services = App.Services;
+            var viewModel = (AlbumViewModel)services.GetService(typeof(AlbumViewModel));
+            var albumView = new AlbumView(viewModel);
+            AlbumOverlay.Content = albumView;
+            AlbumOverlay.Visibility = Visibility.Visible;
+            albumView.LoadAlbum(albumName, artistName);
+        }
+
+        public void NavigateBack()
+        {
+            ArtistOverlay.Visibility = Visibility.Collapsed;
+            AlbumOverlay.Visibility = Visibility.Collapsed;
+        }
     }
 }
