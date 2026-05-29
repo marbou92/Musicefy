@@ -223,6 +223,11 @@ namespace Musicefy.ViewModels
         public Color CustomTertiaryColor { get; private set; }
         public Color CustomNeutralColor { get; private set; }
 
+        public Brush CustomPrimaryBrush => new SolidColorBrush(CustomPrimaryColor);
+        public Brush CustomSecondaryBrush => new SolidColorBrush(CustomSecondaryColor);
+        public Brush CustomTertiaryBrush => new SolidColorBrush(CustomTertiaryColor);
+        public Brush CustomNeutralBrush => new SolidColorBrush(CustomNeutralColor);
+
         private void RefreshCustomPreviewColors()
         {
             CustomPrimaryColor = SeedToColor(_customHue, _customChroma);
@@ -233,6 +238,10 @@ namespace Musicefy.ViewModels
             OnPropertyChanged(nameof(CustomSecondaryColor));
             OnPropertyChanged(nameof(CustomTertiaryColor));
             OnPropertyChanged(nameof(CustomNeutralColor));
+            OnPropertyChanged(nameof(CustomPrimaryBrush));
+            OnPropertyChanged(nameof(CustomSecondaryBrush));
+            OnPropertyChanged(nameof(CustomTertiaryBrush));
+            OnPropertyChanged(nameof(CustomNeutralBrush));
         }
 
         #endregion
@@ -401,6 +410,11 @@ namespace Musicefy.ViewModels
         public Color SecondarySeed { get; set; }
         public Color TertiarySeed { get; set; }
         public Color NeutralSeed { get; set; }
+
+        public Brush PrimaryBrush => new SolidColorBrush(PrimarySeed);
+        public Brush SecondaryBrush => new SolidColorBrush(SecondarySeed);
+        public Brush TertiaryBrush => new SolidColorBrush(TertiarySeed);
+        public Brush NeutralBrush => new SolidColorBrush(NeutralSeed);
 
         public bool IsSelected
         {
