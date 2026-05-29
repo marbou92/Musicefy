@@ -53,12 +53,13 @@ namespace Musicefy.Core.Hct
             int argb = ColorUtils.ArgbFromLab(l, a, b);
 
             var cam = Cam16.FromInt(argb);
-            double hueDiff = MathUtils.DifferenceDegrees(cam.Hue, hue);
+                double hueDiff = MathUtils.DifferenceDegrees(cam.Hue, hue);
 
-            if (hueDiff > 2.0 || Math.Abs(cam.Chroma - chroma) / Math.Max(chroma, 1.0) > 0.05)
-            {
-                argb = SolveIterative(l, a, b, hue, chroma);
-            }
+                if ((hueDiff > 2.0 || Math.Abs(cam.Chroma - chroma) / Math.Max(chroma, 1.0) > 0.05)
+                    && chroma > 10.0 && tone > 10.0 && tone < 90.0)
+                {
+                    argb = SolveIterative(l, a, b, hue, chroma);
+                }
 
             return argb;
         }
