@@ -127,6 +127,36 @@ namespace Musicefy.ViewModels
             }
         }
 
+        public ObservableCollection<string> PlayerBackgroundStyles { get; } =
+            new ObservableCollection<string> { "GRADIENT", "COLORING", "GLOW" };
+
+        public int SelectedPlayerBackgroundIndex
+        {
+            get
+            {
+                var current = Musicefy.Properties.Settings.Default.PlayerBackgroundStyle ?? "GRADIENT";
+                return current switch
+                {
+                    "COLORING" => 1,
+                    "GLOW" => 2,
+                    _ => 0
+                };
+            }
+            set
+            {
+                string[] styles = { "GRADIENT", "COLORING", "GLOW" };
+                if (value >= 0 && value < styles.Length)
+                {
+                    Musicefy.Properties.Settings.Default.PlayerBackgroundStyle = styles[value];
+                    OnPropertyChanged();
+                    if (!_isSuppressingThemeApplication) ThemeManager.ApplyThemeFromString(
+                        Musicefy.Properties.Settings.Default.Theme ?? "Dark|Default");
+                }
+            }
+        }
+
+        public string PlayerBackgroundStyle => Musicefy.Properties.Settings.Default.PlayerBackgroundStyle ?? "GRADIENT";
+
         public bool PureBlackMode
         {
             get => Musicefy.Properties.Settings.Default.PureBlackMode;
@@ -387,6 +417,7 @@ namespace Musicefy.ViewModels
             Musicefy.Properties.Settings.Default.Theme = $"{mode}|{_activePaletteName}";
             Musicefy.Properties.Settings.Default.DynamicColorsEnabled = DynamicColorsEnabled;
             Musicefy.Properties.Settings.Default.DateFormat = _selectedDateFormat;
+            Musicefy.Properties.Settings.Default.PlayerBackgroundStyle = PlayerBackgroundStyle;
             Musicefy.Properties.Settings.Default.Save();
         }
 
