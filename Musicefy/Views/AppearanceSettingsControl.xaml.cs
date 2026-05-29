@@ -14,9 +14,6 @@ namespace Musicefy.Views
             InitializeComponent();
         }
 
-        /// <summary>
-        /// Captures click inputs on the phone-mockup palette cards to swap app color accents instantly.
-        /// </summary>
         public void Save()
         {
             if (DataContext is AppearanceSettingsViewModel vm)
@@ -31,14 +28,20 @@ namespace Musicefy.Views
 
         private void PaletteCard_Click(object sender, MouseButtonEventArgs e)
         {
-            // Walk the visual tree step to extract the bound data context model item safely
             if (sender is FrameworkElement element && element.DataContext is ThemePreview clickedPalette)
             {
                 if (this.DataContext is AppearanceSettingsViewModel viewModel)
                 {
-                    // Pass selected card name into your MVVM selection engine orchestrator pass
                     viewModel.SelectPalette(clickedPalette.CardName);
                 }
+            }
+        }
+
+        private void BtnDefaultPalette_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is AppearanceSettingsViewModel viewModel)
+            {
+                viewModel.SelectPalette("Default");
             }
         }
     }
