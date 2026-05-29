@@ -139,7 +139,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Background layers (span all rows) -->
+        <!-- Background layers (span all rows) — dynamic gradient from scheme -->
         <Grid Grid.RowSpan="3" ClipToBounds="True" IsHitTestVisible="False">
             <Image x:Name="BgCoverImage"
                    Source="{Binding NowPlaying.CoverPath, Converter={StaticResource PathToImageConverter}}"
@@ -152,12 +152,8 @@
                     <BlurEffect Radius="50"/>
                 </Image.Effect>
             </Image>
-            <Border Opacity="0.18">
-                <Border.Background>
-                    <SolidColorBrush Color="{Binding VibrantColor, FallbackValue=Transparent}"/>
-                </Border.Background>
-            </Border>
-            <Border Background="#CC000000"/>
+            <Border Background="{DynamicResource PlayerBackgroundSolid}" Opacity="0.75"/>
+            <Border Background="{DynamicResource PlayerGradientBrush}" Opacity="0.65"/>
             <Border VerticalAlignment="Top" Height="160">
                 <Border.Background>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
@@ -170,7 +166,7 @@
                 <Border.Background>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
                         <GradientStop Color="Transparent" Offset="0"/>
-                        <GradientStop Color="#EE000000" Offset="1"/>
+                        <GradientStop Color="#DD000000" Offset="1"/>
                     </LinearGradientBrush>
                 </Border.Background>
             </Border>
