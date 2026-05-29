@@ -89,6 +89,15 @@ namespace Musicefy.Properties {
             set => this["CacheWarningThreshold"] = value;
         }
 
+        // Dynamic album-art colors toggle
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool DynamicColorsEnabled {
+            get => ((bool)(this["DynamicColorsEnabled"]));
+            set => this["DynamicColorsEnabled"] = value;
+        }
+
         // Discover: show local library on home
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
