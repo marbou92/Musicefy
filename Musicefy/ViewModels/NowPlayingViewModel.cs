@@ -158,8 +158,12 @@ namespace Musicefy.ViewModels
         public ICommand ToggleQueueCommand { get; }
         public ICommand CollapseCommand { get; }
         public ICommand QueueItemClickCommand { get; }
+        public ICommand GoToArtistCommand { get; }
+        public ICommand GoToAlbumCommand { get; }
 
         public event Action RequestCollapse;
+        public event Action<string> RequestNavigateToArtist;
+        public event Action<string, string> RequestNavigateToAlbum;
 
         public NowPlayingViewModel(IAudioPlayer playback, ILibraryService libraryService)
         {
@@ -208,6 +212,16 @@ namespace Musicefy.ViewModels
             {
                 if (p is MusicFile track)
                     _playback.PlayTrack(track);
+            });
+            GoToArtistCommand = new RelayCommand(_ =>
+            {
+                if (NowPlaying != null && !string.IsNullOrEmpty(NowPlaying.Artist))
+                    RequestNavigateToArtist?.Invoke(NowPlaying.Artist);
+            });
+            GoToAlbumCommand = new RelayCommand(_ =>
+            {
+                if (NowPlaying != null && !string.IsNullOrEmpty(NowPlaying.Album))
+                    RequestNavigateToAlbum?.Invoke(NowPlaying.Album, NowPlaying.Artist);
             });
 
             _playback.TrackChanged += OnTrackChanged;
