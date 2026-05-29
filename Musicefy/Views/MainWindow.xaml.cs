@@ -46,8 +46,8 @@ namespace Musicefy
             var fadeIn = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(300));
             MainContent.BeginAnimation(OpacityProperty, fadeIn);
 
-            _isInitializing = false;
             SidebarList.SelectedIndex = 0;
+            _isInitializing = false;
         }
 
         private void OnMainWindowViewModelPropertyChanged(object sender, PropertyChangedEventArgs e)
