@@ -55,7 +55,8 @@ namespace Musicefy.Services
             if (seed == null)
                 seed = SeedPalettes.All[0];
 
-            _currentScheme = DynamicScheme.FromSeed(seed, isDark, isDarkPure);
+            // Use 4 independent seed colors (ArchiveTune-style) instead of deriving from primary
+            _currentScheme = DynamicScheme.FromColors(seed.PrimaryArgb, seed.SecondaryArgb, seed.TertiaryArgb, seed.NeutralArgb, isDark, isDarkPure);
             ApplySchemeToResources(_currentScheme);
         }
 
@@ -213,6 +214,22 @@ namespace Musicefy.Services
             SetBrush(resources, "ErrorContainerBrush", scheme, ToneRole.ErrorContainer);
             SetBrush(resources, "OnErrorContainerBrush", scheme, ToneRole.OnErrorContainer);
 
+            // Surface & outline — override the hardcoded values from mode XAMLs
+            SetBrush(resources, "SurfaceBrush", scheme, ToneRole.Surface);
+            SetBrush(resources, "OnSurfaceBrush", scheme, ToneRole.OnSurface);
+            SetBrush(resources, "SurfaceVariantBrush", scheme, ToneRole.SurfaceVariant);
+            SetBrush(resources, "OnSurfaceVariantBrush", scheme, ToneRole.OnSurfaceVariant);
+            SetBrush(resources, "OutlineBrush", scheme, ToneRole.Outline);
+            SetBrush(resources, "OutlineVariantBrush", scheme, ToneRole.OutlineVariant);
+
+            // Legacy aliases
+            SetBrush(resources, "BackgroundBrush", scheme, ToneRole.Surface);
+            SetBrush(resources, "SecondaryBackgroundBrush", scheme, ToneRole.SurfaceVariant);
+            SetBrush(resources, "ForegroundBrush", scheme, ToneRole.OnSurface);
+            SetBrush(resources, "TextBrush", scheme, ToneRole.OnSurface);
+            SetBrush(resources, "MutedTextBrush", scheme, ToneRole.OnSurfaceVariant);
+            SetBrush(resources, "BorderBrush", scheme, ToneRole.Outline);
+
             SetBrushFromArgb(resources, "AccentBrush", scheme.GetAccentArgb(AccentVariant.Default));
             SetBrushFromArgb(resources, "AccentHoverBrush", scheme.GetAccentArgb(AccentVariant.Hover));
             SetBrushFromArgb(resources, "AccentPressedBrush", scheme.GetAccentArgb(AccentVariant.Pressed));
@@ -251,16 +268,18 @@ namespace Musicefy.Services
 
             int argb = (255 << 24) | (colors.Primary.R << 16) | (colors.Primary.G << 8) | colors.Primary.B;
             var hct = Hct.FromInt(argb);
-
-            var seed = new SeedPalette(
-                "_Dynamic",
-                ColorFamily.Vibrant,
-                hct.Hue, Math.Max(hct.Chroma, 20));
+            double chroma = Math.Max(hct.Chroma, 20);
 
             bool isDark = _currentScheme != null && _currentScheme.IsDark;
             bool isDarkPure = _currentScheme != null && _currentScheme.IsDarkPure;
 
-            var scheme = DynamicScheme.FromSeed(seed, isDark, isDarkPure);
+            // Build 4 seed colors from the extracted primary using default offsets
+            int primaryArgb = Hct.From(hct.Hue, chroma, 60).ToInt();
+            int secondaryArgb = Hct.From(hct.Hue + 30, chroma * 1.1, 60).ToInt();
+            int tertiaryArgb = Hct.From(hct.Hue + 60, chroma * 0.8, 60).ToInt();
+            int neutralArgb = Hct.From(hct.Hue, 4.0, 60).ToInt();
+
+            var scheme = DynamicScheme.FromColors(primaryArgb, secondaryArgb, tertiaryArgb, neutralArgb, isDark, isDarkPure);
             ApplySchemeToResources(scheme);
         }
 
