@@ -134,7 +134,7 @@ namespace Musicefy.Core.Hct
             double lr = m00 * xyz[0] + m01 * xyz[1] + m02 * xyz[2];
             double lg = m10 * xyz[0] + m11 * xyz[1] + m12 * xyz[2];
             double lb = m20 * xyz[0] + m21 * xyz[1] + m22 * xyz[2];
-            return lr >= 0 && lr <= 1 && lg >= 0 && lg <= 1 && lb >= 0 && lb <= 1;
+            return lr >= 0 && lr <= SRgbToXyzScale && lg >= 0 && lg <= SRgbToXyzScale && lb >= 0 && lb <= SRgbToXyzScale;
         }
 
         public static int ArgbFromXyzInSrgbGamut(double x, double y, double z)
