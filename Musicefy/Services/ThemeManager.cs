@@ -12,7 +12,9 @@ namespace Musicefy.Services
 {
     public static class ThemeManager
     {
-        private static readonly string[] Modes = { "System", "Light", "Dark", "DarkPure" };
+        private static readonly string[] Modes = { "System", "Light", "Dark" };
+
+        private static readonly string[] _modeUris = { "/Themes/Modes/Light.xaml", "/Themes/Modes/Dark.xaml" };
 
         private static readonly HashSet<string> _themeUris = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -20,12 +22,11 @@ namespace Musicefy.Services
             "/Themes/ScrollbarTheme.xaml",
             "/Themes/Modes/Light.xaml",
             "/Themes/Modes/Dark.xaml",
-            "/Themes/Modes/DarkPure.xaml",
         };
 
         private static DynamicScheme _currentScheme;
 
-        public static void ApplyTheme(string mode, string paletteName)
+        public static void ApplyTheme(string mode, string paletteName, bool? isDarkPureOverride = null)
         {
             var merged = Application.Current.Resources.MergedDictionaries;
             for (int i = merged.Count - 1; i >= 0; i--)
@@ -41,11 +42,8 @@ namespace Musicefy.Services
             if (mode.Equals("System", StringComparison.OrdinalIgnoreCase))
                 mode = IsSystemDarkMode() ? "Dark" : "Light";
 
-            bool isDarkPure = mode.Equals("DarkPure", StringComparison.OrdinalIgnoreCase);
-            if (isDarkPure)
-                MergeDictionary("/Themes/Modes/DarkPure.xaml");
-            else
-                MergeDictionary($"/Themes/Modes/{mode}.xaml");
+            bool isDarkPure = isDarkPureOverride ?? (mode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase) && Musicefy.Properties.Settings.Default.PureBlackMode);
+            MergeDictionary($"/Themes/Modes/{mode}.xaml");
 
             bool isDark = mode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase);
 
@@ -55,14 +53,13 @@ namespace Musicefy.Services
             if (seed == null)
                 seed = SeedPalettes.All[0];
 
-            // Use 4 independent seed colors (ArchiveTune-style) instead of deriving from primary
             _currentScheme = DynamicScheme.FromColors(seed.PrimaryArgb, seed.SecondaryArgb, seed.TertiaryArgb, seed.NeutralArgb, isDark, isDarkPure);
             ApplySchemeToResources(_currentScheme);
         }
 
         public static void ApplyTheme(string mode) => ApplyTheme(mode, "Default");
 
-        public static void ApplyCustom(string mode, SeedPalette seed)
+        public static void ApplyCustom(string mode, SeedPalette seed, bool? isDarkPureOverride = null)
         {
             var merged = Application.Current.Resources.MergedDictionaries;
             for (int i = merged.Count - 1; i >= 0; i--)
@@ -78,18 +75,15 @@ namespace Musicefy.Services
             if (mode.Equals("System", StringComparison.OrdinalIgnoreCase))
                 mode = IsSystemDarkMode() ? "Dark" : "Light";
 
-            bool isDarkPure = mode.Equals("DarkPure", StringComparison.OrdinalIgnoreCase);
-            if (isDarkPure)
-                MergeDictionary("/Themes/Modes/DarkPure.xaml");
-            else
-                MergeDictionary($"/Themes/Modes/{mode}.xaml");
+            bool isDarkPure = isDarkPureOverride ?? (mode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase) && Musicefy.Properties.Settings.Default.PureBlackMode);
+            MergeDictionary($"/Themes/Modes/{mode}.xaml");
 
             bool isDark = mode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase);
             _currentScheme = DynamicScheme.FromSeed(seed, isDark, isDarkPure);
             ApplySchemeToResources(_currentScheme);
         }
 
-        public static void ApplyCustomFromColors(string mode, int primaryArgb, int secondaryArgb, int tertiaryArgb, int neutralArgb)
+        public static void ApplyCustomFromColors(string mode, int primaryArgb, int secondaryArgb, int tertiaryArgb, int neutralArgb, bool? isDarkPureOverride = null)
         {
             var merged = Application.Current.Resources.MergedDictionaries;
             for (int i = merged.Count - 1; i >= 0; i--)
@@ -105,11 +99,8 @@ namespace Musicefy.Services
             if (mode.Equals("System", StringComparison.OrdinalIgnoreCase))
                 mode = IsSystemDarkMode() ? "Dark" : "Light";
 
-            bool isDarkPure = mode.Equals("DarkPure", StringComparison.OrdinalIgnoreCase);
-            if (isDarkPure)
-                MergeDictionary("/Themes/Modes/DarkPure.xaml");
-            else
-                MergeDictionary($"/Themes/Modes/{mode}.xaml");
+            bool isDarkPure = isDarkPureOverride ?? (mode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase) && Musicefy.Properties.Settings.Default.PureBlackMode);
+            MergeDictionary($"/Themes/Modes/{mode}.xaml");
 
             bool isDark = mode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase);
             _currentScheme = DynamicScheme.FromColors(primaryArgb, secondaryArgb, tertiaryArgb, neutralArgb, isDark, isDarkPure);
@@ -128,17 +119,13 @@ namespace Musicefy.Services
             string mode = parts.Length > 0 ? parts[0] : "Dark";
             string paletteName = parts.Length > 1 ? parts[1] : "Default";
 
-            if (mode.Equals("DarkPure", StringComparison.OrdinalIgnoreCase))
-                Musicefy.Properties.Settings.Default.PureBlackMode = true;
-            else if (mode.Equals("Dark", StringComparison.OrdinalIgnoreCase))
-                Musicefy.Properties.Settings.Default.PureBlackMode = false;
-
             ApplyTheme(mode, paletteName);
         }
 
         public static void SaveTheme(string mode, string paletteName)
         {
-            Musicefy.Properties.Settings.Default.Theme = $"{mode}|{paletteName}";
+            string normalMode = mode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase) ? "Dark" : "Light";
+            Musicefy.Properties.Settings.Default.Theme = $"{normalMode}|{paletteName}";
             Musicefy.Properties.Settings.Default.Save();
         }
 
@@ -234,6 +221,24 @@ namespace Musicefy.Services
             SetBrushFromArgb(resources, "AccentHoverBrush", scheme.GetAccentArgb(AccentVariant.Hover));
             SetBrushFromArgb(resources, "AccentPressedBrush", scheme.GetAccentArgb(AccentVariant.Pressed));
             SetBrushFromArgb(resources, "AccentGlowBrush", scheme.GetAccentArgb(AccentVariant.Glow));
+
+            // Surface container & hover
+            SetBrush(resources, "SurfaceContainerLowBrush", scheme, ToneRole.SurfaceContainerLow);
+            SetBrush(resources, "SurfaceContainerHighBrush", scheme, ToneRole.SurfaceContainerHigh);
+            SetBrush(resources, "HoverBrush", scheme, ToneRole.Hover);
+            SetBrushFromArgb(resources, "SkeletonBaseColor", scheme.GetArgb(ToneRole.SkeletonBase));
+            SetBrushFromArgb(resources, "SkeletonHighColor", scheme.GetArgb(ToneRole.SkeletonHigh));
+
+            // Pure black override (ArchiveTune-style post-processing)
+            if (scheme.IsDarkPure)
+            {
+                var black = new SolidColorBrush(Color.FromRgb(0, 0, 0));
+                black.Freeze();
+                resources["SurfaceBrush"] = black;
+                resources["BackgroundBrush"] = black;
+                resources["SurfaceContainerLowBrush"] = black;
+                resources["SurfaceContainerHighBrush"] = black;
+            }
         }
 
         private static void SetBrush(ResourceDictionary resources, string key, DynamicScheme scheme, ToneRole role)
