@@ -293,7 +293,8 @@ namespace Musicefy.ViewModels
             {
                 if (track == null || string.IsNullOrEmpty(track.CoverPath))
                 {
-                    ThemeManager.ClearDynamicColors();
+                    if (Musicefy.Properties.Settings.Default.DynamicColorsEnabled)
+                        ThemeManager.ClearDynamicColors();
                     return;
                 }
 
@@ -314,7 +315,8 @@ namespace Musicefy.ViewModels
                 MutedColor = colors.Muted;
                 DynamicPrimaryBrush = new SolidColorBrush(colors.Primary);
                 DynamicSurfaceBrush = new SolidColorBrush(colors.Surface);
-                ThemeManager.ApplyDynamicColors(colors);
+                if (Musicefy.Properties.Settings.Default.DynamicColorsEnabled)
+                    ThemeManager.ApplyDynamicColors(colors);
             }
             catch
             {
