@@ -116,7 +116,15 @@ namespace Musicefy.Core.Services
                         .OrderByDescending(s => s.Bitrate)
                         .FirstOrDefault();
 
-                    return audioStream?.Url?.ToString();
+                    if (audioStream != null)
+                        return audioStream.Url?.ToString();
+
+                    var anyWithAudio = manifest.Streams
+                        .Where(s => s is YoutubeExplode.Videos.Streams.IAudioStreamInfo)
+                        .OrderByDescending(s => s.Bitrate)
+                        .FirstOrDefault();
+
+                    return anyWithAudio?.Url?.ToString();
                 }
                 catch
                 {
