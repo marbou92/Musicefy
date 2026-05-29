@@ -42,13 +42,35 @@ namespace Musicefy.ViewModels
 
             CustomThemeCommand = new RelayCommand(_ => ExecuteCustomTheme());
             ImportThemeCommand = new RelayCommand(_ => ExecuteImportTheme());
+            ApplyCustomThemeCommand = new RelayCommand(_ => ExecuteApplyCustomTheme());
+            CloseCustomThemeCommand = new RelayCommand(_ => ExecuteCloseCustomTheme());
 
             _isSuppressingThemeApplication = false;
         }
 
         private void ExecuteCustomTheme()
         {
-            System.Windows.MessageBox.Show("Custom theme editor coming soon", "Coming Soon");
+            IsCustomThemeEditorOpen = true;
+            RefreshCustomPreviewColors();
+        }
+
+        private void ExecuteApplyCustomTheme()
+        {
+            var seed = new SeedPalette(
+                "_Custom",
+                ColorFamily.Vibrant,
+                _customHue, _customChroma,
+                _customSecondaryOffset, 1.1,
+                _customTertiaryOffset, 0.8,
+                _customNeutralChroma);
+
+            ThemeManager.ApplyCustom(GetModeFromIndex(_selectedThemeIndex), seed);
+            IsCustomThemeEditorOpen = false;
+        }
+
+        private void ExecuteCloseCustomTheme()
+        {
+            IsCustomThemeEditorOpen = false;
         }
 
         private void ExecuteImportTheme()
@@ -116,6 +138,104 @@ namespace Musicefy.ViewModels
 
         public ICommand CustomThemeCommand { get; }
         public ICommand ImportThemeCommand { get; }
+        public ICommand ApplyCustomThemeCommand { get; }
+        public ICommand CloseCustomThemeCommand { get; }
+
+        #region Custom Theme Editor
+
+        private bool _isCustomThemeEditorOpen;
+        private double _customHue = 264;
+        private double _customChroma = 44;
+        private double _customSecondaryOffset = 30;
+        private double _customTertiaryOffset = 60;
+        private double _customNeutralChroma = 4;
+
+        public bool IsCustomThemeEditorOpen
+        {
+            get => _isCustomThemeEditorOpen;
+            set
+            {
+                _isCustomThemeEditorOpen = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsCustomThemeEditorHidden));
+            }
+        }
+
+        public bool IsCustomThemeEditorHidden => !_isCustomThemeEditorOpen;
+
+        public double CustomHue
+        {
+            get => _customHue;
+            set
+            {
+                _customHue = Math.Max(0, Math.Min(360, value));
+                OnPropertyChanged();
+                RefreshCustomPreviewColors();
+            }
+        }
+
+        public double CustomChroma
+        {
+            get => _customChroma;
+            set
+            {
+                _customChroma = Math.Max(0, Math.Min(200, value));
+                OnPropertyChanged();
+                RefreshCustomPreviewColors();
+            }
+        }
+
+        public double CustomSecondaryOffset
+        {
+            get => _customSecondaryOffset;
+            set
+            {
+                _customSecondaryOffset = Math.Max(-180, Math.Min(180, value));
+                OnPropertyChanged();
+                RefreshCustomPreviewColors();
+            }
+        }
+
+        public double CustomTertiaryOffset
+        {
+            get => _customTertiaryOffset;
+            set
+            {
+                _customTertiaryOffset = Math.Max(-180, Math.Min(180, value));
+                OnPropertyChanged();
+                RefreshCustomPreviewColors();
+            }
+        }
+
+        public double CustomNeutralChroma
+        {
+            get => _customNeutralChroma;
+            set
+            {
+                _customNeutralChroma = Math.Max(0, Math.Min(20, value));
+                OnPropertyChanged();
+                RefreshCustomPreviewColors();
+            }
+        }
+
+        public Color CustomPrimaryColor { get; private set; }
+        public Color CustomSecondaryColor { get; private set; }
+        public Color CustomTertiaryColor { get; private set; }
+        public Color CustomNeutralColor { get; private set; }
+
+        private void RefreshCustomPreviewColors()
+        {
+            CustomPrimaryColor = SeedToColor(_customHue, _customChroma);
+            CustomSecondaryColor = SeedToColor(_customHue + _customSecondaryOffset, _customChroma * 1.1);
+            CustomTertiaryColor = SeedToColor(_customHue + _customTertiaryOffset, _customChroma * 0.8);
+            CustomNeutralColor = SeedToColor(_customHue, _customNeutralChroma);
+            OnPropertyChanged(nameof(CustomPrimaryColor));
+            OnPropertyChanged(nameof(CustomSecondaryColor));
+            OnPropertyChanged(nameof(CustomTertiaryColor));
+            OnPropertyChanged(nameof(CustomNeutralColor));
+        }
+
+        #endregion
 
         public void SelectPalette(string paletteName)
         {
