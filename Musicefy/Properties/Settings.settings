@@ -39,6 +39,11 @@
       <Value Profile="(Default)">True</Value>
     </Setting>
 
+    <!-- Player background style -->
+    <Setting Name="PlayerBackgroundStyle" Type="System.String" Scope="User">
+      <Value Profile="(Default)">GRADIENT</Value>
+    </Setting>
+
     <!-- Discover / Feed settings -->
     <Setting Name="DiscoverLibrary" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
