@@ -25,6 +25,51 @@ namespace Musicefy.Services
         };
 
         private static DynamicScheme _currentScheme;
+        private static readonly TimeSpan _animationDuration = TimeSpan.FromMilliseconds(400);
+
+        private static readonly (string key, ToneRole role)[] _colorKeys =
+        {
+            ("PrimaryBrush", ToneRole.Primary),
+            ("OnPrimaryBrush", ToneRole.OnPrimary),
+            ("PrimaryContainerBrush", ToneRole.PrimaryContainer),
+            ("OnPrimaryContainerBrush", ToneRole.OnPrimaryContainer),
+            ("SecondaryBrush", ToneRole.Secondary),
+            ("OnSecondaryBrush", ToneRole.OnSecondary),
+            ("SecondaryContainerBrush", ToneRole.SecondaryContainer),
+            ("OnSecondaryContainerBrush", ToneRole.OnSecondaryContainer),
+            ("TertiaryBrush", ToneRole.Tertiary),
+            ("OnTertiaryBrush", ToneRole.OnTertiary),
+            ("TertiaryContainerBrush", ToneRole.TertiaryContainer),
+            ("OnTertiaryContainerBrush", ToneRole.OnTertiaryContainer),
+            ("ErrorBrush", ToneRole.Error),
+            ("OnErrorBrush", ToneRole.OnError),
+            ("ErrorContainerBrush", ToneRole.ErrorContainer),
+            ("OnErrorContainerBrush", ToneRole.OnErrorContainer),
+            ("SurfaceBrush", ToneRole.Surface),
+            ("OnSurfaceBrush", ToneRole.OnSurface),
+            ("SurfaceVariantBrush", ToneRole.SurfaceVariant),
+            ("OnSurfaceVariantBrush", ToneRole.OnSurfaceVariant),
+            ("OutlineBrush", ToneRole.Outline),
+            ("OutlineVariantBrush", ToneRole.OutlineVariant),
+            ("SurfaceContainerLowBrush", ToneRole.SurfaceContainerLow),
+            ("SurfaceContainerHighBrush", ToneRole.SurfaceContainerHigh),
+            ("HoverBrush", ToneRole.Hover),
+            ("BackgroundBrush", ToneRole.Surface),
+            ("SecondaryBackgroundBrush", ToneRole.SurfaceVariant),
+            ("ForegroundBrush", ToneRole.OnSurface),
+            ("TextBrush", ToneRole.OnSurface),
+            ("MutedTextBrush", ToneRole.OnSurfaceVariant),
+            ("BorderBrush", ToneRole.Outline),
+            ("DynamicPrimaryBrush", ToneRole.Primary),
+        };
+
+        private static readonly (string key, AccentVariant variant)[] _accentKeys =
+        {
+            ("AccentBrush", AccentVariant.Default),
+            ("AccentHoverBrush", AccentVariant.Hover),
+            ("AccentPressedBrush", AccentVariant.Pressed),
+            ("AccentGlowBrush", AccentVariant.Glow),
+        };
 
         public static void ApplyTheme(string mode, string paletteName, bool? isDarkPureOverride = null)
         {
@@ -53,8 +98,8 @@ namespace Musicefy.Services
             if (seed == null)
                 seed = SeedPalettes.All[0];
 
-            _currentScheme = DynamicScheme.FromColors(seed.PrimaryArgb, seed.SecondaryArgb, seed.TertiaryArgb, seed.NeutralArgb, isDark, isDarkPure);
-            ApplySchemeToResources(_currentScheme);
+            var newScheme = DynamicScheme.FromColors(seed.PrimaryArgb, seed.SecondaryArgb, seed.TertiaryArgb, seed.NeutralArgb, isDark, isDarkPure);
+            ApplySchemeWithAnimation(newScheme);
         }
 
         public static void ApplyTheme(string mode) => ApplyTheme(mode, "Default");
@@ -79,8 +124,8 @@ namespace Musicefy.Services
             MergeDictionary($"/Themes/Modes/{mode}.xaml");
 
             bool isDark = mode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase);
-            _currentScheme = DynamicScheme.FromSeed(seed, isDark, isDarkPure);
-            ApplySchemeToResources(_currentScheme);
+            var newScheme = DynamicScheme.FromSeed(seed, isDark, isDarkPure);
+            ApplySchemeWithAnimation(newScheme);
         }
 
         public static void ApplyCustomFromColors(string mode, int primaryArgb, int secondaryArgb, int tertiaryArgb, int neutralArgb, bool? isDarkPureOverride = null)
@@ -103,8 +148,8 @@ namespace Musicefy.Services
             MergeDictionary($"/Themes/Modes/{mode}.xaml");
 
             bool isDark = mode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase);
-            _currentScheme = DynamicScheme.FromColors(primaryArgb, secondaryArgb, tertiaryArgb, neutralArgb, isDark, isDarkPure);
-            ApplySchemeToResources(_currentScheme);
+            var newScheme = DynamicScheme.FromColors(primaryArgb, secondaryArgb, tertiaryArgb, neutralArgb, isDark, isDarkPure);
+            ApplySchemeWithAnimation(newScheme);
         }
 
         public static void ApplyThemeFromString(string themeString)
@@ -177,91 +222,175 @@ namespace Musicefy.Services
             }
         }
 
-        private static void ApplySchemeToResources(DynamicScheme scheme)
+        private static void ApplySchemeWithAnimation(DynamicScheme newScheme)
+        {
+            var oldScheme = _currentScheme;
+            _currentScheme = newScheme;
+
+            if (oldScheme == null)
+            {
+                ApplySchemeSnap(newScheme);
+                return;
+            }
+
+            var resources = Application.Current.Resources;
+
+            foreach (var (key, role) in _colorKeys)
+            {
+                AnimateBrushColor(resources, key, newScheme.GetArgb(role));
+            }
+
+            foreach (var (key, variant) in _accentKeys)
+            {
+                AnimateBrushColor(resources, key, newScheme.GetAccentArgb(variant));
+            }
+
+            SetColorResource(resources, "SkeletonBaseColor", newScheme.GetArgb(ToneRole.SkeletonBase));
+            SetColorResource(resources, "SkeletonHighColor", newScheme.GetArgb(ToneRole.SkeletonHigh));
+
+            if (newScheme.IsDarkPure)
+            {
+                AnimateBrushColor(resources, "SurfaceBrush", 0xFF000000);
+                AnimateBrushColor(resources, "BackgroundBrush", 0xFF000000);
+                AnimateBrushColor(resources, "SurfaceContainerLowBrush", 0xFF000000);
+                AnimateBrushColor(resources, "SurfaceContainerHighBrush", 0xFF000000);
+            }
+
+            SetPlayerGradientBrush(resources, newScheme, GetPlayerBackgroundStyle());
+        }
+
+        private static void ApplySchemeSnap(DynamicScheme scheme)
         {
             var resources = Application.Current.Resources;
 
-            SetBrush(resources, "PrimaryBrush", scheme, ToneRole.Primary);
-            SetBrush(resources, "OnPrimaryBrush", scheme, ToneRole.OnPrimary);
-            SetBrush(resources, "PrimaryContainerBrush", scheme, ToneRole.PrimaryContainer);
-            SetBrush(resources, "OnPrimaryContainerBrush", scheme, ToneRole.OnPrimaryContainer);
+            foreach (var (key, role) in _colorKeys)
+            {
+                SetBrush(resources, key, ArgbsToColor(scheme.GetArgb(role)));
+            }
 
-            SetBrush(resources, "SecondaryBrush", scheme, ToneRole.Secondary);
-            SetBrush(resources, "OnSecondaryBrush", scheme, ToneRole.OnSecondary);
-            SetBrush(resources, "SecondaryContainerBrush", scheme, ToneRole.SecondaryContainer);
-            SetBrush(resources, "OnSecondaryContainerBrush", scheme, ToneRole.OnSecondaryContainer);
+            foreach (var (key, variant) in _accentKeys)
+            {
+                SetBrush(resources, key, ArgbsToColor(scheme.GetAccentArgb(variant)));
+            }
 
-            SetBrush(resources, "TertiaryBrush", scheme, ToneRole.Tertiary);
-            SetBrush(resources, "OnTertiaryBrush", scheme, ToneRole.OnTertiary);
-            SetBrush(resources, "TertiaryContainerBrush", scheme, ToneRole.TertiaryContainer);
-            SetBrush(resources, "OnTertiaryContainerBrush", scheme, ToneRole.OnTertiaryContainer);
+            SetColorResource(resources, "SkeletonBaseColor", scheme.GetArgb(ToneRole.SkeletonBase));
+            SetColorResource(resources, "SkeletonHighColor", scheme.GetArgb(ToneRole.SkeletonHigh));
 
-            SetBrush(resources, "ErrorBrush", scheme, ToneRole.Error);
-            SetBrush(resources, "OnErrorBrush", scheme, ToneRole.OnError);
-            SetBrush(resources, "ErrorContainerBrush", scheme, ToneRole.ErrorContainer);
-            SetBrush(resources, "OnErrorContainerBrush", scheme, ToneRole.OnErrorContainer);
-
-            // Surface & outline — override the hardcoded values from mode XAMLs
-            SetBrush(resources, "SurfaceBrush", scheme, ToneRole.Surface);
-            SetBrush(resources, "OnSurfaceBrush", scheme, ToneRole.OnSurface);
-            SetBrush(resources, "SurfaceVariantBrush", scheme, ToneRole.SurfaceVariant);
-            SetBrush(resources, "OnSurfaceVariantBrush", scheme, ToneRole.OnSurfaceVariant);
-            SetBrush(resources, "OutlineBrush", scheme, ToneRole.Outline);
-            SetBrush(resources, "OutlineVariantBrush", scheme, ToneRole.OutlineVariant);
-
-            // Legacy aliases
-            SetBrush(resources, "BackgroundBrush", scheme, ToneRole.Surface);
-            SetBrush(resources, "SecondaryBackgroundBrush", scheme, ToneRole.SurfaceVariant);
-            SetBrush(resources, "ForegroundBrush", scheme, ToneRole.OnSurface);
-            SetBrush(resources, "TextBrush", scheme, ToneRole.OnSurface);
-            SetBrush(resources, "MutedTextBrush", scheme, ToneRole.OnSurfaceVariant);
-            SetBrush(resources, "BorderBrush", scheme, ToneRole.Outline);
-
-            SetBrushFromArgb(resources, "AccentBrush", scheme.GetAccentArgb(AccentVariant.Default));
-            SetBrushFromArgb(resources, "AccentHoverBrush", scheme.GetAccentArgb(AccentVariant.Hover));
-            SetBrushFromArgb(resources, "AccentPressedBrush", scheme.GetAccentArgb(AccentVariant.Pressed));
-            SetBrushFromArgb(resources, "AccentGlowBrush", scheme.GetAccentArgb(AccentVariant.Glow));
-
-            // Surface container & hover
-            SetBrush(resources, "SurfaceContainerLowBrush", scheme, ToneRole.SurfaceContainerLow);
-            SetBrush(resources, "SurfaceContainerHighBrush", scheme, ToneRole.SurfaceContainerHigh);
-            SetBrush(resources, "HoverBrush", scheme, ToneRole.Hover);
-            SetBrushFromArgb(resources, "SkeletonBaseColor", scheme.GetArgb(ToneRole.SkeletonBase));
-            SetBrushFromArgb(resources, "SkeletonHighColor", scheme.GetArgb(ToneRole.SkeletonHigh));
-
-            // Pure black override (ArchiveTune-style post-processing)
             if (scheme.IsDarkPure)
             {
-                var black = new SolidColorBrush(Color.FromRgb(0, 0, 0));
-                black.Freeze();
+                var black = new SolidColorBrush(Colors.Black);
                 resources["SurfaceBrush"] = black;
                 resources["BackgroundBrush"] = black;
                 resources["SurfaceContainerLowBrush"] = black;
                 resources["SurfaceContainerHighBrush"] = black;
             }
+
+            SetPlayerGradientBrush(resources, scheme, GetPlayerBackgroundStyle());
         }
 
-        private static void SetBrush(ResourceDictionary resources, string key, DynamicScheme scheme, ToneRole role)
+        private static void AnimateBrushColor(ResourceDictionary resources, string key, int targetArgb)
         {
-            int argb = scheme.GetArgb(role);
-            var brush = new SolidColorBrush(Color.FromArgb(
-                (byte)((argb >> 24) & 0xFF),
-                (byte)((argb >> 16) & 0xFF),
-                (byte)((argb >> 8) & 0xFF),
-                (byte)(argb & 0xFF)));
-            brush.Freeze();
-            resources[key] = brush;
+            var targetColor = ArgbsToColor(targetArgb);
+            if (resources[key] is SolidColorBrush brush && !brush.IsFrozen)
+            {
+                brush.BeginAnimation(SolidColorBrush.ColorProperty,
+                    new ColorAnimation(targetColor, _animationDuration)
+                    {
+                        EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut }
+                    });
+            }
+            else
+            {
+                resources[key] = new SolidColorBrush(targetColor);
+            }
         }
 
-        private static void SetBrushFromArgb(ResourceDictionary resources, string key, int argb)
+        private static void SetBrush(ResourceDictionary resources, string key, Color color)
         {
-            var brush = new SolidColorBrush(Color.FromArgb(
-                (byte)((argb >> 24) & 0xFF),
-                (byte)((argb >> 16) & 0xFF),
-                (byte)((argb >> 8) & 0xFF),
-                (byte)(argb & 0xFF)));
-            brush.Freeze();
-            resources[key] = brush;
+            resources[key] = new SolidColorBrush(color);
+        }
+
+        private static void SetColorResource(ResourceDictionary resources, string key, int argb)
+        {
+            resources[key] = ArgbsToColor(argb);
+        }
+
+        private static Color ArgbsToColor(int argb) => Color.FromArgb(
+            (byte)((argb >> 24) & 0xFF),
+            (byte)((argb >> 16) & 0xFF),
+            (byte)((argb >> 8) & 0xFF),
+            (byte)(argb & 0xFF));
+
+        public static string GetPlayerBackgroundStyle()
+        {
+            try { return Musicefy.Properties.Settings.Default.PlayerBackgroundStyle ?? "GRADIENT"; }
+            catch { return "GRADIENT"; }
+        }
+
+        public static void SetPlayerGradientBrush(ResourceDictionary resources, DynamicScheme scheme, string style)
+        {
+            var surfaceColor = ArgbsToColor(scheme.GetArgb(ToneRole.Surface));
+            var topColor = ArgbsToColor(scheme.PrimaryPalette.GetTone(scheme.IsDark ? 80 : 90));
+            var midColor = ArgbsToColor(scheme.PrimaryPalette.GetTone(scheme.IsDark ? 40 : 30));
+
+            resources["PlayerSurfaceColor"] = surfaceColor;
+            resources["PlayerPrimaryColor"] = topColor;
+
+            switch (style)
+            {
+                case "COLORING":
+                {
+                    var brush = new LinearGradientBrush
+                    {
+                        StartPoint = new Point(0, 0),
+                        EndPoint = new Point(0, 1),
+                        GradientStops = new GradientStopCollection
+                        {
+                            new GradientStop(topColor, 0.0),
+                            new GradientStop(midColor, 0.5),
+                            new GradientStop(Colors.Black, 1.0)
+                        }
+                    };
+                    resources["PlayerGradientBrush"] = brush;
+                    resources["PlayerBackgroundSolid"] = new SolidColorBrush(topColor);
+                    break;
+                }
+                case "GLOW":
+                {
+                    var brush = new RadialGradientBrush
+                    {
+                        Center = new Point(0.5, 0.3),
+                        RadiusX = 1.5,
+                        RadiusY = 1.8,
+                        GradientStops = new GradientStopCollection
+                        {
+                            new GradientStop(topColor, 0.0),
+                            new GradientStop(Color.FromArgb(60, topColor.R, topColor.G, topColor.B), 0.5),
+                            new GradientStop(surfaceColor, 1.0)
+                        }
+                    };
+                    resources["PlayerGradientBrush"] = brush;
+                    resources["PlayerBackgroundSolid"] = new SolidColorBrush(surfaceColor);
+                    break;
+                }
+                default:
+                {
+                    var brush = new LinearGradientBrush
+                    {
+                        StartPoint = new Point(0, 0),
+                        EndPoint = new Point(0, 1),
+                        GradientStops = new GradientStopCollection
+                        {
+                            new GradientStop(topColor, 0.0),
+                            new GradientStop(midColor, 0.6),
+                            new GradientStop(surfaceColor, 1.0)
+                        }
+                    };
+                    resources["PlayerGradientBrush"] = brush;
+                    resources["PlayerBackgroundSolid"] = new SolidColorBrush(Colors.Transparent);
+                    break;
+                }
+            }
         }
 
         public static void ApplyDynamicColors(ExtractedColors colors)
@@ -285,7 +414,7 @@ namespace Musicefy.Services
             int neutralArgb = Hct.From(hct.Hue, 4.0, 60).ToInt();
 
             var scheme = DynamicScheme.FromColors(primaryArgb, secondaryArgb, tertiaryArgb, neutralArgb, isDark, isDarkPure);
-            ApplySchemeToResources(scheme);
+            ApplySchemeWithAnimation(scheme);
         }
 
         public static void ClearDynamicColors()
