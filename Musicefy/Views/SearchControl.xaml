@@ -79,7 +79,8 @@
                          Margin="12,0,0,0"
                          TextChanged="SearchBox_TextChanged"
                          GotFocus="SearchBox_GotFocus"
-                         LostFocus="SearchBox_LostFocus"/>
+                         LostFocus="SearchBox_LostFocus"
+                         KeyDown="SearchBox_KeyDown"/>
 
                 <Button Grid.Column="2" x:Name="BtnClear"
                         Background="Transparent" BorderThickness="0"
