@@ -14,6 +14,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
+        <!-- Header with back button -->
         <Grid Grid.Row="0" Margin="0,0,0,24">
             <Button x:Name="BtnBack" Click="BtnBack_Click"
                     Background="Transparent" BorderThickness="0" Cursor="Hand"
@@ -23,97 +24,116 @@
             </Button>
         </Grid>
 
-        <Grid Grid.Row="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
 
-            <StackPanel Grid.Row="0" HorizontalAlignment="Center" Margin="0,0,0,24">
-                <Border Width="250" Height="250" CornerRadius="16"
-                        ClipToBounds="True" Margin="0,0,0,20"
-                        Background="{DynamicResource SurfaceVariantBrush}">
-                    <Image Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}}"
-                           Stretch="UniformToFill"/>
-                </Border>
-                <TextBlock Text="{Binding AlbumName}" FontSize="24" FontWeight="Bold"
-                           Foreground="{DynamicResource OnSurfaceBrush}"
-                           TextTrimming="CharacterEllipsis" HorizontalAlignment="Center" MaxWidth="400"/>
-                <TextBlock FontSize="14" Foreground="{DynamicResource OnSurfaceVariantBrush}"
-                           HorizontalAlignment="Center" Margin="0,4,0,0">
-                    <Run Text="{Binding ArtistName, Mode=OneWay}"/>
-                    <Run Text="{Binding Year, Mode=OneWay, StringFormat=' · {0}'}"/>
-                </TextBlock>
-            </StackPanel>
+                <!-- Album info section -->
+                <StackPanel Grid.Row="0" HorizontalAlignment="Center" Margin="0,0,0,24">
+                    <Border Width="260" Height="260" CornerRadius="16"
+                            ClipToBounds="True" Margin="0,0,0,24"
+                            Background="{DynamicResource SurfaceVariantBrush}">
+                        <Image Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}}"
+                               Stretch="UniformToFill"/>
+                    </Border>
+                    <TextBlock Text="{Binding AlbumName}" FontSize="26" FontWeight="Bold"
+                               Foreground="{DynamicResource OnSurfaceBrush}"
+                               TextTrimming="CharacterEllipsis" HorizontalAlignment="Center" MaxWidth="500"/>
+                    <!-- Clickable artist name -->
+                    <TextBlock x:Name="ArtistText" FontSize="15" Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                               HorizontalAlignment="Center" Margin="0,6,0,0" Cursor="Hand"
+                               MouseLeftButtonUp="ArtistText_MouseLeftButtonUp">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="TextDecorations" Value="Underline"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource OnSurfaceBrush}"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                        <Run Text="{Binding ArtistName, Mode=OneWay}"/>
+                        <Run Text="{Binding Year, Mode=OneWay, StringFormat=' · {0}'}"/>
+                    </TextBlock>
+                </StackPanel>
 
-            <Grid Grid.Row="1" Margin="0,0,0,16">
-                <TextBlock FontSize="13" Foreground="{DynamicResource OnSurfaceVariantBrush}"
-                           VerticalAlignment="Center">
-                    <Run Text="{Binding Tracks.Count, Mode=OneWay, StringFormat='{}{0} tracks'}"/>
-                </TextBlock>
-                <Button Content="Play All" Command="{Binding PlayAllCommand}"
-                        HorizontalAlignment="Right"
-                        Background="{DynamicResource PrimaryBrush}" Foreground="White"
-                        BorderThickness="0" Padding="20,10" Cursor="Hand"
-                        FontSize="14" FontWeight="SemiBold">
-                    <Button.Template>
-                        <ControlTemplate TargetType="Button">
-                            <Border Background="{TemplateBinding Background}"
-                                    CornerRadius="20" Padding="{TemplateBinding Padding}">
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <!-- Action row -->
+                <Grid Grid.Row="1" Margin="0,0,0,24">
+                    <TextBlock FontSize="13" Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                               VerticalAlignment="Center">
+                        <Run Text="{Binding Tracks.Count, Mode=OneWay, StringFormat='{}{0} tracks'}"/>
+                    </TextBlock>
+                    <Button Content="Play All" Command="{Binding PlayAllCommand}"
+                            HorizontalAlignment="Right"
+                            Background="{DynamicResource PrimaryBrush}" Foreground="White"
+                            BorderThickness="0" Padding="20,10" Cursor="Hand"
+                            FontSize="14" FontWeight="SemiBold">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}"
+                                        CornerRadius="20" Padding="{TemplateBinding Padding}">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </Grid>
+
+                <!-- Tracks list -->
+                <ListView Grid.Row="2" x:Name="TracksList"
+                          ItemsSource="{Binding Tracks}"
+                          Background="Transparent" BorderThickness="0"
+                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                          VirtualizingPanel.IsVirtualizing="True">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Border Padding="12,10" CornerRadius="12" Margin="0,0,0,4" Cursor="Hand"
+                                    Background="Transparent">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="{DynamicResource SurfaceContainerHighBrush}"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <Border.InputBindings>
+                                    <MouseBinding MouseAction="LeftClick"
+                                                  Command="{Binding DataContext.PlayTrackCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                  CommandParameter="{Binding}"/>
+                                </Border.InputBindings>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{Binding TrackNumber}" FontSize="14"
+                                               Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                                               Width="30" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Title}" FontSize="14" FontWeight="Medium"
+                                               Foreground="{DynamicResource OnSurfaceBrush}"
+                                               TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                                    <TextBlock Grid.Column="2"
+                                               Text="{Binding Duration, StringFormat='{}{0:mm\\:ss}'}"
+                                               FontSize="13" Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                                               VerticalAlignment="Center"/>
+                                </Grid>
                             </Border>
-                        </ControlTemplate>
-                    </Button.Template>
-                </Button>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
             </Grid>
+        </ScrollViewer>
 
-            <ListView Grid.Row="2" x:Name="TracksList"
-                      ItemsSource="{Binding Tracks}"
-                      Background="Transparent" BorderThickness="0"
-                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                      VirtualizingPanel.IsVirtualizing="True">
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <Border Padding="12,10" CornerRadius="12" Margin="0,0,0,4" Cursor="Hand"
-                                Background="Transparent">
-                            <Border.Style>
-                                <Style TargetType="Border">
-                                    <Style.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="{DynamicResource SurfaceContainerHighBrush}"/>
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Border.Style>
-                            <Border.InputBindings>
-                                <MouseBinding MouseAction="LeftClick"
-                                              Command="{Binding DataContext.PlayTrackCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                              CommandParameter="{Binding}"/>
-                            </Border.InputBindings>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="{Binding TrackNumber}" FontSize="14"
-                                           Foreground="{DynamicResource OnSurfaceVariantBrush}"
-                                           Width="30" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                                <TextBlock Grid.Column="1" Text="{Binding Title}" FontSize="14" FontWeight="Medium"
-                                           Foreground="{DynamicResource OnSurfaceBrush}"
-                                           TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="12,0,0,0"/>
-                                <TextBlock Grid.Column="2"
-                                           Text="{Binding Duration, StringFormat='{}{0:mm\\:ss}'}"
-                                           FontSize="13" Foreground="{DynamicResource OnSurfaceVariantBrush}"
-                                           VerticalAlignment="Center"/>
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-        </Grid>
-
+        <!-- Loading overlay -->
         <Grid Grid.Row="1" Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
               HorizontalAlignment="Center" VerticalAlignment="Center">
             <TextBlock Text="Loading..." FontSize="14" Foreground="{DynamicResource OnSurfaceVariantBrush}"/>
