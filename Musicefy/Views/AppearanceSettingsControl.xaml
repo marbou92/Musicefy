@@ -236,6 +236,18 @@
                         </CheckBox.Tag>
                     </CheckBox>
 
+                    <TextBlock Text="Player Background" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource OnSurfaceBrush}" Margin="4,25,0,12"/>
+                    <Border CornerRadius="22" BorderThickness="1.5" BorderBrush="{DynamicResource OutlineBrush}" ClipToBounds="True" Margin="0,0,0,25" Height="44" Background="Transparent">
+                        <UniformGrid Columns="3">
+                            <RadioButton Content="Gradient" Style="{StaticResource SegmentedTabStyle}" GroupName="BgStyleGroup"
+                                         IsChecked="{Binding SelectedPlayerBackgroundIndex, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=0}"/>
+                            <RadioButton Content="Coloring" Style="{StaticResource SegmentedTabStyle}" GroupName="BgStyleGroup"
+                                         IsChecked="{Binding SelectedPlayerBackgroundIndex, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=1}"/>
+                            <RadioButton Content="Glow" Style="{StaticResource SegmentedTabStyle}" GroupName="BgStyleGroup"
+                                         IsChecked="{Binding SelectedPlayerBackgroundIndex, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=2}"/>
+                        </UniformGrid>
+                    </Border>
+
                     <TextBlock Text="Format Configurations" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource OnSurfaceBrush}" Margin="4,15,0,12"/>
                     <Border Background="{DynamicResource SurfaceVariantBrush}" BorderBrush="{DynamicResource OutlineBrush}" BorderThickness="1" CornerRadius="14" Padding="16,12">
                         <DockPanel>
