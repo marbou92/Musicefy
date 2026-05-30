@@ -107,6 +107,24 @@ namespace Musicefy.Properties {
             set => this["PlayerBackgroundStyle"] = value;
         }
 
+        // Palette style (TonalSpot, Vibrant, Expressive, Fidelity, Monochrome, Rainbow, FruitSalad)
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("TonalSpot")]
+        public string PaletteStyle {
+            get => ((string)(this["PaletteStyle"]));
+            set => this["PaletteStyle"] = value;
+        }
+
+        // Exact palette mode: use seed color literally at its natural tone
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ExactPalette {
+            get => ((bool)(this["ExactPalette"]));
+            set => this["ExactPalette"] = value;
+        }
+
         // Discover: show local library on home
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
