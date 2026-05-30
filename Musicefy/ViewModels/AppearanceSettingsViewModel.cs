@@ -17,6 +17,8 @@ namespace Musicefy.ViewModels
         private string _selectedDateFormat;
         private bool _isSuppressingThemeApplication;
         private string _activePaletteName;
+        private PaletteStyle _selectedPaletteStyle;
+        private bool _exactPaletteEnabled;
 
         public AppearanceSettingsViewModel()
         {
@@ -32,6 +34,21 @@ namespace Musicefy.ViewModels
                 "System" => 0,
                 "Light" => 1,
                 _ => 2
+            };
+
+            // Load saved palette style and exact-palette toggle
+            _selectedPaletteStyle = ThemeManager.GetSavedPaletteStyle();
+            _exactPaletteEnabled = ThemeManager.GetSavedExactPalette();
+
+            PaletteStyles = new ObservableCollection<PaletteStyleOption>
+            {
+                new("Tonal Spot",  PaletteStyle.TonalSpot),
+                new("Vibrant",     PaletteStyle.Vibrant),
+                new("Expressive",  PaletteStyle.Expressive),
+                new("Fidelity",    PaletteStyle.Fidelity),
+                new("Monochrome",  PaletteStyle.Monochrome),
+                new("Rainbow",     PaletteStyle.Rainbow),
+                new("Fruit Salad", PaletteStyle.FruitSalad),
             };
 
             FamilyGroups = new ObservableCollection<FamilyGroup>();
@@ -67,7 +84,10 @@ namespace Musicefy.ViewModels
             int tArgb = ColorToArgb(CustomTertiaryColor);
             int nArgb = ColorToArgb(CustomNeutralColor);
 
-            ThemeManager.ApplyCustomFromColors(GetModeFromIndex(_selectedThemeIndex), pArgb, sArgb, tArgb, nArgb);
+            ThemeManager.ApplyCustomFromColors(
+                GetModeFromIndex(_selectedThemeIndex), pArgb, sArgb, tArgb, nArgb,
+                styleOverride: _selectedPaletteStyle,
+                isExactPaletteOverride: _exactPaletteEnabled);
             IsCustomThemeEditorOpen = false;
         }
 
@@ -167,6 +187,62 @@ namespace Musicefy.ViewModels
                     Musicefy.Properties.Settings.Default.PureBlackMode = value;
                     OnPropertyChanged();
                     if (!_isSuppressingThemeApplication) ApplyTheme();
+                }
+            }
+        }
+
+        // ── Palette Style selection (ArchiveTune feature) ─────────────────
+        public ObservableCollection<PaletteStyleOption> PaletteStyles { get; }
+
+        public PaletteStyle SelectedPaletteStyle
+        {
+            get => _selectedPaletteStyle;
+            set
+            {
+                if (_selectedPaletteStyle != value)
+                {
+                    _selectedPaletteStyle = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(SelectedPaletteStyleIndex));
+                    if (!_isSuppressingThemeApplication)
+                    {
+                        ApplyTheme();
+                        RefreshPreviews(_activePaletteName);
+                    }
+                }
+            }
+        }
+
+        public int SelectedPaletteStyleIndex
+        {
+            get
+            {
+                for (int i = 0; i < PaletteStyles.Count; i++)
+                    if (PaletteStyles[i].Style == _selectedPaletteStyle) return i;
+                return 0;
+            }
+            set
+            {
+                if (value >= 0 && value < PaletteStyles.Count)
+                    SelectedPaletteStyle = PaletteStyles[value].Style;
+            }
+        }
+
+        // ── Exact Palette toggle (ArchiveTune feature) ────────────────────
+        public bool ExactPaletteEnabled
+        {
+            get => _exactPaletteEnabled;
+            set
+            {
+                if (_exactPaletteEnabled != value)
+                {
+                    _exactPaletteEnabled = value;
+                    OnPropertyChanged();
+                    if (!_isSuppressingThemeApplication)
+                    {
+                        ApplyTheme();
+                        RefreshPreviews(_activePaletteName);
+                    }
                 }
             }
         }
@@ -404,7 +480,9 @@ namespace Musicefy.ViewModels
 
         public void SelectPalette(string paletteName)
         {
-            ThemeManager.ApplyTheme(GetModeFromIndex(_selectedThemeIndex), paletteName);
+            ThemeManager.ApplyTheme(GetModeFromIndex(_selectedThemeIndex), paletteName,
+                styleOverride: _selectedPaletteStyle,
+                isExactPaletteOverride: _exactPaletteEnabled);
             RefreshPreviews(paletteName);
             IsPaletteSubspaceOpen = false;
         }
@@ -412,12 +490,12 @@ namespace Musicefy.ViewModels
         public void Save()
         {
             string mode = GetModeFromIndex(_selectedThemeIndex);
-            ThemeManager.SaveTheme(mode, _activePaletteName);
-
             Musicefy.Properties.Settings.Default.Theme = $"{mode}|{_activePaletteName}";
             Musicefy.Properties.Settings.Default.DynamicColorsEnabled = DynamicColorsEnabled;
             Musicefy.Properties.Settings.Default.DateFormat = _selectedDateFormat;
             Musicefy.Properties.Settings.Default.PlayerBackgroundStyle = PlayerBackgroundStyle;
+            Musicefy.Properties.Settings.Default.PaletteStyle = _selectedPaletteStyle.ToString();
+            Musicefy.Properties.Settings.Default.ExactPalette = _exactPaletteEnabled;
             Musicefy.Properties.Settings.Default.Save();
         }
 
@@ -451,7 +529,9 @@ namespace Musicefy.ViewModels
             string mode = GetModeFromIndex(_selectedThemeIndex);
             string palette = GetCurrentPalette();
             _activePaletteName = palette;
-            ThemeManager.ApplyTheme(mode, palette);
+            ThemeManager.ApplyTheme(mode, palette,
+                styleOverride: _selectedPaletteStyle,
+                isExactPaletteOverride: _exactPaletteEnabled);
             RefreshPreviews(palette);
         }
 
@@ -462,6 +542,8 @@ namespace Musicefy.ViewModels
             string mode = GetModeFromIndex(_selectedThemeIndex);
             if (mode.Equals("System", StringComparison.OrdinalIgnoreCase))
                 mode = ThemeManager.IsSystemDarkMode() ? "Dark" : "Light";
+
+            bool isDark = mode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase);
 
             var grouped = SeedPalettes.All
                 .GroupBy(s => s.Family)
@@ -480,15 +562,21 @@ namespace Musicefy.ViewModels
                     bool isSelected = seed.Name.Equals(activePalette, StringComparison.OrdinalIgnoreCase);
                     if (isSelected) _activePaletteName = seed.Name;
 
+                    // Use mode-accurate preview colors: shows what the palette
+                    // will look like in the current light/dark mode with the
+                    // selected style and exact-palette setting.
+                    var (primary, secondary, tertiary, surface) =
+                        ThemeManager.GetModeAccuratePreview(seed, isDark, _selectedPaletteStyle, _exactPaletteEnabled);
+
                     var preview = new ThemePreview
                     {
                         CardName = seed.Name,
                         Family = seed.Family,
                         IsSelected = isSelected,
-                        PrimarySeed = ArgbToColor(seed.PrimaryArgb),
-                        SecondarySeed = ArgbToColor(seed.SecondaryArgb),
-                        TertiarySeed = ArgbToColor(seed.TertiaryArgb),
-                        NeutralSeed = ArgbToColor(seed.NeutralArgb),
+                        PrimarySeed = primary,
+                        SecondarySeed = secondary,
+                        TertiarySeed = tertiary,
+                        NeutralSeed = surface,
                     };
 
                     familyGroup.Previews.Add(preview);
@@ -595,5 +683,22 @@ namespace Musicefy.ViewModels
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string name = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+    }
+
+    /// <summary>
+    /// Display-friendly wrapper for PaletteStyle used in the style selector UI.
+    /// </summary>
+    public class PaletteStyleOption
+    {
+        public string DisplayName { get; }
+        public PaletteStyle Style { get; }
+
+        public PaletteStyleOption(string displayName, PaletteStyle style)
+        {
+            DisplayName = displayName;
+            Style = style;
+        }
+
+        public override string ToString() => DisplayName;
     }
 }
