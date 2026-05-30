@@ -2,7 +2,7 @@ using System;
 
 namespace Musicefy.Core.Hct
 {
-    internal static class MathUtils
+    public static class MathUtils
     {
         public static double Clamp(double min, double max, double value)
         {
@@ -26,7 +26,7 @@ namespace Musicefy.Core.Hct
             return 180.0 - Math.Abs(Math.Abs(a - b) - 180.0);
         }
 
-        public static double RotationDirection(double from, double to)
+        internal static double RotationDirection(double from, double to)
         {
             double diff = to - from;
             double sign = Math.Sign(diff);
@@ -35,14 +35,14 @@ namespace Musicefy.Core.Hct
             return diffDegrees <= 180.0 ? sign : -sign;
         }
 
-        public static double Signum(double value)
+        internal static double Signum(double value)
         {
             if (value < 0) return -1;
             if (value > 0) return 1;
             return 0;
         }
 
-        public static double Lerp(double from, double to, double amount)
+        internal static double Lerp(double from, double to, double amount)
         {
             return from + (to - from) * amount;
         }
