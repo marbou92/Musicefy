@@ -95,7 +95,7 @@ namespace Musicefy.Services
             string paletteName,
             bool? isDarkPureOverride = null,
             bool? isExactPaletteOverride = null,
-            PaletteStyle style = PaletteStyle.TonalSpot)
+            PaletteStyle? styleOverride = null)
         {
             SwapModeDict(mode);
 
@@ -104,7 +104,8 @@ namespace Musicefy.Services
 
             bool isDark     = mode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase);
             bool isDarkPure = isDarkPureOverride ?? (isDark && Musicefy.Properties.Settings.Default.PureBlackMode);
-            bool isExact    = isExactPaletteOverride ?? false;
+            bool isExact    = isExactPaletteOverride ?? Musicefy.Properties.Settings.Default.ExactPalette;
+            PaletteStyle style = styleOverride ?? ParsePaletteStyle(Musicefy.Properties.Settings.Default.PaletteStyle);
 
             var seed = SeedPalettes.All.Find(p =>
                 string.Equals(p.Name, paletteName, StringComparison.OrdinalIgnoreCase))
@@ -126,32 +127,94 @@ namespace Musicefy.Services
         }
 
         /// <summary>
+        /// Parse a PaletteStyle enum from a settings string.
+        /// Falls back to TonalSpot for unrecognized values.
+        /// </summary>
+        public static PaletteStyle ParsePaletteStyle(string styleStr)
+        {
+            if (Enum.TryParse<PaletteStyle>(styleStr, ignoreCase: true, out var result))
+                return result;
+            return PaletteStyle.TonalSpot;
+        }
+
+        /// <summary>
         /// Apply a full scheme from extracted album-art colors.
         /// Uses the dominant hue + chroma to reconstruct a complete M3 scheme,
         /// respecting the current mode and pure-black setting.
         /// This is the ArchiveTune approach: album art drives the ENTIRE palette,
-        /// not just the accent brush.
+        /// not just the accent brush. Vibrant and Muted extracted colors feed
+        /// secondary and tertiary channels for a richer, more harmonious scheme.
         /// </summary>
         public static void ApplyDynamicColors(ExtractedColors colors)
         {
             if (_currentScheme == null) ApplyTheme("Dark", "Default");
 
-            int argb  = (255 << 24) | (colors.Primary.R << 16) | (colors.Primary.G << 8) | colors.Primary.B;
-            var hct   = Hct.FromInt(argb);
+            int primaryArgb = ColorToArgb(colors.Primary);
+            var hct = Hct.FromInt(primaryArgb);
 
             // Boost chroma so muted artwork still drives a vivid scheme
             double chroma = Math.Max(hct.Chroma, 24.0);
+            primaryArgb = Hct.From(hct.Hue, chroma, 60).ToInt();
+
+            // Derive secondary from Vibrant color — gives a complementary accent
+            int secondaryArgb;
+            if (!AreColorsSimilar(colors.Vibrant, colors.Primary))
+            {
+                var vibHct = Hct.FromInt(ColorToArgb(colors.Vibrant));
+                double vibChroma = Math.Max(vibHct.Chroma, 16.0);
+                secondaryArgb = Hct.From(vibHct.Hue, vibChroma, 60).ToInt();
+            }
+            else
+            {
+                secondaryArgb = Hct.From(
+                    MathUtils.SanitizeDegrees(hct.Hue + 30),
+                    Math.Max(chroma * 0.5, 16.0), 60).ToInt();
+            }
+
+            // Derive tertiary from Muted color — gives a softer contrast accent
+            int tertiaryArgb;
+            if (!AreColorsSimilar(colors.Muted, colors.Primary))
+            {
+                var mutHct = Hct.FromInt(ColorToArgb(colors.Muted));
+                double mutChroma = Math.Max(mutHct.Chroma, 12.0);
+                tertiaryArgb = Hct.From(mutHct.Hue, mutChroma, 60).ToInt();
+            }
+            else
+            {
+                tertiaryArgb = Hct.From(
+                    MathUtils.SanitizeDegrees(hct.Hue + 60),
+                    Math.Max(chroma * 0.35, 12.0), 60).ToInt();
+            }
+
+            // Neutral comes from primary hue at very low chroma (tonal surface)
+            int neutralArgb = Hct.From(hct.Hue, Math.Min(chroma * 0.08, 6.0), 60).ToInt();
 
             bool isDark     = _currentScheme?.IsDark ?? true;
             bool isDarkPure = _currentScheme?.IsDarkPure ?? false;
 
             // Use Fidelity style for album art — stays true to the source hue
-            int primaryArgb = Hct.From(hct.Hue, chroma, 60).ToInt();
             var scheme = DynamicScheme.FromColors(
-                primaryArgb, primaryArgb, primaryArgb, primaryArgb,
+                primaryArgb, secondaryArgb, tertiaryArgb, neutralArgb,
                 isDark, isDarkPure, isExactPalette: false, PaletteStyle.Fidelity);
 
             ApplySchemeWithAnimation(scheme);
+        }
+
+        /// <summary>
+        /// Check if two colors are too similar (hue within 15°, chroma within 10) to be useful as distinct channels.
+        /// </summary>
+        private static bool AreColorsSimilar(System.Windows.Media.Color a, System.Windows.Media.Color b)
+        {
+            var hctA = Hct.FromInt(ColorToArgb(a));
+            var hctB = Hct.FromInt(ColorToArgb(b));
+            double hueDiff = MathUtils.DifferenceDegrees(hctA.Hue, hctB.Hue);
+            double chromaDiff = Math.Abs(hctA.Chroma - hctB.Chroma);
+            return hueDiff < 15 && chromaDiff < 10;
+        }
+
+        private static int ColorToArgb(System.Windows.Media.Color c)
+        {
+            return (255 << 24) | (c.R << 16) | (c.G << 8) | c.B;
         }
 
         public static void ClearDynamicColors()
@@ -164,8 +227,8 @@ namespace Musicefy.Services
             string mode,
             SeedPalette seed,
             bool? isDarkPureOverride = null,
-            bool isExactPalette = false,
-            PaletteStyle style = PaletteStyle.TonalSpot)
+            bool? isExactPaletteOverride = null,
+            PaletteStyle? styleOverride = null)
         {
             SwapModeDict(mode);
             if (mode.Equals("System", StringComparison.OrdinalIgnoreCase))
@@ -173,8 +236,10 @@ namespace Musicefy.Services
 
             bool isDark     = mode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase);
             bool isDarkPure = isDarkPureOverride ?? (isDark && Musicefy.Properties.Settings.Default.PureBlackMode);
+            bool isExact    = isExactPaletteOverride ?? Musicefy.Properties.Settings.Default.ExactPalette;
+            PaletteStyle style = styleOverride ?? ParsePaletteStyle(Musicefy.Properties.Settings.Default.PaletteStyle);
 
-            var scheme = DynamicScheme.FromSeed(seed, isDark, isDarkPure, isExactPalette, style);
+            var scheme = DynamicScheme.FromSeed(seed, isDark, isDarkPure, isExact, style);
             ApplySchemeWithAnimation(scheme);
         }
 
@@ -185,8 +250,8 @@ namespace Musicefy.Services
             int tertiaryArgb,
             int neutralArgb,
             bool? isDarkPureOverride = null,
-            bool isExactPalette = false,
-            PaletteStyle style = PaletteStyle.TonalSpot)
+            bool? isExactPaletteOverride = null,
+            PaletteStyle? styleOverride = null)
         {
             SwapModeDict(mode);
             if (mode.Equals("System", StringComparison.OrdinalIgnoreCase))
@@ -194,10 +259,12 @@ namespace Musicefy.Services
 
             bool isDark     = mode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase);
             bool isDarkPure = isDarkPureOverride ?? (isDark && Musicefy.Properties.Settings.Default.PureBlackMode);
+            bool isExact    = isExactPaletteOverride ?? Musicefy.Properties.Settings.Default.ExactPalette;
+            PaletteStyle style = styleOverride ?? ParsePaletteStyle(Musicefy.Properties.Settings.Default.PaletteStyle);
 
             var scheme = DynamicScheme.FromColors(
                 primaryArgb, secondaryArgb, tertiaryArgb, neutralArgb,
-                isDark, isDarkPure, isExactPalette, style);
+                isDark, isDarkPure, isExact, style);
             ApplySchemeWithAnimation(scheme);
         }
 
@@ -207,6 +274,28 @@ namespace Musicefy.Services
             Musicefy.Properties.Settings.Default.Theme = $"{normalMode}|{paletteName}";
             Musicefy.Properties.Settings.Default.Save();
         }
+
+        /// <summary>
+        /// Save the current palette style and exact-palette toggle to settings.
+        /// </summary>
+        public static void SavePaletteOptions(PaletteStyle style, bool exactPalette)
+        {
+            Musicefy.Properties.Settings.Default.PaletteStyle = style.ToString();
+            Musicefy.Properties.Settings.Default.ExactPalette = exactPalette;
+            Musicefy.Properties.Settings.Default.Save();
+        }
+
+        /// <summary>
+        /// Get the currently saved PaletteStyle from settings.
+        /// </summary>
+        public static PaletteStyle GetSavedPaletteStyle()
+            => ParsePaletteStyle(Musicefy.Properties.Settings.Default.PaletteStyle ?? "TonalSpot");
+
+        /// <summary>
+        /// Get the currently saved ExactPalette toggle from settings.
+        /// </summary>
+        public static bool GetSavedExactPalette()
+            => Musicefy.Properties.Settings.Default.ExactPalette;
 
         // ── Scheme → Resource Dictionaries ────────────────────────────────────
 
@@ -457,9 +546,9 @@ namespace Musicefy.Services
         // ArchiveTune shows palette swatches using the CURRENT mode's tones.
         // Call this to get preview colors that match what the palette will look like.
         public static (Color primary, Color secondary, Color tertiary, Color surface)
-            GetModeAccuratePreview(SeedPalette seed, bool isDark, PaletteStyle style = PaletteStyle.TonalSpot)
+            GetModeAccuratePreview(SeedPalette seed, bool isDark, PaletteStyle style = PaletteStyle.TonalSpot, bool isExactPalette = false)
         {
-            var scheme = DynamicScheme.FromSeed(seed, isDark, false, false, style);
+            var scheme = DynamicScheme.FromSeed(seed, isDark, false, isExactPalette, style);
             return (
                 ArgbsToColor(scheme.GetPreviewPrimaryArgb()),
                 ArgbsToColor(scheme.GetPreviewSecondaryArgb()),
