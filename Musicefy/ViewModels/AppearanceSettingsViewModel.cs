@@ -36,7 +36,6 @@ namespace Musicefy.ViewModels
                 _ => 2
             };
 
-            // Load saved palette style and exact-palette toggle
             _selectedPaletteStyle = ThemeManager.GetSavedPaletteStyle();
             _exactPaletteEnabled = ThemeManager.GetSavedExactPalette();
 
@@ -480,9 +479,8 @@ namespace Musicefy.ViewModels
         #endregion
 
         /// <summary>
-        /// Select a palette — ArchiveTune behavior: applies the theme immediately
-        /// but does NOT close the palette subspace, so the user can see the result
-        /// and continue browsing before going back.
+        /// Select a palette and apply the theme. ArchiveTune behavior:
+        /// does NOT close the palette subspace so user can keep browsing.
         /// </summary>
         public void SelectPalette(string paletteName)
         {
@@ -491,9 +489,6 @@ namespace Musicefy.ViewModels
                 isExactPaletteOverride: _exactPaletteEnabled,
                 autoSelectStyle: true);
             RefreshPreviews(paletteName);
-            // ArchiveTune does NOT close the palette picker after selection.
-            // The user can keep browsing and trying different palettes.
-            // They go back via the back button when done.
         }
 
         public void Save()
@@ -545,13 +540,6 @@ namespace Musicefy.ViewModels
             RefreshPreviews(palette);
         }
 
-        /// <summary>
-        /// Rebuilds the palette card previews.
-        /// Uses raw seed colors (tone 60) which are MODE-INDEPENDENT —
-        /// the cards look the same regardless of light/dark/dark-pure mode.
-        /// This matches ArchiveTune's approach: palette cards always show
-        /// the seed colors consistently; the mode only affects the applied theme.
-        /// </summary>
         private void RefreshPreviews(string activePalette)
         {
             FamilyGroups.Clear();
@@ -577,9 +565,7 @@ namespace Musicefy.ViewModels
                     bool isSelected = seed.Name.Equals(activePalette, StringComparison.OrdinalIgnoreCase);
                     if (isSelected) _activePaletteName = seed.Name;
 
-                    // ArchiveTune approach: palette picker cards show the RAW seed color
-                    // at a neutral tone, NOT mode-adjusted. This keeps cards consistent
-                    // regardless of light/dark/dark-pure mode.
+                    // ArchiveTune: palette cards show raw seed color (mode-independent)
                     PaletteStyle autoStyle = _selectedPaletteStyle == PaletteStyle.TonalSpot
                         ? DynamicScheme.AutoSelectStyle(seed)
                         : _selectedPaletteStyle;
@@ -666,11 +652,9 @@ namespace Musicefy.ViewModels
     }
 
     /// <summary>
-    /// Model for each palette card in the picker.
-    /// ArchiveTune-style: shows 3 raw seed colors as a 3-section circle
-    /// (primary top, tertiary bottom-left, secondary bottom-right).
-    /// These colors are MODE-INDEPENDENT — they use tone 60 so they
-    /// look the same regardless of light/dark/dark-pure mode.
+    /// Model for each palette card. Shows 3 raw seed colors as a 3-section circle.
+    /// Colors are MODE-INDEPENDENT (tone 60) — they look the same regardless of
+    /// light/dark/dark-pure mode.
     /// </summary>
     public class ThemePreview : INotifyPropertyChanged
     {
@@ -706,9 +690,6 @@ namespace Musicefy.ViewModels
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 
-    /// <summary>
-    /// Display-friendly wrapper for PaletteStyle used in the style selector UI.
-    /// </summary>
     public class PaletteStyleOption
     {
         public string DisplayName { get; }
