@@ -13,8 +13,6 @@ namespace Musicefy.Services
     public static class ThemeManager
     {
         // ── Color token map ──────────────────────────────────────────────────
-        // Each entry binds a WPF resource key → the ToneRole that drives it.
-        // This is the single source of truth: add a key here and it's animated everywhere.
         private static readonly (string key, ToneRole role)[] _colorKeys =
         {
             // Primary
@@ -41,9 +39,7 @@ namespace Musicefy.Services
             ("ErrorContainerBrush",     ToneRole.ErrorContainer),
             ("OnErrorContainerBrush",   ToneRole.OnErrorContainer),
 
-            // ── Tonal surfaces (derived from NeutralPalette, not hardcoded gray) ──
-            // This is the ArchiveTune approach: surfaces carry a subtle hue bias
-            // from the palette so they feel cohesive rather than generic gray.
+            // ── Tonal surfaces ──
             ("SurfaceBrush",                  ToneRole.Surface),
             ("OnSurfaceBrush",                ToneRole.OnSurface),
             ("SurfaceVariantBrush",           ToneRole.SurfaceVariant),
@@ -95,7 +91,8 @@ namespace Musicefy.Services
             string paletteName,
             bool? isDarkPureOverride = null,
             bool? isExactPaletteOverride = null,
-            PaletteStyle? styleOverride = null)
+            PaletteStyle? styleOverride = null,
+            bool autoSelectStyle = false)
         {
             SwapModeDict(mode);
 
@@ -110,6 +107,10 @@ namespace Musicefy.Services
             var seed = SeedPalettes.All.Find(p =>
                 string.Equals(p.Name, paletteName, StringComparison.OrdinalIgnoreCase))
                 ?? SeedPalettes.All[0];
+
+            // ArchiveTune approach: auto-select style based on seed chroma
+            if (autoSelectStyle && style == PaletteStyle.TonalSpot)
+                style = DynamicScheme.AutoSelectStyle(seed);
 
             var scheme = DynamicScheme.FromSeed(seed, isDark, isDarkPure, isExact, style);
             ApplySchemeWithAnimation(scheme);
@@ -126,10 +127,6 @@ namespace Musicefy.Services
             ApplyTheme(mode, palette);
         }
 
-        /// <summary>
-        /// Parse a PaletteStyle enum from a settings string.
-        /// Falls back to TonalSpot for unrecognized values.
-        /// </summary>
         public static PaletteStyle ParsePaletteStyle(string styleStr)
         {
             if (Enum.TryParse<PaletteStyle>(styleStr, ignoreCase: true, out var result))
@@ -137,14 +134,6 @@ namespace Musicefy.Services
             return PaletteStyle.TonalSpot;
         }
 
-        /// <summary>
-        /// Apply a full scheme from extracted album-art colors.
-        /// Uses the dominant hue + chroma to reconstruct a complete M3 scheme,
-        /// respecting the current mode and pure-black setting.
-        /// This is the ArchiveTune approach: album art drives the ENTIRE palette,
-        /// not just the accent brush. Vibrant and Muted extracted colors feed
-        /// secondary and tertiary channels for a richer, more harmonious scheme.
-        /// </summary>
         public static void ApplyDynamicColors(ExtractedColors colors)
         {
             if (_currentScheme == null) ApplyTheme("Dark", "Default");
@@ -152,11 +141,9 @@ namespace Musicefy.Services
             int primaryArgb = ColorToArgb(colors.Primary);
             var hct = Hct.FromInt(primaryArgb);
 
-            // Boost chroma so muted artwork still drives a vivid scheme
             double chroma = Math.Max(hct.Chroma, 24.0);
             primaryArgb = Hct.From(hct.Hue, chroma, 60).ToInt();
 
-            // Derive secondary from Vibrant color — gives a complementary accent
             int secondaryArgb;
             if (!AreColorsSimilar(colors.Vibrant, colors.Primary))
             {
@@ -171,7 +158,6 @@ namespace Musicefy.Services
                     Math.Max(chroma * 0.5, 16.0), 60).ToInt();
             }
 
-            // Derive tertiary from Muted color — gives a softer contrast accent
             int tertiaryArgb;
             if (!AreColorsSimilar(colors.Muted, colors.Primary))
             {
@@ -186,13 +172,11 @@ namespace Musicefy.Services
                     Math.Max(chroma * 0.35, 12.0), 60).ToInt();
             }
 
-            // Neutral comes from primary hue at very low chroma (tonal surface)
             int neutralArgb = Hct.From(hct.Hue, Math.Min(chroma * 0.08, 6.0), 60).ToInt();
 
             bool isDark     = _currentScheme?.IsDark ?? true;
             bool isDarkPure = _currentScheme?.IsDarkPure ?? false;
 
-            // Use Fidelity style for album art — stays true to the source hue
             var scheme = DynamicScheme.FromColors(
                 primaryArgb, secondaryArgb, tertiaryArgb, neutralArgb,
                 isDark, isDarkPure, isExactPalette: false, PaletteStyle.Fidelity);
@@ -200,9 +184,6 @@ namespace Musicefy.Services
             ApplySchemeWithAnimation(scheme);
         }
 
-        /// <summary>
-        /// Check if two colors are too similar (hue within 15°, chroma within 10) to be useful as distinct channels.
-        /// </summary>
         private static bool AreColorsSimilar(System.Windows.Media.Color a, System.Windows.Media.Color b)
         {
             var hctA = Hct.FromInt(ColorToArgb(a));
@@ -275,9 +256,6 @@ namespace Musicefy.Services
             Musicefy.Properties.Settings.Default.Save();
         }
 
-        /// <summary>
-        /// Save the current palette style and exact-palette toggle to settings.
-        /// </summary>
         public static void SavePaletteOptions(PaletteStyle style, bool exactPalette)
         {
             Musicefy.Properties.Settings.Default.PaletteStyle = style.ToString();
@@ -285,15 +263,9 @@ namespace Musicefy.Services
             Musicefy.Properties.Settings.Default.Save();
         }
 
-        /// <summary>
-        /// Get the currently saved PaletteStyle from settings.
-        /// </summary>
         public static PaletteStyle GetSavedPaletteStyle()
             => ParsePaletteStyle(Musicefy.Properties.Settings.Default.PaletteStyle ?? "TonalSpot");
 
-        /// <summary>
-        /// Get the currently saved ExactPalette toggle from settings.
-        /// </summary>
         public static bool GetSavedExactPalette()
             => Musicefy.Properties.Settings.Default.ExactPalette;
 
@@ -447,8 +419,6 @@ namespace Musicefy.Services
             DynamicScheme scheme,
             string style)
         {
-            // In Exact palette mode the primary color is very close to the seed,
-            // so we use a slightly lower tone for contrast in the gradient.
             double topTone = scheme.IsExactPalette
                 ? (scheme.IsDark ? 70 : 50)
                 : (scheme.IsDark ? 80 : 90);
@@ -543,8 +513,6 @@ namespace Musicefy.Services
         }
 
         // ── Mode-accurate palette preview ──────────────────────────────────────
-        // ArchiveTune shows palette swatches using the CURRENT mode's tones.
-        // Call this to get preview colors that match what the palette will look like.
         public static (Color primary, Color secondary, Color tertiary, Color surface)
             GetModeAccuratePreview(SeedPalette seed, bool isDark, PaletteStyle style = PaletteStyle.TonalSpot, bool isExactPalette = false)
         {
@@ -556,5 +524,29 @@ namespace Musicefy.Services
                 ArgbsToColor(scheme.GetPreviewSurfaceArgb())
             );
         }
+
+        // ── Raw seed preview (ArchiveTune approach) ─────────────────────────
+        // Shows the raw seed color at a neutral tone (60), NOT adjusted by mode.
+        public static (Color primary, Color secondary, Color tertiary, Color neutral)
+            GetRawSeedPreview(SeedPalette seed, PaletteStyle style = PaletteStyle.TonalSpot)
+        {
+            var scheme = DynamicScheme.FromSeed(seed, true, false, false, style);
+            return (
+                ArgbsToColor(scheme.GetRawSeedPrimaryArgb()),
+                ArgbsToColor(scheme.GetRawSeedSecondaryArgb()),
+                ArgbsToColor(scheme.GetRawSeedTertiaryArgb()),
+                ArgbsToColor(scheme.GetRawSeedNeutralArgb())
+            );
+        }
+
+        // ── Auto-select palette style (ArchiveTune approach) ────────────────
+        public static PaletteStyle AutoSelectStyle(SeedPalette seed)
+            => DynamicScheme.AutoSelectStyle(seed);
+
+        public static PaletteStyle AutoSelectStyle(double chroma)
+            => DynamicScheme.AutoSelectStyle(chroma);
+
+        public static PaletteStyle AutoSelectStyle(int argb)
+            => DynamicScheme.AutoSelectStyle(argb);
     }
 }
