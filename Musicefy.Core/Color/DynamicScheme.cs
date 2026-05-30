@@ -12,6 +12,7 @@ namespace Musicefy.Core.Hct
         Expressive,   // Shifted hues, very colorful, playful
         Fidelity,     // Stays closest to original seed hue
         Monochrome,   // Near-zero chroma — neutral gray tones
+        Neutral,      // Low chroma — muted, understated tones
         Rainbow,      // Wide hue spread across primaries
         FruitSalad,   // Opposite hue for secondary — high contrast
     }
@@ -205,6 +206,14 @@ namespace Musicefy.Core.Hct
                         nC  = Math.Min(chroma * 0.12, 8); nvC = Math.Min(chroma * 0.18, 12);
                         break;
 
+                    case PaletteStyle.Neutral:
+                        // Low chroma: muted, understated — ArchiveTune uses this for chroma < 12
+                        pC  = Math.Min(chroma, 12);
+                        sH  = hue + 15; sC = Math.Min(chroma * 0.6, 8);
+                        tH  = hue + 60; tC = Math.Min(chroma * 0.4, 6);
+                        nC  = Math.Min(chroma * 0.2, 4); nvC = Math.Min(chroma * 0.3, 6);
+                        break;
+
                     case PaletteStyle.Monochrome:
                         pC  = 4;
                         sH  = hue; sC = 4;
@@ -289,8 +298,6 @@ namespace Musicefy.Core.Hct
                 ToneRole.OnErrorContainer    => dark ? 90 : 10,
 
                 // ── Tonal surface roles ───────────────────────────────────
-                // These are derived from NeutralPalette, not hardcoded gray.
-                // ArchiveTune uses 6/98 as surface, giving a faint hue bias.
                 ToneRole.Surface                  => dark ? 6   : 98,
                 ToneRole.OnSurface                => dark ? 90  : 10,
                 ToneRole.SurfaceVariant           => dark ? 30  : 90,
@@ -334,7 +341,7 @@ namespace Musicefy.Core.Hct
                     or ToneRole.ErrorContainer or ToneRole.OnErrorContainer
                     => ErrorPalette,
 
-                // All surface/neutral roles come from tonal neutral palettes (not hardcoded gray)
+                // All surface/neutral roles come from tonal neutral palettes
                 ToneRole.Surface or ToneRole.OnSurface
                     or ToneRole.SurfaceContainerLowest or ToneRole.SurfaceContainerLow
                     or ToneRole.SurfaceContainer or ToneRole.SurfaceContainerHigh
@@ -393,11 +400,32 @@ namespace Musicefy.Core.Hct
         }
 
         // ── Preview color (mode-aware) ─────────────────────────────────────
-        // Used by palette picker to show how a seed looks in the current mode.
         public int GetPreviewPrimaryArgb()  => PrimaryPalette.GetTone(IsDark ? 80 : 40);
         public int GetPreviewSecondaryArgb() => SecondaryPalette.GetTone(IsDark ? 80 : 40);
         public int GetPreviewTertiaryArgb() => TertiaryPalette.GetTone(IsDark ? 80 : 40);
         public int GetPreviewSurfaceArgb()  => NeutralPalette.GetTone(IsDark ? 12 : 94);
+
+        // ── Raw seed preview (ArchiveTune approach) ─────────────────────────
+        // For palette picker cards: shows the raw seed color at a neutral tone (60)
+        // regardless of light/dark mode.
+        public int GetRawSeedPrimaryArgb()   => PrimaryPalette.GetTone(60);
+        public int GetRawSeedSecondaryArgb() => SecondaryPalette.GetTone(60);
+        public int GetRawSeedTertiaryArgb()  => TertiaryPalette.GetTone(60);
+        public int GetRawSeedNeutralArgb()   => NeutralPalette.GetTone(60);
+
+        // ── Auto-select palette style based on seed chroma (ArchiveTune) ───
+        public static PaletteStyle AutoSelectStyle(double chroma)
+        {
+            if (chroma < 4.0)  return PaletteStyle.Monochrome;
+            if (chroma < 12.0) return PaletteStyle.Neutral;
+            return PaletteStyle.TonalSpot;
+        }
+
+        public static PaletteStyle AutoSelectStyle(SeedPalette seed)
+            => AutoSelectStyle(seed.PrimaryChroma);
+
+        public static PaletteStyle AutoSelectStyle(int argb)
+            => AutoSelectStyle(Hct.FromInt(argb).Chroma);
     }
 
     // ── Extended ToneRole enum ─────────────────────────────────────────────
