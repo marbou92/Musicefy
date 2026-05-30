@@ -94,8 +94,31 @@ namespace Musicefy.Core.Hct
             bool isExactPalette = false,
             PaletteStyle style = PaletteStyle.TonalSpot)
         {
+            // Extract hue+chroma from each provided color for richer multi-channel schemes
             var pHct = Hct.FromInt(primaryArgb);
-            return FromHue(pHct.Hue, pHct.Chroma, isDark, isDarkPure, isExactPalette, style);
+            var sHct = Hct.FromInt(secondaryArgb);
+            var tHct = Hct.FromInt(tertiaryArgb);
+            var nHct = Hct.FromInt(neutralArgb);
+
+            // Build the scheme from the primary hue, then override individual palettes
+            // with the actual extracted hue+chroma from each channel.
+            StyleParams p = ComputeStyleParams(pHct.Hue, pHct.Chroma, style, isExactPalette);
+
+            double chromaFactor = isDarkPure ? 0.65 : 1.0;
+            double primaryChroma = isExactPalette ? pHct.Chroma : p.PrimaryChroma;
+
+            var primaryPalette        = TonalPalette.FromHueAndChroma(p.PrimaryHue, primaryChroma * chromaFactor);
+            var secondaryPalette      = TonalPalette.FromHueAndChroma(sHct.Hue, Math.Max(sHct.Chroma, 4) * chromaFactor);
+            var tertiaryPalette       = TonalPalette.FromHueAndChroma(tHct.Hue, Math.Max(tHct.Chroma, 4) * chromaFactor);
+            var neutralPalette        = TonalPalette.FromHueAndChroma(nHct.Hue, Math.Max(nHct.Chroma, 2) * chromaFactor);
+            var neutralVariantPalette = TonalPalette.FromHueAndChroma(nHct.Hue, Math.Max(nHct.Chroma * 1.5, 4) * chromaFactor);
+            var errorPalette          = TonalPalette.FromHueAndChroma(25.0, 84.0);
+
+            return new DynamicScheme(
+                null, primaryPalette, secondaryPalette, tertiaryPalette,
+                neutralPalette, neutralVariantPalette, errorPalette,
+                isDark, isDarkPure, isExactPalette, style,
+                p.PrimaryHue, primaryChroma * chromaFactor);
         }
 
         // ── Core builder ──────────────────────────────────────────────────
