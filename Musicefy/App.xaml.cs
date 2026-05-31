@@ -38,15 +38,12 @@ namespace Musicefy
                 string mode = parts.Length > 0 ? parts[0] : "Dark";
                 string palette = parts.Length > 1 ? parts[1] : "Default";
 
+                // Apply the saved theme. This sets ALL brushes (accent + surface) from the
+                // seed palette's DynamicScheme. DO NOT call ApplyDynamicColors here — that
+                // would immediately overwrite the surfaces with an album-art-tinted scheme
+                // even before any music has played, which is what caused the cyan/lavender
+                // surfaces in light mode.
                 ThemeManager.ApplyTheme(mode, palette);
-                ThemeManager.ApplyDynamicColors(new Musicefy.Core.Services.ExtractedColors
-                {
-                    Primary = System.Windows.Media.Color.FromRgb(60, 140, 231),
-                    Vibrant = System.Windows.Media.Color.FromRgb(60, 140, 231),
-                    Muted = System.Windows.Media.Color.FromRgb(80, 100, 140),
-                    OnPrimary = System.Windows.Media.Colors.White,
-                    Surface = System.Windows.Media.Color.FromRgb(20, 25, 40)
-                });
 
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
@@ -68,7 +65,6 @@ namespace Musicefy
         {
             var services = new ServiceCollection();
 
-            // Core services via interfaces
             services.AddSingleton<ILibraryService>(sp =>
                 new LibraryScanner(DatabaseConfig.ConnectionString));
 
@@ -77,31 +73,24 @@ namespace Musicefy
             services.AddSingleton<IFolderDataProvider>(sp =>
                 new SqliteFolderDataProvider(DatabaseConfig.ConnectionString));
 
-            // Extension manager (loads extension DLLs from disk)
             services.AddSingleton<IExtensionManager, ExtensionManagerImpl>();
 
-            // Built-in music source providers
             services.AddSingleton<IMusicSourceProvider, SubsonicSourceProvider>();
             services.AddSingleton<IMusicSourceProvider, LocalSourceProvider>();
             services.AddSingleton<IMusicSourceProvider, YouTubeSourceProvider>();
 
-            // Streaming source manager — uses provider registry
             services.AddSingleton<IStreamingSourceManager>(sp =>
                 new StreamingSourceManagerImpl(sp, sp.GetServices<IMusicSourceProvider>()));
 
-            // PlaybackService — single instance shared across all ViewModels
             services.AddSingleton<PlaybackService>();
             services.AddSingleton<IAudioPlayer>(sp => sp.GetService<PlaybackService>());
 
-            // Navigation service (decouples ViewModel from View creation)
             services.AddSingleton<NavigationService>();
 
-            // Views registered for DI resolution
             services.AddTransient<HomeControl>();
             services.AddTransient<SearchControl>();
             services.AddTransient<LibraryControl>();
 
-            // ViewModels (singleton so state persists across navigation)
             services.AddSingleton<MainViewModel>();
             services.AddSingleton<SearchViewModel>();
             services.AddSingleton<LibraryViewModel>();
@@ -112,14 +101,12 @@ namespace Musicefy
             services.AddTransient<DiscoverSettingsViewModel>();
             services.AddTransient<SourcesSettingsViewModel>();
 
-            // Artist/Album browsing
             services.AddSingleton<ArtistAlbumService>();
             services.AddTransient<ArtistViewModel>();
             services.AddTransient<AlbumViewModel>();
 
             _serviceProvider = services.BuildServiceProvider();
 
-            // Load extension DLLs after container is built
             var extManager = _serviceProvider.GetService<IExtensionManager>();
             extManager?.LoadExtensions();
         }
@@ -191,10 +178,7 @@ namespace Musicefy
                     File.AppendAllText(logPath, $"[{DateTime.Now}] {ex}\n---------------------------------\n");
                     return logPath;
                 }
-                catch
-                {
-                    // try next fallback
-                }
+                catch { }
             }
 
             return candidates[0];
