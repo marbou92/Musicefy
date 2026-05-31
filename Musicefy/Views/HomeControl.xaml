@@ -142,11 +142,14 @@
                 <Grid>
                     <Image Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}}" Stretch="UniformToFill"/>
                     <Border Background="{DynamicResource BackgroundBrush}" Opacity="0.05"/>
+                    <!-- Hero card overlay: uses a semi-transparent surface color for text
+                         readability over album art. In dark mode this is near-black; in light
+                         mode it's near-white. The OnSurface text color ensures contrast. -->
                     <Border VerticalAlignment="Bottom" Height="120">
                         <Border.Background>
                             <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
                                 <GradientStop Color="Transparent" Offset="0"/>
-                                <GradientStop Color="#E0000000" Offset="1"/>
+                                <GradientStop Color="#CC000000" Offset="1"/>
                             </LinearGradientBrush>
                         </Border.Background>
                     </Border>
@@ -169,16 +172,10 @@
     </UserControl.Resources>
 
     <Grid>
-        <!-- Dynamic gradient background -->
-        <Rectangle IsHitTestVisible="False" Opacity="0.12">
-            <Rectangle.Fill>
-                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                    <GradientStop Color="{Binding DominantColor, FallbackValue=#3C8CE7}" Offset="0.0"/>
-                    <GradientStop Color="{Binding DominantColor, FallbackValue=#3C8CE7}" Offset="0.2"/>
-                    <GradientStop Color="Transparent" Offset="0.5"/>
-                </LinearGradientBrush>
-            </Rectangle.Fill>
-        </Rectangle>
+        <!-- Dynamic gradient background — uses HomeGradientBrush from ThemeManager
+             which adapts to both light/dark mode and the current palette.
+             The DominantColor overlay provides a subtle album-art tint on top. -->
+        <Rectangle IsHitTestVisible="False" Fill="{DynamicResource HomeGradientBrush}" Opacity="0.15"/>
 
         <!-- Empty state -->
         <Border x:Name="EmptyState" Visibility="Collapsed" VerticalAlignment="Center" HorizontalAlignment="Center">
