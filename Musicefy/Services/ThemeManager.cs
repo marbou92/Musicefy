@@ -324,6 +324,7 @@ namespace Musicefy.Services
             SetColorResource(resources, "SkeletonHighColor",  newScheme.GetArgb(ToneRole.SkeletonHigh));
 
             SetPlayerGradientBrush(resources, newScheme, GetPlayerBackgroundStyle());
+            UpdateHomeGradientBrush(resources, newScheme);
         }
 
         private static void ApplySchemeSnap(DynamicScheme scheme)
@@ -340,6 +341,7 @@ namespace Musicefy.Services
             SetColorResource(resources, "SkeletonHighColor",  scheme.GetArgb(ToneRole.SkeletonHigh));
 
             SetPlayerGradientBrush(resources, scheme, GetPlayerBackgroundStyle());
+            UpdateHomeGradientBrush(resources, scheme);
         }
 
         // ── Helpers ────────────────────────────────────────────────────────────
@@ -355,7 +357,7 @@ namespace Musicefy.Services
             for (int i = merged.Count - 1; i >= 0; i--)
             {
                 var src = merged[i].Source;
-                if (src != null && _themeUris.Contains(src.OriginalString))
+                if (src != null && IsThemeUri(src))
                     merged.RemoveAt(i);
             }
             MergeDictionary("/Themes/Base.xaml");
@@ -411,6 +413,26 @@ namespace Musicefy.Services
             (byte)((argb >> 16) & 0xFF),
             (byte)((argb >>  8) & 0xFF),
             (byte)( argb        & 0xFF));
+
+        /// <summary>
+        /// Checks whether a ResourceDictionary's Source URI refers to a theme
+        /// dictionary that should be swapped when changing modes.
+        /// Uses suffix matching because WPF may resolve relative URIs into
+        /// absolute pack:// URIs at runtime, causing exact comparison to fail.
+        /// </summary>
+        private static bool IsThemeUri(Uri src)
+        {
+            string path = src.OriginalString;
+            foreach (var themeUri in _themeUris)
+            {
+                // Match either exact (e.g. "/Themes/Modes/Dark.xaml")
+                // or as a suffix of a pack URI (e.g. "pack://application:,,,/Themes/Modes/Dark.xaml")
+                if (string.Equals(path, themeUri, StringComparison.OrdinalIgnoreCase) ||
+                    path.EndsWith(themeUri, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+            return false;
+        }
 
         private static void MergeDictionary(string path)
             => Application.Current.Resources.MergedDictionaries.Add(
@@ -548,11 +570,92 @@ namespace Musicefy.Services
             };
         }
 
+        /// <summary>
+        /// Gets the current surface color from the active DynamicScheme.
+        /// Used by ViewModels and code-behind to build theme-aware gradients.
+        /// </summary>
+        public static Color GetCurrentSurfaceColor()
+        {
+            return _currentScheme != null
+                ? ArgbsToColor(_currentScheme.GetArgb(ToneRole.Surface))
+                : (IsCurrentModeDark() ? Color.FromRgb(24, 24, 24) : Color.FromRgb(252, 251, 254));
+        }
+
+        /// <summary>
+        /// Gets the current primary container color (tinted surface) for gradient accents.
+        /// </summary>
+        public static Color GetCurrentPrimaryContainerColor()
+        {
+            return _currentScheme != null
+                ? ArgbsToColor(_currentScheme.GetArgb(ToneRole.PrimaryContainer))
+                : Color.FromRgb(60, 140, 231);
+        }
+
+        /// <summary>
+        /// Returns true if the current mode is dark (including DarkPure).
+        /// </summary>
+        public static bool IsCurrentModeDark()
+        {
+            return _currentScheme?.IsDark ?? true;
+        }
+
+        /// <summary>
+        /// Updates the HomeGradientBrush resource that the Home view can use
+        /// via DynamicResource. This gradient transitions from the dominant
+        /// color (from album art or palette) to the current surface color,
+        /// so it automatically adapts to both light and dark modes.
+        /// </summary>
+        public static void UpdateHomeGradientBrush(ResourceDictionary resources, DynamicScheme scheme)
+        {
+            var surfaceColor = ArgbsToColor(scheme.GetArgb(ToneRole.Surface));
+            var primaryColor = ArgbsToColor(scheme.PrimaryPalette.GetTone(scheme.IsDark ? 80 : 40));
+
+            resources["HomeGradientBrush"] = new LinearGradientBrush
+            {
+                StartPoint = new Point(0, 0),
+                EndPoint = new Point(0, 1),
+                GradientStops = new GradientStopCollection
+                {
+                    new GradientStop(primaryColor,  0.0),
+                    new GradientStop(primaryColor,  0.15),
+                    new GradientStop(surfaceColor,   1.0)
+                }
+            };
+
+            // Also store the individual colors for code-behind gradient builders
+            resources["HomeSurfaceColor"] = surfaceColor;
+            resources["HomePrimaryColor"] = primaryColor;
+        }
+
+        /// <summary>
+        /// Rebuilds the HomeGradientBrush when the dominant color changes
+        /// (e.g. from album art). The surface color stays anchored to
+        /// the current scheme so it remains correct for light/dark mode.
+        /// </summary>
+        public static void UpdateHomeGradientWithDominantColor(Color dominantColor)
+        {
+            if (_currentScheme == null) return;
+            var resources = Application.Current.Resources;
+            var surfaceColor = ArgbsToColor(_currentScheme.GetArgb(ToneRole.Surface));
+
+            resources["HomeGradientBrush"] = new LinearGradientBrush
+            {
+                StartPoint = new Point(0, 0),
+                EndPoint = new Point(0, 1),
+                GradientStops = new GradientStopCollection
+                {
+                    new GradientStop(dominantColor,  0.0),
+                    new GradientStop(dominantColor,  0.15),
+                    new GradientStop(surfaceColor,   1.0)
+                }
+            };
+        }
+
         public static LinearGradientBrush CreateHomeGradient(Color dominantColor)
         {
             var surface = _currentScheme != null
                 ? ArgbsToColor(_currentScheme.GetArgb(ToneRole.Surface))
-                : Color.FromRgb(24, 24, 24);
+                : (IsCurrentModeDark() ? Color.FromRgb(24, 24, 24) : Color.FromRgb(252, 251, 254));
 
             return new LinearGradientBrush
             {
