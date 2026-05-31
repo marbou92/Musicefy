@@ -44,6 +44,7 @@ namespace Musicefy.Services
             ("OnSurfaceBrush",                ToneRole.OnSurface),
             ("SurfaceVariantBrush",           ToneRole.SurfaceVariant),
             ("OnSurfaceVariantBrush",         ToneRole.OnSurfaceVariant),
+            ("SurfaceContainerLowestBrush",   ToneRole.SurfaceContainerLowest),
             ("SurfaceContainerLowBrush",      ToneRole.SurfaceContainerLow),
             ("SurfaceContainerBrush",         ToneRole.SurfaceContainer),
             ("SurfaceContainerHighBrush",     ToneRole.SurfaceContainerHigh),
@@ -73,10 +74,12 @@ namespace Musicefy.Services
             ("AccentGlowBrush",    AccentVariant.Glow),
         };
 
+        // URIs that get swapped when changing mode (Light, Dark, DarkPure)
         private static readonly HashSet<string> _themeUris = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "/Themes/Modes/Light.xaml",
             "/Themes/Modes/Dark.xaml",
+            "/Themes/Modes/DarkPure.xaml",
             "/Themes/Base.xaml",
             "/Themes/ScrollbarTheme.xaml",
         };
@@ -100,13 +103,15 @@ namespace Musicefy.Services
             PaletteStyle? styleOverride = null,
             bool autoSelectStyle = false)
         {
-            SwapModeDict(mode);
+            bool isDarkPure = isDarkPureOverride ?? (mode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase)
+                && Musicefy.Properties.Settings.Default.PureBlackMode);
+
+            SwapModeDict(mode, isDarkPure);
 
             if (mode.Equals("System", StringComparison.OrdinalIgnoreCase))
                 mode = IsSystemDarkMode() ? "Dark" : "Light";
 
             bool isDark     = mode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase);
-            bool isDarkPure = isDarkPureOverride ?? (isDark && Musicefy.Properties.Settings.Default.PureBlackMode);
             bool isExact    = isExactPaletteOverride ?? Musicefy.Properties.Settings.Default.ExactPalette;
             PaletteStyle style = styleOverride ?? ParsePaletteStyle(Musicefy.Properties.Settings.Default.PaletteStyle);
 
@@ -234,12 +239,14 @@ namespace Musicefy.Services
             bool? isExactPaletteOverride = null,
             PaletteStyle? styleOverride = null)
         {
-            SwapModeDict(mode);
+            bool isDarkPure = isDarkPureOverride ?? (mode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase)
+                && Musicefy.Properties.Settings.Default.PureBlackMode);
+
+            SwapModeDict(mode, isDarkPure);
             if (mode.Equals("System", StringComparison.OrdinalIgnoreCase))
                 mode = IsSystemDarkMode() ? "Dark" : "Light";
 
             bool isDark     = mode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase);
-            bool isDarkPure = isDarkPureOverride ?? (isDark && Musicefy.Properties.Settings.Default.PureBlackMode);
             bool isExact    = isExactPaletteOverride ?? Musicefy.Properties.Settings.Default.ExactPalette;
             PaletteStyle style = styleOverride ?? ParsePaletteStyle(Musicefy.Properties.Settings.Default.PaletteStyle);
 
@@ -258,12 +265,14 @@ namespace Musicefy.Services
             bool? isExactPaletteOverride = null,
             PaletteStyle? styleOverride = null)
         {
-            SwapModeDict(mode);
+            bool isDarkPure = isDarkPureOverride ?? (mode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase)
+                && Musicefy.Properties.Settings.Default.PureBlackMode);
+
+            SwapModeDict(mode, isDarkPure);
             if (mode.Equals("System", StringComparison.OrdinalIgnoreCase))
                 mode = IsSystemDarkMode() ? "Dark" : "Light";
 
             bool isDark     = mode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase);
-            bool isDarkPure = isDarkPureOverride ?? (isDark && Musicefy.Properties.Settings.Default.PureBlackMode);
             bool isExact    = isExactPaletteOverride ?? Musicefy.Properties.Settings.Default.ExactPalette;
             PaletteStyle style = styleOverride ?? ParsePaletteStyle(Musicefy.Properties.Settings.Default.PaletteStyle);
 
@@ -335,7 +344,12 @@ namespace Musicefy.Services
 
         // ── Helpers ────────────────────────────────────────────────────────────
 
-        private static void SwapModeDict(string mode)
+        /// <summary>
+        /// Swaps the mode-specific resource dictionary (Light, Dark, or DarkPure).
+        /// DarkPure.xaml is loaded when pure black mode is enabled in dark mode;
+        /// otherwise Dark.xaml or Light.xaml is used as appropriate.
+        /// </summary>
+        private static void SwapModeDict(string mode, bool isDarkPure = false)
         {
             var merged = Application.Current.Resources.MergedDictionaries;
             for (int i = merged.Count - 1; i >= 0; i--)
@@ -351,7 +365,22 @@ namespace Musicefy.Services
                 ? (IsSystemDarkMode() ? "Dark" : "Light")
                 : mode;
 
-            MergeDictionary($"/Themes/Modes/{effectiveMode}.xaml");
+            // In dark mode with PureBlack enabled, load DarkPure.xaml
+            // which has AMOLED-black surface fallback values.
+            // The DynamicScheme still handles tone overrides at runtime,
+            // but this gives proper fallback brushes for design-time.
+            if (effectiveMode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase) && isDarkPure)
+            {
+                MergeDictionary("/Themes/Modes/DarkPure.xaml");
+            }
+            else if (effectiveMode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase))
+            {
+                MergeDictionary("/Themes/Modes/Dark.xaml");
+            }
+            else
+            {
+                MergeDictionary("/Themes/Modes/Light.xaml");
+            }
         }
 
         private static void AnimateBrushColor(ResourceDictionary res, string key, int targetArgb)
