@@ -32,6 +32,14 @@ namespace Musicefy.Core.Hct
         public PaletteStyle Style { get; }
         public SeedPalette Source { get; }
 
+        /// <summary>
+        /// Whether this scheme was generated from dynamic album-art colors.
+        /// When true, surface colors are anchored to the base seed palette
+        /// rather than tinted by the album art hue. This prevents the
+        /// cyan/lavender surface contamination seen in light mode.
+        /// </summary>
+        public bool IsDynamicAccent { get; }
+
         // Cached primary ARGB at the correct tone for this mode (used for surface tinting)
         private readonly double _primaryHue;
         private readonly double _primaryChroma;
@@ -49,7 +57,8 @@ namespace Musicefy.Core.Hct
             bool isExactPalette,
             PaletteStyle style,
             double primaryHue,
-            double primaryChroma)
+            double primaryChroma,
+            bool isDynamicAccent = false)
         {
             Source = source;
             PrimaryPalette = primary;
@@ -62,8 +71,39 @@ namespace Musicefy.Core.Hct
             IsDarkPure = isDarkPure;
             IsExactPalette = isExactPalette;
             Style = style;
+            IsDynamicAccent = isDynamicAccent;
             _primaryHue = primaryHue;
             _primaryChroma = primaryChroma;
+        }
+
+        /// <summary>
+        /// Creates a hybrid scheme that uses the provided accent palettes
+        /// (primary/secondary/tertiary) but preserves the neutral palettes
+        /// from the base (seed) scheme. This is the ArchiveTune approach:
+        /// album art colors update accents only, while surface/neutral colors
+        /// remain anchored to the user's chosen palette.
+        /// </summary>
+        public static DynamicScheme CreateDynamicAccentScheme(
+            DynamicScheme baseScheme,
+            TonalPalette dynamicPrimary,
+            TonalPalette dynamicSecondary,
+            TonalPalette dynamicTertiary)
+        {
+            return new DynamicScheme(
+                source: baseScheme.Source,
+                primary: dynamicPrimary,
+                secondary: dynamicSecondary,
+                tertiary: dynamicTertiary,
+                neutral: baseScheme.NeutralPalette,
+                neutralVariant: baseScheme.NeutralVariantPalette,
+                error: baseScheme.ErrorPalette,
+                isDark: baseScheme.IsDark,
+                isDarkPure: baseScheme.IsDarkPure,
+                isExactPalette: baseScheme.IsExactPalette,
+                style: baseScheme.Style,
+                primaryHue: baseScheme._primaryHue,
+                primaryChroma: baseScheme._primaryChroma,
+                isDynamicAccent: true);
         }
 
         // ── Factory: from SeedPalette ──────────────────────────────────────
