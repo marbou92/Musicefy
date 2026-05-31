@@ -65,4 +65,21 @@
     <!-- ── Skeleton / shimmer colors ── -->
     <Color x:Key="SkeletonBaseColor">#0D0D0D</Color>
     <Color x:Key="SkeletonHighColor">#1A1A1A</Color>
+
+    <!-- ── Gradient brushes (overridden at runtime by ThemeManager) ── -->
+    <LinearGradientBrush x:Key="HomeGradientBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#D0BCFF" Offset="0.0"/>
+        <GradientStop Color="#D0BCFF" Offset="0.15"/>
+        <GradientStop Color="#000000" Offset="1.0"/>
+    </LinearGradientBrush>
+    <Color x:Key="HomeSurfaceColor">#000000</Color>
+    <Color x:Key="HomePrimaryColor">#D0BCFF</Color>
+    <LinearGradientBrush x:Key="PlayerGradientBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#D0BCFF" Offset="0.0"/>
+        <GradientStop Color="#4F378B" Offset="0.6"/>
+        <GradientStop Color="#000000" Offset="1.0"/>
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="PlayerBackgroundSolid" Color="Transparent"/>
+    <Color x:Key="PlayerSurfaceColor">#000000</Color>
+    <Color x:Key="PlayerPrimaryColor">#D0BCFF</Color>
 </ResourceDictionary>
