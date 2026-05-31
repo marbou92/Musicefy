@@ -82,6 +82,12 @@ namespace Musicefy.Services
         };
 
         private static DynamicScheme _currentScheme;
+        // The base scheme from the user's chosen seed palette. When dynamic album
+        // colors are applied, we keep the base scheme's neutral palettes so that
+        // surface/container colors remain anchored to the palette rather than
+        // becoming tinted by the album art's hue (which caused the cyan/lavender
+        // sidebar in light mode).
+        private static DynamicScheme _baseScheme;
         private static readonly TimeSpan _animDuration = TimeSpan.FromMilliseconds(360);
 
         // ── Public API ───────────────────────────────────────────────────────
@@ -113,6 +119,7 @@ namespace Musicefy.Services
                 style = DynamicScheme.AutoSelectStyle(seed);
 
             var scheme = DynamicScheme.FromSeed(seed, isDark, isDarkPure, isExact, style);
+            _baseScheme = scheme;  // Remember the seed scheme as the base for dynamic colors
             ApplySchemeWithAnimation(scheme);
         }
 
@@ -137,6 +144,11 @@ namespace Musicefy.Services
         public static void ApplyDynamicColors(ExtractedColors colors)
         {
             if (_currentScheme == null) ApplyTheme("Dark", "Default");
+
+            // ArchiveTune approach: extract accent colors from album art,
+            // but keep surface/neutral colors anchored to the base seed palette.
+            // This prevents the cyan/lavender surface contamination in light mode
+            // that occurred when the album art hue was used for the neutral palette.
 
             int primaryArgb = ColorToArgb(colors.Primary);
             var hct = Hct.FromInt(primaryArgb);
@@ -172,14 +184,25 @@ namespace Musicefy.Services
                     Math.Max(chroma * 0.35, 12.0), 60).ToInt();
             }
 
-            int neutralArgb = Hct.From(hct.Hue, Math.Min(chroma * 0.08, 6.0), 60).ToInt();
+            // Build dynamic accent palettes from the extracted colors
+            var pHct = Hct.FromInt(primaryArgb);
+            var sHct = Hct.FromInt(secondaryArgb);
+            var tHct = Hct.FromInt(tertiaryArgb);
 
             bool isDark     = _currentScheme?.IsDark ?? true;
             bool isDarkPure = _currentScheme?.IsDarkPure ?? false;
+            double chromaFactor = isDarkPure ? 0.65 : 1.0;
 
-            var scheme = DynamicScheme.FromColors(
-                primaryArgb, secondaryArgb, tertiaryArgb, neutralArgb,
-                isDark, isDarkPure, isExactPalette: false, PaletteStyle.Fidelity);
+            var dynamicPrimary   = TonalPalette.FromHueAndChroma(pHct.Hue, Math.Max(pHct.Chroma, 36.0) * chromaFactor);
+            var dynamicSecondary = TonalPalette.FromHueAndChroma(sHct.Hue, Math.Max(sHct.Chroma, 4.0) * chromaFactor);
+            var dynamicTertiary  = TonalPalette.FromHueAndChroma(tHct.Hue, Math.Max(tHct.Chroma, 4.0) * chromaFactor);
+
+            // Use the base seed palette's neutral palettes — NOT album-art-tinted ones.
+            // This is the key fix: surfaces stay anchored to the chosen palette.
+            var baseScheme = _baseScheme ?? _currentScheme;
+
+            var scheme = DynamicScheme.CreateDynamicAccentScheme(
+                baseScheme, dynamicPrimary, dynamicSecondary, dynamicTertiary);
 
             ApplySchemeWithAnimation(scheme);
         }
@@ -221,6 +244,7 @@ namespace Musicefy.Services
             PaletteStyle style = styleOverride ?? ParsePaletteStyle(Musicefy.Properties.Settings.Default.PaletteStyle);
 
             var scheme = DynamicScheme.FromSeed(seed, isDark, isDarkPure, isExact, style);
+            _baseScheme = scheme;  // Custom seed palette becomes the new base
             ApplySchemeWithAnimation(scheme);
         }
 
@@ -246,6 +270,7 @@ namespace Musicefy.Services
             var scheme = DynamicScheme.FromColors(
                 primaryArgb, secondaryArgb, tertiaryArgb, neutralArgb,
                 isDark, isDarkPure, isExact, style);
+            _baseScheme = scheme;  // Custom color scheme becomes the new base
             ApplySchemeWithAnimation(scheme);
         }
 
