@@ -65,6 +65,23 @@ namespace Musicefy.Views
             }
         }
 
+        private void CustomThemeButton_Click(object sender, MouseButtonEventArgs e)
+        {
+            if (DataContext is AppearanceSettingsViewModel vm)
+            {
+                vm.IsCustomThemeEditorOpen = true;
+                vm.SelectedSeedRole = 0;
+            }
+        }
+
+        private void ImportThemeButton_Click(object sender, MouseButtonEventArgs e)
+        {
+            if (DataContext is AppearanceSettingsViewModel vm)
+            {
+                vm.ImportThemeCommand.Execute(null);
+            }
+        }
+
         /// <summary>
         /// Converts vertical mouse-wheel delta to horizontal scroll on horizontal-only ScrollViewers.
         /// When the horizontal ScrollViewer reaches its scroll limit, the event is allowed to
@@ -76,19 +93,15 @@ namespace Musicefy.Views
 
             if (sv.ScrollableWidth > 0)
             {
-                // Convert vertical wheel delta → horizontal scroll offset
                 double newOffset = sv.HorizontalOffset - e.Delta;
                 newOffset = System.Math.Max(0, System.Math.Min(newOffset, sv.ScrollableWidth));
 
-                // Only consume the event if we actually moved horizontally
                 if (System.Math.Abs(newOffset - sv.HorizontalOffset) > 0.5)
                 {
                     sv.ScrollToHorizontalOffset(newOffset);
                     e.Handled = true;
                 }
-                // Otherwise let it bubble to the outer vertical ScrollViewer
             }
-            // If no horizontal scrolling possible, let it bubble up naturally
         }
     }
 }
