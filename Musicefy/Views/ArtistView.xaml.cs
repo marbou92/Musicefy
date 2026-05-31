@@ -41,6 +41,11 @@ namespace Musicefy.Views
                 var cover = new BitmapImage(new Uri(coverPath, UriKind.Absolute));
                 var colors = ColorExtractor.Extract(cover);
 
+                // Use the current theme's surface color for the gradient endpoint
+                // so the gradient adapts to light/dark mode instead of always
+                // ending in near-black.
+                var surfaceColor = ThemeManager.GetCurrentSurfaceColor();
+
                 var gradient = new LinearGradientBrush
                 {
                     StartPoint = new Point(0, 0),
@@ -48,7 +53,7 @@ namespace Musicefy.Views
                 };
                 gradient.GradientStops.Add(new GradientStop(colors.Primary, 0.0));
                 gradient.GradientStops.Add(new GradientStop(colors.Surface, 0.5));
-                gradient.GradientStops.Add(new GradientStop(Color.FromRgb(18, 18, 18), 1.0));
+                gradient.GradientStops.Add(new GradientStop(surfaceColor, 1.0));
                 gradient.Freeze();
                 _viewModel.BackgroundGradient = gradient;
             }
