@@ -297,6 +297,11 @@ namespace Musicefy.ViewModels
 
         private void UpdateHomeGradient()
         {
+            // Use ThemeManager to get the current surface color so the gradient
+            // adapts to light/dark mode. In light mode the endpoint is near-white;
+            // in dark mode it's near-black. This replaces the old hardcoded
+            // Color.FromRgb(24, 24, 24) which always produced a dark gradient.
+            var surfaceColor = ThemeManager.GetCurrentSurfaceColor();
             HomeGradient = new LinearGradientBrush
             {
                 StartPoint = new Point(0, 0),
@@ -305,9 +310,14 @@ namespace Musicefy.ViewModels
                 {
                     new GradientStop(DominantColor, 0.0),
                     new GradientStop(DominantColor, 0.15),
-                    new GradientStop(Color.FromRgb(24, 24, 24), 1.0)
+                    new GradientStop(surfaceColor, 1.0)
                 }
             };
+
+            // Also update the global HomeGradientBrush resource so any XAML
+            // elements using DynamicResource pick up the new dominant color
+            // while keeping the surface color anchored to the current theme.
+            ThemeManager.UpdateHomeGradientWithDominantColor(DominantColor);
         }
 
         private async Task LoadQuickPicksAsync(CancellationToken token)
