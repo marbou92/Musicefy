@@ -2,25 +2,62 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!-- Material Design 3 - Light Mode Surface Colors -->
-    <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="SurfaceVariantBrush" Color="#F3F3F3"/>
-    <SolidColorBrush x:Key="SurfaceContainerLowBrush" Color="#F3F3F3"/>
-    <SolidColorBrush x:Key="SurfaceContainerHighBrush" Color="#EEEEEE"/>
-    <SolidColorBrush x:Key="OnSurfaceBrush" Color="#111111"/>
-    <SolidColorBrush x:Key="OnSurfaceVariantBrush" Color="#666666"/>
-    <SolidColorBrush x:Key="OutlineBrush" Color="#E5E5E5"/>
-    <SolidColorBrush x:Key="OutlineVariantBrush" Color="#D0D0D0"/>
-    <SolidColorBrush x:Key="HoverBrush" Color="#D0D0D0"/>
+    <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFBFE"/>
+    <SolidColorBrush x:Key="OnSurfaceBrush" Color="#1C1B1F"/>
+    <SolidColorBrush x:Key="SurfaceVariantBrush" Color="#E7E0EC"/>
+    <SolidColorBrush x:Key="OnSurfaceVariantBrush" Color="#49454F"/>
+    <SolidColorBrush x:Key="SurfaceContainerLowestBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="SurfaceContainerLowBrush" Color="#F7F2FA"/>
+    <SolidColorBrush x:Key="SurfaceContainerBrush" Color="#F3EDF7"/>
+    <SolidColorBrush x:Key="SurfaceContainerHighBrush" Color="#ECE6F0"/>
+    <SolidColorBrush x:Key="SurfaceContainerHighestBrush" Color="#E6E0E9"/>
+    <SolidColorBrush x:Key="OutlineBrush" Color="#79747E"/>
+    <SolidColorBrush x:Key="OutlineVariantBrush" Color="#CAC4D0"/>
+    <SolidColorBrush x:Key="HoverBrush" Color="#E6E0E9"/>
+    <SolidColorBrush x:Key="InverseSurfaceBrush" Color="#313033"/>
+    <SolidColorBrush x:Key="InverseOnSurfaceBrush" Color="#F4EFF4"/>
+    <SolidColorBrush x:Key="InversePrimaryBrush" Color="#D0BCFF"/>
+
+    <!-- Accent brushes (overridden at runtime by ThemeManager) -->
+    <SolidColorBrush x:Key="AccentBrush" Color="#6750A4"/>
+    <SolidColorBrush x:Key="AccentHoverBrush" Color="#E8DEF8"/>
+    <SolidColorBrush x:Key="AccentPressedBrush" Color="#4F378B"/>
+    <SolidColorBrush x:Key="AccentGlowBrush" Color="#6750A4"/>
+
+    <!-- Primary (overridden at runtime) -->
+    <SolidColorBrush x:Key="PrimaryBrush" Color="#6750A4"/>
+    <SolidColorBrush x:Key="OnPrimaryBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="PrimaryContainerBrush" Color="#EADDFF"/>
+    <SolidColorBrush x:Key="OnPrimaryContainerBrush" Color="#21005D"/>
+
+    <!-- Secondary (overridden at runtime) -->
+    <SolidColorBrush x:Key="SecondaryBrush" Color="#625B71"/>
+    <SolidColorBrush x:Key="OnSecondaryBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="SecondaryContainerBrush" Color="#E8DEF8"/>
+    <SolidColorBrush x:Key="OnSecondaryContainerBrush" Color="#1D192B"/>
+
+    <!-- Tertiary (overridden at runtime) -->
+    <SolidColorBrush x:Key="TertiaryBrush" Color="#7D5260"/>
+    <SolidColorBrush x:Key="OnTertiaryBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="TertiaryContainerBrush" Color="#FFD8E4"/>
+    <SolidColorBrush x:Key="OnTertiaryContainerBrush" Color="#31111D"/>
+
+    <!-- Error (overridden at runtime) -->
+    <SolidColorBrush x:Key="ErrorBrush" Color="#B3261E"/>
+    <SolidColorBrush x:Key="OnErrorBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="ErrorContainerBrush" Color="#F9DEDC"/>
+    <SolidColorBrush x:Key="OnErrorContainerBrush" Color="#410E0B"/>
 
     <!-- Legacy aliases -->
-    <SolidColorBrush x:Key="BackgroundBrush" Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#F3F3F3"/>
-    <SolidColorBrush x:Key="ForegroundBrush" Color="#111111"/>
-    <SolidColorBrush x:Key="TextBrush" Color="#111111"/>
-    <SolidColorBrush x:Key="MutedTextBrush" Color="#666666"/>
-    <SolidColorBrush x:Key="BorderBrush" Color="#E5E5E5"/>
+    <SolidColorBrush x:Key="BackgroundBrush" Color="#FFFBFE"/>
+    <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#F7F2FA"/>
+    <SolidColorBrush x:Key="ForegroundBrush" Color="#1C1B1F"/>
+    <SolidColorBrush x:Key="TextBrush" Color="#1C1B1F"/>
+    <SolidColorBrush x:Key="MutedTextBrush" Color="#49454F"/>
+    <SolidColorBrush x:Key="BorderBrush" Color="#79747E"/>
+    <SolidColorBrush x:Key="DynamicPrimaryBrush" Color="#6750A4"/>
 
     <!-- Skeleton / shimmer colors -->
-    <Color x:Key="SkeletonBaseColor">#E8E8E8</Color>
-    <Color x:Key="SkeletonHighColor">#F5F5F5</Color>
+    <Color x:Key="SkeletonBaseColor">#ECE6F0</Color>
+    <Color x:Key="SkeletonHighColor">#F7F2FA</Color>
 </ResourceDictionary>
