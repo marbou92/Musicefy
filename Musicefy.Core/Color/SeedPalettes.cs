@@ -73,6 +73,10 @@ namespace Musicefy.Core.Hct
     {
         public static readonly List<SeedPalette> All = new List<SeedPalette>
         {
+            // Default palette — Material Design 3 baseline (ArchiveTune's default purple)
+            // This is the fallback when the saved theme references "Default".
+            new("Default", ColorFamily.Purples, 283, 42, 30, 1.0, 55, 0.7),
+
             new("Crimson", ColorFamily.Reds, 348, 44, 40, 1.2, 60, 0.7),
             new("Ruby", ColorFamily.Reds, 340, 38, 35, 1.1, 70, 0.6),
             new("Rose", ColorFamily.Reds, 350, 30, 30, 1.0, 65, 0.7),
