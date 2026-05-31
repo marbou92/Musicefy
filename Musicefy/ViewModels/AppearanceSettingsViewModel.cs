@@ -143,6 +143,11 @@ namespace Musicefy.ViewModels
                 {
                     Musicefy.Properties.Settings.Default.DynamicColorsEnabled = value;
                     OnPropertyChanged();
+
+                    // When disabled, immediately revert to the base seed palette scheme
+                    // so the user sees the change without needing a track change.
+                    if (!value)
+                        ThemeManager.ClearDynamicColors();
                 }
             }
         }
