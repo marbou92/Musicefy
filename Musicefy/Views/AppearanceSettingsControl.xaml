@@ -182,18 +182,21 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                <Border Width="44" Height="44" CornerRadius="22" Margin="0,0,12,0"
-                                        Background="{DynamicResource PrimaryBrush}">
+                                <Border Width="44" Height="44" CornerRadius="22" Margin="0,0,12,0">
                                     <Border.Clip>
                                         <RectangleGeometry Rect="0,0,44,44" RadiusX="22" RadiusY="22"/>
                                     </Border.Clip>
                                     <Grid>
-                                        <Ellipse Fill="{DynamicResource PrimaryBrush}" Width="44" Height="44"/>
-                                        <Ellipse Fill="{DynamicResource SecondaryBrush}" Width="16" Height="16"
-                                                 HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,2,2"/>
-                                        <Ellipse Fill="{DynamicResource TertiaryBrush}" Width="16" Height="16"
-                                                 HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="2,0,0,2"/>
-                                        <Ellipse Stroke="{DynamicResource OutlineBrush}" StrokeThickness="2" Fill="Transparent"
+                                        <!-- Surface background with accent colors on top (ArchiveTune style) -->
+                                        <Ellipse Fill="{DynamicResource SurfaceContainerBrush}" Width="44" Height="44"/>
+                                        <Border Width="24" Height="12" CornerRadius="6"
+                                                Background="{DynamicResource PrimaryBrush}"
+                                                HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,7,0,0"/>
+                                        <Ellipse Fill="{DynamicResource SecondaryBrush}" Width="10" Height="10"
+                                                 HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,7,7"/>
+                                        <Ellipse Fill="{DynamicResource TertiaryBrush}" Width="10" Height="10"
+                                                 HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="7,0,0,7"/>
+                                        <Ellipse Stroke="{DynamicResource OutlineBrush}" StrokeThickness="1.5" Fill="Transparent"
                                                  Width="44" Height="44"/>
                                     </Grid>
                                 </Border>
@@ -277,40 +280,54 @@
                     </Border>
 
                     <!-- Theme Preview Card (mode-accurate: uses live DynamicResource brushes) -->
-                    <Border CornerRadius="20" Background="{DynamicResource SurfaceVariantBrush}" Padding="20" Margin="0,0,0,12">
-                        <Grid Height="160">
-                            <Border Width="56" Height="56" CornerRadius="10"
-                                    Background="{DynamicResource PrimaryBrush}"
-                                    HorizontalAlignment="Left" VerticalAlignment="Top"/>
-                            <Rectangle Width="100" Height="5" RadiusX="3" RadiusY="3"
-                                       Fill="{DynamicResource PrimaryBrush}"
-                                       HorizontalAlignment="Left" Margin="0,66,0,0"/>
-                            <Border Width="52" Height="52" CornerRadius="26"
-                                    Background="{DynamicResource PrimaryBrush}"
-                                    HorizontalAlignment="Right" VerticalAlignment="Top">
-                                <Path Data="M8,5V19L19,12L8,5Z" Fill="{DynamicResource OnPrimaryBrush}"
-                                      Width="20" Height="20" Stretch="Uniform" Margin="2,0,0,0"/>
+                    <Border CornerRadius="20" Background="{DynamicResource SurfaceContainerBrush}" Padding="16" Margin="0,0,0,12">
+                        <Grid Height="140">
+                            <!-- Mini sidebar -->
+                            <Border Width="40" CornerRadius="10,0,0,10"
+                                    Background="{DynamicResource SurfaceContainerLowBrush}"
+                                    HorizontalAlignment="Left" Margin="0,0,0,0"/>
+                            <!-- Sidebar accent dot -->
+                            <Ellipse Width="20" Height="20" Fill="{DynamicResource PrimaryBrush}"
+                                     HorizontalAlignment="Left" Margin="10,12,0,0" VerticalAlignment="Top"/>
+
+                            <!-- Main content area mockup -->
+                            <Border CornerRadius="0,10,10,10" Margin="40,0,0,0"
+                                    Background="{DynamicResource SurfaceBrush}"/>
+
+                            <!-- Primary card preview -->
+                            <Border Width="80" Height="44" CornerRadius="12"
+                                    Background="{DynamicResource PrimaryContainerBrush}"
+                                    HorizontalAlignment="Left" VerticalAlignment="Top" Margin="52,10,0,0">
+                                <StackPanel VerticalAlignment="Center" Margin="10,0,0,0">
+                                    <Rectangle Width="36" Height="4" RadiusX="2" Fill="{DynamicResource PrimaryBrush}"/>
+                                    <Rectangle Width="24" Height="3" RadiusX="1.5" Fill="{DynamicResource OnSurfaceVariantBrush}" Opacity="0.5" Margin="0,4,0,0"/>
+                                </StackPanel>
                             </Border>
-                            <Ellipse Width="52" Height="52" Fill="{DynamicResource PrimaryBrush}"
-                                     HorizontalAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Center"/>
-                            <Ellipse Width="44" Height="44" Fill="{DynamicResource PrimaryBrush}" Opacity="0.6"
-                                     HorizontalAlignment="Left" Margin="28,0,0,0" VerticalAlignment="Center"/>
-                            <Ellipse Width="44" Height="44" Fill="{DynamicResource SecondaryBrush}"
-                                     HorizontalAlignment="Left" Margin="52,0,0,0" VerticalAlignment="Center"/>
-                            <Border CornerRadius="20" Height="32" Width="80"
-                                    Background="{DynamicResource OutlineBrush}" Opacity="0.5"
-                                    HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="0,0,0,0"/>
-                            <Border CornerRadius="20" Height="32" Width="80"
-                                    Background="{DynamicResource OutlineBrush}" Opacity="0.5"
-                                    HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
-                            <Border CornerRadius="20" Height="32" Width="80"
-                                    Background="{DynamicResource OutlineBrush}" Opacity="0.5"
-                                    HorizontalAlignment="Right" VerticalAlignment="Bottom"/>
+
+                            <!-- Secondary + Tertiary accent dots -->
+                            <Ellipse Width="28" Height="28" Fill="{DynamicResource SecondaryBrush}" Opacity="0.8"
+                                     HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,14,14,0"/>
+                            <Ellipse Width="20" Height="20" Fill="{DynamicResource TertiaryBrush}" Opacity="0.8"
+                                     HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,14,48,0"/>
+
+                            <!-- Bottom action bar mockup -->
+                            <Border CornerRadius="16" Height="28" Width="60"
+                                    Background="{DynamicResource PrimaryBrush}"
+                                    HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="52,0,0,8">
+                                <TextBlock Text="Action" FontSize="9" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource OnPrimaryBrush}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <Border CornerRadius="16" Height="28" Width="44"
+                                    Background="{DynamicResource OutlineBrush}" Opacity="0.3"
+                                    HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="120,0,0,8"/>
+
+                            <!-- Reset button -->
                             <Button Content="Reset"
                                     HorizontalAlignment="Right" VerticalAlignment="Bottom"
                                     Background="{DynamicResource PrimaryBrush}" Foreground="{DynamicResource OnPrimaryBrush}"
                                     BorderThickness="0" Padding="12,6" FontSize="11" FontWeight="SemiBold"
-                                    Cursor="Hand" Margin="0,0,0,36"
+                                    Cursor="Hand"
                                     Click="BtnResetPalette_Click">
                                 <Button.Template>
                                     <ControlTemplate TargetType="Button">
@@ -395,14 +412,23 @@
                                                             <Grid.Clip>
                                                                 <RectangleGeometry Rect="0,0,76,76" RadiusX="38" RadiusY="38"/>
                                                             </Grid.Clip>
-                                                            <Ellipse Fill="{Binding PrimaryBrush}" Width="76" Height="76"/>
-                                                            <Ellipse Fill="{Binding SecondaryBrush}" Width="22" Height="22"
-                                                                     HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,4,4"/>
-                                                            <Ellipse Fill="{Binding TertiaryBrush}" Width="22" Height="22"
-                                                                     HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="4,0,0,4"/>
-                                                            <Ellipse Stroke="{Binding NeutralBrush}" StrokeThickness="2.5" Fill="Transparent"
+                                                            <!-- Surface background — shows what the theme background looks like -->
+                                                            <Ellipse Fill="{Binding SurfaceBrush}" Width="76" Height="76"/>
+                                                            <!-- Primary accent pill — the dominant color identity -->
+                                                            <Border Width="44" Height="22" CornerRadius="11"
+                                                                    Background="{Binding PrimaryBrush}"
+                                                                    HorizontalAlignment="Center"
+                                                                    VerticalAlignment="Top" Margin="0,12,0,0"/>
+                                                            <!-- Secondary + Tertiary accent dots at bottom -->
+                                                            <Ellipse Fill="{Binding SecondaryBrush}" Width="16" Height="16"
+                                                                     HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,14,14"/>
+                                                            <Ellipse Fill="{Binding TertiaryBrush}" Width="16" Height="16"
+                                                                     HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="14,0,0,14"/>
+                                                            <!-- Subtle border ring -->
+                                                            <Ellipse Stroke="{Binding BorderBrush}" StrokeThickness="1.5" Fill="Transparent"
                                                                      Width="76" Height="76"/>
-                                                            <Border Background="#CC000000"
+                                                            <!-- Selected checkmark overlay -->
+                                                            <Border Background="#AA000000"
                                                                     Visibility="{Binding IsSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
                                                                 <Path Data="M9,16.17L4.83,12L3.41,13.41L9,19L21,7L19.59,5.59L9,16.17Z"
                                                                       Fill="White" Width="22" Height="22" Stretch="Uniform"/>
