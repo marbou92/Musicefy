@@ -553,6 +553,8 @@ namespace Musicefy.ViewModels
             if (mode.Equals("System", StringComparison.OrdinalIgnoreCase))
                 mode = ThemeManager.IsSystemDarkMode() ? "Dark" : "Light";
 
+            bool isDark = mode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase);
+
             var grouped = SeedPalettes.All
                 .GroupBy(s => s.Family)
                 .OrderBy(g => (int)g.Key);
@@ -570,23 +572,29 @@ namespace Musicefy.ViewModels
                     bool isSelected = seed.Name.Equals(activePalette, StringComparison.OrdinalIgnoreCase);
                     if (isSelected) _activePaletteName = seed.Name;
 
-                    // ArchiveTune: palette cards show raw seed color (mode-independent)
+                    // ArchiveTune: palette cards show mode-accurate colors so the user
+                    // can see exactly what the theme will look like in the current mode.
                     PaletteStyle autoStyle = _selectedPaletteStyle == PaletteStyle.TonalSpot
                         ? DynamicScheme.AutoSelectStyle(seed)
                         : _selectedPaletteStyle;
 
-                    var (primary, secondary, tertiary, neutral) =
-                        ThemeManager.GetRawSeedPreview(seed, autoStyle);
+                    var (primary, secondary, tertiary, surface) =
+                        ThemeManager.GetModeAccuratePreview(seed, isDark, autoStyle, _exactPaletteEnabled);
+
+                    // OnSurface for the selected checkmark visibility
+                    var scheme = DynamicScheme.FromSeed(seed, isDark, false, _exactPaletteEnabled, autoStyle);
+                    Color onSurface = ArgbToColor(scheme.GetArgb(ToneRole.OnSurface));
 
                     var preview = new ThemePreview
                     {
                         CardName = seed.Name,
                         Family = seed.Family,
                         IsSelected = isSelected,
-                        PrimarySeed = primary,
-                        SecondarySeed = secondary,
-                        TertiarySeed = tertiary,
-                        NeutralSeed = neutral,
+                        PrimaryColor = primary,
+                        SecondaryColor = secondary,
+                        TertiaryColor = tertiary,
+                        SurfaceColor = surface,
+                        OnSurfaceColor = onSurface,
                     };
 
                     familyGroup.Previews.Add(preview);
@@ -657,9 +665,10 @@ namespace Musicefy.ViewModels
     }
 
     /// <summary>
-    /// Model for each palette card. Shows 3 raw seed colors as a 3-section circle.
-    /// Colors are MODE-INDEPENDENT (tone 60) — they look the same regardless of
-    /// light/dark/dark-pure mode.
+    /// Model for each palette card. Shows mode-accurate preview colors so the
+    /// circle accurately represents what the theme will look like when applied.
+    /// Surface color forms the background; primary/secondary/tertiary are accent
+    /// dots on top — the ArchiveTune approach.
     /// </summary>
     public class ThemePreview : INotifyPropertyChanged
     {
@@ -667,15 +676,22 @@ namespace Musicefy.ViewModels
 
         public string CardName { get; set; }
         public ColorFamily Family { get; set; }
-        public Color PrimarySeed { get; set; }
-        public Color SecondarySeed { get; set; }
-        public Color TertiarySeed { get; set; }
-        public Color NeutralSeed { get; set; }
 
-        public Brush PrimaryBrush => new SolidColorBrush(PrimarySeed);
-        public Brush SecondaryBrush => new SolidColorBrush(SecondarySeed);
-        public Brush TertiaryBrush => new SolidColorBrush(TertiarySeed);
-        public Brush NeutralBrush => new SolidColorBrush(NeutralSeed);
+        // Mode-accurate colors — what the user will actually see
+        public Color PrimaryColor { get; set; }
+        public Color SecondaryColor { get; set; }
+        public Color TertiaryColor { get; set; }
+        public Color SurfaceColor { get; set; }
+        public Color OnSurfaceColor { get; set; }
+
+        public Brush PrimaryBrush => new SolidColorBrush(PrimaryColor);
+        public Brush SecondaryBrush => new SolidColorBrush(SecondaryColor);
+        public Brush TertiaryBrush => new SolidColorBrush(TertiaryColor);
+        public Brush SurfaceBrush => new SolidColorBrush(SurfaceColor);
+        public Brush OnSurfaceBrush => new SolidColorBrush(OnSurfaceColor);
+
+        // Border: use OnSurface at low opacity so it's visible on any surface
+        public Brush BorderBrush => new SolidColorBrush(Color.FromArgb(60, OnSurfaceColor.R, OnSurfaceColor.G, OnSurfaceColor.B));
 
         public bool IsSelected
         {
