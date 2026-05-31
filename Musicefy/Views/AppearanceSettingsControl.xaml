@@ -4,10 +4,11 @@
              Background="Transparent">
 
     <UserControl.Resources>
+        <!-- ── Expander for family groups ── -->
         <Style x:Key="PaletteExpanderStyle" TargetType="Expander">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Margin" Value="0,0,0,8"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
             <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -75,13 +76,13 @@
             </Setter>
         </Style>
 
+        <!-- ── Palette card style (larger cards with name label) ── -->
         <Style x:Key="PaletteCardStyle" TargetType="Border">
-            <Setter Property="Width" Value="76"/>
-            <Setter Property="Height" Value="76"/>
-            <Setter Property="CornerRadius" Value="38"/>
-            <Setter Property="Margin" Value="0,0,10,0"/>
+            <Setter Property="Width" Value="72"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Background" Value="Transparent"/>
             <!-- RenderTransform and RenderTransformOrigin are set as LOCAL values on the
                  Border element in the DataTemplate, NOT here in the Style. WPF freezes
                  Freezable objects set via Style Setters, making them immutable and
@@ -92,13 +93,13 @@
                         <BeginStoryboard>
                             <Storyboard>
                                 <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
-                                                 To="1.08" Duration="0:0:0.2">
+                                                 To="1.05" Duration="0:0:0.2">
                                     <DoubleAnimation.EasingFunction>
                                         <CircleEase EasingMode="EaseOut"/>
                                     </DoubleAnimation.EasingFunction>
                                 </DoubleAnimation>
                                 <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
-                                                 To="1.08" Duration="0:0:0.2">
+                                                 To="1.05" Duration="0:0:0.2">
                                     <DoubleAnimation.EasingFunction>
                                         <CircleEase EasingMode="EaseOut"/>
                                     </DoubleAnimation.EasingFunction>
@@ -128,6 +129,7 @@
             </Style.Triggers>
         </Style>
 
+        <!-- ── Chip-style RadioButton for palette styles / seed roles ── -->
         <Style x:Key="SeedChipButton" TargetType="RadioButton">
             <Setter Property="Template">
                 <Setter.Value>
@@ -187,7 +189,6 @@
                                         <RectangleGeometry Rect="0,0,44,44" RadiusX="22" RadiusY="22"/>
                                     </Border.Clip>
                                     <Grid>
-                                        <!-- Surface background with accent colors on top (ArchiveTune style) -->
                                         <Ellipse Fill="{DynamicResource SurfaceContainerBrush}" Width="44" Height="44"/>
                                         <Border Width="24" Height="12" CornerRadius="6"
                                                 Background="{DynamicResource PrimaryBrush}"
@@ -203,7 +204,7 @@
                                 <StackPanel VerticalAlignment="Center">
                                     <TextBlock Text="Color Palette" FontWeight="Bold" FontSize="14"
                                                Foreground="{DynamicResource OnSurfaceBrush}"/>
-                                    <TextBlock Text="Browse 68 presets or create custom themes" FontSize="11"
+                                    <TextBlock Text="Browse presets or create custom themes" FontSize="11"
                                                Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,2,0,0"/>
                                 </StackPanel>
                             </StackPanel>
@@ -385,60 +386,77 @@
                         </CheckBox.Tag>
                     </CheckBox>
 
-                    <!-- Family group palette scroller -->
+                    <!-- ═══════════════════════════════════════════════════════ -->
+                    <!-- Family group palette cards (IMPROVED: rounded-rect cards -->
+                    <!-- with name labels, WrapPanel flow layout)                -->
+                    <!-- ═══════════════════════════════════════════════════════ -->
                     <ItemsControl ItemsSource="{Binding FamilyGroups}" Margin="0,0,0,12">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Expander Header="{Binding FamilyName}" Style="{StaticResource PaletteExpanderStyle}"
                                           IsExpanded="{Binding IsExpanded}">
-                                    <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" Margin="0,4,0,0"
-                                                  PreviewMouseWheel="HorizontalScrollViewer_PreviewMouseWheel">
-                                        <ItemsControl ItemsSource="{Binding Previews}">
-                                            <ItemsControl.ItemsPanel>
-                                                <ItemsPanelTemplate>
-                                                    <StackPanel Orientation="Horizontal"/>
-                                                </ItemsPanelTemplate>
-                                            </ItemsControl.ItemsPanel>
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Border Style="{StaticResource PaletteCardStyle}"
-                                                            BorderBrush="{Binding BorderBrush}"
-                                                            MouseLeftButtonUp="PaletteCard_Click"
-                                                            RenderTransformOrigin="0.5,0.5">
-                                                        <Border.RenderTransform>
-                                                            <ScaleTransform ScaleX="1" ScaleY="1"/>
-                                                        </Border.RenderTransform>
-                                                        <Grid Width="76" Height="76">
+                                    <!-- WrapPanel: palettes flow in rows, no horizontal scroll needed -->
+                                    <ItemsControl ItemsSource="{Binding Previews}" Margin="0,4,0,0">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel Orientation="Horizontal"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <!-- Card: rounded-rect with color swatch + name label -->
+                                                <Border Style="{StaticResource PaletteCardStyle}"
+                                                        BorderBrush="{Binding BorderBrush}"
+                                                        MouseLeftButtonUp="PaletteCard_Click"
+                                                        RenderTransformOrigin="0.5,0.5"
+                                                        Margin="0,0,8,8"
+                                                        ToolTip="{Binding CardName}">
+                                                    <Border.RenderTransform>
+                                                        <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                                    </Border.RenderTransform>
+                                                    <StackPanel Width="72">
+                                                        <!-- Color swatch circle -->
+                                                        <Grid Width="48" Height="48" Margin="12,8,12,0"
+                                                              HorizontalAlignment="Center">
                                                             <Grid.Clip>
-                                                                <RectangleGeometry Rect="0,0,76,76" RadiusX="38" RadiusY="38"/>
+                                                                <RectangleGeometry Rect="0,0,48,48" RadiusX="24" RadiusY="24"/>
                                                             </Grid.Clip>
-                                                            <!-- Surface background — shows what the theme background looks like -->
-                                                            <Ellipse Fill="{Binding SurfaceBrush}" Width="76" Height="76"/>
-                                                            <!-- Primary accent pill — the dominant color identity -->
-                                                            <Border Width="44" Height="22" CornerRadius="11"
+                                                            <!-- Surface background -->
+                                                            <Ellipse Fill="{Binding SurfaceBrush}" Width="48" Height="48"/>
+                                                            <!-- Primary accent pill -->
+                                                            <Border Width="28" Height="14" CornerRadius="7"
                                                                     Background="{Binding PrimaryBrush}"
                                                                     HorizontalAlignment="Center"
-                                                                    VerticalAlignment="Top" Margin="0,12,0,0"/>
-                                                            <!-- Secondary + Tertiary accent dots at bottom -->
-                                                            <Ellipse Fill="{Binding SecondaryBrush}" Width="16" Height="16"
-                                                                     HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,14,14"/>
-                                                            <Ellipse Fill="{Binding TertiaryBrush}" Width="16" Height="16"
-                                                                     HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="14,0,0,14"/>
-                                                            <!-- Subtle border ring -->
+                                                                    VerticalAlignment="Top" Margin="0,6,0,0"/>
+                                                            <!-- Secondary dot -->
+                                                            <Ellipse Fill="{Binding SecondaryBrush}" Width="10" Height="10"
+                                                                     HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,6,6"/>
+                                                            <!-- Tertiary dot -->
+                                                            <Ellipse Fill="{Binding TertiaryBrush}" Width="10" Height="10"
+                                                                     HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="6,0,0,6"/>
+                                                            <!-- Border ring -->
                                                             <Ellipse Stroke="{Binding BorderBrush}" StrokeThickness="1.5" Fill="Transparent"
-                                                                     Width="76" Height="76"/>
+                                                                     Width="48" Height="48"/>
                                                             <!-- Selected checkmark overlay -->
                                                             <Border Background="#AA000000"
                                                                     Visibility="{Binding IsSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
                                                                 <Path Data="M9,16.17L4.83,12L3.41,13.41L9,19L21,7L19.59,5.59L9,16.17Z"
-                                                                      Fill="White" Width="22" Height="22" Stretch="Uniform"/>
+                                                                      Fill="White" Width="18" Height="18" Stretch="Uniform"/>
                                                             </Border>
                                                         </Grid>
-                                                    </Border>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                    </ScrollViewer>
+                                                        <!-- Palette name label -->
+                                                        <TextBlock Text="{Binding CardName}"
+                                                                   FontSize="10" FontWeight="SemiBold"
+                                                                   Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                                                                   TextTrimming="CharacterEllipsis"
+                                                                   TextWrapping="NoWrap"
+                                                                   HorizontalAlignment="Center"
+                                                                   Margin="4,4,4,6"/>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
                                 </Expander>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
@@ -523,135 +541,123 @@
                             </Border>
 
                             <!-- RGB Sliders (ArchiveTune style) -->
-                            <Border CornerRadius="16" Background="{DynamicResource SurfaceContainerLowBrush}" Padding="12" Margin="0,0,0,12">
-                                <StackPanel>
-                                    <TextBlock Text="RGB Values" FontSize="12" FontWeight="SemiBold"
-                                               Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,0,0,10"/>
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="18"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="36"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="R" FontSize="12" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource OnSurfaceVariantBrush}" VerticalAlignment="Center"/>
+                                <Slider Grid.Column="1" Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
+                                        Value="{Binding CustomR}" Height="28" Margin="8,0"
+                                        Style="{DynamicResource {x:Type Slider}}"/>
+                                <TextBlock Grid.Column="2" Text="{Binding CustomRDisplay}"
+                                           FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                                           VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            </Grid>
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="18"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="36"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="G" FontSize="12" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource OnSurfaceVariantBrush}" VerticalAlignment="Center"/>
+                                <Slider Grid.Column="1" Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
+                                        Value="{Binding CustomG}" Height="28" Margin="8,0"
+                                        Style="{DynamicResource {x:Type Slider}}"/>
+                                <TextBlock Grid.Column="2" Text="{Binding CustomGDisplay}"
+                                           FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                                           VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            </Grid>
+                            <Grid Margin="0,0,0,16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="18"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="36"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="B" FontSize="12" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource OnSurfaceVariantBrush}" VerticalAlignment="Center"/>
+                                <Slider Grid.Column="1" Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
+                                        Value="{Binding CustomB}" Height="28" Margin="8,0"
+                                        Style="{DynamicResource {x:Type Slider}}"/>
+                                <TextBlock Grid.Column="2" Text="{Binding CustomBDisplay}"
+                                           FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                                           VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            </Grid>
 
-                                    <!-- R slider -->
-                                    <Grid Margin="0,0,0,8">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="32"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="36"/>
-                                        </Grid.ColumnDefinitions>
-                                        <Border Grid.Column="0" CornerRadius="8" Background="#33E53935" Padding="8,4"
-                                                VerticalAlignment="Center" HorizontalAlignment="Left">
-                                            <TextBlock Text="R" FontWeight="Bold" FontSize="12" Foreground="#FFE53935"/>
-                                        </Border>
-                                        <Slider Grid.Column="1" Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
-                                                Value="{Binding CustomR}" Height="28" Margin="8,0"
-                                                Style="{DynamicResource {x:Type Slider}}"/>
-                                        <TextBlock Grid.Column="2" Text="{Binding CustomRDisplay}"
-                                                   FontSize="12" FontWeight="SemiBold" Foreground="#FFE53935"
-                                                   VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                                    </Grid>
-
-                                    <!-- G slider -->
-                                    <Grid Margin="0,0,0,8">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="32"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="36"/>
-                                        </Grid.ColumnDefinitions>
-                                        <Border Grid.Column="0" CornerRadius="8" Background="#3343A047" Padding="8,4"
-                                                VerticalAlignment="Center" HorizontalAlignment="Left">
-                                            <TextBlock Text="G" FontWeight="Bold" FontSize="12" Foreground="#FF43A047"/>
-                                        </Border>
-                                        <Slider Grid.Column="1" Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
-                                                Value="{Binding CustomG}" Height="28" Margin="8,0"
-                                                Style="{DynamicResource {x:Type Slider}}"/>
-                                        <TextBlock Grid.Column="2" Text="{Binding CustomGDisplay}"
-                                                   FontSize="12" FontWeight="SemiBold" Foreground="#FF43A047"
-                                                   VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                                    </Grid>
-
-                                    <!-- B slider -->
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="32"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="36"/>
-                                        </Grid.ColumnDefinitions>
-                                        <Border Grid.Column="0" CornerRadius="8" Background="#331E88E5" Padding="8,4"
-                                                VerticalAlignment="Center" HorizontalAlignment="Left">
-                                            <TextBlock Text="B" FontWeight="Bold" FontSize="12" Foreground="#FF1E88E5"/>
-                                        </Border>
-                                        <Slider Grid.Column="1" Minimum="0" Maximum="255" SmallChange="1" LargeChange="10"
-                                                Value="{Binding CustomB}" Height="28" Margin="8,0"
-                                                Style="{DynamicResource {x:Type Slider}}"/>
-                                        <TextBlock Grid.Column="2" Text="{Binding CustomBDisplay}"
-                                                   FontSize="12" FontWeight="SemiBold" Foreground="#FF1E88E5"
-                                                   VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                                    </Grid>
-                                </StackPanel>
-                            </Border>
-
-                            <!-- Action buttons -->
+                            <!-- Apply / Cancel buttons -->
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <Button Grid.Column="0" Content="Cancel"
                                         Background="{DynamicResource SurfaceContainerHighBrush}"
                                         Foreground="{DynamicResource OnSurfaceBrush}"
-                                        BorderThickness="1" BorderBrush="{DynamicResource OutlineBrush}"
-                                        Padding="16,10" FontWeight="SemiBold" FontSize="13" Cursor="Hand"
-                                        HorizontalAlignment="Left"
-                                        Command="{Binding CloseCustomThemeCommand}"
-                                        Style="{StaticResource OutlinedButtonStyle}"/>
+                                        BorderThickness="0" Padding="12,8" FontSize="13" FontWeight="SemiBold"
+                                        Cursor="Hand"
+                                        Command="{Binding CloseCustomThemeCommand}">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" CornerRadius="14"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
                                 <Button Grid.Column="1" Content="Apply Theme"
                                         Background="{DynamicResource PrimaryBrush}"
                                         Foreground="{DynamicResource OnPrimaryBrush}"
-                                        BorderThickness="0" Padding="24,10" FontWeight="SemiBold" FontSize="13"
-                                        Cursor="Hand" HorizontalAlignment="Right"
-                                        Command="{Binding ApplyCustomThemeCommand}"/>
+                                        BorderThickness="0" Padding="12,8" FontSize="13" FontWeight="SemiBold"
+                                        Cursor="Hand"
+                                        Command="{Binding ApplyCustomThemeCommand}">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" CornerRadius="14"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
                             </Grid>
                         </StackPanel>
                     </Border>
 
-                    <!-- Action buttons row at bottom of palette subspace -->
-                    <StackPanel HorizontalAlignment="Center" Margin="0,8,0,0">
-                        <Button Height="48" Padding="24,0"
-                                Background="#FFAB9A" Foreground="White"
-                                BorderThickness="0" Cursor="Hand"
-                                Command="{Binding CustomThemeCommand}">
-                            <Button.Template>
-                                <ControlTemplate TargetType="Button">
-                                    <Border Background="{TemplateBinding Background}"
-                                            CornerRadius="24" Padding="{TemplateBinding Padding}">
-                                        <StackPanel Orientation="Horizontal">
-                                            <Path Data="M12,2C6.48,2 2,6.48 2,12S6.48,22 12,22 22,17.52 22,12 17.52,2 12,2M12,20C7.59,20 4,16.41 4,12S7.59,4 12,4 20,7.59 20,12 16.41,20 12,20M12,6C9.79,6 8,7.79 8,10S9.79,14 12,14 16,12.21 16,10 14.21,6 12,6M12,12C10.9,12 10,11.1 10,10S10.9,8 12,8 14,8.9 14,10 13.1,12 12,12M18,18H6V17.5C6,15.5 10,14.5 12,14.5S18,15.5 18,17.5V18Z"
-                                                  Fill="White" Width="18" Height="18" Stretch="Uniform" Margin="0,0,10,0"/>
-                                            <TextBlock Text="Custom Theme" FontWeight="SemiBold" FontSize="14"
-                                                       Foreground="White"/>
-                                        </StackPanel>
-                                    </Border>
-                                </ControlTemplate>
-                            </Button.Template>
-                        </Button>
-                        <Button Height="48" Padding="24,0"
-                                Background="{DynamicResource SurfaceVariantBrush}"
-                                Foreground="{DynamicResource OnSurfaceBrush}"
-                                BorderThickness="0" Cursor="Hand" Margin="0,12,0,0"
-                                Command="{Binding ImportThemeCommand}">
-                            <Button.Template>
-                                <ControlTemplate TargetType="Button">
-                                    <Border Background="{TemplateBinding Background}"
-                                            CornerRadius="24" Padding="{TemplateBinding Padding}">
-                                        <StackPanel Orientation="Horizontal">
-                                            <Path Data="M14,2H6C4.9,2 4,2.9 4,4V20C4,21.1 4.9,22 6,22H18C19.1,22 20,21.1 20,20V8L14,2M18,20H6V4H13V9H18V20M12,19L8,15H10.5V12H13.5V15H16L12,19Z"
-                                                  Fill="{DynamicResource OnSurfaceBrush}" Width="18" Height="18"
-                                                  Stretch="Uniform" Margin="0,0,10,0"/>
-                                            <TextBlock Text="Import Theme" FontWeight="SemiBold" FontSize="14"
-                                                       Foreground="{DynamicResource OnSurfaceBrush}"/>
-                                        </StackPanel>
-                                    </Border>
-                                </ControlTemplate>
-                            </Button.Template>
-                        </Button>
-                    </StackPanel>
+                    <!-- ═══ Custom / Import theme action buttons ═══ -->
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="8"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0" CornerRadius="18" Background="{DynamicResource SurfaceVariantBrush}"
+                                Padding="14,10" Cursor="Hand"
+                                MouseLeftButtonUp="CustomThemeButton_Click">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Path Data="M19.14,12.94C19.18,12.64 19.2,12.33 19.2,12C19.2,11.68 19.18,11.36 19.13,11.06L21.16,9.48C21.34,9.34 21.39,9.07 21.28,8.87L19.36,5.55C19.24,5.33 18.99,5.26 18.77,5.33L16.38,6.29C15.88,5.91 15.35,5.59 14.76,5.35L14.4,2.81C14.36,2.57 14.16,2.4 13.92,2.4H10.08C9.84,2.4 9.65,2.57 9.61,2.81L9.25,5.35C8.66,5.59 8.12,5.92 7.63,6.29L5.24,5.33C5.02,5.25 4.77,5.33 4.65,5.55L2.74,8.87C2.62,9.08 2.66,9.34 2.86,9.48L4.89,11.06C4.84,11.36 4.8,11.69 4.8,12C4.8,12.31 4.82,12.64 4.87,12.94L2.85,14.52C2.67,14.66 2.62,14.93 2.73,15.13L4.65,18.45C4.77,18.67 5.02,18.74 5.24,18.67L7.63,17.71C8.13,18.09 8.66,18.41 9.25,18.65L9.61,21.19C9.65,21.43 9.84,21.6 10.08,21.6H13.92C14.16,21.6 14.36,21.43 14.39,21.19L14.75,18.65C15.34,18.41 15.88,18.09 16.37,17.71L18.76,18.67C18.98,18.75 19.23,18.67 19.35,18.45L21.27,15.13C21.39,14.91 21.34,14.66 21.15,14.52L19.14,12.94ZM12,15.6C10.02,15.6 8.4,13.98 8.4,12C8.4,10.02 10.02,8.4 12,8.4C13.98,8.4 15.6,10.02 15.6,12C15.6,13.98 13.98,15.6 12,15.6Z"
+                                      Fill="{DynamicResource OnSurfaceVariantBrush}" Width="16" Height="16" Stretch="Uniform"
+                                      Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Custom Theme" FontWeight="SemiBold" FontSize="14"
+                                           Foreground="{DynamicResource OnSurfaceBrush}" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Column="2" CornerRadius="18" Background="{DynamicResource SurfaceVariantBrush}"
+                                Padding="14,10" Cursor="Hand"
+                                MouseLeftButtonUp="ImportThemeButton_Click">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Path Data="M19,9H15V3H9V9H5L12,16L19,9M5,18V20H19V18H5Z"
+                                      Fill="{DynamicResource OnSurfaceVariantBrush}" Width="16" Height="16" Stretch="Uniform"
+                                      Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Import Theme" FontWeight="SemiBold" FontSize="14"
+                                           Foreground="{DynamicResource OnSurfaceBrush}" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
 
                 </StackPanel>
 
