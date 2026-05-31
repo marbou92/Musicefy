@@ -5,6 +5,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Musicefy.Core.Models;
 using Musicefy.Core.Services;
+using Musicefy.Services;
 using Musicefy.ViewModels;
 
 namespace Musicefy.Views
