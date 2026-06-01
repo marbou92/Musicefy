@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Musicefy.Core.Interfaces;
+using Musicefy.Services;
 using Musicefy.ViewModels;
 
 namespace Musicefy.Views
@@ -28,6 +29,7 @@ namespace Musicefy.Views
 
         private void ColorPaletteButton_Click(object sender, MouseButtonEventArgs e)
         {
+            ThemeManager.PauseDynamicColors();
             if (DataContext is AppearanceSettingsViewModel vm)
             {
                 vm.IsPaletteSubspaceOpen = true;
@@ -36,6 +38,7 @@ namespace Musicefy.Views
 
         private void PaletteBackButton_Click(object sender, MouseButtonEventArgs e)
         {
+            ThemeManager.ResumeDynamicColors();
             if (DataContext is AppearanceSettingsViewModel vm)
             {
                 vm.IsPaletteSubspaceOpen = false;
