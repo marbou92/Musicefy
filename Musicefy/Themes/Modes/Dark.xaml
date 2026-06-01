@@ -19,16 +19,16 @@
     <SolidColorBrush x:Key="InversePrimaryBrush" Color="#6750A4"/>
 
     <!-- Accent brushes (overridden at runtime by ThemeManager) -->
-    <SolidColorBrush x:Key="AccentBrush" Color="#D0BCFF"/>
-    <SolidColorBrush x:Key="AccentHoverBrush" Color="#4F378B"/>
-    <SolidColorBrush x:Key="AccentPressedBrush" Color="#EADDFF"/>
-    <SolidColorBrush x:Key="AccentGlowBrush" Color="#D0BCFF"/>
+    <SolidColorBrush x:Key="AccentBrush" Color="#FFB4AB"/>
+    <SolidColorBrush x:Key="AccentHoverBrush" Color="#930006"/>
+    <SolidColorBrush x:Key="AccentPressedBrush" Color="#FFDAD4"/>
+    <SolidColorBrush x:Key="AccentGlowBrush" Color="#FFB4AB"/>
 
-    <!-- Primary (overridden at runtime) -->
-    <SolidColorBrush x:Key="PrimaryBrush" Color="#D0BCFF"/>
-    <SolidColorBrush x:Key="OnPrimaryBrush" Color="#381E72"/>
-    <SolidColorBrush x:Key="PrimaryContainerBrush" Color="#4F378B"/>
-    <SolidColorBrush x:Key="OnPrimaryContainerBrush" Color="#EADDFF"/>
+    <!-- Primary (overridden at runtime — default matches coral-red) -->
+    <SolidColorBrush x:Key="PrimaryBrush" Color="#FFB4AB"/>
+    <SolidColorBrush x:Key="OnPrimaryBrush" Color="#680003"/>
+    <SolidColorBrush x:Key="PrimaryContainerBrush" Color="#930006"/>
+    <SolidColorBrush x:Key="OnPrimaryContainerBrush" Color="#FFDAD4"/>
 
     <!-- Secondary (overridden at runtime) -->
     <SolidColorBrush x:Key="SecondaryBrush" Color="#CCC2DC"/>
@@ -55,7 +55,7 @@
     <SolidColorBrush x:Key="TextBrush" Color="#E6E0E9"/>
     <SolidColorBrush x:Key="MutedTextBrush" Color="#CAC4D0"/>
     <SolidColorBrush x:Key="BorderBrush" Color="#938F99"/>
-    <SolidColorBrush x:Key="DynamicPrimaryBrush" Color="#D0BCFF"/>
+    <SolidColorBrush x:Key="DynamicPrimaryBrush" Color="#FFB4AB"/>
 
     <!-- Skeleton / shimmer colors -->
     <Color x:Key="SkeletonBaseColor">#1D1B20</Color>
@@ -63,18 +63,18 @@
 
     <!-- Gradient brushes (overridden at runtime by ThemeManager) -->
     <LinearGradientBrush x:Key="HomeGradientBrush" StartPoint="0,0" EndPoint="0,1">
-        <GradientStop Color="#D0BCFF" Offset="0.0"/>
-        <GradientStop Color="#D0BCFF" Offset="0.15"/>
+        <GradientStop Color="#FFB4AB" Offset="0.0"/>
+        <GradientStop Color="#FFB4AB" Offset="0.15"/>
         <GradientStop Color="#141218" Offset="1.0"/>
     </LinearGradientBrush>
     <Color x:Key="HomeSurfaceColor">#141218</Color>
-    <Color x:Key="HomePrimaryColor">#D0BCFF</Color>
+    <Color x:Key="HomePrimaryColor">#FFB4AB</Color>
     <LinearGradientBrush x:Key="PlayerGradientBrush" StartPoint="0,0" EndPoint="0,1">
-        <GradientStop Color="#D0BCFF" Offset="0.0"/>
-        <GradientStop Color="#4F378B" Offset="0.6"/>
+        <GradientStop Color="#FFB4AB" Offset="0.0"/>
+        <GradientStop Color="#930006" Offset="0.6"/>
         <GradientStop Color="#141218" Offset="1.0"/>
     </LinearGradientBrush>
     <SolidColorBrush x:Key="PlayerBackgroundSolid" Color="Transparent"/>
     <Color x:Key="PlayerSurfaceColor">#141218</Color>
-    <Color x:Key="PlayerPrimaryColor">#D0BCFF</Color>
+    <Color x:Key="PlayerPrimaryColor">#FFB4AB</Color>
 </ResourceDictionary>
