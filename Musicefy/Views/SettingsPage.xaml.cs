@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Animation;
 using Microsoft.Extensions.DependencyInjection;
+using Musicefy.Core.Interfaces;
 using Musicefy.ViewModels;
 
 namespace Musicefy.Views
@@ -83,6 +84,10 @@ namespace Musicefy.Views
 
         private void AnimateContentChange(UserControl newContent, string title, bool fromRight)
         {
+            // Persist whatever the outgoing panel last set
+            if (SettingsContent?.Content is ISettingsControl outgoing)
+                outgoing.Save();
+
             if (SettingsContent == null || SectionTitle == null)
                 return;
 
