@@ -175,7 +175,11 @@
         <!-- Dynamic gradient background — uses HomeGradientBrush from ThemeManager
              which adapts to both light/dark mode and the current palette.
              The DominantColor overlay provides a subtle album-art tint on top. -->
-        <Rectangle IsHitTestVisible="False" Fill="{DynamicResource HomeGradientBrush}" Opacity="0.15"/>
+        <!-- ArchiveTune: gradient is subtle in both modes.
+             In light mode, the gradient already uses a high-tone pastel primary
+             with a short reach, so 0.25 opacity gives a gentle tint.
+             In dark mode, 0.25 gives a rich atmospheric glow. -->
+        <Rectangle IsHitTestVisible="False" Fill="{DynamicResource HomeGradientBrush}" Opacity="0.25"/>
 
         <!-- Empty state -->
         <Border x:Name="EmptyState" Visibility="Collapsed" VerticalAlignment="Center" HorizontalAlignment="Center">
