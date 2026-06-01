@@ -137,8 +137,12 @@ namespace Musicefy.Core.Hct
             double tertiaryHue    = MathUtils.SanitizeDegrees(seed.PrimaryHue + seed.TertiaryHueOffset);
             double tertiaryChroma = seed.PrimaryChroma * seed.TertiaryChromaRatio;
 
-            // Neutral: use primary hue with the seed's own NeutralChroma
-            double neutralHue    = seed.PrimaryHue;
+            // Neutral: use the seed's NeutralHueOffset to shift the neutral palette
+            // away from the primary hue. ArchiveTune approach: neutral surfaces should
+            // be nearly achromatic. By offsetting the neutral hue toward warm-neutral
+            // (~50-60 degrees), light mode surfaces stay near-white instead of being
+            // tinted lavender/cyan/pink by the primary's hue.
+            double neutralHue    = MathUtils.SanitizeDegrees(seed.PrimaryHue + seed.NeutralHueOffset);
             double neutralChroma = seed.NeutralChroma;
 
             // ── Step 2: Apply style-based adjustments on top of seed parameters ──
@@ -248,15 +252,21 @@ namespace Musicefy.Core.Hct
             var tertiaryPalette = TonalPalette.FromHueAndChroma(
                 tertiaryHue, Math.Max(tertiaryChroma, 4) * chromaFactor);
 
-            // Neutral palettes: capped chroma (ArchiveTune approach)
-            // neutral = min(chroma, 4.0), neutralVariant = min(chroma, 8.0)
-            // This prevents light-mode "solid color" where surfaces become
-            // a flat tinted sheet instead of having subtle tonal variation.
+            // Neutral palettes: ArchiveTune approach with critical light-mode fix.
+            // In light mode, surfaces must be nearly-white with only the faintest
+            // warm tint. We cap neutral chroma even more aggressively for light:
+            //   - Light mode: neutral max 2.0, neutralVariant max 6.0
+            //   - Dark mode:  neutral max 4.0, neutralVariant max 8.0
+            // This prevents the "solid color sheet" problem where light-mode
+            // surfaces become visibly tinted (cyan/lavender/pink backgrounds).
+            double neutralChromaCap    = isDark ? 4.0 : 2.0;
+            double neutralVariantCap   = isDark ? 8.0 : 6.0;
+
             var neutralPalette = TonalPalette.FromHueAndChroma(
-                neutralHue, Math.Min(neutralChroma, 4.0) * chromaFactor);
+                neutralHue, Math.Min(neutralChroma, neutralChromaCap) * chromaFactor);
 
             var neutralVariantPalette = TonalPalette.FromHueAndChroma(
-                neutralHue, Math.Min(Math.Max(neutralChroma * 2, neutralChroma), 8.0) * chromaFactor);
+                neutralHue, Math.Min(Math.Max(neutralChroma * 2, neutralChroma), neutralVariantCap) * chromaFactor);
 
             var errorPalette = TonalPalette.FromHueAndChroma(25.0, 84.0);
 
@@ -298,12 +308,15 @@ namespace Musicefy.Core.Hct
             var tertiaryPalette = TonalPalette.FromHueAndChroma(
                 tHct.Hue, Math.Max(tHct.Chroma, 4) * chromaFactor);
 
-            // Neutral palettes: capped chroma (ArchiveTune approach)
+            // Neutral palettes: capped chroma (ArchiveTune approach with light-mode fix)
+            double neutralChromaCap    = isDark ? 4.0 : 2.0;
+            double neutralVariantCap   = isDark ? 8.0 : 6.0;
+
             var neutralPalette = TonalPalette.FromHueAndChroma(
-                nHct.Hue, Math.Min(Math.Max(nHct.Chroma, 2), 4.0) * chromaFactor);
+                nHct.Hue, Math.Min(Math.Max(nHct.Chroma, 2), neutralChromaCap) * chromaFactor);
 
             var neutralVariantPalette = TonalPalette.FromHueAndChroma(
-                nHct.Hue, Math.Min(Math.Max(nHct.Chroma * 1.5, 4), 8.0) * chromaFactor);
+                nHct.Hue, Math.Min(Math.Max(nHct.Chroma * 1.5, 4), neutralVariantCap) * chromaFactor);
 
             var errorPalette = TonalPalette.FromHueAndChroma(25.0, 84.0);
 
@@ -346,20 +359,25 @@ namespace Musicefy.Core.Hct
                 ToneRole.OnErrorContainer    => dark ? 90 : 10,
 
                 // ── Tonal surface roles ───────────────────────────────────
-                ToneRole.Surface                  => dark ? 6   : 98,
+                // ArchiveTune light-mode fix: use tighter tone ranges so that
+                // surface differentiation comes from tone steps, not chroma.
+                // Light mode surfaces range 96-99 (near-white with subtle steps)
+                // instead of 90-100 which can make SurfaceContainerHighest look
+                // too tinted when the neutral palette has any chroma at all.
+                ToneRole.Surface                  => dark ? 6   : 99,
                 ToneRole.OnSurface                => dark ? 90  : 10,
                 ToneRole.SurfaceVariant           => dark ? 30  : 90,
                 ToneRole.OnSurfaceVariant         => dark ? 80  : 30,
                 ToneRole.Outline                  => dark ? 60  : 50,
                 ToneRole.OutlineVariant           => dark ? 30  : 80,
                 ToneRole.SurfaceContainerLowest   => dark ? 4   : 100,
-                ToneRole.SurfaceContainerLow      => dark ? 10  : 96,
-                ToneRole.SurfaceContainer         => dark ? 12  : 94,
-                ToneRole.SurfaceContainerHigh     => dark ? 17  : 92,
-                ToneRole.SurfaceContainerHighest  => dark ? 22  : 90,
-                ToneRole.Hover                    => dark ? 30  : 90,
-                ToneRole.SkeletonBase             => dark ? 15  : 92,
-                ToneRole.SkeletonHigh             => dark ? 25  : 96,
+                ToneRole.SurfaceContainerLow      => dark ? 10  : 97,
+                ToneRole.SurfaceContainer         => dark ? 12  : 96,
+                ToneRole.SurfaceContainerHigh     => dark ? 17  : 94,
+                ToneRole.SurfaceContainerHighest  => dark ? 22  : 92,
+                ToneRole.Hover                    => dark ? 30  : 92,
+                ToneRole.SkeletonBase             => dark ? 15  : 94,
+                ToneRole.SkeletonHigh             => dark ? 25  : 97,
                 ToneRole.InverseSurface           => dark ? 90  : 20,
                 ToneRole.InverseOnSurface         => dark ? 20  : 95,
                 ToneRole.InversePrimary           => dark ? 40  : 80,
