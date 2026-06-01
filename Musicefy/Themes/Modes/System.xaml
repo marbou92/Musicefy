@@ -1,5 +1,79 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- Mode determined at runtime by ThemeManager.ApplyTheme -->
+    <!-- Mode determined at runtime by ThemeManager.ApplyTheme.
+         This file provides safe fallback values (light mode) so the app
+         never starts with unresolved DynamicResource references, which
+         could cause WPF to fall back to system colors or render incorrectly.
+         ThemeManager will swap this out for the correct mode dictionary
+         as soon as ApplyTheme is called. -->
+
+    <!-- Surface colors: near-white with minimal chroma -->
+    <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFBFE"/>
+    <SolidColorBrush x:Key="OnSurfaceBrush" Color="#1C1B1F"/>
+    <SolidColorBrush x:Key="SurfaceVariantBrush" Color="#F0EEF1"/>
+    <SolidColorBrush x:Key="OnSurfaceVariantBrush" Color="#49454F"/>
+    <SolidColorBrush x:Key="SurfaceContainerLowestBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="SurfaceContainerLowBrush" Color="#F9F7F9"/>
+    <SolidColorBrush x:Key="SurfaceContainerBrush" Color="#F4F2F5"/>
+    <SolidColorBrush x:Key="SurfaceContainerHighBrush" Color="#ECEAEF"/>
+    <SolidColorBrush x:Key="SurfaceContainerHighestBrush" Color="#E6E1E5"/>
+    <SolidColorBrush x:Key="OutlineBrush" Color="#79747E"/>
+    <SolidColorBrush x:Key="OutlineVariantBrush" Color="#CAC4D0"/>
+    <SolidColorBrush x:Key="HoverBrush" Color="#E6E1E5"/>
+    <SolidColorBrush x:Key="InverseSurfaceBrush" Color="#313033"/>
+    <SolidColorBrush x:Key="InverseOnSurfaceBrush" Color="#F4EFF4"/>
+    <SolidColorBrush x:Key="InversePrimaryBrush" Color="#D0BCFF"/>
+
+    <SolidColorBrush x:Key="AccentBrush" Color="#B5261E"/>
+    <SolidColorBrush x:Key="AccentHoverBrush" Color="#FFDAD4"/>
+    <SolidColorBrush x:Key="AccentPressedBrush" Color="#9A0F07"/>
+    <SolidColorBrush x:Key="AccentGlowBrush" Color="#B5261E"/>
+
+    <SolidColorBrush x:Key="PrimaryBrush" Color="#B5261E"/>
+    <SolidColorBrush x:Key="OnPrimaryBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="PrimaryContainerBrush" Color="#FFDAD4"/>
+    <SolidColorBrush x:Key="OnPrimaryContainerBrush" Color="#410001"/>
+
+    <SolidColorBrush x:Key="SecondaryBrush" Color="#775651"/>
+    <SolidColorBrush x:Key="OnSecondaryBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="SecondaryContainerBrush" Color="#FFDAD4"/>
+    <SolidColorBrush x:Key="OnSecondaryContainerBrush" Color="#2C1512"/>
+
+    <SolidColorBrush x:Key="TertiaryBrush" Color="#705C2E"/>
+    <SolidColorBrush x:Key="OnTertiaryBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="TertiaryContainerBrush" Color="#FCDFA6"/>
+    <SolidColorBrush x:Key="OnTertiaryContainerBrush" Color="#261A00"/>
+
+    <SolidColorBrush x:Key="ErrorBrush" Color="#B3261E"/>
+    <SolidColorBrush x:Key="OnErrorBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="ErrorContainerBrush" Color="#F9DEDC"/>
+    <SolidColorBrush x:Key="OnErrorContainerBrush" Color="#410E0B"/>
+
+    <SolidColorBrush x:Key="BackgroundBrush" Color="#FFFBFE"/>
+    <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#F9F7F9"/>
+    <SolidColorBrush x:Key="ForegroundBrush" Color="#1C1B1F"/>
+    <SolidColorBrush x:Key="TextBrush" Color="#1C1B1F"/>
+    <SolidColorBrush x:Key="MutedTextBrush" Color="#49454F"/>
+    <SolidColorBrush x:Key="BorderBrush" Color="#79747E"/>
+    <SolidColorBrush x:Key="DynamicPrimaryBrush" Color="#B5261E"/>
+
+    <Color x:Key="SkeletonBaseColor">#ECEAEF</Color>
+    <Color x:Key="SkeletonHighColor">#F9F7F9</Color>
+
+    <LinearGradientBrush x:Key="HomeGradientBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#B5261E" Offset="0.0"/>
+        <GradientStop Color="#B5261E" Offset="0.10"/>
+        <GradientStop Color="#FFFBFE" Offset="1.0"/>
+    </LinearGradientBrush>
+    <Color x:Key="HomeSurfaceColor">#FFFBFE</Color>
+    <Color x:Key="HomePrimaryColor">#B5261E</Color>
+    <LinearGradientBrush x:Key="PlayerGradientBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#FFDAD4" Offset="0.0"/>
+        <GradientStop Color="#9A0F07" Offset="0.6"/>
+        <GradientStop Color="#FFFBFE" Offset="1.0"/>
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="PlayerBackgroundSolid" Color="Transparent"/>
+    <Color x:Key="PlayerSurfaceColor">#FFFBFE</Color>
+    <Color x:Key="PlayerPrimaryColor">#FFDAD4</Color>
 </ResourceDictionary>
