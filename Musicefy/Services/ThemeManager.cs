@@ -631,7 +631,7 @@ namespace Musicefy.Services
         {
             return _currentScheme != null
                 ? ArgbsToColor(_currentScheme.GetArgb(ToneRole.Surface))
-                : (IsCurrentModeDark() ? Color.FromRgb(24, 24, 24) : Color.FromRgb(252, 251, 254));
+                : (IsCurrentModeDark() ? Color.FromRgb(20, 18, 24) : Color.FromRgb(255, 251, 254));
         }
 
         /// <summary>
@@ -641,7 +641,7 @@ namespace Musicefy.Services
         {
             return _currentScheme != null
                 ? ArgbsToColor(_currentScheme.GetArgb(ToneRole.PrimaryContainer))
-                : Color.FromRgb(60, 140, 231);
+                : Color.FromRgb(255, 218, 212);
         }
 
         /// <summary>
@@ -649,7 +649,7 @@ namespace Musicefy.Services
         /// </summary>
         public static bool IsCurrentModeDark()
         {
-            return _currentScheme?.IsDark ?? true;
+            return _currentScheme?.IsDark ?? false;
         }
 
         /// <summary>
@@ -657,11 +657,23 @@ namespace Musicefy.Services
         /// via DynamicResource. This gradient transitions from the dominant
         /// color (from album art or palette) to the current surface color,
         /// so it automatically adapts to both light and dark modes.
+        ///
+        /// ArchiveTune light-mode fix: In light mode, the primary gradient
+        /// color uses a much higher tone (80 instead of 40) to produce a
+        /// soft pastel tint rather than a saturated color splash. The
+        /// gradient also has a shorter primary stop (0.08) so the colored
+        /// area is smaller and less visually dominant.
         /// </summary>
         public static void UpdateHomeGradientBrush(ResourceDictionary resources, DynamicScheme scheme)
         {
             var surfaceColor = ArgbsToColor(scheme.GetArgb(ToneRole.Surface));
-            var primaryColor = ArgbsToColor(scheme.PrimaryPalette.GetTone(scheme.IsDark ? 80 : 40));
+            // Light mode: use high-tone primary (pastel) for subtle tinting
+            // Dark mode: use standard tone 80 for rich gradient
+            double primaryTone = scheme.IsDark ? 80 : 80;
+            var primaryColor = ArgbsToColor(scheme.PrimaryPalette.GetTone(primaryTone));
+
+            // Light mode: shorter gradient reach, softer blend
+            double gradientReach = scheme.IsDark ? 0.15 : 0.08;
 
             resources["HomeGradientBrush"] = new LinearGradientBrush
             {
@@ -670,7 +682,7 @@ namespace Musicefy.Services
                 GradientStops = new GradientStopCollection
                 {
                     new GradientStop(primaryColor,  0.0),
-                    new GradientStop(primaryColor,  0.15),
+                    new GradientStop(primaryColor,  gradientReach),
                     new GradientStop(surfaceColor,   1.0)
                 }
             };
@@ -684,12 +696,15 @@ namespace Musicefy.Services
         /// Rebuilds the HomeGradientBrush when the dominant color changes
         /// (e.g. from album art). The surface color stays anchored to
         /// the current scheme so it remains correct for light/dark mode.
+        /// ArchiveTune light-mode fix: shorter gradient reach in light mode.
         /// </summary>
         public static void UpdateHomeGradientWithDominantColor(Color dominantColor)
         {
             if (_currentScheme == null) return;
             var resources = Application.Current.Resources;
             var surfaceColor = ArgbsToColor(_currentScheme.GetArgb(ToneRole.Surface));
+
+            double gradientReach = _currentScheme.IsDark ? 0.15 : 0.08;
 
             resources["HomeGradientBrush"] = new LinearGradientBrush
             {
@@ -698,7 +713,7 @@ namespace Musicefy.Services
                 GradientStops = new GradientStopCollection
                 {
                     new GradientStop(dominantColor,  0.0),
-                    new GradientStop(dominantColor,  0.15),
+                    new GradientStop(dominantColor,  gradientReach),
                     new GradientStop(surfaceColor,   1.0)
                 }
             };
@@ -708,7 +723,9 @@ namespace Musicefy.Services
         {
             var surface = _currentScheme != null
                 ? ArgbsToColor(_currentScheme.GetArgb(ToneRole.Surface))
-                : (IsCurrentModeDark() ? Color.FromRgb(24, 24, 24) : Color.FromRgb(252, 251, 254));
+                : (IsCurrentModeDark() ? Color.FromRgb(20, 18, 24) : Color.FromRgb(255, 251, 254));
+
+            double gradientReach = IsCurrentModeDark() ? 0.15 : 0.08;
 
             return new LinearGradientBrush
             {
@@ -716,7 +733,7 @@ namespace Musicefy.Services
                 GradientStops = new GradientStopCollection
                 {
                     new GradientStop(dominantColor, 0.0),
-                    new GradientStop(dominantColor, 0.15),
+                    new GradientStop(dominantColor, gradientReach),
                     new GradientStop(surface,       1.0)
                 }
             };
