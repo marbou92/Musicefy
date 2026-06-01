@@ -23,7 +23,7 @@
                                 CornerRadius="16" Padding="8" SnapsToDevicePixels="True">
                             <StackPanel Width="140">
                                 <Border x:Name="CoverArtContainer"
-                                        Background="{DynamicResource SurfaceVariantBrush}"
+                                        Background="{DynamicResource SurfaceContainerHighBrush}"
                                         Height="140" CornerRadius="12" Margin="0,0,0,12"
                                         SnapsToDevicePixels="True"
                                         RenderTransformOrigin="0.5,0.5">
