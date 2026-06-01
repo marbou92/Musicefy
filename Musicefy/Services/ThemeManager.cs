@@ -74,6 +74,25 @@ namespace Musicefy.Services
             ("AccentGlowBrush",    AccentVariant.Glow),
         };
 
+        // ── NEW: only touches accent-family brushes, never surfaces ──────────────
+        private static readonly (string key, ToneRole role)[] _accentOnlyColorKeys =
+        {
+            ("PrimaryBrush",              ToneRole.Primary),
+            ("OnPrimaryBrush",            ToneRole.OnPrimary),
+            ("PrimaryContainerBrush",     ToneRole.PrimaryContainer),
+            ("OnPrimaryContainerBrush",   ToneRole.OnPrimaryContainer),
+            ("SecondaryBrush",            ToneRole.Secondary),
+            ("OnSecondaryBrush",          ToneRole.OnSecondary),
+            ("SecondaryContainerBrush",   ToneRole.SecondaryContainer),
+            ("OnSecondaryContainerBrush", ToneRole.OnSecondaryContainer),
+            ("TertiaryBrush",             ToneRole.Tertiary),
+            ("OnTertiaryBrush",           ToneRole.OnTertiary),
+            ("TertiaryContainerBrush",    ToneRole.TertiaryContainer),
+            ("OnTertiaryContainerBrush",  ToneRole.OnTertiaryContainer),
+            ("DynamicPrimaryBrush",       ToneRole.Primary),
+            ("InversePrimaryBrush",       ToneRole.InversePrimary),
+        };
+
         // URIs that get swapped when changing mode (Light, Dark, DarkPure)
         private static readonly HashSet<string> _themeUris = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -92,6 +111,12 @@ namespace Musicefy.Services
         // sidebar in light mode).
         private static DynamicScheme _baseScheme;
         private static readonly TimeSpan _animDuration = TimeSpan.FromMilliseconds(360);
+
+        // Pauses dynamic color application while user is browsing palette picker
+        private static bool _dynamicColorsPaused = false;
+
+        public static void PauseDynamicColors() => _dynamicColorsPaused = true;
+        public static void ResumeDynamicColors() => _dynamicColorsPaused = false;
 
         // ── Public API ───────────────────────────────────────────────────────
 
@@ -148,7 +173,15 @@ namespace Musicefy.Services
 
         public static void ApplyDynamicColors(ExtractedColors colors)
         {
-            if (_currentScheme == null) ApplyTheme("Dark", "Default");
+            // Guard: never run before the base palette is initialised
+            if (_baseScheme == null)
+            {
+                if (_currentScheme == null) ApplyTheme("Dark", "Default");
+                else return;
+            }
+
+            // Respect pause flag — don't override user's palette picker selection
+            if (_dynamicColorsPaused) return;
 
             // ArchiveTune approach: extract accent colors from album art,
             // but keep surface/neutral colors anchored to the base seed palette.
@@ -204,12 +237,32 @@ namespace Musicefy.Services
 
             // Use the base seed palette's neutral palettes — NOT album-art-tinted ones.
             // This is the key fix: surfaces stay anchored to the chosen palette.
-            var baseScheme = _baseScheme ?? _currentScheme;
+            var baseScheme = _baseScheme;   // always use _baseScheme, never _currentScheme fallback
 
             var scheme = DynamicScheme.CreateDynamicAccentScheme(
                 baseScheme, dynamicPrimary, dynamicSecondary, dynamicTertiary);
 
-            ApplySchemeWithAnimation(scheme);
+            // ← CHANGED: was ApplySchemeWithAnimation(scheme)
+            ApplyAccentOnlyWithAnimation(scheme);
+        }
+
+        private static void ApplyAccentOnlyWithAnimation(DynamicScheme accentScheme)
+        {
+            var resources = Application.Current.Resources;
+
+            foreach (var (key, role) in _accentOnlyColorKeys)
+                AnimateBrushColor(resources, key, accentScheme.GetArgb(role));
+
+            foreach (var (key, variant) in _accentKeys)
+                AnimateBrushColor(resources, key, accentScheme.GetAccentArgb(variant));
+
+            // Gradient uses accent primary — safe to update, doesn't touch surface brushes
+            SetPlayerGradientBrush(resources, accentScheme, GetPlayerBackgroundStyle());
+            UpdateHomeGradientBrush(resources, accentScheme);
+
+            // Update _currentScheme so NowPlaying gradient is correct,
+            // but DO NOT change surface/neutral brushes — those stay from _baseScheme.
+            _currentScheme = accentScheme;
         }
 
         private static bool AreColorsSimilar(System.Windows.Media.Color a, System.Windows.Media.Color b)
