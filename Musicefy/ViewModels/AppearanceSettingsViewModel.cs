@@ -489,11 +489,22 @@ namespace Musicefy.ViewModels
         /// </summary>
         public void SelectPalette(string paletteName)
         {
-            ThemeManager.ApplyTheme(GetModeFromIndex(_selectedThemeIndex), paletteName,
+            _activePaletteName = paletteName;           // ← ensure field is set first
+
+            ThemeManager.ApplyTheme(
+                GetModeFromIndex(_selectedThemeIndex), paletteName,
                 styleOverride: _selectedPaletteStyle,
                 isExactPaletteOverride: _exactPaletteEnabled,
                 autoSelectStyle: true);
+
             RefreshPreviews(paletteName);
+
+            // Persist immediately so the choice survives a restart
+            ThemeManager.SaveTheme(
+                GetModeFromIndex(_selectedThemeIndex), paletteName);
+            Musicefy.Properties.Settings.Default.PaletteStyle = _selectedPaletteStyle.ToString();
+            Musicefy.Properties.Settings.Default.ExactPalette = _exactPaletteEnabled;
+            Musicefy.Properties.Settings.Default.Save();
         }
 
         public void Save()
