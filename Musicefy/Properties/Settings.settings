@@ -3,7 +3,15 @@
               CurrentProfile="(Default)">
   <Profiles />
   <Settings>
-    <!-- Appearance settings -->
+    <!-- New Aniyomi-style separate AppTheme + ThemeMode settings -->
+    <Setting Name="AppTheme" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Default</Value>
+    </Setting>
+    <Setting Name="ThemeMode" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Dark</Value>
+    </Setting>
+
+    <!-- Legacy: kept for migration only -->
     <Setting Name="Theme" Type="System.String" Scope="User">
       <Value Profile="(Default)">Dark|Default</Value>
     </Setting>
@@ -13,6 +21,13 @@
     <Setting Name="PureBlackMode" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
+    <Setting Name="PaletteStyle" Type="System.String" Scope="User">
+      <Value Profile="(Default)">TonalSpot</Value>
+    </Setting>
+    <Setting Name="ExactPalette" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+
     <Setting Name="DateFormat" Type="System.String" Scope="User">
       <Value Profile="(Default)">MM/dd/yyyy</Value>
     </Setting>
