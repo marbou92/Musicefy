@@ -2,7 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace Musicefy.Core.Services.YouTube
+namespace Musicefy.Core.Services.YouTubeApi
 {
     /// <summary>
     /// Thread-safe cache for resolved YouTube stream URLs with expiration tracking.
