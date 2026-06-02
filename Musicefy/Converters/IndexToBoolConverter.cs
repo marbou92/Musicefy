@@ -22,7 +22,7 @@ namespace Musicefy.Converters
             {
                 if (int.TryParse(parameter.ToString(), out int intParameter))
                 {
-                    return Convert.ToInt32(enumValue) == intParameter;
+                    return System.Convert.ToInt32(enumValue) == intParameter;
                 }
             }
 
