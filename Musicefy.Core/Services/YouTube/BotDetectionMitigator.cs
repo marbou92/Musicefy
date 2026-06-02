@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Musicefy.Core.Services.YouTube
+namespace Musicefy.Core.Services.YouTubeApi
 {
     /// <summary>
     /// Mitigates YouTube bot detection by rotating guest sessions.
