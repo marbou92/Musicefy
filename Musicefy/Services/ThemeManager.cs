@@ -107,15 +107,15 @@ namespace Musicefy.Services
 
         public static void SavePreferences(AppTheme appTheme, ThemeMode themeMode)
         {
-            Properties.Settings.Default.AppTheme  = appTheme.ToString();
-            Properties.Settings.Default.ThemeMode = themeMode.ToString();
-            Properties.Settings.Default.Save();
+            Musicefy.Properties.Settings.Default.AppTheme  = appTheme.ToString();
+            Musicefy.Properties.Settings.Default.ThemeMode = themeMode.ToString();
+            Musicefy.Properties.Settings.Default.Save();
         }
 
         public static (AppTheme appTheme, ThemeMode themeMode) LoadPreferences()
         {
-            Enum.TryParse(Properties.Settings.Default.AppTheme,  out AppTheme  a);
-            Enum.TryParse(Properties.Settings.Default.ThemeMode, out ThemeMode m);
+            Enum.TryParse(Musicefy.Properties.Settings.Default.AppTheme,  out AppTheme  a);
+            Enum.TryParse(Musicefy.Properties.Settings.Default.ThemeMode, out ThemeMode m);
             return (a, m);
         }
 
@@ -136,20 +136,20 @@ namespace Musicefy.Services
             if (old == null)
             {
                 // First apply — snap all brushes immediately (no animation)
-                foreach (var (key, color) in BuildColorMap(scheme))
-                    SetBrush(resources, key, color);
+                foreach (var kvp in BuildColorMap(scheme))
+                    SetBrush(resources, kvp.Key, kvp.Value);
 
-                foreach (var (key, color) in BuildAccentColorMap(scheme))
-                    SetBrush(resources, key, color);
+                foreach (var kvp in BuildAccentColorMap(scheme))
+                    SetBrush(resources, kvp.Key, kvp.Value);
             }
             else
             {
                 // Animate all brushes to the new scheme values
-                foreach (var (key, color) in BuildColorMap(scheme))
-                    AnimateBrushColor(resources, key, color);
+                foreach (var kvp in BuildColorMap(scheme))
+                    AnimateBrushColor(resources, kvp.Key, kvp.Value);
 
-                foreach (var (key, color) in BuildAccentColorMap(scheme))
-                    AnimateBrushColor(resources, key, color);
+                foreach (var kvp in BuildAccentColorMap(scheme))
+                    AnimateBrushColor(resources, kvp.Key, kvp.Value);
             }
 
             // Skeleton colors
@@ -173,11 +173,11 @@ namespace Musicefy.Services
         {
             var resources = Application.Current.Resources;
 
-            foreach (var (key, color) in BuildAccentOnlyColorMap(accentScheme))
-                AnimateBrushColor(resources, key, color);
+            foreach (var kvp in BuildAccentOnlyColorMap(accentScheme))
+                AnimateBrushColor(resources, kvp.Key, kvp.Value);
 
-            foreach (var (key, color) in BuildAccentColorMap(accentScheme))
-                AnimateBrushColor(resources, key, color);
+            foreach (var kvp in BuildAccentColorMap(accentScheme))
+                AnimateBrushColor(resources, kvp.Key, kvp.Value);
 
             // Gradient uses accent primary — safe to update, doesn't touch surface brushes
             SetPlayerGradientBrush(resources, accentScheme, GetPlayerBackgroundStyle());
@@ -187,7 +187,7 @@ namespace Musicefy.Services
         // ── Color maps ────────────────────────────────────────────────────────
 
         private static Dictionary<string, Color> BuildColorMap(MusicefyColorScheme s)
-            => new()
+            => new Dictionary<string, Color>
             {
                 // Primary
                 ["PrimaryBrush"]              = s.Primary,
@@ -239,7 +239,7 @@ namespace Musicefy.Services
         /// Accent-only map — used by ApplyAccentOnly so surface brushes are not touched.
         /// </summary>
         private static Dictionary<string, Color> BuildAccentOnlyColorMap(MusicefyColorScheme s)
-            => new()
+            => new Dictionary<string, Color>
             {
                 ["PrimaryBrush"]              = s.Primary,
                 ["OnPrimaryBrush"]            = s.OnPrimary,
@@ -261,7 +261,7 @@ namespace Musicefy.Services
         /// Accent variant color map — AccentBrush, AccentHoverBrush, etc.
         /// </summary>
         private static Dictionary<string, Color> BuildAccentColorMap(MusicefyColorScheme s)
-            => new()
+            => new Dictionary<string, Color>
             {
                 ["AccentBrush"]        = s.Primary,
                 ["AccentHoverBrush"]   = s.PrimaryContainer,
@@ -508,7 +508,7 @@ namespace Musicefy.Services
 
         public static string GetPlayerBackgroundStyle()
         {
-            try { return Properties.Settings.Default.PlayerBackgroundStyle ?? "GRADIENT"; }
+            try { return Musicefy.Properties.Settings.Default.PlayerBackgroundStyle ?? "GRADIENT"; }
             catch { return "GRADIENT"; }
         }
 
@@ -693,7 +693,7 @@ namespace Musicefy.Services
             {
                 "Light"  => ThemeMode.Light,
                 "System" => ThemeMode.System,
-                _        => Properties.Settings.Default.PureBlackMode ? ThemeMode.Amoled : ThemeMode.Dark,
+                _        => Musicefy.Properties.Settings.Default.PureBlackMode ? ThemeMode.Amoled : ThemeMode.Dark,
             };
 
             AppTheme theme = MapOldPaletteName(paletteStr);
