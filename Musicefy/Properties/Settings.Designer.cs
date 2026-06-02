@@ -1,45 +1,114 @@
 namespace Musicefy.Properties {
-    
+
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.0.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
-        
+
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
-        
+
         public static Settings Default => defaultInstance;
 
-        // Theme setting (mode|palette)
+        // ── NEW: Aniyomi-style separate AppTheme + ThemeMode settings ──────────
+        // Replaces the old fused "Theme" string ("Dark|Default") and PureBlackMode boolean.
+
+        /// <summary>
+        /// The named palette (AppTheme enum value name), e.g. "Default", "GreenApple", "Lavender".
+        /// When this is "Dynamic", album-art color extraction is active.
+        /// </summary>
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Default")]
+        public string AppTheme
+        {
+            get => ((string)(this["AppTheme"]));
+            set => this["AppTheme"] = value;
+        }
+
+        /// <summary>
+        /// The brightness mode (ThemeMode enum value name):
+        /// "System", "Light", "Dark", or "Amoled".
+        /// Amoled replaces the old PureBlackMode boolean.
+        /// </summary>
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Dark")]
+        public string ThemeMode
+        {
+            get => ((string)(this["ThemeMode"]));
+            set => this["ThemeMode"] = value;
+        }
+
+        // ── LEGACY: kept for migration only ────────────────────────────────────
+        // The old "Theme" string of form "Dark|Default" is still present so that
+        // MigrateThemeSettings() in App.xaml.cs can read it on first launch after
+        // upgrade. It is no longer written to after migration.
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("Dark|Default")]
-        public string Theme {
+        public string Theme
+        {
             get => ((string)(this["Theme"]));
             set => this["Theme"] = value;
+        }
+
+        // PureBlackMode kept for migration; no longer used after migration.
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool PureBlackMode
+        {
+            get => ((bool)(this["PureBlackMode"]));
+            set => this["PureBlackMode"] = value;
+        }
+
+        // PaletteStyle kept for migration; no longer used after migration.
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("TonalSpot")]
+        public string PaletteStyle
+        {
+            get => ((string)(this["PaletteStyle"]));
+            set => this["PaletteStyle"] = value;
+        }
+
+        // ExactPalette kept for migration; no longer used after migration.
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ExactPalette
+        {
+            get => ((bool)(this["ExactPalette"]));
+            set => this["ExactPalette"] = value;
+        }
+
+        // DynamicColorsEnabled: now implied by AppTheme == "Dynamic",
+        // but kept for migration.
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool DynamicColorsEnabled
+        {
+            get => ((bool)(this["DynamicColorsEnabled"]));
+            set => this["DynamicColorsEnabled"] = value;
         }
 
         // Accent color (for appearance settings)
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("Default")]
-        public string AccentColor {
+        public string AccentColor
+        {
             get => ((string)(this["AccentColor"]));
             set => this["AccentColor"] = value;
-        }
-
-        // Pure black dark mode toggle
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool PureBlackMode {
-            get => ((bool)(this["PureBlackMode"]));
-            set => this["PureBlackMode"] = value;
         }
 
         // Date format selection
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("MM/dd/yyyy")]
-        public string DateFormat {
+        public string DateFormat
+        {
             get => ((string)(this["DateFormat"]));
             set => this["DateFormat"] = value;
         }
@@ -48,7 +117,8 @@ namespace Musicefy.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string DownloadsPath {
+        public string DownloadsPath
+        {
             get => ((string)(this["DownloadsPath"]));
             set => this["DownloadsPath"] = value;
         }
@@ -57,7 +127,8 @@ namespace Musicefy.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool AutoClearCache {
+        public bool AutoClearCache
+        {
             get => ((bool)(this["AutoClearCache"]));
             set => this["AutoClearCache"] = value;
         }
@@ -66,7 +137,8 @@ namespace Musicefy.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool LimitDownloadSize {
+        public bool LimitDownloadSize
+        {
             get => ((bool)(this["LimitDownloadSize"]));
             set => this["LimitDownloadSize"] = value;
         }
@@ -75,7 +147,8 @@ namespace Musicefy.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("2147483648")]
-        public long GlobalCacheLimit {
+        public long GlobalCacheLimit
+        {
             get => ((long)(this["GlobalCacheLimit"]));
             set => this["GlobalCacheLimit"] = value;
         }
@@ -84,52 +157,28 @@ namespace Musicefy.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("419430400")]
-        public long CacheWarningThreshold {
+        public long CacheWarningThreshold
+        {
             get => ((long)(this["CacheWarningThreshold"]));
             set => this["CacheWarningThreshold"] = value;
-        }
-
-        // Dynamic album-art colors toggle
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool DynamicColorsEnabled {
-            get => ((bool)(this["DynamicColorsEnabled"]));
-            set => this["DynamicColorsEnabled"] = value;
         }
 
         // Player background gradient style (DEFAULT, GRADIENT, COLORING, GLOW)
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("GRADIENT")]
-        public string PlayerBackgroundStyle {
+        public string PlayerBackgroundStyle
+        {
             get => ((string)(this["PlayerBackgroundStyle"]));
             set => this["PlayerBackgroundStyle"] = value;
-        }
-
-        // Palette style (TonalSpot, Vibrant, Expressive, Fidelity, Monochrome, Rainbow, FruitSalad)
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("TonalSpot")]
-        public string PaletteStyle {
-            get => ((string)(this["PaletteStyle"]));
-            set => this["PaletteStyle"] = value;
-        }
-
-        // Exact palette mode: use seed color literally at its natural tone
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool ExactPalette {
-            get => ((bool)(this["ExactPalette"]));
-            set => this["ExactPalette"] = value;
         }
 
         // Discover: show local library on home
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool DiscoverLibrary {
+        public bool DiscoverLibrary
+        {
             get => ((bool)(this["DiscoverLibrary"]));
             set => this["DiscoverLibrary"] = value;
         }
@@ -138,7 +187,8 @@ namespace Musicefy.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool DiscoverYouTube {
+        public bool DiscoverYouTube
+        {
             get => ((bool)(this["DiscoverYouTube"]));
             set => this["DiscoverYouTube"] = value;
         }
@@ -147,7 +197,8 @@ namespace Musicefy.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool DiscoverSubsonic {
+        public bool DiscoverSubsonic
+        {
             get => ((bool)(this["DiscoverSubsonic"]));
             set => this["DiscoverSubsonic"] = value;
         }
@@ -156,7 +207,8 @@ namespace Musicefy.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("[]")]
-        public string DiscoverExtraSources {
+        public string DiscoverExtraSources
+        {
             get => ((string)(this["DiscoverExtraSources"]));
             set => this["DiscoverExtraSources"] = value;
         }
