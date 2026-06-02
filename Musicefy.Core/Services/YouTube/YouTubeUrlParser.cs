@@ -1,7 +1,7 @@
 using System;
 using System.Text.RegularExpressions;
 
-namespace Musicefy.Core.Services.YouTube
+namespace Musicefy.Core.Services.YouTubeApi
 {
     /// <summary>
     /// Parser for various YouTube URL formats.
