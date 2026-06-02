@@ -15,7 +15,9 @@ using static Musicefy.Core.SourceTypes;
 namespace Musicefy.Core.Services
 {
     /// <summary>
-    /// Streaming source manager implementation using provider registry
+    /// Streaming source manager implementation using provider registry.
+    /// Enhanced with YouTube-specific session support and improved stream resolution
+    /// inspired by Echo Music's architecture.
     /// </summary>
     public class StreamingSourceManagerImpl : IStreamingSourceManager
     {
@@ -147,6 +149,20 @@ namespace Musicefy.Core.Services
             }
         }
 
+        /// <summary>
+        /// Get a YouTube-specific session if the source is YouTube.
+        /// Enables access to enhanced YouTube features (filtered search, playlists, radio).
+        /// </summary>
+        public IYouTubeSourceSession GetYouTubeSession(string sourceId)
+        {
+            lock (_lock)
+            {
+                if (_activeSessions.TryGetValue(sourceId, out var session) && session is IYouTubeSourceSession ytSession)
+                    return ytSession;
+                return null;
+            }
+        }
+
         public async Task<List<MusicFile>> SearchAllSourcesAsync(string query, CancellationToken cancellationToken = default)
         {
             List<KeyValuePair<string, IMusicSourceSession>> activeSessions;
@@ -173,6 +189,65 @@ namespace Musicefy.Core.Services
                         .SelectMany(t => t.Result)
                         .Where(r => r != null)
                         .ToList();
+        }
+
+        /// <summary>
+        /// Search YouTube sources with type filter.
+        /// Inspired by Echo Music's filtered search capability.
+        /// </summary>
+        public async Task<List<MusicFile>> SearchYouTubeWithTypeAsync(string query, string resultType, int limit = 50)
+        {
+            var results = new List<MusicFile>();
+            List<KeyValuePair<string, IMusicSourceSession>> activeSessions;
+            lock (_lock) activeSessions = _activeSessions
+                .Where(s => _sources.Any(src => src.Id == s.Key && src.IsConnected && src.Type == YouTube))
+                .ToList();
+
+            foreach (var kvp in activeSessions)
+            {
+                if (kvp.Value is IYouTubeSourceSession ytSession)
+                {
+                    try
+                    {
+                        var searchResults = await ytSession.SearchWithTypeAsync(query, resultType, limit);
+                        results.AddRange(searchResults);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[Search] YouTube filtered search failed: {ex.Message}");
+                    }
+                }
+            }
+
+            return results;
+        }
+
+        /// <summary>
+        /// Get search suggestions from all YouTube sources.
+        /// Inspired by Echo Music's autocomplete feature.
+        /// </summary>
+        public async Task<List<string>> GetSearchSuggestionsAsync(string query)
+        {
+            var suggestions = new List<string>();
+            List<KeyValuePair<string, IMusicSourceSession>> activeSessions;
+            lock (_lock) activeSessions = _activeSessions
+                .Where(s => _sources.Any(src => src.Id == s.Key && src.IsConnected && src.Type == YouTube))
+                .ToList();
+
+            foreach (var kvp in activeSessions)
+            {
+                if (kvp.Value is IYouTubeSourceSession ytSession)
+                {
+                    try
+                    {
+                        var ytSuggestions = await ytSession.GetSearchSuggestionsAsync(query);
+                        suggestions.AddRange(ytSuggestions);
+                    }
+                    catch { }
+                }
+            }
+
+            return suggestions.Distinct().Take(10).ToList();
         }
 
         private async Task<List<MusicFile>> SearchSourceWithTimeoutAsync(string sourceId, IMusicSourceSession session, string query, CancellationToken cancellationToken)
@@ -212,6 +287,10 @@ namespace Musicefy.Core.Services
             }
         }
 
+        /// <summary>
+        /// Resolve a stream URL with improved error handling and retry logic.
+        /// Inspired by Echo Music's multi-layer stream resolution with validation.
+        /// </summary>
         public async Task<string> ResolveStreamUrlAsync(string resourceId)
         {
             if (string.IsNullOrEmpty(resourceId) || resourceId.StartsWith("http"))
@@ -232,13 +311,27 @@ namespace Musicefy.Core.Services
 
             if (session != null)
             {
-                try
+                // Retry logic inspired by Echo Music's withRetry (3 attempts, exponential backoff)
+                for (int attempt = 0; attempt < 3; attempt++)
                 {
-                    return await session.GetStreamUrlAsync(trackId);
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Failed to resolve stream URL: {ex.Message}");
+                    try
+                    {
+                        var url = await session.GetStreamUrlAsync(trackId);
+                        if (!string.IsNullOrEmpty(url))
+                            return url;
+
+                        // If URL is empty, wait and retry (inspired by Echo Music's backoff)
+                        if (attempt < 2)
+                            await Task.Delay((int)(500 * Math.Pow(2, attempt)));
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine(
+                            $"[StreamResolve] Attempt {attempt + 1} failed for {resourceId}: {ex.Message}");
+
+                        if (attempt < 2)
+                            await Task.Delay((int)(500 * Math.Pow(2, attempt)));
+                    }
                 }
             }
 
@@ -347,6 +440,15 @@ namespace Musicefy.Core.Services
 
             try
             {
+                // For YouTube sources, use GetAlbumListAsync instead of empty search
+                var source = GetSource(sourceId);
+                if (source?.Type == YouTube)
+                {
+                    var albumTracks = await session.GetAlbumListAsync(200);
+                    if (albumTracks?.Count > 0)
+                        return albumTracks.ToList();
+                }
+
                 var songs = await session.SearchAsync("", 200);
                 return songs?.ToList() ?? new List<MusicFile>();
             }
