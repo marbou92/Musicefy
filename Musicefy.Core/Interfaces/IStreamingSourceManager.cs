@@ -37,6 +37,12 @@ namespace Musicefy.Core.Interfaces
         IMusicSourceSession GetSession(string sourceId);
 
         /// <summary>
+        /// Get a YouTube-specific session if the source is YouTube.
+        /// Enables access to enhanced YouTube features (filtered search, playlists, radio).
+        /// </summary>
+        IYouTubeSourceSession GetYouTubeSession(string sourceId);
+
+        /// <summary>
         /// Resolve a resource ID to a playable stream URL
         /// </summary>
         Task<string> ResolveStreamUrlAsync(string resourceId);
@@ -50,6 +56,18 @@ namespace Musicefy.Core.Interfaces
         /// Search across all sources (parallel)
         /// </summary>
         Task<List<MusicFile>> SearchAllSourcesAsync(string query, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Search YouTube sources with type filter (songs, videos, albums, artists, playlists).
+        /// Inspired by Echo Music's filtered search.
+        /// </summary>
+        Task<List<MusicFile>> SearchYouTubeWithTypeAsync(string query, string resultType, int limit = 50);
+
+        /// <summary>
+        /// Get search suggestions from YouTube sources.
+        /// Inspired by Echo Music's autocomplete.
+        /// </summary>
+        Task<List<string>> GetSearchSuggestionsAsync(string query);
 
         /// <summary>
         /// Test connection to a source
