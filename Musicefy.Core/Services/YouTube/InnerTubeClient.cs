@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Musicefy.Core.Services.YouTube
+namespace Musicefy.Core.Services.YouTubeApi
 {
     /// <summary>
     /// C# implementation of YouTube's InnerTube API client, inspired by Echo Music's architecture.
