@@ -30,7 +30,6 @@ namespace Musicefy.Core.Hct
         public bool IsDarkPure { get; }
         public bool IsExactPalette { get; }
         public PaletteStyle Style { get; }
-        public SeedPalette Source { get; }
 
         /// <summary>
         /// Whether this scheme was generated from dynamic album-art colors.
@@ -44,7 +43,6 @@ namespace Musicefy.Core.Hct
         private readonly double _primaryChroma;
 
         private DynamicScheme(
-            SeedPalette source,
             TonalPalette primary,
             TonalPalette secondary,
             TonalPalette tertiary,
@@ -59,7 +57,6 @@ namespace Musicefy.Core.Hct
             double primaryChroma,
             bool isDynamicAccent = false)
         {
-            Source = source;
             PrimaryPalette = primary;
             SecondaryPalette = secondary;
             TertiaryPalette = tertiary;
@@ -89,7 +86,6 @@ namespace Musicefy.Core.Hct
             TonalPalette dynamicTertiary)
         {
             return new DynamicScheme(
-                source: baseScheme.Source,
                 primary: dynamicPrimary,
                 secondary: dynamicSecondary,
                 tertiary: dynamicTertiary,
@@ -103,178 +99,6 @@ namespace Musicefy.Core.Hct
                 primaryHue: baseScheme._primaryHue,
                 primaryChroma: baseScheme._primaryChroma,
                 isDynamicAccent: true);
-        }
-
-        // ── Factory: from SeedPalette (ArchiveTune merged scheme approach) ────
-        //
-        // ArchiveTune generates 4 independent Material3 schemes from 4 seed
-        // colors (primary, secondary, tertiary, neutral), then merges tokens
-        // from each: primary tokens from primary scheme, secondary tokens from
-        // secondary scheme, surfaces from neutral scheme.
-        //
-        // We replicate this by creating separate TonalPalettes from each seed
-        // channel's own hue+chroma, instead of deriving everything from the
-        // primary hue via style offsets.
-        //
-        public static DynamicScheme FromSeed(
-            SeedPalette seed,
-            bool isDark,
-            bool isDarkPure,
-            bool isExactPalette = false,
-            PaletteStyle style = PaletteStyle.TonalSpot)
-        {
-            // ── Step 1: Compute base hues/chromas from the SeedPalette's own parameters ──
-            // The SeedPalette defines its own secondary/tertiary offsets and chroma ratios.
-            // We use these as the BASE values, then apply style adjustments on top.
-            double primaryHue    = seed.PrimaryHue;
-            double primaryChroma = seed.PrimaryChroma;
-
-            // Secondary: seed's own hue offset and chroma ratio
-            double secondaryHue    = MathUtils.SanitizeDegrees(seed.PrimaryHue + seed.SecondaryHueOffset);
-            double secondaryChroma = seed.PrimaryChroma * seed.SecondaryChromaRatio;
-
-            // Tertiary: seed's own hue offset and chroma ratio
-            double tertiaryHue    = MathUtils.SanitizeDegrees(seed.PrimaryHue + seed.TertiaryHueOffset);
-            double tertiaryChroma = seed.PrimaryChroma * seed.TertiaryChromaRatio;
-
-            // Neutral: use the seed's NeutralHueOffset to shift the neutral palette
-            // away from the primary hue. ArchiveTune approach: neutral surfaces should
-            // be nearly achromatic. By offsetting the neutral hue toward warm-neutral
-            // (~50-60 degrees), light mode surfaces stay near-white instead of being
-            // tinted lavender/cyan/pink by the primary's hue.
-            double neutralHue    = MathUtils.SanitizeDegrees(seed.PrimaryHue + seed.NeutralHueOffset);
-            double neutralChroma = seed.NeutralChroma;
-
-            // ── Step 2: Apply style-based adjustments on top of seed parameters ──
-            // Style modifies chroma levels and can shift secondary/tertiary hues,
-            // but it should NOT completely override the seed's natural character.
-            if (isExactPalette)
-            {
-                // Exact: preserve seed chroma for primary, minimal secondary offset
-                // Neutral stays at the seed's natural level but is capped
-                neutralChroma = Math.Min(neutralChroma, 6);
-            }
-            else
-            {
-                switch (style)
-                {
-                    case PaletteStyle.TonalSpot:
-                        // Classic M3: boost primary chroma minimum, keep seed's secondary/tertiary
-                        primaryChroma = Math.Max(36.0, primaryChroma);
-                        // Neutral capped at 4 (ArchiveTune standard)
-                        neutralChroma = Math.Min(neutralChroma, 4);
-                        break;
-
-                    case PaletteStyle.Vibrant:
-                        // High chroma across the board, secondaries are brighter
-                        primaryChroma    = Math.Max(48.0, primaryChroma * 1.2);
-                        secondaryHue     = MathUtils.SanitizeDegrees(seed.PrimaryHue + 15);
-                        secondaryChroma  = Math.Max(secondaryChroma, 32);
-                        tertiaryHue      = MathUtils.SanitizeDegrees(seed.PrimaryHue - 40);
-                        tertiaryChroma   = Math.Max(tertiaryChroma, 36);
-                        neutralChroma    = 6;
-                        break;
-
-                    case PaletteStyle.Expressive:
-                        // Playful: primary hue stays, secondary/tertiary jump dramatically
-                        primaryChroma    = Math.Max(40.0, primaryChroma);
-                        secondaryHue     = MathUtils.SanitizeDegrees(seed.PrimaryHue + 95);
-                        secondaryChroma  = Math.Max(secondaryChroma, 24);
-                        tertiaryHue      = MathUtils.SanitizeDegrees(seed.PrimaryHue + 180);
-                        tertiaryChroma   = Math.Max(tertiaryChroma, 32);
-                        neutralChroma    = Math.Min(neutralChroma, 8);
-                        break;
-
-                    case PaletteStyle.Fidelity:
-                        // Stay near seed hue; secondary/tertiary very close
-                        // Use seed's own chroma for primary (no minimum boost)
-                        secondaryHue     = MathUtils.SanitizeDegrees(seed.PrimaryHue + 5);
-                        secondaryChroma  = Math.Max(primaryChroma * 0.7, 16);
-                        tertiaryHue      = MathUtils.SanitizeDegrees(seed.PrimaryHue + 20);
-                        tertiaryChroma   = Math.Max(primaryChroma * 0.5, 12);
-                        neutralChroma    = Math.Min(Math.Max(primaryChroma * 0.12, 2), 8);
-                        break;
-
-                    case PaletteStyle.Neutral:
-                        // Low chroma: muted, understated — ArchiveTune uses this for chroma < 12
-                        primaryChroma    = Math.Min(primaryChroma, 12);
-                        secondaryChroma  = Math.Min(secondaryChroma, 8);
-                        tertiaryChroma   = Math.Min(tertiaryChroma, 6);
-                        neutralChroma    = Math.Min(neutralChroma, 4);
-                        break;
-
-                    case PaletteStyle.Monochrome:
-                        primaryChroma    = 4;
-                        secondaryHue     = seed.PrimaryHue;
-                        secondaryChroma  = 4;
-                        tertiaryHue      = seed.PrimaryHue;
-                        tertiaryChroma   = 4;
-                        neutralChroma    = 2;
-                        break;
-
-                    case PaletteStyle.Rainbow:
-                        // Wide hue spread across primaries
-                        primaryChroma    = Math.Max(36.0, primaryChroma);
-                        secondaryHue     = MathUtils.SanitizeDegrees(seed.PrimaryHue + 120);
-                        secondaryChroma  = Math.Max(secondaryChroma, 28);
-                        tertiaryHue      = MathUtils.SanitizeDegrees(seed.PrimaryHue + 240);
-                        tertiaryChroma   = Math.Max(tertiaryChroma, 28);
-                        neutralChroma    = Math.Min(neutralChroma, 6);
-                        break;
-
-                    case PaletteStyle.FruitSalad:
-                        // Opposite hue for secondary — high contrast
-                        primaryChroma    = Math.Max(36.0, primaryChroma);
-                        secondaryHue     = MathUtils.SanitizeDegrees(seed.PrimaryHue - 50);
-                        secondaryChroma  = Math.Max(secondaryChroma, 36);
-                        tertiaryHue      = MathUtils.SanitizeDegrees(seed.PrimaryHue + 50);
-                        tertiaryChroma   = Math.Max(tertiaryChroma, 36);
-                        neutralChroma    = Math.Min(neutralChroma, 6);
-                        break;
-                }
-            }
-
-            // ── Step 3: Build TonalPalettes from the computed parameters ──
-            // Each palette gets its own hue+chroma, following the ArchiveTune
-            // merged-scheme approach where each channel is independent.
-            double chromaFactor = isDarkPure ? 0.65 : 1.0;
-
-            var primaryPalette = TonalPalette.FromHueAndChroma(
-                primaryHue, Math.Max(primaryChroma, 4) * chromaFactor);
-
-            // ArchiveTune merged scheme approach: secondary palette uses the
-            // secondary seed's hue but generates a "primary" tonal palette from it.
-            // This gives secondary containers the richness of a full palette,
-            // not just a low-chroma tint.
-            var secondaryPalette = TonalPalette.FromHueAndChroma(
-                secondaryHue, Math.Max(secondaryChroma, 4) * chromaFactor);
-
-            var tertiaryPalette = TonalPalette.FromHueAndChroma(
-                tertiaryHue, Math.Max(tertiaryChroma, 4) * chromaFactor);
-
-            // Neutral palettes: ArchiveTune approach with critical light-mode fix.
-            // In light mode, surfaces must be nearly-white with only the faintest
-            // warm tint. We cap neutral chroma even more aggressively for light:
-            //   - Light mode: neutral max 2.0, neutralVariant max 6.0
-            //   - Dark mode:  neutral max 4.0, neutralVariant max 8.0
-            // This prevents the "solid color sheet" problem where light-mode
-            // surfaces become visibly tinted (cyan/lavender/pink backgrounds).
-            double neutralChromaCap    = isDark ? 4.0 : 2.0;
-            double neutralVariantCap   = isDark ? 8.0 : 6.0;
-
-            var neutralPalette = TonalPalette.FromHueAndChroma(
-                neutralHue, Math.Min(neutralChroma, neutralChromaCap) * chromaFactor);
-
-            var neutralVariantPalette = TonalPalette.FromHueAndChroma(
-                neutralHue, Math.Min(Math.Max(neutralChroma * 2, neutralChroma), neutralVariantCap) * chromaFactor);
-
-            var errorPalette = TonalPalette.FromHueAndChroma(25.0, 84.0);
-
-            return new DynamicScheme(
-                seed, primaryPalette, secondaryPalette, tertiaryPalette,
-                neutralPalette, neutralVariantPalette, errorPalette,
-                isDark, isDarkPure, isExactPalette, style,
-                primaryHue, primaryChroma * chromaFactor);
         }
 
         // ── Factory: from ARGB colors ──────────────────────────────────────
@@ -321,7 +145,7 @@ namespace Musicefy.Core.Hct
             var errorPalette = TonalPalette.FromHueAndChroma(25.0, 84.0);
 
             return new DynamicScheme(
-                null, primaryPalette, secondaryPalette, tertiaryPalette,
+                primaryPalette, secondaryPalette, tertiaryPalette,
                 neutralPalette, neutralVariantPalette, errorPalette,
                 isDark, isDarkPure, isExactPalette, style,
                 pHct.Hue, primaryChroma * chromaFactor);
@@ -486,9 +310,6 @@ namespace Musicefy.Core.Hct
             if (chroma < 12.0) return PaletteStyle.Neutral;
             return PaletteStyle.TonalSpot;
         }
-
-        public static PaletteStyle AutoSelectStyle(SeedPalette seed)
-            => AutoSelectStyle(seed.PrimaryChroma);
 
         public static PaletteStyle AutoSelectStyle(int argb)
             => AutoSelectStyle(Hct.FromInt(argb).Chroma);
