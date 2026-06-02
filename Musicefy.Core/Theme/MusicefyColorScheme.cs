@@ -12,50 +12,50 @@ namespace Musicefy.Core.Theme
     public sealed class MusicefyColorScheme
     {
         // ── Primary ──────────────────────────────────────────────────────────
-        public Color Primary              { get; init; }
-        public Color OnPrimary            { get; init; }
-        public Color PrimaryContainer     { get; init; }
-        public Color OnPrimaryContainer   { get; init; }
+        public Color Primary              { get; set; }
+        public Color OnPrimary            { get; set; }
+        public Color PrimaryContainer     { get; set; }
+        public Color OnPrimaryContainer   { get; set; }
 
         // ── Secondary ────────────────────────────────────────────────────────
-        public Color Secondary            { get; init; }
-        public Color OnSecondary          { get; init; }
-        public Color SecondaryContainer   { get; init; }
-        public Color OnSecondaryContainer { get; init; }
+        public Color Secondary            { get; set; }
+        public Color OnSecondary          { get; set; }
+        public Color SecondaryContainer   { get; set; }
+        public Color OnSecondaryContainer { get; set; }
 
         // ── Tertiary ─────────────────────────────────────────────────────────
-        public Color Tertiary             { get; init; }
-        public Color OnTertiary           { get; init; }
-        public Color TertiaryContainer    { get; init; }
-        public Color OnTertiaryContainer  { get; init; }
+        public Color Tertiary             { get; set; }
+        public Color OnTertiary           { get; set; }
+        public Color TertiaryContainer    { get; set; }
+        public Color OnTertiaryContainer  { get; set; }
 
         // ── Error ────────────────────────────────────────────────────────────
-        public Color Error                { get; init; }
-        public Color OnError              { get; init; }
-        public Color ErrorContainer       { get; init; }
-        public Color OnErrorContainer     { get; init; }
+        public Color Error                { get; set; }
+        public Color OnError              { get; set; }
+        public Color ErrorContainer       { get; set; }
+        public Color OnErrorContainer     { get; set; }
 
         // ── Surface ──────────────────────────────────────────────────────────
-        public Color Surface              { get; init; }
-        public Color OnSurface            { get; init; }
-        public Color SurfaceVariant       { get; init; }
-        public Color OnSurfaceVariant     { get; init; }
-        public Color SurfaceContainerLowest  { get; init; }
-        public Color SurfaceContainerLow     { get; init; }
-        public Color SurfaceContainer        { get; init; }
-        public Color SurfaceContainerHigh    { get; init; }
-        public Color SurfaceContainerHighest { get; init; }
+        public Color Surface              { get; set; }
+        public Color OnSurface            { get; set; }
+        public Color SurfaceVariant       { get; set; }
+        public Color OnSurfaceVariant     { get; set; }
+        public Color SurfaceContainerLowest  { get; set; }
+        public Color SurfaceContainerLow     { get; set; }
+        public Color SurfaceContainer        { get; set; }
+        public Color SurfaceContainerHigh    { get; set; }
+        public Color SurfaceContainerHighest { get; set; }
 
         // ── Outline ──────────────────────────────────────────────────────────
-        public Color Outline              { get; init; }
-        public Color OutlineVariant       { get; init; }
+        public Color Outline              { get; set; }
+        public Color OutlineVariant       { get; set; }
 
         // ── Inverse ──────────────────────────────────────────────────────────
-        public Color InverseSurface       { get; init; }
-        public Color InverseOnSurface     { get; init; }
-        public Color InversePrimary       { get; init; }
+        public Color InverseSurface       { get; set; }
+        public Color InverseOnSurface     { get; set; }
+        public Color InversePrimary       { get; set; }
 
         /// <summary>True if this scheme is intended for dark mode.</summary>
-        public bool  IsDark               { get; init; }
+        public bool  IsDark               { get; set; }
     }
 }
