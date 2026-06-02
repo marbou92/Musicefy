@@ -67,16 +67,16 @@ namespace Musicefy
         private static void MigrateThemeSettings()
         {
             // If AppTheme is already set, migration has already run
-            if (!string.IsNullOrEmpty(Properties.Settings.Default.AppTheme))
+            if (!string.IsNullOrEmpty(Musicefy.Properties.Settings.Default.AppTheme))
                 return;
 
-            var old = Properties.Settings.Default.Theme ?? "Dark|Default";
+            var old = Musicefy.Properties.Settings.Default.Theme ?? "Dark|Default";
             var parts = old.Split('|');
             var modeStr = parts.Length > 0 ? parts[0] : "Dark";
             var palStr  = parts.Length > 1 ? parts[1] : "Default";
 
             // Map old PureBlackMode → ThemeMode.Amoled
-            ThemeMode mode = Properties.Settings.Default.PureBlackMode && modeStr == "Dark"
+            ThemeMode mode = Musicefy.Properties.Settings.Default.PureBlackMode && modeStr == "Dark"
                 ? ThemeMode.Amoled
                 : modeStr switch
                 {
@@ -89,12 +89,12 @@ namespace Musicefy
             AppTheme theme = ThemeManager.MapOldPaletteName(palStr);
 
             // If DynamicColorsEnabled was true, map to AppTheme.Dynamic
-            if (Properties.Settings.Default.DynamicColorsEnabled && palStr.Equals("Default", StringComparison.OrdinalIgnoreCase))
+            if (Musicefy.Properties.Settings.Default.DynamicColorsEnabled && palStr.Equals("Default", StringComparison.OrdinalIgnoreCase))
                 theme = AppTheme.Dynamic;
 
-            Properties.Settings.Default.AppTheme  = theme.ToString();
-            Properties.Settings.Default.ThemeMode = mode.ToString();
-            Properties.Settings.Default.Save();
+            Musicefy.Properties.Settings.Default.AppTheme  = theme.ToString();
+            Musicefy.Properties.Settings.Default.ThemeMode = mode.ToString();
+            Musicefy.Properties.Settings.Default.Save();
         }
 
         private void ConfigureServices()
