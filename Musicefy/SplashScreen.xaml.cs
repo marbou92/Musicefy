@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using Musicefy.Core.Theme;
 
 namespace Musicefy
 {
@@ -16,36 +17,42 @@ namespace Musicefy
         }
 
         /// <summary>
-        /// Reads user preferences file directly on boot initialization and updates window colors to match.
+        /// Reads user preferences directly on boot and updates splash screen colors
+        /// using the new Aniyomi-style AppTheme + ThemeMode model.
         /// </summary>
         private void ApplySavedThemeToSplashScreen()
         {
             try
             {
-                // 1. Fetch preferences directly from configuration file layers
-                string savedTheme = Musicefy.Properties.Settings.Default.Theme ?? "Dark|Default";
-                bool isPureBlack = Musicefy.Properties.Settings.Default.PureBlackMode;
+                // Load preferences using the new model
+                var (appTheme, themeMode) = Musicefy.Services.ThemeManager.LoadPreferences();
 
-                var parts = savedTheme.Split('|');
-                string mode = parts.Length > 0 ? parts[0] : "Dark";
-                string palette = parts.Length > 1 ? parts[1] : "Default";
+                bool isDark = themeMode switch
+                {
+                    ThemeMode.Light  => false,
+                    ThemeMode.Dark   => true,
+                    ThemeMode.Amoled => true,
+                    _                => Musicefy.Services.ThemeManager.IsSystemDarkMode(),
+                };
 
-                // 2. Resolve target background card brush states
-                Color backgroundCardColor = Color.FromRgb(18, 18, 18); // Default Dark fallback comfort gray
+                bool isAmoled = themeMode == ThemeMode.Amoled;
+
+                // Resolve target background card brush states
+                Color backgroundCardColor = Color.FromRgb(18, 18, 18); // Default Dark fallback
                 Color primaryTextColor = Colors.White;
                 Color secondaryTextColor = Color.FromRgb(106, 106, 106);
                 Color trackRailColor = Color.FromRgb(30, 30, 30);
 
-                if (mode.Equals("Light", StringComparison.OrdinalIgnoreCase))
+                if (!isDark)
                 {
-                    backgroundCardColor = Color.FromRgb(245, 245, 245); // Pure soft light grey card surface
-                    primaryTextColor = Color.FromRgb(20, 20, 20); // Deep graphite text focus
+                    backgroundCardColor = Color.FromRgb(245, 245, 245);
+                    primaryTextColor = Color.FromRgb(20, 20, 20);
                     secondaryTextColor = Color.FromRgb(140, 140, 140);
                     trackRailColor = Color.FromRgb(220, 220, 220);
                 }
-                else if (isPureBlack && mode.Equals("Dark", StringComparison.OrdinalIgnoreCase))
+                else if (isAmoled)
                 {
-                    backgroundCardColor = Colors.Black; // Absolute OLED deep ink black frame canvas
+                    backgroundCardColor = Colors.Black;
                     trackRailColor = Color.FromRgb(20, 20, 20);
                 }
 
@@ -55,30 +62,10 @@ namespace Musicefy
                 TxtSubMarker.Foreground = new SolidColorBrush(secondaryTextColor);
                 ProgressBarTrack.Background = new SolidColorBrush(trackRailColor);
 
-                // 3. Resolve dynamic accent colors matching user palettes
-                Color accentThemeColor;
-
-                if (mode.Equals("Light", StringComparison.OrdinalIgnoreCase))
-                {
-                    accentThemeColor = Color.FromRgb(21, 101, 192); // Default Light blue
-                }
-                else
-                {
-                    accentThemeColor = Color.FromRgb(60, 140, 231); // Default Dark blue
-                }
-
-                switch (palette.ToLower())
-                {
-                    case "catppuccin":
-                        accentThemeColor = Color.FromRgb(245, 194, 231);
-                        break;
-                    case "greenapple":
-                        accentThemeColor = Color.FromRgb(76, 175, 80);
-                        break;
-                    case "lavender":
-                        accentThemeColor = Color.FromRgb(181, 126, 220);
-                        break;
-                }
+                // Resolve accent color from the AppTheme's palette
+                var scheme = AppThemeColorSchemes.GetColorScheme(appTheme, themeMode,
+                    Musicefy.Services.ThemeManager.IsSystemDarkMode());
+                Color accentThemeColor = scheme.Primary;
 
                 // Inject dynamic values straight into vector glows and progress bar indicators
                 LogoGlow.Color = accentThemeColor;
@@ -121,7 +108,7 @@ namespace Musicefy
             LogoScale.BeginAnimation(ScaleTransform.ScaleXProperty, pulseAnim);
             LogoScale.BeginAnimation(ScaleTransform.ScaleYProperty, pulseAnim);
 
-            // Progress Bar simulation sweep curve 
+            // Progress Bar simulation sweep curve
             var progressAnim = new DoubleAnimation(0, 100, new Duration(TimeSpan.FromSeconds(2.8)))
             {
                 EasingFunction = new QuarticEase { EasingMode = EasingMode.EaseInOut }
