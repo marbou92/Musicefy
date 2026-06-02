@@ -27,13 +27,22 @@ namespace Musicefy.Core.Models
 
         // Source info
         public string SourceUri { get; set; }       // streaming/local source
-        public string SourceType { get; set; }      // e.g. Local, Subsonic, Spotify
+        public string SourceType { get; set; }      // e.g. Local, Subsonic, YouTube
 
         // User interaction
         public int PlayCount { get; set; }
         public DateTime LastPlayed { get; set; }
         public bool IsFavourite { get; set; }
         public bool IsDownloaded { get; set; }
+
+        // YouTube-specific metadata (inspired by Echo Music's rich metadata model)
+        // These fields enable album/artist/playlist browsing for YouTube content
+        public string YouTubeVideoId { get; set; }
+        public string YouTubeBrowseId { get; set; }      // For album (MPRE...) or artist (UC...) browsing
+        public string YouTubePlaylistId { get; set; }     // For playlist content
+        public string YouTubeMusicVideoType { get; set; } // E.g. MUSIC_VIDEO_TYPE_ATV, MUSIC_VIDEO_TYPE_UGC
+        public double? LoudnessDb { get; set; }           // Loudness normalization from YouTube player
+        public string AudioFormat { get; set; }           // "opus", "aac", etc.
 
         // Constructors
         public MusicFile()
