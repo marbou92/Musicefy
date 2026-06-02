@@ -254,15 +254,15 @@ namespace Musicefy.ViewModels
     {
         private bool _isSelected;
 
-        public AppTheme  Theme          { get; init; }
-        public string    Label          { get; init; }
+        public AppTheme  Theme          { get; set; }
+        public string    Label          { get; set; }
 
         // Four swatch colors sampled from the light scheme (always shown in light
         // mode regardless of user's current mode, just like Aniyomi's picker)
-        public Color PrimaryColor   { get; init; }
-        public Color SurfaceColor   { get; init; }
-        public Color SecondaryColor { get; init; }
-        public Color TertiaryColor  { get; init; }
+        public Color PrimaryColor   { get; set; }
+        public Color SurfaceColor   { get; set; }
+        public Color SecondaryColor { get; set; }
+        public Color TertiaryColor  { get; set; }
 
         public Brush PrimaryBrush   => new SolidColorBrush(PrimaryColor);
         public Brush SurfaceBrush   => new SolidColorBrush(SurfaceColor);
