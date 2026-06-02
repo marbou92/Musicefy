@@ -7,6 +7,7 @@ using System.Windows.Media.Imaging;
 using Musicefy.Core.Interfaces;
 using Musicefy.Core.Models;
 using Musicefy.Core.Services;
+using Musicefy.Core.Theme;
 using Musicefy.Services;
 
 namespace Musicefy.ViewModels
@@ -293,7 +294,7 @@ namespace Musicefy.ViewModels
             {
                 if (track == null || string.IsNullOrEmpty(track.CoverPath))
                 {
-                    if (Musicefy.Properties.Settings.Default.DynamicColorsEnabled)
+                    if (IsDynamicColorsEnabled())
                         ThemeManager.ClearDynamicColors();
                     return;
                 }
@@ -315,13 +316,24 @@ namespace Musicefy.ViewModels
                 MutedColor = colors.Muted;
                 DynamicPrimaryBrush = new SolidColorBrush(colors.Primary);
                 DynamicSurfaceBrush = new SolidColorBrush(colors.Surface);
-                if (Musicefy.Properties.Settings.Default.DynamicColorsEnabled)
+                if (IsDynamicColorsEnabled())
                     ThemeManager.ApplyDynamicColors(colors);
             }
             catch
             {
                 // Color extraction is non-critical
             }
+        }
+
+        /// <summary>
+        /// Checks if dynamic colors are enabled. In the new Aniyomi model,
+        /// this is determined by the AppTheme setting being "Dynamic".
+        /// Also respects the legacy DynamicColorsEnabled setting for backward compat.
+        /// </summary>
+        private bool IsDynamicColorsEnabled()
+        {
+            var (appTheme, _) = ThemeManager.LoadPreferences();
+            return appTheme == AppTheme.Dynamic;
         }
 
         private void OnProgressChanged(TimeSpan current, TimeSpan total)
