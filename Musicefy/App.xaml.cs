@@ -8,6 +8,7 @@ using Musicefy.Core.Configuration;
 using Musicefy.Core.Interfaces;
 using Musicefy.Core.Library;
 using Musicefy.Core.Services;
+using Musicefy.Core.Theme;
 using Musicefy.Services;
 using Musicefy.ViewModels;
 using Musicefy.Views;
@@ -32,18 +33,15 @@ namespace Musicefy
 
             try
             {
-                string savedTheme = Musicefy.Properties.Settings.Default.Theme ?? "Dark|Default";
+                // Migrate old "Dark|Default" + PureBlackMode settings to the new
+                // AppTheme + ThemeMode model before loading the theme.
+                MigrateThemeSettings();
 
-                var parts = savedTheme.Split('|');
-                string mode = parts.Length > 0 ? parts[0] : "Dark";
-                string palette = parts.Length > 1 ? parts[1] : "Default";
+                var (appTheme, themeMode) = ThemeManager.LoadPreferences();
 
                 // Apply the saved theme. This sets ALL brushes (accent + surface) from the
-                // seed palette's DynamicScheme. DO NOT call ApplyDynamicColors here — that
-                // would immediately overwrite the surfaces with an album-art-tinted scheme
-                // even before any music has played, which is what caused the cyan/lavender
-                // surfaces in light mode.
-                ThemeManager.ApplyTheme(mode, palette);
+                // pre-authored MusicefyColorScheme for the chosen AppTheme.
+                ThemeManager.ApplyTheme(appTheme, themeMode);
 
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
@@ -59,6 +57,44 @@ namespace Musicefy
                 MessageBox.Show($"Theme load error: {ex.Message}\n\nCrash log written to:\n{logPath}",
                     "Musicefy Theme Error", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
+        }
+
+        /// <summary>
+        /// One-time migration from the old fused "Theme" string ("Dark|Default")
+        /// and PureBlackMode boolean to the new separate AppTheme + ThemeMode settings.
+        /// Runs only when the new AppTheme setting is empty (first launch after upgrade).
+        /// </summary>
+        private static void MigrateThemeSettings()
+        {
+            // If AppTheme is already set, migration has already run
+            if (!string.IsNullOrEmpty(Properties.Settings.Default.AppTheme))
+                return;
+
+            var old = Properties.Settings.Default.Theme ?? "Dark|Default";
+            var parts = old.Split('|');
+            var modeStr = parts.Length > 0 ? parts[0] : "Dark";
+            var palStr  = parts.Length > 1 ? parts[1] : "Default";
+
+            // Map old PureBlackMode → ThemeMode.Amoled
+            ThemeMode mode = Properties.Settings.Default.PureBlackMode && modeStr == "Dark"
+                ? ThemeMode.Amoled
+                : modeStr switch
+                {
+                    "Light"  => ThemeMode.Light,
+                    "System" => ThemeMode.System,
+                    _        => ThemeMode.Dark,
+                };
+
+            // Map old SeedPalette names to new AppTheme values
+            AppTheme theme = ThemeManager.MapOldPaletteName(palStr);
+
+            // If DynamicColorsEnabled was true, map to AppTheme.Dynamic
+            if (Properties.Settings.Default.DynamicColorsEnabled && palStr.Equals("Default", StringComparison.OrdinalIgnoreCase))
+                theme = AppTheme.Dynamic;
+
+            Properties.Settings.Default.AppTheme  = theme.ToString();
+            Properties.Settings.Default.ThemeMode = mode.ToString();
+            Properties.Settings.Default.Save();
         }
 
         private void ConfigureServices()
