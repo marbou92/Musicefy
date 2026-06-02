@@ -1,97 +1,40 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using Microsoft.Win32;
 using Musicefy.Core.Hct;
 using Musicefy.Core.Services;
+using Musicefy.Core.Theme;
 
 namespace Musicefy.Services
 {
+    /// <summary>
+    /// Theme manager rewritten using the Aniyomi/Mihon model:
+    /// <list type="bullet">
+    ///   <item><see cref="AppTheme"/> (enum) = a named, pre-defined palette</item>
+    ///   <item><see cref="ThemeMode"/> (enum) = brightness mode (System/Light/Dark/Amoled)</item>
+    ///   <item>Final ColorScheme = <c>AppThemeColorSchemes.GetColorScheme(appTheme, themeMode)</c></item>
+    ///   <item>AMOLED is not a separate palette — it takes the dark palette's accents
+    ///         but replaces all surface/background slots with pure black.</item>
+    ///   <item><c>AppTheme.Dynamic</c> is the special case for album-art color extraction
+    ///         (equivalent to Aniyomi's MONET). Handled by <see cref="ApplyDynamicColors"/>.</item>
+    /// </list>
+    /// </summary>
     public static class ThemeManager
     {
-        // ── Color token map ──────────────────────────────────────────────────
-        private static readonly (string key, ToneRole role)[] _colorKeys =
-        {
-            // Primary
-            ("PrimaryBrush",              ToneRole.Primary),
-            ("OnPrimaryBrush",            ToneRole.OnPrimary),
-            ("PrimaryContainerBrush",     ToneRole.PrimaryContainer),
-            ("OnPrimaryContainerBrush",   ToneRole.OnPrimaryContainer),
+        // ── State ──────────────────────────────────────────────────────────────
+        private static MusicefyColorScheme _currentScheme;
+        private static AppTheme            _currentAppTheme;
+        private static ThemeMode           _currentThemeMode;
+        private static readonly TimeSpan   _animDuration = TimeSpan.FromMilliseconds(360);
 
-            // Secondary
-            ("SecondaryBrush",              ToneRole.Secondary),
-            ("OnSecondaryBrush",            ToneRole.OnSecondary),
-            ("SecondaryContainerBrush",     ToneRole.SecondaryContainer),
-            ("OnSecondaryContainerBrush",   ToneRole.OnSecondaryContainer),
+        // Pauses dynamic color application while user is browsing palette picker
+        private static bool _dynamicColorsPaused = false;
 
-            // Tertiary
-            ("TertiaryBrush",              ToneRole.Tertiary),
-            ("OnTertiaryBrush",            ToneRole.OnTertiary),
-            ("TertiaryContainerBrush",     ToneRole.TertiaryContainer),
-            ("OnTertiaryContainerBrush",   ToneRole.OnTertiaryContainer),
-
-            // Error
-            ("ErrorBrush",              ToneRole.Error),
-            ("OnErrorBrush",            ToneRole.OnError),
-            ("ErrorContainerBrush",     ToneRole.ErrorContainer),
-            ("OnErrorContainerBrush",   ToneRole.OnErrorContainer),
-
-            // ── Tonal surfaces ──
-            ("SurfaceBrush",                  ToneRole.Surface),
-            ("OnSurfaceBrush",                ToneRole.OnSurface),
-            ("SurfaceVariantBrush",           ToneRole.SurfaceVariant),
-            ("OnSurfaceVariantBrush",         ToneRole.OnSurfaceVariant),
-            ("SurfaceContainerLowestBrush",   ToneRole.SurfaceContainerLowest),
-            ("SurfaceContainerLowBrush",      ToneRole.SurfaceContainerLow),
-            ("SurfaceContainerBrush",         ToneRole.SurfaceContainer),
-            ("SurfaceContainerHighBrush",     ToneRole.SurfaceContainerHigh),
-            ("SurfaceContainerHighestBrush",  ToneRole.SurfaceContainerHighest),
-            ("HoverBrush",                    ToneRole.Hover),
-            ("OutlineBrush",                  ToneRole.Outline),
-            ("OutlineVariantBrush",           ToneRole.OutlineVariant),
-            ("InverseSurfaceBrush",           ToneRole.InverseSurface),
-            ("InverseOnSurfaceBrush",         ToneRole.InverseOnSurface),
-            ("InversePrimaryBrush",           ToneRole.InversePrimary),
-
-            // Legacy aliases (keep for XAML back-compat)
-            ("BackgroundBrush",          ToneRole.Surface),
-            ("SecondaryBackgroundBrush", ToneRole.SurfaceContainerLow),
-            ("ForegroundBrush",          ToneRole.OnSurface),
-            ("TextBrush",                ToneRole.OnSurface),
-            ("MutedTextBrush",           ToneRole.OnSurfaceVariant),
-            ("BorderBrush",              ToneRole.Outline),
-            ("DynamicPrimaryBrush",      ToneRole.Primary),
-        };
-
-        private static readonly (string key, AccentVariant variant)[] _accentKeys =
-        {
-            ("AccentBrush",        AccentVariant.Default),
-            ("AccentHoverBrush",   AccentVariant.Hover),
-            ("AccentPressedBrush", AccentVariant.Pressed),
-            ("AccentGlowBrush",    AccentVariant.Glow),
-        };
-
-        // ── NEW: only touches accent-family brushes, never surfaces ──────────────
-        private static readonly (string key, ToneRole role)[] _accentOnlyColorKeys =
-        {
-            ("PrimaryBrush",              ToneRole.Primary),
-            ("OnPrimaryBrush",            ToneRole.OnPrimary),
-            ("PrimaryContainerBrush",     ToneRole.PrimaryContainer),
-            ("OnPrimaryContainerBrush",   ToneRole.OnPrimaryContainer),
-            ("SecondaryBrush",            ToneRole.Secondary),
-            ("OnSecondaryBrush",          ToneRole.OnSecondary),
-            ("SecondaryContainerBrush",   ToneRole.SecondaryContainer),
-            ("OnSecondaryContainerBrush", ToneRole.OnSecondaryContainer),
-            ("TertiaryBrush",             ToneRole.Tertiary),
-            ("OnTertiaryBrush",           ToneRole.OnTertiary),
-            ("TertiaryContainerBrush",    ToneRole.TertiaryContainer),
-            ("OnTertiaryContainerBrush",  ToneRole.OnTertiaryContainer),
-            ("DynamicPrimaryBrush",       ToneRole.Primary),
-            ("InversePrimaryBrush",       ToneRole.InversePrimary),
-        };
+        public static void PauseDynamicColors() => _dynamicColorsPaused = true;
+        public static void ResumeDynamicColors() => _dynamicColorsPaused = false;
 
         // URIs that get swapped when changing mode (Light, Dark, DarkPure)
         private static readonly HashSet<string> _themeUris = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -103,94 +46,258 @@ namespace Musicefy.Services
             "/Themes/ScrollbarTheme.xaml",
         };
 
-        private static DynamicScheme _currentScheme;
-        // The base scheme from the user's chosen seed palette. When dynamic album
-        // colors are applied, we keep the base scheme's neutral palettes so that
-        // surface/container colors remain anchored to the palette rather than
-        // becoming tinted by the album art's hue (which caused the cyan/lavender
-        // sidebar in light mode).
-        private static DynamicScheme _baseScheme;
-        private static readonly TimeSpan _animDuration = TimeSpan.FromMilliseconds(360);
+        // ════════════════════════════════════════════════════════════════════════
+        // Primary entry points
+        // ════════════════════════════════════════════════════════════════════════
 
-        // Pauses dynamic color application while user is browsing palette picker
-        private static bool _dynamicColorsPaused = false;
-
-        public static void PauseDynamicColors() => _dynamicColorsPaused = true;
-        public static void ResumeDynamicColors() => _dynamicColorsPaused = false;
-
-        // ── Public API ───────────────────────────────────────────────────────
-
-        public static void ApplyTheme(
-            string mode,
-            string paletteName,
-            bool? isDarkPureOverride = null,
-            bool? isExactPaletteOverride = null,
-            PaletteStyle? styleOverride = null,
-            bool autoSelectStyle = false)
+        /// <summary>
+        /// Called from App.OnStartup and from the settings controls.
+        /// Resolves the static palette for the given AppTheme + ThemeMode,
+        /// then applies all brushes.
+        /// </summary>
+        public static void ApplyTheme(AppTheme appTheme, ThemeMode themeMode)
         {
-            bool isDarkPure = isDarkPureOverride ?? (mode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase)
-                && Musicefy.Properties.Settings.Default.PureBlackMode);
+            _currentAppTheme  = appTheme;
+            _currentThemeMode = themeMode;
 
-            SwapModeDict(mode, isDarkPure);
-
-            if (mode.Equals("System", StringComparison.OrdinalIgnoreCase))
-                mode = IsSystemDarkMode() ? "Dark" : "Light";
-
-            bool isDark     = mode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase);
-            bool isExact    = isExactPaletteOverride ?? Musicefy.Properties.Settings.Default.ExactPalette;
-            PaletteStyle style = styleOverride ?? ParsePaletteStyle(Musicefy.Properties.Settings.Default.PaletteStyle);
-
-            var seed = SeedPalettes.All.Find(p =>
-                string.Equals(p.Name, paletteName, StringComparison.OrdinalIgnoreCase))
-                ?? SeedPalettes.All[0];
-
-            // ArchiveTune approach: auto-select style based on seed chroma
-            if (autoSelectStyle && style == PaletteStyle.TonalSpot)
-                style = DynamicScheme.AutoSelectStyle(seed);
-
-            var scheme = DynamicScheme.FromSeed(seed, isDark, isDarkPure, isExact, style);
-            _baseScheme = scheme;  // Remember the seed scheme as the base for dynamic colors
-            ApplySchemeWithAnimation(scheme);
+            bool systemIsDark = IsSystemDarkMode();
+            var scheme = AppThemeColorSchemes.GetColorScheme(appTheme, themeMode, systemIsDark);
+            _currentScheme = scheme;
+            ApplyScheme(scheme);
         }
 
-        public static void ApplyTheme(string mode) => ApplyTheme(mode, "Default");
-
-        public static void ApplyThemeFromString(string themeString)
-        {
-            if (string.IsNullOrWhiteSpace(themeString)) { ApplyTheme("Dark", "Default"); return; }
-            var parts   = themeString.Split('|');
-            string mode    = parts.Length > 0 ? parts[0] : "Dark";
-            string palette = parts.Length > 1 ? parts[1] : "Default";
-            ApplyTheme(mode, palette);
-        }
-
-        public static PaletteStyle ParsePaletteStyle(string styleStr)
-        {
-            if (Enum.TryParse<PaletteStyle>(styleStr, ignoreCase: true, out var result))
-                return result;
-            return PaletteStyle.TonalSpot;
-        }
-
+        /// <summary>
+        /// Called when album art changes. Only active when AppTheme == Dynamic.
+        /// Uses HCT extraction from album art colors, then builds a
+        /// MusicefyColorScheme from the extracted hues.
+        /// </summary>
         public static void ApplyDynamicColors(ExtractedColors colors)
         {
-            // Guard: never run before the base palette is initialised
-            if (_baseScheme == null)
-            {
-                if (_currentScheme == null) ApplyTheme("Dark", "Default");
-                else return;
-            }
+            // Guard: only apply dynamic colors when the user chose Dynamic theme
+            if (_currentAppTheme != AppTheme.Dynamic) return;
 
             // Respect pause flag — don't override user's palette picker selection
             if (_dynamicColorsPaused) return;
 
-            // ArchiveTune approach: extract accent colors from album art,
-            // but keep surface/neutral colors anchored to the base seed palette.
-            // This prevents the cyan/lavender surface contamination in light mode
-            // that occurred when the album art hue was used for the neutral palette.
+            var scheme = BuildDynamicSchemeFromColors(colors, _currentThemeMode);
+            _currentScheme = scheme;
+            ApplyAccentOnly(scheme);
+        }
 
+        /// <summary>
+        /// Reverts dynamic colors back to the static palette.
+        /// </summary>
+        public static void ClearDynamicColors()
+        {
+            ApplyTheme(_currentAppTheme, _currentThemeMode);
+        }
+
+        /// <summary>
+        /// Called from system theme watcher (registry change) when ThemeMode == System.
+        /// </summary>
+        public static void OnSystemThemeChanged()
+        {
+            if (_currentThemeMode == ThemeMode.System)
+                ApplyTheme(_currentAppTheme, ThemeMode.System);
+        }
+
+        // ════════════════════════════════════════════════════════════════════════
+        // Persistence
+        // ════════════════════════════════════════════════════════════════════════
+
+        public static void SavePreferences(AppTheme appTheme, ThemeMode themeMode)
+        {
+            Properties.Settings.Default.AppTheme  = appTheme.ToString();
+            Properties.Settings.Default.ThemeMode = themeMode.ToString();
+            Properties.Settings.Default.Save();
+        }
+
+        public static (AppTheme appTheme, ThemeMode themeMode) LoadPreferences()
+        {
+            Enum.TryParse(Properties.Settings.Default.AppTheme,  out AppTheme  a);
+            Enum.TryParse(Properties.Settings.Default.ThemeMode, out ThemeMode m);
+            return (a, m);
+        }
+
+        // ════════════════════════════════════════════════════════════════════════
+        // Core brush application
+        // ════════════════════════════════════════════════════════════════════════
+
+        private static void ApplyScheme(MusicefyColorScheme scheme)
+        {
+            var old = _currentScheme;
+            _currentScheme = scheme;
+
+            var resources = Application.Current.Resources;
+
+            // Swap the XAML mode dictionary (Dark.xaml vs Light.xaml vs DarkPure.xaml)
+            SwapModeDict(scheme.IsDark, isAmoled: _currentThemeMode == ThemeMode.Amoled);
+
+            if (old == null)
+            {
+                // First apply — snap all brushes immediately (no animation)
+                foreach (var (key, color) in BuildColorMap(scheme))
+                    SetBrush(resources, key, color);
+
+                foreach (var (key, color) in BuildAccentColorMap(scheme))
+                    SetBrush(resources, key, color);
+            }
+            else
+            {
+                // Animate all brushes to the new scheme values
+                foreach (var (key, color) in BuildColorMap(scheme))
+                    AnimateBrushColor(resources, key, color);
+
+                foreach (var (key, color) in BuildAccentColorMap(scheme))
+                    AnimateBrushColor(resources, key, color);
+            }
+
+            // Skeleton colors
+            resources["SkeletonBaseColor"] = scheme.IsDark
+                ? scheme.SurfaceContainerLow
+                : scheme.SurfaceContainerHigh;
+            resources["SkeletonHighColor"] = scheme.IsDark
+                ? scheme.SurfaceContainerHigh
+                : scheme.SurfaceContainerLow;
+
+            // Gradient brushes
+            SetPlayerGradientBrush(resources, scheme, GetPlayerBackgroundStyle());
+            UpdateHomeGradientBrush(resources, scheme);
+        }
+
+        /// <summary>
+        /// Applies only accent-family brushes, never surfaces. Used by dynamic album-art colors
+        /// so that surface/neutral colors remain anchored to the base palette.
+        /// </summary>
+        private static void ApplyAccentOnly(MusicefyColorScheme accentScheme)
+        {
+            var resources = Application.Current.Resources;
+
+            foreach (var (key, color) in BuildAccentOnlyColorMap(accentScheme))
+                AnimateBrushColor(resources, key, color);
+
+            foreach (var (key, color) in BuildAccentColorMap(accentScheme))
+                AnimateBrushColor(resources, key, color);
+
+            // Gradient uses accent primary — safe to update, doesn't touch surface brushes
+            SetPlayerGradientBrush(resources, accentScheme, GetPlayerBackgroundStyle());
+            UpdateHomeGradientBrush(resources, accentScheme);
+        }
+
+        // ── Color maps ────────────────────────────────────────────────────────
+
+        private static Dictionary<string, Color> BuildColorMap(MusicefyColorScheme s)
+            => new()
+            {
+                // Primary
+                ["PrimaryBrush"]              = s.Primary,
+                ["OnPrimaryBrush"]            = s.OnPrimary,
+                ["PrimaryContainerBrush"]     = s.PrimaryContainer,
+                ["OnPrimaryContainerBrush"]   = s.OnPrimaryContainer,
+                // Secondary
+                ["SecondaryBrush"]            = s.Secondary,
+                ["OnSecondaryBrush"]          = s.OnSecondary,
+                ["SecondaryContainerBrush"]   = s.SecondaryContainer,
+                ["OnSecondaryContainerBrush"] = s.OnSecondaryContainer,
+                // Tertiary
+                ["TertiaryBrush"]             = s.Tertiary,
+                ["OnTertiaryBrush"]           = s.OnTertiary,
+                ["TertiaryContainerBrush"]    = s.TertiaryContainer,
+                ["OnTertiaryContainerBrush"]  = s.OnTertiaryContainer,
+                // Error
+                ["ErrorBrush"]                = s.Error,
+                ["OnErrorBrush"]              = s.OnError,
+                ["ErrorContainerBrush"]       = s.ErrorContainer,
+                ["OnErrorContainerBrush"]     = s.OnErrorContainer,
+                // Surface
+                ["SurfaceBrush"]                  = s.Surface,
+                ["OnSurfaceBrush"]                = s.OnSurface,
+                ["SurfaceVariantBrush"]           = s.SurfaceVariant,
+                ["OnSurfaceVariantBrush"]         = s.OnSurfaceVariant,
+                ["SurfaceContainerLowestBrush"]   = s.SurfaceContainerLowest,
+                ["SurfaceContainerLowBrush"]      = s.SurfaceContainerLow,
+                ["SurfaceContainerBrush"]         = s.SurfaceContainer,
+                ["SurfaceContainerHighBrush"]     = s.SurfaceContainerHigh,
+                ["SurfaceContainerHighestBrush"]  = s.SurfaceContainerHighest,
+                ["OutlineBrush"]                  = s.Outline,
+                ["OutlineVariantBrush"]           = s.OutlineVariant,
+                ["InverseSurfaceBrush"]           = s.InverseSurface,
+                ["InverseOnSurfaceBrush"]         = s.InverseOnSurface,
+                ["InversePrimaryBrush"]           = s.InversePrimary,
+                ["HoverBrush"]                    = Lerp(s.OnSurface, s.Surface, 0.88f),
+                // Legacy aliases
+                ["BackgroundBrush"]          = s.Surface,
+                ["SecondaryBackgroundBrush"] = s.SurfaceContainerLow,
+                ["ForegroundBrush"]          = s.OnSurface,
+                ["TextBrush"]                = s.OnSurface,
+                ["MutedTextBrush"]           = s.OnSurfaceVariant,
+                ["BorderBrush"]              = s.Outline,
+                ["DynamicPrimaryBrush"]      = s.Primary,
+            };
+
+        /// <summary>
+        /// Accent-only map — used by ApplyAccentOnly so surface brushes are not touched.
+        /// </summary>
+        private static Dictionary<string, Color> BuildAccentOnlyColorMap(MusicefyColorScheme s)
+            => new()
+            {
+                ["PrimaryBrush"]              = s.Primary,
+                ["OnPrimaryBrush"]            = s.OnPrimary,
+                ["PrimaryContainerBrush"]     = s.PrimaryContainer,
+                ["OnPrimaryContainerBrush"]   = s.OnPrimaryContainer,
+                ["SecondaryBrush"]            = s.Secondary,
+                ["OnSecondaryBrush"]          = s.OnSecondary,
+                ["SecondaryContainerBrush"]   = s.SecondaryContainer,
+                ["OnSecondaryContainerBrush"] = s.OnSecondaryContainer,
+                ["TertiaryBrush"]             = s.Tertiary,
+                ["OnTertiaryBrush"]           = s.OnTertiary,
+                ["TertiaryContainerBrush"]    = s.TertiaryContainer,
+                ["OnTertiaryContainerBrush"]  = s.OnTertiaryContainer,
+                ["DynamicPrimaryBrush"]       = s.Primary,
+                ["InversePrimaryBrush"]       = s.InversePrimary,
+            };
+
+        /// <summary>
+        /// Accent variant color map — AccentBrush, AccentHoverBrush, etc.
+        /// </summary>
+        private static Dictionary<string, Color> BuildAccentColorMap(MusicefyColorScheme s)
+            => new()
+            {
+                ["AccentBrush"]        = s.Primary,
+                ["AccentHoverBrush"]   = s.PrimaryContainer,
+                ["AccentPressedBrush"] = s.OnPrimaryContainer,
+                ["AccentGlowBrush"]    = s.Primary,
+            };
+
+        // ── Color interpolation helper ────────────────────────────────────────
+
+        private static Color Lerp(Color a, Color b, float t)
+        {
+            return Color.FromArgb(
+                (byte)(a.A + (b.A - a.A) * t),
+                (byte)(a.R + (b.R - a.R) * t),
+                (byte)(a.G + (b.G - a.G) * t),
+                (byte)(a.B + (b.B - a.B) * t));
+        }
+
+        // ════════════════════════════════════════════════════════════════════════
+        // Dynamic scheme from album art (HCT — only used for AppTheme.Dynamic)
+        // ════════════════════════════════════════════════════════════════════════
+
+        private static MusicefyColorScheme BuildDynamicSchemeFromColors(
+            ExtractedColors colors, ThemeMode mode)
+        {
+            bool isDark = mode switch
+            {
+                ThemeMode.Light  => false,
+                ThemeMode.Dark   => true,
+                ThemeMode.Amoled => true,
+                _                => IsSystemDarkMode(),
+            };
+
+            // Extract accent hues from album art using HCT
             int primaryArgb = ColorToArgb(colors.Primary);
             var hct = Hct.FromInt(primaryArgb);
-
             double chroma = Math.Max(hct.Chroma, 24.0);
             primaryArgb = Hct.From(hct.Hue, chroma, 60).ToInt();
 
@@ -222,48 +329,58 @@ namespace Musicefy.Services
                     Math.Max(chroma * 0.35, 12.0), 60).ToInt();
             }
 
-            // Build dynamic accent palettes from the extracted colors
-            var pHct = Hct.FromInt(primaryArgb);
-            var sHct = Hct.FromInt(secondaryArgb);
-            var tHct = Hct.FromInt(tertiaryArgb);
+            // Build the dynamic accent scheme using HCT → DynamicScheme
+            var dynamicScheme = DynamicScheme.FromColors(
+                primaryArgb, secondaryArgb, tertiaryArgb,
+                // Use the Default palette's neutral ARGB for surfaces
+                AppThemeColorSchemes.GetColorScheme(AppTheme.Default, isDark ? ThemeMode.Dark : ThemeMode.Light)
+                    .SurfaceArgb(),
+                isDark, mode == ThemeMode.Amoled);
 
-            bool isDark     = _currentScheme?.IsDark ?? true;
-            bool isDarkPure = _currentScheme?.IsDarkPure ?? false;
-            double chromaFactor = isDarkPure ? 0.65 : 1.0;
+            // Convert DynamicScheme roles to MusicefyColorScheme
+            var scheme = new MusicefyColorScheme
+            {
+                IsDark                  = dynamicScheme.IsDark,
+                Primary                 = ArgbsToColor(dynamicScheme.GetArgb(ToneRole.Primary)),
+                OnPrimary               = ArgbsToColor(dynamicScheme.GetArgb(ToneRole.OnPrimary)),
+                PrimaryContainer        = ArgbsToColor(dynamicScheme.GetArgb(ToneRole.PrimaryContainer)),
+                OnPrimaryContainer      = ArgbsToColor(dynamicScheme.GetArgb(ToneRole.OnPrimaryContainer)),
+                Secondary               = ArgbsToColor(dynamicScheme.GetArgb(ToneRole.Secondary)),
+                OnSecondary             = ArgbsToColor(dynamicScheme.GetArgb(ToneRole.OnSecondary)),
+                SecondaryContainer      = ArgbsToColor(dynamicScheme.GetArgb(ToneRole.SecondaryContainer)),
+                OnSecondaryContainer    = ArgbsToColor(dynamicScheme.GetArgb(ToneRole.OnSecondaryContainer)),
+                Tertiary                = ArgbsToColor(dynamicScheme.GetArgb(ToneRole.Tertiary)),
+                OnTertiary              = ArgbsToColor(dynamicScheme.GetArgb(ToneRole.OnTertiary)),
+                TertiaryContainer       = ArgbsToColor(dynamicScheme.GetArgb(ToneRole.TertiaryContainer)),
+                OnTertiaryContainer     = ArgbsToColor(dynamicScheme.GetArgb(ToneRole.OnTertiaryContainer)),
+                Error                   = ArgbsToColor(dynamicScheme.GetArgb(ToneRole.Error)),
+                OnError                 = ArgbsToColor(dynamicScheme.GetArgb(ToneRole.OnError)),
+                ErrorContainer          = ArgbsToColor(dynamicScheme.GetArgb(ToneRole.ErrorContainer)),
+                OnErrorContainer        = ArgbsToColor(dynamicScheme.GetArgb(ToneRole.OnErrorContainer)),
+                Surface                 = ArgbsToColor(dynamicScheme.GetArgb(ToneRole.Surface)),
+                OnSurface               = ArgbsToColor(dynamicScheme.GetArgb(ToneRole.OnSurface)),
+                SurfaceVariant          = ArgbsToColor(dynamicScheme.GetArgb(ToneRole.SurfaceVariant)),
+                OnSurfaceVariant        = ArgbsToColor(dynamicScheme.GetArgb(ToneRole.OnSurfaceVariant)),
+                SurfaceContainerLowest  = ArgbsToColor(dynamicScheme.GetArgb(ToneRole.SurfaceContainerLowest)),
+                SurfaceContainerLow     = ArgbsToColor(dynamicScheme.GetArgb(ToneRole.SurfaceContainerLow)),
+                SurfaceContainer        = ArgbsToColor(dynamicScheme.GetArgb(ToneRole.SurfaceContainer)),
+                SurfaceContainerHigh    = ArgbsToColor(dynamicScheme.GetArgb(ToneRole.SurfaceContainerHigh)),
+                SurfaceContainerHighest = ArgbsToColor(dynamicScheme.GetArgb(ToneRole.SurfaceContainerHighest)),
+                Outline                 = ArgbsToColor(dynamicScheme.GetArgb(ToneRole.Outline)),
+                OutlineVariant          = ArgbsToColor(dynamicScheme.GetArgb(ToneRole.OutlineVariant)),
+                InverseSurface          = ArgbsToColor(dynamicScheme.GetArgb(ToneRole.InverseSurface)),
+                InverseOnSurface        = ArgbsToColor(dynamicScheme.GetArgb(ToneRole.InverseOnSurface)),
+                InversePrimary          = ArgbsToColor(dynamicScheme.GetArgb(ToneRole.InversePrimary)),
+            };
 
-            var dynamicPrimary   = TonalPalette.FromHueAndChroma(pHct.Hue, Math.Max(pHct.Chroma, 36.0) * chromaFactor);
-            var dynamicSecondary = TonalPalette.FromHueAndChroma(sHct.Hue, Math.Max(sHct.Chroma, 4.0) * chromaFactor);
-            var dynamicTertiary  = TonalPalette.FromHueAndChroma(tHct.Hue, Math.Max(tHct.Chroma, 4.0) * chromaFactor);
+            // AMOLED override
+            if (mode == ThemeMode.Amoled)
+                scheme = AppThemeColorSchemes.GetColorScheme(AppTheme.Dynamic, ThemeMode.Amoled, IsSystemDarkMode());
 
-            // Use the base seed palette's neutral palettes — NOT album-art-tinted ones.
-            // This is the key fix: surfaces stay anchored to the chosen palette.
-            var baseScheme = _baseScheme;   // always use _baseScheme, never _currentScheme fallback
-
-            var scheme = DynamicScheme.CreateDynamicAccentScheme(
-                baseScheme, dynamicPrimary, dynamicSecondary, dynamicTertiary);
-
-            // ← CHANGED: was ApplySchemeWithAnimation(scheme)
-            ApplyAccentOnlyWithAnimation(scheme);
+            return scheme;
         }
 
-        private static void ApplyAccentOnlyWithAnimation(DynamicScheme accentScheme)
-        {
-            var resources = Application.Current.Resources;
-
-            foreach (var (key, role) in _accentOnlyColorKeys)
-                AnimateBrushColor(resources, key, accentScheme.GetArgb(role));
-
-            foreach (var (key, variant) in _accentKeys)
-                AnimateBrushColor(resources, key, accentScheme.GetAccentArgb(variant));
-
-            // Gradient uses accent primary — safe to update, doesn't touch surface brushes
-            SetPlayerGradientBrush(resources, accentScheme, GetPlayerBackgroundStyle());
-            UpdateHomeGradientBrush(resources, accentScheme);
-
-            // Update _currentScheme so NowPlaying gradient is correct,
-            // but DO NOT change surface/neutral brushes — those stay from _baseScheme.
-            _currentScheme = accentScheme;
-        }
+        // ── HCT helpers (only used for AppTheme.Dynamic) ──────────────────────
 
         private static bool AreColorsSimilar(System.Windows.Media.Color a, System.Windows.Media.Color b)
         {
@@ -275,172 +392,14 @@ namespace Musicefy.Services
         }
 
         private static int ColorToArgb(System.Windows.Media.Color c)
+            => (255 << 24) | (c.R << 16) | (c.G << 8) | c.B;
+
+        // ════════════════════════════════════════════════════════════════════════
+        // Brush helpers
+        // ════════════════════════════════════════════════════════════════════════
+
+        private static void AnimateBrushColor(ResourceDictionary res, string key, Color targetColor)
         {
-            return (255 << 24) | (c.R << 16) | (c.G << 8) | c.B;
-        }
-
-        public static void ClearDynamicColors()
-        {
-            string savedTheme = Musicefy.Properties.Settings.Default.Theme ?? "Dark|Default";
-            ApplyThemeFromString(savedTheme);
-        }
-
-        public static void ApplyCustom(
-            string mode,
-            SeedPalette seed,
-            bool? isDarkPureOverride = null,
-            bool? isExactPaletteOverride = null,
-            PaletteStyle? styleOverride = null)
-        {
-            bool isDarkPure = isDarkPureOverride ?? (mode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase)
-                && Musicefy.Properties.Settings.Default.PureBlackMode);
-
-            SwapModeDict(mode, isDarkPure);
-            if (mode.Equals("System", StringComparison.OrdinalIgnoreCase))
-                mode = IsSystemDarkMode() ? "Dark" : "Light";
-
-            bool isDark     = mode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase);
-            bool isExact    = isExactPaletteOverride ?? Musicefy.Properties.Settings.Default.ExactPalette;
-            PaletteStyle style = styleOverride ?? ParsePaletteStyle(Musicefy.Properties.Settings.Default.PaletteStyle);
-
-            var scheme = DynamicScheme.FromSeed(seed, isDark, isDarkPure, isExact, style);
-            _baseScheme = scheme;  // Custom seed palette becomes the new base
-            ApplySchemeWithAnimation(scheme);
-        }
-
-        public static void ApplyCustomFromColors(
-            string mode,
-            int primaryArgb,
-            int secondaryArgb,
-            int tertiaryArgb,
-            int neutralArgb,
-            bool? isDarkPureOverride = null,
-            bool? isExactPaletteOverride = null,
-            PaletteStyle? styleOverride = null)
-        {
-            bool isDarkPure = isDarkPureOverride ?? (mode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase)
-                && Musicefy.Properties.Settings.Default.PureBlackMode);
-
-            SwapModeDict(mode, isDarkPure);
-            if (mode.Equals("System", StringComparison.OrdinalIgnoreCase))
-                mode = IsSystemDarkMode() ? "Dark" : "Light";
-
-            bool isDark     = mode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase);
-            bool isExact    = isExactPaletteOverride ?? Musicefy.Properties.Settings.Default.ExactPalette;
-            PaletteStyle style = styleOverride ?? ParsePaletteStyle(Musicefy.Properties.Settings.Default.PaletteStyle);
-
-            var scheme = DynamicScheme.FromColors(
-                primaryArgb, secondaryArgb, tertiaryArgb, neutralArgb,
-                isDark, isDarkPure, isExact, style);
-            _baseScheme = scheme;  // Custom color scheme becomes the new base
-            ApplySchemeWithAnimation(scheme);
-        }
-
-        public static void SaveTheme(string mode, string paletteName)
-        {
-            string normalMode = mode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase) ? "Dark" : "Light";
-            Musicefy.Properties.Settings.Default.Theme = $"{normalMode}|{paletteName}";
-            Musicefy.Properties.Settings.Default.Save();
-        }
-
-        public static void SavePaletteOptions(PaletteStyle style, bool exactPalette)
-        {
-            Musicefy.Properties.Settings.Default.PaletteStyle = style.ToString();
-            Musicefy.Properties.Settings.Default.ExactPalette = exactPalette;
-            Musicefy.Properties.Settings.Default.Save();
-        }
-
-        public static PaletteStyle GetSavedPaletteStyle()
-            => ParsePaletteStyle(Musicefy.Properties.Settings.Default.PaletteStyle ?? "TonalSpot");
-
-        public static bool GetSavedExactPalette()
-            => Musicefy.Properties.Settings.Default.ExactPalette;
-
-        // ── Scheme → Resource Dictionaries ────────────────────────────────────
-
-        private static void ApplySchemeWithAnimation(DynamicScheme newScheme)
-        {
-            var old = _currentScheme;
-            _currentScheme = newScheme;
-
-            if (old == null) { ApplySchemeSnap(newScheme); return; }
-
-            var resources = Application.Current.Resources;
-
-            foreach (var (key, role) in _colorKeys)
-                AnimateBrushColor(resources, key, newScheme.GetArgb(role));
-
-            foreach (var (key, variant) in _accentKeys)
-                AnimateBrushColor(resources, key, newScheme.GetAccentArgb(variant));
-
-            SetColorResource(resources, "SkeletonBaseColor", newScheme.GetArgb(ToneRole.SkeletonBase));
-            SetColorResource(resources, "SkeletonHighColor",  newScheme.GetArgb(ToneRole.SkeletonHigh));
-
-            SetPlayerGradientBrush(resources, newScheme, GetPlayerBackgroundStyle());
-            UpdateHomeGradientBrush(resources, newScheme);
-        }
-
-        private static void ApplySchemeSnap(DynamicScheme scheme)
-        {
-            var resources = Application.Current.Resources;
-
-            foreach (var (key, role) in _colorKeys)
-                SetBrush(resources, key, ArgbsToColor(scheme.GetArgb(role)));
-
-            foreach (var (key, variant) in _accentKeys)
-                SetBrush(resources, key, ArgbsToColor(scheme.GetAccentArgb(variant)));
-
-            SetColorResource(resources, "SkeletonBaseColor", scheme.GetArgb(ToneRole.SkeletonBase));
-            SetColorResource(resources, "SkeletonHighColor",  scheme.GetArgb(ToneRole.SkeletonHigh));
-
-            SetPlayerGradientBrush(resources, scheme, GetPlayerBackgroundStyle());
-            UpdateHomeGradientBrush(resources, scheme);
-        }
-
-        // ── Helpers ────────────────────────────────────────────────────────────
-
-        /// <summary>
-        /// Swaps the mode-specific resource dictionary (Light, Dark, or DarkPure).
-        /// DarkPure.xaml is loaded when pure black mode is enabled in dark mode;
-        /// otherwise Dark.xaml or Light.xaml is used as appropriate.
-        /// </summary>
-        private static void SwapModeDict(string mode, bool isDarkPure = false)
-        {
-            var merged = Application.Current.Resources.MergedDictionaries;
-            for (int i = merged.Count - 1; i >= 0; i--)
-            {
-                var src = merged[i].Source;
-                if (src != null && IsThemeUri(src))
-                    merged.RemoveAt(i);
-            }
-            MergeDictionary("/Themes/Base.xaml");
-            MergeDictionary("/Themes/ScrollbarTheme.xaml");
-
-            string effectiveMode = mode.Equals("System", StringComparison.OrdinalIgnoreCase)
-                ? (IsSystemDarkMode() ? "Dark" : "Light")
-                : mode;
-
-            // In dark mode with PureBlack enabled, load DarkPure.xaml
-            // which has AMOLED-black surface fallback values.
-            // The DynamicScheme still handles tone overrides at runtime,
-            // but this gives proper fallback brushes for design-time.
-            if (effectiveMode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase) && isDarkPure)
-            {
-                MergeDictionary("/Themes/Modes/DarkPure.xaml");
-            }
-            else if (effectiveMode.StartsWith("Dark", StringComparison.OrdinalIgnoreCase))
-            {
-                MergeDictionary("/Themes/Modes/Dark.xaml");
-            }
-            else
-            {
-                MergeDictionary("/Themes/Modes/Light.xaml");
-            }
-        }
-
-        private static void AnimateBrushColor(ResourceDictionary res, string key, int targetArgb)
-        {
-            var targetColor = ArgbsToColor(targetArgb);
             if (res[key] is SolidColorBrush brush && !brush.IsFrozen)
             {
                 brush.BeginAnimation(SolidColorBrush.ColorProperty,
@@ -458,28 +417,35 @@ namespace Musicefy.Services
         private static void SetBrush(ResourceDictionary res, string key, Color color)
             => res[key] = new SolidColorBrush(color);
 
-        private static void SetColorResource(ResourceDictionary res, string key, int argb)
-            => res[key] = ArgbsToColor(argb);
+        // ════════════════════════════════════════════════════════════════════════
+        // Mode dictionary swapping
+        // ════════════════════════════════════════════════════════════════════════
 
-        private static Color ArgbsToColor(int argb) => Color.FromArgb(
-            (byte)((argb >> 24) & 0xFF),
-            (byte)((argb >> 16) & 0xFF),
-            (byte)((argb >>  8) & 0xFF),
-            (byte)( argb        & 0xFF));
+        private static void SwapModeDict(bool isDark, bool isAmoled = false)
+        {
+            var merged = Application.Current.Resources.MergedDictionaries;
+            for (int i = merged.Count - 1; i >= 0; i--)
+            {
+                var src = merged[i].Source;
+                if (src != null && IsThemeUri(src))
+                    merged.RemoveAt(i);
+            }
+            MergeDictionary("/Themes/Base.xaml");
+            MergeDictionary("/Themes/ScrollbarTheme.xaml");
 
-        /// <summary>
-        /// Checks whether a ResourceDictionary's Source URI refers to a theme
-        /// dictionary that should be swapped when changing modes.
-        /// Uses suffix matching because WPF may resolve relative URIs into
-        /// absolute pack:// URIs at runtime, causing exact comparison to fail.
-        /// </summary>
+            if (isDark && isAmoled)
+                MergeDictionary("/Themes/Modes/DarkPure.xaml");
+            else if (isDark)
+                MergeDictionary("/Themes/Modes/Dark.xaml");
+            else
+                MergeDictionary("/Themes/Modes/Light.xaml");
+        }
+
         private static bool IsThemeUri(Uri src)
         {
             string path = src.OriginalString;
             foreach (var themeUri in _themeUris)
             {
-                // Match either exact (e.g. "/Themes/Modes/Dark.xaml")
-                // or as a suffix of a pack URI (e.g. "pack://application:,,,/Themes/Modes/Dark.xaml")
                 if (string.Equals(path, themeUri, StringComparison.OrdinalIgnoreCase) ||
                     path.EndsWith(themeUri, StringComparison.OrdinalIgnoreCase))
                     return true;
@@ -491,7 +457,9 @@ namespace Musicefy.Services
             => Application.Current.Resources.MergedDictionaries.Add(
                 new ResourceDictionary { Source = new Uri(path, UriKind.Relative) });
 
-        // ── System theme watcher ──────────────────────────────────────────────
+        // ════════════════════════════════════════════════════════════════════════
+        // System theme watcher
+        // ════════════════════════════════════════════════════════════════════════
 
         public static bool IsSystemDarkMode()
         {
@@ -513,10 +481,9 @@ namespace Musicefy.Services
                 {
                     Application.Current?.Dispatcher.BeginInvoke(new Action(() =>
                     {
-                        string saved = Musicefy.Properties.Settings.Default.Theme ?? "System|Default";
-                        if (saved.StartsWith("System", StringComparison.OrdinalIgnoreCase))
+                        if (_currentThemeMode == ThemeMode.System)
                         {
-                            ApplyThemeFromString(saved);
+                            OnSystemThemeChanged();
                             AnimateWindowsFade();
                         }
                     }), System.Windows.Threading.DispatcherPriority.ApplicationIdle);
@@ -535,26 +502,24 @@ namespace Musicefy.Services
             }
         }
 
-        // ── Player gradient ────────────────────────────────────────────────────
+        // ════════════════════════════════════════════════════════════════════════
+        // Player gradient
+        // ════════════════════════════════════════════════════════════════════════
 
         public static string GetPlayerBackgroundStyle()
         {
-            try { return Musicefy.Properties.Settings.Default.PlayerBackgroundStyle ?? "GRADIENT"; }
+            try { return Properties.Settings.Default.PlayerBackgroundStyle ?? "GRADIENT"; }
             catch { return "GRADIENT"; }
         }
 
         public static void SetPlayerGradientBrush(
             ResourceDictionary resources,
-            DynamicScheme scheme,
+            MusicefyColorScheme scheme,
             string style)
         {
-            double topTone = scheme.IsExactPalette
-                ? (scheme.IsDark ? 70 : 50)
-                : (scheme.IsDark ? 80 : 90);
-
-            var surfaceColor = ArgbsToColor(scheme.GetArgb(ToneRole.Surface));
-            var topColor     = ArgbsToColor(scheme.PrimaryPalette.GetTone(topTone));
-            var midColor     = ArgbsToColor(scheme.PrimaryPalette.GetTone(scheme.IsDark ? 40 : 30));
+            var surfaceColor = scheme.Surface;
+            var topColor     = scheme.Primary;
+            var midColor     = scheme.PrimaryContainer;
 
             resources["PlayerSurfaceColor"] = surfaceColor;
             resources["PlayerPrimaryColor"] = topColor;
@@ -605,7 +570,9 @@ namespace Musicefy.Services
             }
         }
 
-        // ── Gradient helpers ───────────────────────────────────────────────────
+        // ════════════════════════════════════════════════════════════════════════
+        // Gradient helpers
+        // ════════════════════════════════════════════════════════════════════════
 
         public static LinearGradientBrush CreateVerticalGradient(
             Color top, Color bottom, double topOpacity = 1.0, double bottomOpacity = 1.0)
@@ -623,56 +590,27 @@ namespace Musicefy.Services
             };
         }
 
-        /// <summary>
-        /// Gets the current surface color from the active DynamicScheme.
-        /// Used by ViewModels and code-behind to build theme-aware gradients.
-        /// </summary>
         public static Color GetCurrentSurfaceColor()
         {
-            return _currentScheme != null
-                ? ArgbsToColor(_currentScheme.GetArgb(ToneRole.Surface))
-                : (IsCurrentModeDark() ? Color.FromRgb(20, 18, 24) : Color.FromRgb(255, 251, 254));
+            return _currentScheme?.Surface
+                ?? (IsCurrentModeDark() ? Color.FromRgb(20, 18, 24) : Color.FromRgb(255, 251, 254));
         }
 
-        /// <summary>
-        /// Gets the current primary container color (tinted surface) for gradient accents.
-        /// </summary>
         public static Color GetCurrentPrimaryContainerColor()
         {
-            return _currentScheme != null
-                ? ArgbsToColor(_currentScheme.GetArgb(ToneRole.PrimaryContainer))
-                : Color.FromRgb(255, 218, 212);
+            return _currentScheme?.PrimaryContainer ?? Color.FromRgb(255, 218, 212);
         }
 
-        /// <summary>
-        /// Returns true if the current mode is dark (including DarkPure).
-        /// </summary>
         public static bool IsCurrentModeDark()
         {
             return _currentScheme?.IsDark ?? false;
         }
 
-        /// <summary>
-        /// Updates the HomeGradientBrush resource that the Home view can use
-        /// via DynamicResource. This gradient transitions from the dominant
-        /// color (from album art or palette) to the current surface color,
-        /// so it automatically adapts to both light and dark modes.
-        ///
-        /// ArchiveTune light-mode fix: In light mode, the primary gradient
-        /// color uses a much higher tone (80 instead of 40) to produce a
-        /// soft pastel tint rather than a saturated color splash. The
-        /// gradient also has a shorter primary stop (0.08) so the colored
-        /// area is smaller and less visually dominant.
-        /// </summary>
-        public static void UpdateHomeGradientBrush(ResourceDictionary resources, DynamicScheme scheme)
+        public static void UpdateHomeGradientBrush(ResourceDictionary resources, MusicefyColorScheme scheme)
         {
-            var surfaceColor = ArgbsToColor(scheme.GetArgb(ToneRole.Surface));
-            // Light mode: use high-tone primary (pastel) for subtle tinting
-            // Dark mode: use standard tone 80 for rich gradient
-            double primaryTone = scheme.IsDark ? 80 : 80;
-            var primaryColor = ArgbsToColor(scheme.PrimaryPalette.GetTone(primaryTone));
+            var surfaceColor = scheme.Surface;
+            var primaryColor = scheme.Primary;
 
-            // Light mode: shorter gradient reach, softer blend
             double gradientReach = scheme.IsDark ? 0.15 : 0.08;
 
             resources["HomeGradientBrush"] = new LinearGradientBrush
@@ -687,22 +625,15 @@ namespace Musicefy.Services
                 }
             };
 
-            // Also store the individual colors for code-behind gradient builders
             resources["HomeSurfaceColor"] = surfaceColor;
             resources["HomePrimaryColor"] = primaryColor;
         }
 
-        /// <summary>
-        /// Rebuilds the HomeGradientBrush when the dominant color changes
-        /// (e.g. from album art). The surface color stays anchored to
-        /// the current scheme so it remains correct for light/dark mode.
-        /// ArchiveTune light-mode fix: shorter gradient reach in light mode.
-        /// </summary>
         public static void UpdateHomeGradientWithDominantColor(Color dominantColor)
         {
             if (_currentScheme == null) return;
             var resources = Application.Current.Resources;
-            var surfaceColor = ArgbsToColor(_currentScheme.GetArgb(ToneRole.Surface));
+            var surfaceColor = _currentScheme.Surface;
 
             double gradientReach = _currentScheme.IsDark ? 0.15 : 0.08;
 
@@ -721,9 +652,8 @@ namespace Musicefy.Services
 
         public static LinearGradientBrush CreateHomeGradient(Color dominantColor)
         {
-            var surface = _currentScheme != null
-                ? ArgbsToColor(_currentScheme.GetArgb(ToneRole.Surface))
-                : (IsCurrentModeDark() ? Color.FromRgb(20, 18, 24) : Color.FromRgb(255, 251, 254));
+            var surface = _currentScheme?.Surface
+                ?? (IsCurrentModeDark() ? Color.FromRgb(20, 18, 24) : Color.FromRgb(255, 251, 254));
 
             double gradientReach = IsCurrentModeDark() ? 0.15 : 0.08;
 
@@ -739,41 +669,90 @@ namespace Musicefy.Services
             };
         }
 
-        // ── Mode-accurate palette preview ──────────────────────────────────────
-        public static (Color primary, Color secondary, Color tertiary, Color surface)
-            GetModeAccuratePreview(SeedPalette seed, bool isDark, PaletteStyle style = PaletteStyle.TonalSpot, bool isExactPalette = false)
+        // ════════════════════════════════════════════════════════════════════════
+        // Legacy compatibility helpers
+        // ════════════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// Legacy entry point used by old code paths. Converts old-style
+        /// "Dark|Default" string to the new AppTheme + ThemeMode model.
+        /// </summary>
+        public static void ApplyThemeFromString(string themeString)
         {
-            var scheme = DynamicScheme.FromSeed(seed, isDark, false, isExactPalette, style);
-            return (
-                ArgbsToColor(scheme.GetPreviewPrimaryArgb()),
-                ArgbsToColor(scheme.GetPreviewSecondaryArgb()),
-                ArgbsToColor(scheme.GetPreviewTertiaryArgb()),
-                ArgbsToColor(scheme.GetPreviewSurfaceArgb())
-            );
+            if (string.IsNullOrWhiteSpace(themeString))
+            {
+                ApplyTheme(AppTheme.Default, ThemeMode.Dark);
+                return;
+            }
+
+            var parts = themeString.Split('|');
+            string modeStr = parts.Length > 0 ? parts[0] : "Dark";
+            string paletteStr = parts.Length > 1 ? parts[1] : "Default";
+
+            ThemeMode mode = modeStr switch
+            {
+                "Light"  => ThemeMode.Light,
+                "System" => ThemeMode.System,
+                _        => Properties.Settings.Default.PureBlackMode ? ThemeMode.Amoled : ThemeMode.Dark,
+            };
+
+            AppTheme theme = MapOldPaletteName(paletteStr);
+            ApplyTheme(theme, mode);
         }
 
-        // ── Raw seed preview (ArchiveTune approach) ─────────────────────────
-        // Shows the raw seed color at a neutral tone (60), NOT adjusted by mode.
-        public static (Color primary, Color secondary, Color tertiary, Color neutral)
-            GetRawSeedPreview(SeedPalette seed, PaletteStyle style = PaletteStyle.TonalSpot)
+        /// <summary>
+        /// Maps old SeedPalette names to the new AppTheme enum values.
+        /// </summary>
+        public static AppTheme MapOldPaletteName(string oldName)
         {
-            var scheme = DynamicScheme.FromSeed(seed, true, false, false, style);
-            return (
-                ArgbsToColor(scheme.GetRawSeedPrimaryArgb()),
-                ArgbsToColor(scheme.GetRawSeedSecondaryArgb()),
-                ArgbsToColor(scheme.GetRawSeedTertiaryArgb()),
-                ArgbsToColor(scheme.GetRawSeedNeutralArgb())
-            );
+            return oldName?.ToLowerInvariant() switch
+            {
+                "emerald" or "lime" or "forest" or "mint" or "pine" or "clover" or "olive" or "sage"
+                    => AppTheme.GreenApple,
+                "lavender" or "wisteria" or "periwinkle"
+                    => AppTheme.Lavender,
+                "crimson" or "rose" or "cherry" or "raspberry" or "ruby" or "scarlet" or "burgundy"
+                    => AppTheme.StrawberryDaiquiri,
+                "navy" or "indigo" or "denim" or "slate"
+                    => AppTheme.MidnightDusk,
+                "teal" or "cyan" or "aqua" or "turquoise" or "seafoam"
+                    => AppTheme.TealTurquoise,
+                "azure" or "ocean" or "steel" or "royal" or "cerulean"
+                    => AppTheme.TidalWave,
+                "violet" or "purple" or "amethyst" or "orchid" or "plum"
+                    => AppTheme.Sapphire,
+                "pink" or "magenta" or "fuchsia" or "blush" or "rosebud" or "bubblegum"
+                    => AppTheme.CottonCandy,
+                "tangerine" or "pumpkin" or "apricot" or "amber" or "coral" or "peach" or "carrot"
+                    => AppTheme.Cloudflare,
+                "lemon" or "gold" or "sunflower" or "honey" or "banana" or "mustard"
+                    => AppTheme.Yotsuba,
+                "brown" or "sand" or "clay" or "taupe" or "coffee" or "terracotta" or "walnut"
+                    => AppTheme.Mocha,
+                "gray" or "charcoal" or "warm stone" or "cool stone" or "pearl"
+                    => AppTheme.Monochrome,
+                "electric blue" or "neon green" or "hot pink" or "cyber yellow" or "volt"
+                    => AppTheme.Doom,
+                _ => AppTheme.Default,
+            };
         }
 
-        // ── Auto-select palette style (ArchiveTune approach) ────────────────
-        public static PaletteStyle AutoSelectStyle(SeedPalette seed)
-            => DynamicScheme.AutoSelectStyle(seed);
+        // ── ARGB conversion (used by BuildDynamicSchemeFromColors) ────────────
 
-        public static PaletteStyle AutoSelectStyle(double chroma)
-            => DynamicScheme.AutoSelectStyle(chroma);
+        private static Color ArgbsToColor(int argb) => Color.FromArgb(
+            (byte)((argb >> 24) & 0xFF),
+            (byte)((argb >> 16) & 0xFF),
+            (byte)((argb >>  8) & 0xFF),
+            (byte)( argb        & 0xFF));
+    }
 
-        public static PaletteStyle AutoSelectStyle(int argb)
-            => DynamicScheme.AutoSelectStyle(argb);
+    // ── Extension: SurfaceArgb for MusicefyColorScheme ────────────────────────
+    // Used by BuildDynamicSchemeFromColors to get a neutral ARGB from the palette.
+    public static class MusicefyColorSchemeExtensions
+    {
+        public static int SurfaceArgb(this MusicefyColorScheme s)
+        {
+            return (255 << 24) | (s.Surface.R << 16) | (s.Surface.G << 8) | s.Surface.B;
+        }
     }
 }
