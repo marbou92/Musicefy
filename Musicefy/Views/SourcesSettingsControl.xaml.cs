@@ -10,7 +10,7 @@ namespace Musicefy.Views
     /// Displays a scrollable list of SourceCard controls and provides
     /// an "Add Source" button for adding new sources.
     /// </summary>
-    public partial class SourcesSettingsControl : UserControl
+    public partial class SourcesSettingsControl : UserControl, ISettingsControl
     {
         private SourcesSettingsViewModel _viewModel;
 
@@ -31,6 +31,24 @@ namespace Musicefy.Views
             SourcesList.ItemsSource = _viewModel.Sources;
 
             _viewModel.PropertyChanged += OnViewModelPropertyChanged;
+            UpdateEmptyState();
+        }
+
+        // FIX: Implement ISettingsControl.Save() so that source state is persisted
+        // when navigating away from the Sources settings tab.
+        public void Save()
+        {
+            // Sources are saved through the StreamingSourceManager directly
+            // when added/removed. No additional save action needed here,
+            // but implementing the interface ensures AnimateContentChange
+            // doesn't skip calling Save on the outgoing panel.
+        }
+
+        // FIX: Implement ISettingsControl.Cancel() for symmetry.
+        public void Cancel()
+        {
+            // Refresh sources from the manager to discard any uncommitted changes
+            _viewModel?.RefreshSources();
             UpdateEmptyState();
         }
 
