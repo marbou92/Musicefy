@@ -267,7 +267,7 @@ namespace Musicefy.Core.Services
                                 Album = "YouTube Music",
                                 Genre = "Music",
                                 SourceType = YouTube,
-                                CoverPath = video.Thumbnails?.FirstOrDefault()?.Url,
+                                CoverPath = SanitizeThumbnailUrl(video.Thumbnails?.FirstOrDefault()?.Url),
                                 Duration = video.Duration ?? TimeSpan.Zero
                             });
 
@@ -815,7 +815,7 @@ namespace Musicefy.Core.Services
                     Album = item.Album ?? (item.Type == InnerTubeClient.SearchResultType.Album ? item.Title : "YouTube Music"),
                     Genre = "Music",
                     SourceType = YouTube,
-                    CoverPath = item.ThumbnailUrl,
+                    CoverPath = SanitizeThumbnailUrl(item.ThumbnailUrl),
                     Duration = item.Duration
                 };
 
@@ -837,6 +837,55 @@ namespace Musicefy.Core.Services
                 musicFile.YouTubePlaylistId = item.PlaylistId;
 
                 return musicFile;
+            }
+
+            /// <summary>
+            /// Transforms YouTube thumbnail URLs to request JPEG format instead of WebP.
+            /// WPF's BitmapImage cannot decode WebP natively (WIC error 0x88982F50).
+            /// </summary>
+            private static string SanitizeThumbnailUrl(string url)
+            {
+                if (string.IsNullOrEmpty(url))
+                    return url;
+
+                try
+                {
+                    // YouTube i.ytimg.com — convert /vi_webp/ paths to /vi/ with .jpg
+                    if (url.Contains("ytimg.com", StringComparison.OrdinalIgnoreCase))
+                    {
+                        url = url.Replace("/vi_webp/", "/vi/", StringComparison.OrdinalIgnoreCase);
+                        if (url.EndsWith(".webp", StringComparison.OrdinalIgnoreCase))
+                            url = url.Substring(0, url.Length - 5) + ".jpg";
+                        return url;
+                    }
+
+                    // Google CDN — replace WebP suffixes with JPEG (-rj)
+                    if (url.Contains("googleusercontent.com", StringComparison.OrdinalIgnoreCase) ||
+                        url.Contains("ggpht.com", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (url.Contains("-rw", StringComparison.OrdinalIgnoreCase))
+                        {
+                            url = System.Text.RegularExpressions.Regex.Replace(
+                                url, @"-rw(?:-p)?(?=[-\s/&?]|$)", "-rj",
+                                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                        }
+                        if (url.Contains("-no-rw", StringComparison.OrdinalIgnoreCase))
+                        {
+                            url = url.Replace("-no-rw", "-no-rj", StringComparison.OrdinalIgnoreCase);
+                        }
+                    }
+
+                    // Generic .webp extension replacement
+                    if (url.EndsWith(".webp", StringComparison.OrdinalIgnoreCase))
+                        url = url.Substring(0, url.Length - 5) + ".jpg";
+                }
+                catch
+                {
+                    // If URL manipulation fails, use the original URL
+                    // The PathToImageConverter will handle the fallback
+                }
+
+                return url;
             }
 
             #endregion
