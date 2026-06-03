@@ -737,6 +737,60 @@ namespace Musicefy.Core.Library
             return results;
         }
 
+        // ── Smart playlists / Quick Picks queries ─────────────────────────
+        public async Task<List<MusicFile>> GetMostPlayedAsync(int days, int limit, CancellationToken cancellationToken = default)
+        {
+            using (var connection = new SqliteConnection(_dbConnectionString))
+            {
+                await connection.OpenAsync(cancellationToken);
+                var cutoff = DateTime.UtcNow.AddDays(-days).ToString("o");
+                var tracks = await connection.QueryAsync<MusicFile>(
+                    @"SELECT * FROM Tracks 
+              WHERE PlayCount > 0 AND LastPlayed IS NOT NULL AND LastPlayed != '' AND LastPlayed >= @Cutoff
+              ORDER BY PlayCount DESC, LastPlayed DESC
+              LIMIT @Limit",
+                    new { Cutoff = cutoff, Limit = limit });
+                return tracks.ToList();
+            }
+        }
+
+        public async Task<List<MusicFile>> GetForgottenFavoritesAsync(int daysSincePlayed, int limit, CancellationToken cancellationToken = default)
+        {
+            using (var connection = new SqliteConnection(_dbConnectionString))
+            {
+                await connection.OpenAsync(cancellationToken);
+                var cutoff = DateTime.UtcNow.AddDays(-daysSincePlayed).ToString("o");
+                var tracks = await connection.QueryAsync<MusicFile>(
+                    @"SELECT * FROM Tracks 
+              WHERE IsFavourite = 1 
+                AND (LastPlayed IS NULL OR LastPlayed = '' OR LastPlayed < @Cutoff)
+              ORDER BY RANDOM()
+              LIMIT @Limit",
+                    new { Cutoff = cutoff, Limit = limit });
+                return tracks.ToList();
+            }
+        }
+
+        public async Task<List<MusicFile>> GetRecentlyPlayedAsync(int limit, CancellationToken cancellationToken = default)
+        {
+            return await GetHistoryTracksAsync(limit, cancellationToken);
+        }
+
+        public async Task<List<MusicFile>> GetRandomFavouriteTracksAsync(int limit, CancellationToken cancellationToken = default)
+        {
+            using (var connection = new SqliteConnection(_dbConnectionString))
+            {
+                await connection.OpenAsync(cancellationToken);
+                var tracks = await connection.QueryAsync<MusicFile>(
+                    @"SELECT * FROM Tracks 
+              WHERE IsFavourite = 1
+              ORDER BY RANDOM()
+              LIMIT @Limit",
+                    new { Limit = limit });
+                return tracks.ToList();
+            }
+        }
+
         // ── Private helpers ────────────────────────────────────────────────
         private class FileStamp
         {
