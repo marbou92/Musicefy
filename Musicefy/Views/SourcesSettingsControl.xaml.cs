@@ -118,7 +118,7 @@ namespace Musicefy.Views
 
         public void Save()
         {
-            // Sources are saved immediately on add/remove, no deferred save needed.
+            // Sources are saved immediately on add/remove; no deferred save needed.
         }
 
         public void Cancel()
