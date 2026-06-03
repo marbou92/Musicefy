@@ -9,6 +9,8 @@ namespace Musicefy.Views
     /// Main sources settings page control.
     /// Displays a scrollable list of SourceCard controls and provides
     /// an "Add Source" button for adding new sources.
+    /// Implements ISettingsControl so the SettingsPage can call Save/Cancel
+    /// when the user navigates away from this tab.
     /// </summary>
     public partial class SourcesSettingsControl : UserControl, ISettingsControl
     {
@@ -31,23 +33,6 @@ namespace Musicefy.Views
             SourcesList.ItemsSource = _viewModel.Sources;
 
             _viewModel.PropertyChanged += OnViewModelPropertyChanged;
-            UpdateEmptyState();
-        }
-
-        // FIX: Implement ISettingsControl.Save() so that source state is persisted
-        // when navigating away from the Sources settings tab.
-        public void Save()
-        {
-            // Sources are saved through the StreamingSourceManager directly
-            // when added/removed. No additional save action needed here,
-            // but implementing the interface ensures AnimateContentChange
-            // doesn't skip calling Save on the outgoing panel.
-        }
-
-        // FIX: Implement ISettingsControl.Cancel() for symmetry.
-        public void Cancel()
-        {
-            _viewModel?.RefreshSources();
             UpdateEmptyState();
         }
 
@@ -129,6 +114,30 @@ namespace Musicefy.Views
             if (result == MessageBoxResult.Yes)
             {
                 _viewModel.RemoveSourceCommand.Execute(source);
+                UpdateEmptyState();
+            }
+        }
+
+        /// <summary>
+        /// ISettingsControl.Save — persists source configuration when
+        /// the user navigates away from the Sources settings tab.
+        /// </summary>
+        public void Save()
+        {
+            // Sources are persisted immediately on add/remove via the
+            // StreamingSourceManager, but we keep the method for
+            // ISettingsControl compliance.
+        }
+
+        /// <summary>
+        /// ISettingsControl.Cancel — reloads sources from the manager,
+        /// discarding any unsaved UI state.
+        /// </summary>
+        public void Cancel()
+        {
+            if (_viewModel != null)
+            {
+                _viewModel.RefreshSources();
                 UpdateEmptyState();
             }
         }
