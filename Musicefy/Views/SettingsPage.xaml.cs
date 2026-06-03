@@ -16,34 +16,21 @@ namespace Musicefy.Views
         public SettingsPage()
         {
             InitializeComponent();
-
-            // After InitializeComponent completes, all named elements (including
-            // SettingsContent and SectionTitle) are fully created. Set up the
-            // default content here instead of relying solely on the Loaded event.
-            //
-            // NOTE: The AppearanceButton_Checked event fires DURING InitializeComponent
-            // (because IsChecked="True" is set in XAML), but at that point
-            // SettingsContent hasn't been created yet (it's defined later in the
-            // XAML tree). The null check in AnimateContentChange silently skips
-            // that early call. We set up the initial content here, after all
-            // elements are guaranteed to exist.
-            ShowAppearance();
-
             this.Loaded += SettingsPage_Loaded;
         }
 
         private void SettingsPage_Loaded(object sender, System.Windows.RoutedEventArgs e)
         {
-            // Safety net: if for any reason the initial ShowAppearance() call
-            // in the constructor didn't stick (e.g. SettingsContent was somehow
-            // still null), try again on Loaded.
             if (_initialLoadPending)
             {
                 _initialLoadPending = false;
-                if (SettingsContent?.Content == null)
-                {
-                    ShowAppearance();
-                }
+                // FIX: Only show content AFTER the control is in the visual tree.
+                // Previously, ShowAppearance() was called in the constructor, which set
+                // Opacity=0 on the content and started a fade-in animation. But animations
+                // don't run on elements that aren't in the visual tree yet, so the content
+                // stayed permanently invisible (Opacity=0). The Loaded event fires after
+                // the element is added to the visual tree, so animations work here.
+                ShowAppearance();
             }
         }
 
@@ -97,20 +84,36 @@ namespace Musicefy.Views
 
         private void ShowAppearance()
         {
-            _appearanceVM = App.Services.GetService<AppearanceSettingsViewModel>();
-            var control = new AppearanceSettingsControl();
-            if (_appearanceVM != null)
-                control.DataContext = _appearanceVM;
-            AnimateContentChange(control, "Appearance Settings", fromRight: false);
+            try
+            {
+                _appearanceVM = App.Services.GetService<AppearanceSettingsViewModel>();
+                var control = new AppearanceSettingsControl();
+                if (_appearanceVM != null)
+                    control.DataContext = _appearanceVM;
+                AnimateContentChange(control, "Appearance Settings", fromRight: false);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SettingsPage] ShowAppearance failed: {ex.Message}");
+                ShowErrorContent("Appearance Settings", ex.Message);
+            }
         }
 
         private void ShowDownloads()
         {
-            var vm = App.Services.GetService<DownloadsSettingsViewModel>();
-            var control = new DownloadsSettingsControl();
-            if (vm != null)
-                control.DataContext = vm;
-            AnimateContentChange(control, "Downloads Settings", fromRight: true);
+            try
+            {
+                var vm = App.Services.GetService<DownloadsSettingsViewModel>();
+                var control = new DownloadsSettingsControl();
+                if (vm != null)
+                    control.DataContext = vm;
+                AnimateContentChange(control, "Downloads Settings", fromRight: true);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SettingsPage] ShowDownloads failed: {ex.Message}");
+                ShowErrorContent("Downloads Settings", ex.Message);
+            }
         }
 
         private void ShowSources()
@@ -119,37 +122,91 @@ namespace Musicefy.Views
             // leaving DataContext null and the Sources list empty. Now we resolve the
             // SourcesSettingsViewModel from DI and call Initialize() to wire up the
             // data bindings (Sources list, PropertyChanged, empty state logic).
-            var vm = App.Services.GetService<SourcesSettingsViewModel>();
-            var control = new SourcesSettingsControl();
-            if (vm != null)
-                control.Initialize(vm);
-            AnimateContentChange(control, "Sources Settings", fromRight: true);
+            try
+            {
+                var vm = App.Services.GetService<SourcesSettingsViewModel>();
+                var control = new SourcesSettingsControl();
+                if (vm != null)
+                    control.Initialize(vm);
+                AnimateContentChange(control, "Sources Settings", fromRight: true);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SettingsPage] ShowSources failed: {ex.Message}");
+                ShowErrorContent("Sources Settings", ex.Message);
+            }
         }
 
         private void ShowDiscover()
         {
-            // DiscoverSettingsControl self-creates its ViewModel in its constructor,
-            // so it works without DI injection. Just create it directly.
-            var control = new DiscoverSettingsControl();
-            AnimateContentChange(control, "Discover", fromRight: true);
+            try
+            {
+                var control = new DiscoverSettingsControl();
+                AnimateContentChange(control, "Discover", fromRight: true);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SettingsPage] ShowDiscover failed: {ex.Message}");
+                ShowErrorContent("Discover", ex.Message);
+            }
         }
 
         private void ShowRepositories()
         {
-            var vm = App.Services.GetService<RepositoriesSettingsViewModel>();
-            var control = new RepositoriesSettingsControl();
-            if (vm != null)
-                control.DataContext = vm;
-            AnimateContentChange(control, "Extension Repositories", fromRight: true);
+            try
+            {
+                var vm = App.Services.GetService<RepositoriesSettingsViewModel>();
+                var control = new RepositoriesSettingsControl();
+                if (vm != null)
+                    control.DataContext = vm;
+                AnimateContentChange(control, "Extension Repositories", fromRight: true);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SettingsPage] ShowRepositories failed: {ex.Message}");
+                ShowErrorContent("Extension Repositories", ex.Message);
+            }
         }
 
         private void ShowExtensions()
         {
-            // FIX: ExtensionsSettingsControl self-creates its ViewModel in constructor,
-            // so we don't need to inject from DI. However, we should not overwrite
-            // its DataContext if it already has one.
-            var control = new ExtensionsSettingsControl();
-            AnimateContentChange(control, "Extensions", fromRight: true);
+            try
+            {
+                var control = new ExtensionsSettingsControl();
+                AnimateContentChange(control, "Extensions", fromRight: true);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SettingsPage] ShowExtensions failed: {ex.Message}");
+                ShowErrorContent("Extensions", ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Fallback error content when a settings section fails to load.
+        /// Ensures the user always sees something instead of a blank page.
+        /// </summary>
+        private void ShowErrorContent(string title, string errorMessage)
+        {
+            if (SettingsContent == null || SectionTitle == null) return;
+
+            SectionTitle.Text = title;
+            var errorPanel = new StackPanel
+            {
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+            var errorText = new TextBlock
+            {
+                Text = $"Failed to load settings section.\n{errorMessage}",
+                FontSize = 14,
+                Foreground = System.Windows.Media.Brushes.Gray,
+                TextWrapping = TextWrapping.Wrap,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                TextAlignment = TextAlignment.Center
+            };
+            errorPanel.Children.Add(errorText);
+            SettingsContent.Content = errorPanel;
         }
 
         private void AnimateContentChange(UserControl newContent, string title, bool fromRight)
