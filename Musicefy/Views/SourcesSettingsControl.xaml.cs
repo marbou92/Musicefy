@@ -9,8 +9,6 @@ namespace Musicefy.Views
     /// Main sources settings page control.
     /// Displays a scrollable list of SourceCard controls and provides
     /// an "Add Source" button for adding new sources.
-    /// Implements ISettingsControl so the SettingsPage can call Save/Cancel
-    /// when the user navigates away from this tab.
     /// </summary>
     public partial class SourcesSettingsControl : UserControl, ISettingsControl
     {
@@ -118,28 +116,14 @@ namespace Musicefy.Views
             }
         }
 
-        /// <summary>
-        /// ISettingsControl.Save — persists source configuration when
-        /// the user navigates away from the Sources settings tab.
-        /// </summary>
         public void Save()
         {
-            // Sources are persisted immediately on add/remove via the
-            // StreamingSourceManager, but we keep the method for
-            // ISettingsControl compliance.
+            // Sources are saved immediately on add/remove, no deferred save needed.
         }
 
-        /// <summary>
-        /// ISettingsControl.Cancel — reloads sources from the manager,
-        /// discarding any unsaved UI state.
-        /// </summary>
         public void Cancel()
         {
-            if (_viewModel != null)
-            {
-                _viewModel.RefreshSources();
-                UpdateEmptyState();
-            }
+            // No pending changes to cancel.
         }
     }
 }
