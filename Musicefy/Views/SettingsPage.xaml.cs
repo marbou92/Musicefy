@@ -31,6 +31,9 @@ namespace Musicefy.Views
 
         private void AppearanceButton_Checked(object sender, System.Windows.RoutedEventArgs e)
         {
+            // Skip if this fires during InitializeComponent before the visual tree is ready.
+            // The Loaded handler will take care of the initial appearance.
+            if (_initialLoadPending) return;
             if (AppearanceButton.IsChecked == true) ShowAppearance();
         }
 
@@ -113,7 +116,13 @@ namespace Musicefy.Views
         {
             // Persist whatever the outgoing panel last set
             if (SettingsContent?.Content is ISettingsControl outgoing)
-                outgoing.Save();
+            {
+                try { outgoing.Save(); }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[SettingsPage] Error saving outgoing settings: {ex.Message}");
+                }
+            }
 
             if (SettingsContent == null || SectionTitle == null)
                 return;
