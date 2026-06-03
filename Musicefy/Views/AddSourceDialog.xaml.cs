@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -283,7 +282,7 @@ namespace Musicefy.Views
         /// <summary>
         /// ViewModel for a single configuration field in the dialog form.
         /// </summary>
-        private class ConfigFieldViewModel : INotifyPropertyChanged
+        private class ConfigFieldViewModel
         {
             public string Key { get; set; }
             public string Label { get; set; }
@@ -292,8 +291,6 @@ namespace Musicefy.Views
             public bool IsPassword { get; set; }
             public bool IsNotPassword { get; set; }
             public string Value { get; set; }
-
-            public event PropertyChangedEventHandler PropertyChanged;
         }
     }
 }
