@@ -11,6 +11,7 @@ using System.Windows.Input;
 using Musicefy.Core.Interfaces;
 using Musicefy.Core.Models;
 using Musicefy.Core.Services;
+using Musicefy.Services;
 using static Musicefy.Core.SourceTypes;
 
 namespace Musicefy.ViewModels
@@ -32,7 +33,6 @@ namespace Musicefy.ViewModels
         private DateTime? _lastRefreshed;
         private bool _isRefreshing;
         private ChipItem _selectedChip;
-        private List<ChipItem> _originalChips;
         private CancellationTokenSource _loadCts;
 
         // ── Observable Collections ──────────────────────────────────────────
@@ -513,7 +513,9 @@ namespace Musicefy.ViewModels
                 var queueManager = App.Services?.GetService(typeof(IQueueManager)) as IQueueManager;
                 if (queueManager != null)
                 {
-                    queueManager.PlayTrack(track);
+                    queueManager.Clear();
+                    queueManager.Enqueue(track);
+                    queueManager.JumpToIndex(0);
                 }
             }
             catch (Exception ex)
