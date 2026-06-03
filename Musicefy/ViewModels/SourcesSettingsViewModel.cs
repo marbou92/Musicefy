@@ -132,10 +132,10 @@ namespace Musicefy.ViewModels
             // We need to get providers from DI - this is typically done through App.Services
             try
             {
-                var providers = App.Services?.GetService(typeof(IEnumerable<IMusicSourceProvider>));
+                var providers = App.Services?.GetService(typeof(IEnumerable<IMusicSourceProvider>)) as System.Collections.IEnumerable;
                 if (providers != null)
                 {
-                    foreach (var provider in providers.Cast<IMusicSourceProvider>())
+                    foreach (IMusicSourceProvider provider in providers)
                     {
                         AvailableProviders.Add(provider);
                     }
