@@ -49,9 +49,6 @@ namespace Musicefy.Views
 
         private void AppearanceButton_Checked(object sender, System.Windows.RoutedEventArgs e)
         {
-            // Guard: don't try to animate content if the visual elements
-            // aren't ready yet (this fires during InitializeComponent before
-            // SettingsContent exists).
             if (AppearanceButton.IsChecked == true && SettingsContent != null)
             {
                 ShowAppearance();
@@ -118,12 +115,23 @@ namespace Musicefy.Views
 
         private void ShowSources()
         {
-            AnimateContentChange(new SourcesSettingsControl(), "Sources Settings", fromRight: true);
+            // FIX: Previously, SourcesSettingsControl was created without a ViewModel,
+            // leaving DataContext null and the Sources list empty. Now we resolve the
+            // SourcesSettingsViewModel from DI and call Initialize() to wire up the
+            // data bindings (Sources list, PropertyChanged, empty state logic).
+            var vm = App.Services.GetService<SourcesSettingsViewModel>();
+            var control = new SourcesSettingsControl();
+            if (vm != null)
+                control.Initialize(vm);
+            AnimateContentChange(control, "Sources Settings", fromRight: true);
         }
 
         private void ShowDiscover()
         {
-            AnimateContentChange(new DiscoverSettingsControl(), "Discover", fromRight: true);
+            // DiscoverSettingsControl self-creates its ViewModel in its constructor,
+            // so it works without DI injection. Just create it directly.
+            var control = new DiscoverSettingsControl();
+            AnimateContentChange(control, "Discover", fromRight: true);
         }
 
         private void ShowRepositories()
@@ -137,10 +145,10 @@ namespace Musicefy.Views
 
         private void ShowExtensions()
         {
-            var vm = App.Services.GetService<ExtensionsSettingsViewModel>();
+            // FIX: ExtensionsSettingsControl self-creates its ViewModel in constructor,
+            // so we don't need to inject from DI. However, we should not overwrite
+            // its DataContext if it already has one.
             var control = new ExtensionsSettingsControl();
-            if (vm != null)
-                control.DataContext = vm;
             AnimateContentChange(control, "Extensions", fromRight: true);
         }
 
