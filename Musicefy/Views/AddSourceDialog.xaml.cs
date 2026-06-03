@@ -203,7 +203,9 @@ namespace Musicefy.Views
             // Validate required fields
             foreach (var field in _selectedProvider.ConfigurationFields)
             {
-                if (field.IsRequired && !config.TryGetValue(field.Key, out var value) || string.IsNullOrEmpty(config.GetValueOrDefault(field.Key)))
+                string fieldValue;
+                config.TryGetValue(field.Key, out fieldValue);
+                if (field.IsRequired && string.IsNullOrEmpty(fieldValue))
                 {
                     MessageBox.Show($"Please fill in the required field: {field.Label}", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
