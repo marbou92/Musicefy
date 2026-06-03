@@ -112,7 +112,11 @@ namespace Musicefy
             services.AddSingleton<IExtensionManager, ExtensionManagerImpl>();
 
             services.AddSingleton<IMusicSourceProvider, SubsonicSourceProvider>();
-            services.AddSingleton<IMusicSourceProvider, LocalSourceProvider>();
+            // LocalSourceProvider needs ILibraryService and IServiceProvider (for lazy ArtistAlbumService resolution)
+            // to avoid circular dependency: ArtistAlbumService -> IStreamingSourceManager -> IMusicSourceProvider -> LocalSourceProvider
+            services.AddSingleton<IMusicSourceProvider>(sp => new LocalSourceProvider(
+                sp.GetService<ILibraryService>(),
+                sp));
             services.AddSingleton<IMusicSourceProvider, YouTubeSourceProvider>();
 
             services.AddSingleton<IStreamingSourceManager>(sp =>
@@ -122,6 +126,10 @@ namespace Musicefy
             services.AddSingleton<IAudioPlayer>(sp => sp.GetService<PlaybackService>());
 
             services.AddSingleton<NavigationService>();
+
+            // Phase 3: Health Check and Browse services
+            services.AddSingleton<IHealthCheckService, HealthCheckService>();
+            services.AddSingleton<IBrowseService, UnifiedBrowseService>();
 
             services.AddTransient<HomeControl>();
             services.AddTransient<SearchControl>();
