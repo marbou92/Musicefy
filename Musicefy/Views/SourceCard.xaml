@@ -47,16 +47,13 @@
 
                 <!-- Action Buttons -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <!-- Test Button -->
                     <Button Content="Test" Padding="8,4" Margin="4,0"
                             FontSize="11" Cursor="Hand"
                             Click="TestButton_Click"/>
-                    <!-- Edit/Expand Button -->
                     <Button Content="&#x25BC;" Padding="6,4" Margin="4,0"
                             FontSize="10" Cursor="Hand"
                             Click="ExpandButton_Click"
                             x:Name="ExpandButton"/>
-                    <!-- Remove Button -->
                     <Button Content="&#x2715;" Padding="6,4" Margin="4,0"
                             FontSize="11" Cursor="Hand" Foreground="{DynamicResource ErrorBrush}"
                             Click="RemoveButton_Click"/>
