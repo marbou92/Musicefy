@@ -1,33 +1,28 @@
 using System;
-using System.Windows.Controls;
-using Musicefy.Views;
+using Musicefy.Core.Models;
 
 namespace Musicefy.Services
 {
+    /// <summary>
+    /// Manages navigation between pages in the main window.
+    /// Stub implementation for Phase 1 — full implementation in Phase 2.
+    /// </summary>
     public class NavigationService
     {
-        private readonly IServiceProvider _serviceProvider;
+        public event Action<string> NavigationRequested;
 
-        private UserControl _cachedHomePage;
-        private UserControl _cachedSearchPage;
-        private UserControl _cachedLibraryPage;
-        private SettingsPage _cachedSettingsPage;
+        public void NavigateToHome() => NavigationRequested?.Invoke("Home");
+        public void NavigateToSearch() => NavigationRequested?.Invoke("Search");
+        public void NavigateToLibrary() => NavigationRequested?.Invoke("Library");
 
-        public NavigationService(IServiceProvider serviceProvider)
+        public void NavigateToArtist(ArtistInfo artist)
         {
-            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+            NavigationRequested?.Invoke($"Artist:{artist?.Name}");
         }
 
-        public UserControl GetPage(int pageIndex)
+        public void NavigateToAlbum(AlbumInfo album)
         {
-            switch (pageIndex)
-            {
-                case 0: return _cachedHomePage ??= (UserControl)_serviceProvider.GetService(typeof(HomeControl));
-                case 1: return _cachedSearchPage ??= (UserControl)_serviceProvider.GetService(typeof(SearchControl));
-                case 2: return _cachedLibraryPage ??= (UserControl)_serviceProvider.GetService(typeof(LibraryControl));
-                case 3: return _cachedSettingsPage ??= new SettingsPage();
-                default: return _cachedHomePage ??= (UserControl)_serviceProvider.GetService(typeof(HomeControl));
-            }
+            NavigationRequested?.Invoke($"Album:{album?.Name}");
         }
     }
 }
