@@ -31,8 +31,8 @@ namespace Musicefy.Views
 
         private void AppearanceButton_Checked(object sender, System.Windows.RoutedEventArgs e)
         {
-            // Skip if this fires during InitializeComponent before the visual tree is ready.
-            // The Loaded handler will take care of the initial appearance.
+            // Skip the spurious Checked event that fires during InitializeComponent
+            // when IsChecked="True" — the Loaded handler handles the initial display.
             if (_initialLoadPending) return;
             if (AppearanceButton.IsChecked == true) ShowAppearance();
         }
@@ -120,7 +120,7 @@ namespace Musicefy.Views
                 try { outgoing.Save(); }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[SettingsPage] Error saving outgoing settings: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"[SettingsPage] Error saving settings: {ex.Message}");
                 }
             }
 
