@@ -70,8 +70,10 @@
                         <StackPanel Margin="0,0,0,12">
                             <TextBlock FontSize="12" Foreground="#AAAAAA" Margin="0,0,0,4">
                                 <Run Text="{Binding Label, Mode=OneWay}"/>
-                                <Run Text=" *" Foreground="#F44336"
-                                     Visibility="{Binding IsRequired, Converter={StaticResource BoolToVis}}"/>
+                                <InlineUIContainer>
+                                    <TextBlock Text=" *" Foreground="#F44336" FontSize="12"
+                                               Visibility="{Binding IsRequired, Converter={StaticResource BoolToVis}}"/>
+                                </InlineUIContainer>
                             </TextBlock>
                             <PasswordBox Padding="8,6" FontSize="13"
                                          Background="#2D2D2D" Foreground="White"
