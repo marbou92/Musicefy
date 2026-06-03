@@ -11,6 +11,7 @@ namespace Musicefy.Views
     public partial class SettingsPage : UserControl
     {
         private AppearanceSettingsViewModel _appearanceVM;
+
         private bool _initialLoadPending = true;
 
         public SettingsPage()
@@ -24,189 +25,88 @@ namespace Musicefy.Views
             if (_initialLoadPending)
             {
                 _initialLoadPending = false;
-                // FIX: Only show content AFTER the control is in the visual tree.
-                // Previously, ShowAppearance() was called in the constructor, which set
-                // Opacity=0 on the content and started a fade-in animation. But animations
-                // don't run on elements that aren't in the visual tree yet, so the content
-                // stayed permanently invisible (Opacity=0). The Loaded event fires after
-                // the element is added to the visual tree, so animations work here.
                 ShowAppearance();
             }
         }
 
         private void AppearanceButton_Checked(object sender, System.Windows.RoutedEventArgs e)
         {
-            if (AppearanceButton.IsChecked == true && SettingsContent != null)
-            {
-                ShowAppearance();
-            }
+            if (AppearanceButton.IsChecked == true) ShowAppearance();
         }
 
         private void DownloadsButton_Checked(object sender, System.Windows.RoutedEventArgs e)
         {
-            if (DownloadsButton.IsChecked == true && SettingsContent != null)
-            {
-                ShowDownloads();
-            }
+            if (DownloadsButton.IsChecked == true) ShowDownloads();
         }
 
         private void SourcesButton_Checked(object sender, System.Windows.RoutedEventArgs e)
         {
-            if (SourcesButton.IsChecked == true && SettingsContent != null)
-            {
-                ShowSources();
-            }
+            if (SourcesButton.IsChecked == true) ShowSources();
         }
 
         private void RepositoriesButton_Checked(object sender, System.Windows.RoutedEventArgs e)
         {
-            if (RepositoriesButton.IsChecked == true && SettingsContent != null)
-            {
-                ShowRepositories();
-            }
+            if (RepositoriesButton.IsChecked == true) ShowRepositories();
         }
 
         private void DiscoverButton_Checked(object sender, System.Windows.RoutedEventArgs e)
         {
-            if (DiscoverButton.IsChecked == true && SettingsContent != null)
-            {
-                ShowDiscover();
-            }
+            if (DiscoverButton.IsChecked == true) ShowDiscover();
         }
 
         private void ExtensionsButton_Checked(object sender, System.Windows.RoutedEventArgs e)
         {
-            if (ExtensionsButton.IsChecked == true && SettingsContent != null)
-            {
-                ShowExtensions();
-            }
+            if (ExtensionsButton.IsChecked == true) ShowExtensions();
         }
 
         private void ShowAppearance()
         {
-            try
-            {
-                _appearanceVM = App.Services.GetService<AppearanceSettingsViewModel>();
-                var control = new AppearanceSettingsControl();
-                if (_appearanceVM != null)
-                    control.DataContext = _appearanceVM;
-                AnimateContentChange(control, "Appearance Settings", fromRight: false);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[SettingsPage] ShowAppearance failed: {ex.Message}");
-                ShowErrorContent("Appearance Settings", ex.Message);
-            }
+            _appearanceVM = App.Services.GetService<AppearanceSettingsViewModel>();
+            var control = new AppearanceSettingsControl();
+            if (_appearanceVM != null)
+                control.DataContext = _appearanceVM;
+            AnimateContentChange(control, "Appearance Settings", fromRight: false);
         }
 
         private void ShowDownloads()
         {
-            try
-            {
-                var vm = App.Services.GetService<DownloadsSettingsViewModel>();
-                var control = new DownloadsSettingsControl();
-                if (vm != null)
-                    control.DataContext = vm;
-                AnimateContentChange(control, "Downloads Settings", fromRight: true);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[SettingsPage] ShowDownloads failed: {ex.Message}");
-                ShowErrorContent("Downloads Settings", ex.Message);
-            }
+            var vm = App.Services.GetService<DownloadsSettingsViewModel>();
+            var control = new DownloadsSettingsControl();
+            if (vm != null)
+                control.DataContext = vm;
+            AnimateContentChange(control, "Downloads Settings", fromRight: true);
         }
 
         private void ShowSources()
         {
-            // FIX: Previously, SourcesSettingsControl was created without a ViewModel,
-            // leaving DataContext null and the Sources list empty. Now we resolve the
-            // SourcesSettingsViewModel from DI and call Initialize() to wire up the
-            // data bindings (Sources list, PropertyChanged, empty state logic).
-            try
-            {
-                var vm = App.Services.GetService<SourcesSettingsViewModel>();
-                var control = new SourcesSettingsControl();
-                if (vm != null)
-                    control.Initialize(vm);
-                AnimateContentChange(control, "Sources Settings", fromRight: true);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[SettingsPage] ShowSources failed: {ex.Message}");
-                ShowErrorContent("Sources Settings", ex.Message);
-            }
+            var vm = App.Services.GetService<SourcesSettingsViewModel>();
+            var control = new SourcesSettingsControl();
+            if (vm != null)
+                control.Initialize(vm);
+            AnimateContentChange(control, "Sources Settings", fromRight: true);
         }
 
         private void ShowDiscover()
         {
-            try
-            {
-                var control = new DiscoverSettingsControl();
-                AnimateContentChange(control, "Discover", fromRight: true);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[SettingsPage] ShowDiscover failed: {ex.Message}");
-                ShowErrorContent("Discover", ex.Message);
-            }
+            AnimateContentChange(new DiscoverSettingsControl(), "Discover", fromRight: true);
         }
 
         private void ShowRepositories()
         {
-            try
-            {
-                var vm = App.Services.GetService<RepositoriesSettingsViewModel>();
-                var control = new RepositoriesSettingsControl();
-                if (vm != null)
-                    control.DataContext = vm;
-                AnimateContentChange(control, "Extension Repositories", fromRight: true);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[SettingsPage] ShowRepositories failed: {ex.Message}");
-                ShowErrorContent("Extension Repositories", ex.Message);
-            }
+            var vm = App.Services.GetService<RepositoriesSettingsViewModel>();
+            var control = new RepositoriesSettingsControl();
+            if (vm != null)
+                control.DataContext = vm;
+            AnimateContentChange(control, "Extension Repositories", fromRight: true);
         }
 
         private void ShowExtensions()
         {
-            try
-            {
-                var control = new ExtensionsSettingsControl();
-                AnimateContentChange(control, "Extensions", fromRight: true);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[SettingsPage] ShowExtensions failed: {ex.Message}");
-                ShowErrorContent("Extensions", ex.Message);
-            }
-        }
-
-        /// <summary>
-        /// Fallback error content when a settings section fails to load.
-        /// Ensures the user always sees something instead of a blank page.
-        /// </summary>
-        private void ShowErrorContent(string title, string errorMessage)
-        {
-            if (SettingsContent == null || SectionTitle == null) return;
-
-            SectionTitle.Text = title;
-            var errorPanel = new StackPanel
-            {
-                VerticalAlignment = VerticalAlignment.Center,
-                HorizontalAlignment = HorizontalAlignment.Center
-            };
-            var errorText = new TextBlock
-            {
-                Text = $"Failed to load settings section.\n{errorMessage}",
-                FontSize = 14,
-                Foreground = System.Windows.Media.Brushes.Gray,
-                TextWrapping = TextWrapping.Wrap,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                TextAlignment = TextAlignment.Center
-            };
-            errorPanel.Children.Add(errorText);
-            SettingsContent.Content = errorPanel;
+            var vm = App.Services.GetService<ExtensionsSettingsViewModel>();
+            var control = new ExtensionsSettingsControl();
+            if (vm != null)
+                control.DataContext = vm;
+            AnimateContentChange(control, "Extensions", fromRight: true);
         }
 
         private void AnimateContentChange(UserControl newContent, string title, bool fromRight)
