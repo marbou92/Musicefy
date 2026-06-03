@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
+using System.Windows.Media;
 
 namespace Musicefy.Converters
 {
@@ -50,9 +51,15 @@ namespace Musicefy.Converters
     }
 
     /// <summary>
-    /// Converts a SearchSourceMode enum value to a path data string
+    /// Converts a SearchSourceMode enum value to a Geometry object
     /// for the source mode toggle icon.
     ///   Local → Cloud-off icon, Online → Cloud icon
+    ///
+    /// FIX: Previously returned a raw string, but Path.Data requires a Geometry object.
+    /// WPF's Path.Data property does not auto-convert strings in binding expressions —
+    /// it only accepts Geometry objects through bindings. This caused the source mode
+    /// toggle icon in the search bar to appear blank/broken. Now returns Geometry.Parse()
+    /// matching the pattern used by IconGlyphConverter.
     /// </summary>
     public class SearchModeIconConverter : IValueConverter
     {
@@ -62,15 +69,19 @@ namespace Musicefy.Converters
         // Cloud-off icon (local mode)
         private const string CloudOffPath = "M19.8,22.6L17.2,20H6A6,6 0 0,1 0,14C0,10.91 2.34,8.36 5.35,8.04C5.13,8.65 5,9.31 5,10H7A5,5 0 0,1 12,5C14.36,5 16.4,6.38 17.29,8.44C17.75,8.16 18.29,8 18.86,8C20.6,8 22,9.4 22,11.14C22,11.85 21.73,12.5 21.28,13L23.5,15.18L19.8,22.6Z";
 
+        // Cache parsed geometries to avoid re-parsing on every conversion
+        private static readonly Geometry CloudGeometry = Geometry.Parse(CloudPath);
+        private static readonly Geometry CloudOffGeometry = Geometry.Parse(CloudOffPath);
+
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is Musicefy.Core.Models.SearchSourceMode mode)
             {
                 return mode == Musicefy.Core.Models.SearchSourceMode.Online
-                    ? CloudPath
-                    : CloudOffPath;
+                    ? CloudGeometry
+                    : CloudOffGeometry;
             }
-            return CloudPath;
+            return CloudGeometry;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
