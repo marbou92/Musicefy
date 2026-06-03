@@ -11,53 +11,109 @@ namespace Musicefy.Views
     public partial class SettingsPage : UserControl
     {
         private AppearanceSettingsViewModel _appearanceVM;
+        private bool _initialLoadPending = true;
 
         public SettingsPage()
         {
             InitializeComponent();
+
+            // After InitializeComponent completes, all named elements (including
+            // SettingsContent and SectionTitle) are fully created. Set up the
+            // default content here instead of relying solely on the Loaded event.
+            //
+            // NOTE: The AppearanceButton_Checked event fires DURING InitializeComponent
+            // (because IsChecked="True" is set in XAML), but at that point
+            // SettingsContent hasn't been created yet (it's defined later in the
+            // XAML tree). The null check in AnimateContentChange silently skips
+            // that early call. We set up the initial content here, after all
+            // elements are guaranteed to exist.
             ShowAppearance();
+
+            this.Loaded += SettingsPage_Loaded;
+        }
+
+        private void SettingsPage_Loaded(object sender, System.Windows.RoutedEventArgs e)
+        {
+            // Safety net: if for any reason the initial ShowAppearance() call
+            // in the constructor didn't stick (e.g. SettingsContent was somehow
+            // still null), try again on Loaded.
+            if (_initialLoadPending)
+            {
+                _initialLoadPending = false;
+                if (SettingsContent?.Content == null)
+                {
+                    ShowAppearance();
+                }
+            }
         }
 
         private void AppearanceButton_Checked(object sender, System.Windows.RoutedEventArgs e)
         {
-            if (AppearanceButton.IsChecked == true) ShowAppearance();
+            // Guard: don't try to animate content if the visual elements
+            // aren't ready yet (this fires during InitializeComponent before
+            // SettingsContent exists).
+            if (AppearanceButton.IsChecked == true && SettingsContent != null)
+            {
+                ShowAppearance();
+            }
         }
 
         private void DownloadsButton_Checked(object sender, System.Windows.RoutedEventArgs e)
         {
-            if (DownloadsButton.IsChecked == true) ShowDownloads();
+            if (DownloadsButton.IsChecked == true && SettingsContent != null)
+            {
+                ShowDownloads();
+            }
         }
 
         private void SourcesButton_Checked(object sender, System.Windows.RoutedEventArgs e)
         {
-            if (SourcesButton.IsChecked == true) ShowSources();
+            if (SourcesButton.IsChecked == true && SettingsContent != null)
+            {
+                ShowSources();
+            }
         }
 
         private void RepositoriesButton_Checked(object sender, System.Windows.RoutedEventArgs e)
         {
-            if (RepositoriesButton.IsChecked == true) ShowRepositories();
+            if (RepositoriesButton.IsChecked == true && SettingsContent != null)
+            {
+                ShowRepositories();
+            }
         }
 
         private void DiscoverButton_Checked(object sender, System.Windows.RoutedEventArgs e)
         {
-            if (DiscoverButton.IsChecked == true) ShowDiscover();
+            if (DiscoverButton.IsChecked == true && SettingsContent != null)
+            {
+                ShowDiscover();
+            }
         }
 
         private void ExtensionsButton_Checked(object sender, System.Windows.RoutedEventArgs e)
         {
-            if (ExtensionsButton.IsChecked == true) ShowExtensions();
+            if (ExtensionsButton.IsChecked == true && SettingsContent != null)
+            {
+                ShowExtensions();
+            }
         }
 
         private void ShowAppearance()
         {
             _appearanceVM = App.Services.GetService<AppearanceSettingsViewModel>();
-            AnimateContentChange(new AppearanceSettingsControl { DataContext = _appearanceVM }, "Appearance Settings", fromRight: false);
+            var control = new AppearanceSettingsControl();
+            if (_appearanceVM != null)
+                control.DataContext = _appearanceVM;
+            AnimateContentChange(control, "Appearance Settings", fromRight: false);
         }
 
         private void ShowDownloads()
         {
             var vm = App.Services.GetService<DownloadsSettingsViewModel>();
-            AnimateContentChange(new DownloadsSettingsControl { DataContext = vm }, "Downloads Settings", fromRight: true);
+            var control = new DownloadsSettingsControl();
+            if (vm != null)
+                control.DataContext = vm;
+            AnimateContentChange(control, "Downloads Settings", fromRight: true);
         }
 
         private void ShowSources()
@@ -73,13 +129,19 @@ namespace Musicefy.Views
         private void ShowRepositories()
         {
             var vm = App.Services.GetService<RepositoriesSettingsViewModel>();
-            AnimateContentChange(new RepositoriesSettingsControl { DataContext = vm }, "Extension Repositories", fromRight: true);
+            var control = new RepositoriesSettingsControl();
+            if (vm != null)
+                control.DataContext = vm;
+            AnimateContentChange(control, "Extension Repositories", fromRight: true);
         }
 
         private void ShowExtensions()
         {
             var vm = App.Services.GetService<ExtensionsSettingsViewModel>();
-            AnimateContentChange(new ExtensionsSettingsControl { DataContext = vm }, "Extensions", fromRight: true);
+            var control = new ExtensionsSettingsControl();
+            if (vm != null)
+                control.DataContext = vm;
+            AnimateContentChange(control, "Extensions", fromRight: true);
         }
 
         private void AnimateContentChange(UserControl newContent, string title, bool fromRight)
