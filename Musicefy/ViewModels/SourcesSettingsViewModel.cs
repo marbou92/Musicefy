@@ -10,6 +10,7 @@ using System.Windows;
 using System.Windows.Input;
 using Musicefy.Core.Interfaces;
 using Musicefy.Core.Models;
+using Musicefy.Core.Services;
 
 namespace Musicefy.ViewModels
 {
@@ -83,10 +84,10 @@ namespace Musicefy.ViewModels
             _sourceManager = sourceManager ?? throw new ArgumentNullException(nameof(sourceManager));
             _healthCheckService = healthCheckService ?? throw new ArgumentNullException(nameof(healthCheckService));
 
-            AddSourceCommand = new RelayCommand(ExecuteAddSource, CanAddSource);
-            RemoveSourceCommand = new RelayCommand<SourceViewModel>(ExecuteRemoveSource, CanRemoveSource);
-            TestConnectionCommand = new RelayCommand<SourceViewModel>(ExecuteTestConnection, CanTestConnection);
-            EditSourceCommand = new RelayCommand<SourceViewModel>(ExecuteEditSource, CanEditSource);
+            AddSourceCommand = new DelegateCommand(ExecuteAddSource, CanAddSource);
+            RemoveSourceCommand = new DelegateCommand<SourceViewModel>(ExecuteRemoveSource, CanRemoveSource);
+            TestConnectionCommand = new DelegateCommand<SourceViewModel>(ExecuteTestConnection, CanTestConnection);
+            EditSourceCommand = new DelegateCommand<SourceViewModel>(ExecuteEditSource, CanEditSource);
 
             LoadSources();
             LoadProviders();
@@ -131,7 +132,7 @@ namespace Musicefy.ViewModels
             // We need to get providers from DI - this is typically done through App.Services
             try
             {
-                var providers = App.Services?.GetServices(typeof(IMusicSourceProvider));
+                var providers = App.Services?.GetService(typeof(IEnumerable<IMusicSourceProvider>));
                 if (providers != null)
                 {
                     foreach (var provider in providers.Cast<IMusicSourceProvider>())
@@ -330,6 +331,59 @@ namespace Musicefy.ViewModels
             field = value;
             OnPropertyChanged(propertyName);
             return true;
+        }
+
+        #endregion
+
+        #region Delegate Command Implementations
+
+        /// <summary>
+        /// Non-generic delegate command. Named DelegateCommand to avoid collision
+        /// with any RelayCommand that may exist elsewhere in the project.
+        /// </summary>
+        private class DelegateCommand : ICommand
+        {
+            private readonly Action _execute;
+            private readonly Func<bool> _canExecute;
+
+            public DelegateCommand(Action execute, Func<bool> canExecute = null)
+            {
+                _execute = execute ?? throw new ArgumentNullException(nameof(execute));
+                _canExecute = canExecute;
+            }
+
+            public event EventHandler CanExecuteChanged
+            {
+                add { CommandManager.RequerySuggested += value; }
+                remove { CommandManager.RequerySuggested -= value; }
+            }
+
+            public bool CanExecute(object parameter) => _canExecute?.Invoke() ?? true;
+            public void Execute(object parameter) => _execute();
+        }
+
+        /// <summary>
+        /// Generic delegate command for typed command parameters.
+        /// </summary>
+        private class DelegateCommand<T> : ICommand
+        {
+            private readonly Action<T> _execute;
+            private readonly Func<T, bool> _canExecute;
+
+            public DelegateCommand(Action<T> execute, Func<T, bool> canExecute = null)
+            {
+                _execute = execute ?? throw new ArgumentNullException(nameof(execute));
+                _canExecute = canExecute;
+            }
+
+            public event EventHandler CanExecuteChanged
+            {
+                add { CommandManager.RequerySuggested += value; }
+                remove { CommandManager.RequerySuggested -= value; }
+            }
+
+            public bool CanExecute(object parameter) => _canExecute?.Invoke((T)parameter) ?? true;
+            public void Execute(object parameter) => _execute((T)parameter);
         }
 
         #endregion
