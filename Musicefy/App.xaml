@@ -23,6 +23,11 @@
             <conv:LyricsToLinesConverter x:Key="LyricsToLinesConverter"/>
             <conv:IndexToBoolConverter x:Key="IndexToBoolConverter"/>
             <conv:IconGlyphConverter x:Key="IconGlyphConverter"/>
+
+            <!-- Phase 2: Search converters -->
+            <conv:NonZeroToVisibilityConverter x:Key="NonZeroToVisibilityConverter"/>
+            <conv:ZeroToVisibilityConverter x:Key="ZeroToVisibilityConverter"/>
+            <conv:SearchModeIconConverter x:Key="SearchModeIconConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
