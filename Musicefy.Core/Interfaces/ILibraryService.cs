@@ -74,5 +74,25 @@ namespace Musicefy.Core.Interfaces
         /// Create a new playlist
         /// </summary>
         Task<string> CreatePlaylistAsync(string name);
+
+        /// <summary>
+        /// Get most played tracks within the specified number of days
+        /// </summary>
+        Task<List<MusicFile>> GetMostPlayedAsync(int days, int limit, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Get favourite tracks that haven't been played recently (forgotten favorites)
+        /// </summary>
+        Task<List<MusicFile>> GetForgottenFavoritesAsync(int daysSincePlayed, int limit, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Get recently played tracks (wrapper for GetHistoryTracksAsync with default limit)
+        /// </summary>
+        Task<List<MusicFile>> GetRecentlyPlayedAsync(int limit, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Get random favourite tracks for Quick Picks generation
+        /// </summary>
+        Task<List<MusicFile>> GetRandomFavouriteTracksAsync(int limit, CancellationToken cancellationToken = default);
     }
 }
