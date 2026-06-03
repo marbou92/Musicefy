@@ -3,11 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:views="clr-namespace:Musicefy.Views"
              xmlns:vm="clr-namespace:Musicefy.ViewModels"
-             xmlns:conv="clr-namespace:Musicefy.Converters"
              Background="Transparent">
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
-        <conv:IconGlyphConverter x:Key="IconGlyphConverter"/>
     </UserControl.Resources>
 
     <Grid>
@@ -24,8 +22,7 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Column="0">
-                <TextBlock Text="Sources" FontSize="22" FontWeight="Bold"
-                           Foreground="{DynamicResource OnSurfaceBrush}"/>
+                <TextBlock Text="Sources" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource OnSurfaceBrush}"/>
                 <TextBlock Text="Manage your music sources and connections"
                            FontSize="12" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,4,0,0"/>
             </StackPanel>
@@ -41,7 +38,7 @@
                       Padding="20,0,20,20">
             <Grid>
                 <!-- Sources List -->
-                <ItemsControl x:Name="SourcesList" Visibility="Visible">
+                <ItemsControl x:Name="SourcesList" Visibility="Collapsed">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate DataType="{x:Type vm:SourceViewModel}">
                             <views:SourceCard DataContext="{Binding}"/>
@@ -50,16 +47,13 @@
                 </ItemsControl>
 
                 <!-- Empty State -->
-                <StackPanel x:Name="EmptyState" Visibility="Collapsed"
+                <StackPanel x:Name="EmptyState" Visibility="Visible"
                             HorizontalAlignment="Center" VerticalAlignment="Center"
                             Margin="0,80,0,0">
-                    <Path Data="M12,3V12.26C11.5,12.09 11,12 10.5,12C8,12 6,14 6,16.5C6,19 8,21 10.5,21C13,21 15,19 15,16.5V6H19V3H12Z"
-                          Fill="{DynamicResource OnSurfaceVariantBrush}" Width="48" Height="48"
-                          Stretch="Uniform" HorizontalAlignment="Center" Margin="0,0,0,16" Opacity="0.5"/>
                     <TextBlock Text="No sources configured" FontSize="16" FontWeight="SemiBold"
                                Foreground="{DynamicResource OnSurfaceVariantBrush}" HorizontalAlignment="Center" Margin="0,0,0,8"/>
                     <TextBlock Text="Add a music source to start listening"
-                               FontSize="12" Foreground="{DynamicResource OnSurfaceVariantBrush}" HorizontalAlignment="Center" Margin="0,0,0,24" Opacity="0.7"/>
+                               FontSize="12" Foreground="{DynamicResource OnSurfaceVariantBrush}" HorizontalAlignment="Center" Margin="0,0,0,24"/>
                     <Button Content="Add Your First Source" Padding="20,10"
                             FontSize="13" FontWeight="SemiBold" Cursor="Hand"
                             HorizontalAlignment="Center"
