@@ -6,8 +6,9 @@
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
     </UserControl.Resources>
 
-    <Border BorderBrush="#333333" BorderThickness="1" CornerRadius="6"
-            Background="#1E1E1E" Margin="0,0,0,8" Padding="16">
+    <!-- FIX: Replaced hardcoded #1E1E1E and #333333 with DynamicResource theme brushes -->
+    <Border BorderBrush="{DynamicResource OutlineVariantBrush}" BorderThickness="1" CornerRadius="6"
+            Background="{DynamicResource SurfaceContainerBrush}" Margin="0,0,0,8" Padding="16">
         <StackPanel>
             <!-- Header Row -->
             <Grid Margin="0,0,0,8">
@@ -26,22 +27,22 @@
                     <!-- Source Type Icon — FIX: replaced TextBlock with Path+IconGlyphConverter
                          so that the icon renders as a proper SVG vector path instead of showing
                          a fallback emoji character. This matches the icon rendering pattern used
-                         everywhere else in the app (ExtensionsSettingsControl, DiscoverSettingsControl, etc.) -->
+                         everywhere else in the app (ExtensionsSettingsControl, DiscoverSettingsControl). -->
                     <Border Width="28" Height="28" CornerRadius="14"
-                            Background="#333333" Margin="0,0,8,0"
+                            Background="{DynamicResource PrimaryContainerBrush}" Margin="0,0,8,0"
                             VerticalAlignment="Center">
                         <Path Data="{Binding Type, Converter={StaticResource IconGlyphConverter}}"
                               Width="16" Height="16" Stretch="Uniform"
-                              Fill="White"
+                              Fill="{DynamicResource PrimaryBrush}"
                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
 
                     <!-- Source Name -->
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="SemiBold"
-                                   Foreground="White"/>
+                                   Foreground="{DynamicResource OnSurfaceBrush}"/>
                         <TextBlock Text="{Binding DisplayName}" FontSize="11"
-                                   Foreground="#AAAAAA" Margin="0,2,0,0"/>
+                                   Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,2,0,0"/>
                     </StackPanel>
                 </StackPanel>
 
@@ -65,18 +66,18 @@
                             x:Name="ExpandButton"/>
                     <!-- Remove Button -->
                     <Button Content="&#x2715;" Padding="6,4" Margin="4,0"
-                            FontSize="11" Cursor="Hand" Foreground="#F44336"
+                            FontSize="11" Cursor="Hand" Foreground="{DynamicResource ErrorBrush}"
                             Click="RemoveButton_Click"/>
                 </StackPanel>
             </Grid>
 
             <!-- Error Message -->
-            <TextBlock Text="{Binding ErrorMessage}" FontSize="11" Foreground="#F44336"
+            <TextBlock Text="{Binding ErrorMessage}" FontSize="11" Foreground="{DynamicResource ErrorBrush}"
                        TextWrapping="Wrap" Margin="0,0,0,4"
                        Visibility="{Binding ErrorMessage, Converter={StaticResource BoolToVis}}"/>
 
             <!-- Last Health Check -->
-            <TextBlock FontSize="10" Foreground="#888888" Margin="0,0,0,4">
+            <TextBlock FontSize="10" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,0,0,4">
                 <Run Text="Last check: "/>
                 <Run Text="{Binding LastHealthCheckText, Mode=OneWay}"/>
             </TextBlock>
@@ -84,10 +85,10 @@
             <!-- Expanded Configuration Details -->
             <StackPanel Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVis}}"
                         Margin="0,8,0,0">
-                <Border BorderBrush="#444444" BorderThickness="0,1,0,0" Padding="0,8,0,0">
+                <Border BorderBrush="{DynamicResource OutlineVariantBrush}" BorderThickness="0,1,0,0" Padding="0,8,0,0">
                     <StackPanel>
                         <TextBlock Text="Configuration" FontSize="12" FontWeight="SemiBold"
-                                   Foreground="#CCCCCC" Margin="0,0,0,6"/>
+                                   Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,0,0,6"/>
                         <ItemsControl x:Name="ConfigItems">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
@@ -97,9 +98,9 @@
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
                                         <TextBlock Text="{Binding Key}" FontSize="11"
-                                                   Foreground="#AAAAAA" VerticalAlignment="Center"/>
+                                                   Foreground="{DynamicResource OnSurfaceVariantBrush}" VerticalAlignment="Center"/>
                                         <TextBlock Grid.Column="1" Text="{Binding Value}" FontSize="11"
-                                                   Foreground="#DDDDDD" VerticalAlignment="Center"
+                                                   Foreground="{DynamicResource OnSurfaceBrush}" VerticalAlignment="Center"
                                                    TextTrimming="CharacterEllipsis"/>
                                     </Grid>
                                 </DataTemplate>
@@ -109,16 +110,16 @@
                         <!-- Connection Info -->
                         <StackPanel Margin="0,8,0,0">
                             <TextBlock Text="Connection" FontSize="12" FontWeight="SemiBold"
-                                       Foreground="#CCCCCC" Margin="0,0,0,4"/>
+                                       Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,0,0,4"/>
                             <Grid Margin="0,2">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="120"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Text="Source ID" FontSize="11"
-                                           Foreground="#AAAAAA" VerticalAlignment="Center"/>
+                                           Foreground="{DynamicResource OnSurfaceVariantBrush}" VerticalAlignment="Center"/>
                                 <TextBlock Grid.Column="1" Text="{Binding Id}" FontSize="11"
-                                           Foreground="#DDDDDD" VerticalAlignment="Center"
+                                           Foreground="{DynamicResource OnSurfaceBrush}" VerticalAlignment="Center"
                                            TextTrimming="CharacterEllipsis"/>
                             </Grid>
                             <Grid Margin="0,2">
@@ -127,9 +128,9 @@
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Text="Type" FontSize="11"
-                                           Foreground="#AAAAAA" VerticalAlignment="Center"/>
+                                           Foreground="{DynamicResource OnSurfaceVariantBrush}" VerticalAlignment="Center"/>
                                 <TextBlock Grid.Column="1" Text="{Binding Type}" FontSize="11"
-                                           Foreground="#DDDDDD" VerticalAlignment="Center"/>
+                                           Foreground="{DynamicResource OnSurfaceBrush}" VerticalAlignment="Center"/>
                             </Grid>
                         </StackPanel>
                     </StackPanel>
@@ -139,7 +140,7 @@
             <!-- Connecting Overlay -->
             <StackPanel Visibility="{Binding IsConnecting, Converter={StaticResource BoolToVis}}"
                         Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,4">
-                <TextBlock Text="Testing connection..." FontSize="11" Foreground="#AAAAAA"
+                <TextBlock Text="Testing connection..." FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"
                            VerticalAlignment="Center"/>
             </StackPanel>
         </StackPanel>
