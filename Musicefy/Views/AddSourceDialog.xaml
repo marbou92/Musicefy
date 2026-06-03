@@ -4,8 +4,8 @@
         Title="Add Source" Width="500" SizeToContent="Height"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
-        Background="#1E1E1E"
-        Foreground="White">
+        Background="{DynamicResource SurfaceBrush}"
+        Foreground="{DynamicResource OnSurfaceBrush}">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
     </Window.Resources>
@@ -20,7 +20,7 @@
         </Grid.RowDefinitions>
 
         <!-- Step Indicator -->
-        <TextBlock Grid.Row="0" FontSize="14" FontWeight="SemiBold" Foreground="White" Margin="0,0,0,16">
+        <TextBlock Grid.Row="0" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource OnSurfaceBrush}" Margin="0,0,0,16">
             <Run Text="Step "/>
             <Run x:Name="StepNumber" Text="1"/>
             <Run Text=" of 2"/>
@@ -30,22 +30,30 @@
 
         <!-- Step 1: Select Source Type -->
         <StackPanel Grid.Row="1" x:Name="Step1Panel">
-            <TextBlock Text="Choose a source type to add:" FontSize="12" Foreground="#AAAAAA" Margin="0,0,0,12"/>
+            <TextBlock Text="Choose a source type to add:" FontSize="12" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,0,0,12"/>
 
             <ItemsControl x:Name="ProviderList">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border BorderBrush="#444444" BorderThickness="1" CornerRadius="4"
-                                Background="#2D2D2D" Margin="0,4" Padding="12"
+                        <Border BorderBrush="{DynamicResource OutlineVariantBrush}" BorderThickness="1" CornerRadius="8"
+                                Background="{DynamicResource SurfaceContainerHighBrush}" Margin="0,4" Padding="12"
                                 Cursor="Hand" MouseLeftButtonUp="ProviderItem_Click"
                                 Tag="{Binding}">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{Binding IconGlyph}" FontSize="24" Margin="0,0,12,0"
-                                           VerticalAlignment="Center"/>
+                                <!-- FIX: Replaced TextBlock emoji with Path+IconGlyphConverter
+                                     so icons render as proper SVG vectors -->
+                                <Border Width="36" Height="36" CornerRadius="18"
+                                        Background="{DynamicResource PrimaryContainerBrush}" Margin="0,0,12,0"
+                                        VerticalAlignment="Center">
+                                    <Path Data="{Binding SourceType, Converter={StaticResource IconGlyphConverter}}"
+                                          Width="18" Height="18" Stretch="Uniform"
+                                          Fill="{DynamicResource PrimaryBrush}"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
                                 <StackPanel VerticalAlignment="Center">
                                     <TextBlock Text="{Binding DisplayName}" FontSize="13" FontWeight="SemiBold"
-                                               Foreground="White"/>
-                                    <TextBlock Text="{Binding Description}" FontSize="11" Foreground="#AAAAAA"
+                                               Foreground="{DynamicResource OnSurfaceBrush}"/>
+                                    <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"
                                                TextWrapping="Wrap" MaxWidth="350"/>
                                 </StackPanel>
                             </StackPanel>
@@ -58,36 +66,36 @@
         <!-- Step 2: Configure Source -->
         <StackPanel Grid.Row="2" x:Name="Step2Panel" Visibility="Collapsed">
             <!-- Source Name -->
-            <TextBlock Text="Source Name" FontSize="12" Foreground="#AAAAAA" Margin="0,0,0,4"/>
+            <TextBlock Text="Source Name" FontSize="12" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,0,0,4"/>
             <TextBox x:Name="SourceNameBox" Padding="8,6" Margin="0,0,0,16"
-                     FontSize="13" Background="#2D2D2D" Foreground="White"
-                     BorderBrush="#444444" BorderThickness="1"/>
+                     FontSize="13" Background="{DynamicResource SurfaceContainerHighBrush}" Foreground="{DynamicResource OnSurfaceBrush}"
+                     BorderBrush="{DynamicResource OutlineBrush}" BorderThickness="1"/>
 
             <!-- Dynamic Configuration Fields -->
             <ItemsControl x:Name="ConfigFieldsPanel">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock FontSize="12" Foreground="#AAAAAA" Margin="0,0,0,4">
+                            <TextBlock FontSize="12" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,0,0,4">
                                 <Run Text="{Binding Label, Mode=OneWay}"/>
                                 <InlineUIContainer>
-                                    <TextBlock Text=" *" Foreground="#F44336" FontSize="12"
+                                    <TextBlock Text=" *" Foreground="{DynamicResource ErrorBrush}" FontSize="12"
                                                Visibility="{Binding IsRequired, Converter={StaticResource BoolToVis}}"/>
                                 </InlineUIContainer>
                             </TextBlock>
                             <PasswordBox Padding="8,6" FontSize="13"
-                                         Background="#2D2D2D" Foreground="White"
-                                         BorderBrush="#444444" BorderThickness="1"
+                                         Background="{DynamicResource SurfaceContainerHighBrush}" Foreground="{DynamicResource OnSurfaceBrush}"
+                                         BorderBrush="{DynamicResource OutlineBrush}" BorderThickness="1"
                                          Tag="{Binding Key}"
                                          Visibility="{Binding IsPassword, Converter={StaticResource BoolToVis}}"
                                          x:Name="PasswordField"/>
                             <TextBox Padding="8,6" FontSize="13"
-                                     Background="#2D2D2D" Foreground="White"
-                                     BorderBrush="#444444" BorderThickness="1"
+                                     Background="{DynamicResource SurfaceContainerHighBrush}" Foreground="{DynamicResource OnSurfaceBrush}"
+                                     BorderBrush="{DynamicResource OutlineBrush}" BorderThickness="1"
                                      Tag="{Binding Key}"
                                      Visibility="{Binding IsNotPassword, Converter={StaticResource BoolToVis}}"
                                      x:Name="ValueField"/>
-                            <TextBlock Text="{Binding Description}" FontSize="10" Foreground="#888888"
+                            <TextBlock Text="{Binding Description}" FontSize="10" Foreground="{DynamicResource OnSurfaceVariantBrush}"
                                        TextWrapping="Wrap" Margin="0,2,0,0"/>
                         </StackPanel>
                     </DataTemplate>
@@ -96,7 +104,8 @@
 
             <!-- Test Connection Result -->
             <StackPanel x:Name="TestResultPanel" Visibility="Collapsed" Margin="0,8,0,0">
-                <Border CornerRadius="4" Padding="10,8"
+                <Border CornerRadius="8" Padding="10,8"
+                        Background="{DynamicResource SurfaceContainerHighBrush}"
                         x:Name="TestResultBorder">
                     <TextBlock x:Name="TestResultText" FontSize="12" TextWrapping="Wrap"/>
                 </Border>
@@ -122,7 +131,7 @@
         <!-- Loading indicator -->
         <StackPanel Grid.Row="4" x:Name="LoadingPanel" Visibility="Collapsed"
                     Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,8,0,0">
-            <TextBlock Text="Testing connection..." FontSize="11" Foreground="#AAAAAA"/>
+            <TextBlock Text="Testing connection..." FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"/>
         </StackPanel>
     </Grid>
 </Window>
