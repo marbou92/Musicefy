@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Musicefy.Core.Interfaces;
+using Musicefy.Core.Library;
 using Musicefy.Core.Models;
 using static Musicefy.Core.SourceTypes;
 
