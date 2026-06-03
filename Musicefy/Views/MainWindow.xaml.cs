@@ -111,6 +111,46 @@ namespace Musicefy
         {
             if (MainContent == null) return;
 
+            // Resolve the page NOW (before animation starts) so we know if it's null
+            _viewModel.NavigateToPage(index);
+            var targetPage = _viewModel.CurrentPage;
+
+            // Fallback: if navigation returned null, create the page directly
+            if (targetPage == null)
+            {
+                try
+                {
+                    targetPage = index switch
+                    {
+                        0 => new HomeControl(),
+                        1 => new SearchControl(),
+                        2 => new LibraryControl(),
+                        3 => new SettingsPage(),
+                        _ => null
+                    };
+                    _viewModel.CurrentPage = targetPage;
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[MainWindow] Direct page creation failed for index {index}: {ex}");
+                }
+            }
+
+            // If still null, show error placeholder instead of blank
+            if (targetPage == null)
+            {
+                MainContent.Content = new TextBlock
+                {
+                    Text = $"Failed to load page {index}. Check the Output window for errors.",
+                    Foreground = new SolidColorBrush(Colors.Red),
+                    FontSize = 16,
+                    Margin = new Thickness(40),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    HorizontalAlignment = HorizontalAlignment.Center
+                };
+                return;
+            }
+
             var durationOut = TimeSpan.FromMilliseconds(110);
             var durationIn  = TimeSpan.FromMilliseconds(220);
             var easeOut = new CubicEase { EasingMode = EasingMode.EaseOut };
@@ -121,8 +161,7 @@ namespace Musicefy
 
             fadeOut.Completed += (s, ev) =>
             {
-                _viewModel.NavigateToPage(index);
-                MainContent.Content = _viewModel.CurrentPage;
+                MainContent.Content = targetPage;
                 PageSlideTransform.Y = 16;
                 this.UpdateLayout();
 
