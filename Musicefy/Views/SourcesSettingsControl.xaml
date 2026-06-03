@@ -7,7 +7,10 @@
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
     </UserControl.Resources>
 
-    <Grid Background="#1E1E1E">
+    <!-- FIX: Replaced hardcoded #1E1E1E background with DynamicResource SurfaceBrush
+         so that the Sources settings page respects the app theme (Dark/Light/AMOLED)
+         instead of always appearing as a dark block. -->
+    <Grid Background="{DynamicResource SurfaceBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -21,9 +24,9 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Column="0">
-                <TextBlock Text="Sources" FontSize="22" FontWeight="Bold" Foreground="White"/>
+                <TextBlock Text="Sources" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource OnSurfaceBrush}"/>
                 <TextBlock Text="Manage your music sources and connections"
-                           FontSize="12" Foreground="#AAAAAA" Margin="0,4,0,0"/>
+                           FontSize="12" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,4,0,0"/>
             </StackPanel>
 
             <Button Grid.Column="1" Content="+ Add Source" Padding="16,8"
@@ -49,11 +52,16 @@
                 <StackPanel x:Name="EmptyState" Visibility="Collapsed"
                             HorizontalAlignment="Center" VerticalAlignment="Center"
                             Margin="0,80,0,0">
-                    <TextBlock Text="🎵" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                    <!-- FIX: Replaced emoji &#x1F3B5; with a Path icon so it renders
+                         correctly across all Windows versions and font configurations -->
+                    <Path Data="M12,3V12.26C11.5,12.09 11,12 10.5,12C8,12 6,14 6,16.5C6,19 8,21 10.5,21C13,21 15,19 15,16.5V6H19V3H12Z"
+                          Fill="{DynamicResource OnSurfaceVariantBrush}" Width="48" Height="48"
+                          Stretch="Uniform" HorizontalAlignment="Center" Margin="0,0,0,16"
+                          Opacity="0.5"/>
                     <TextBlock Text="No sources configured" FontSize="16" FontWeight="SemiBold"
-                               Foreground="#AAAAAA" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                               Foreground="{DynamicResource OnSurfaceVariantBrush}" HorizontalAlignment="Center" Margin="0,0,0,8"/>
                     <TextBlock Text="Add a music source to start listening"
-                               FontSize="12" Foreground="#888888" HorizontalAlignment="Center" Margin="0,0,0,24"/>
+                               FontSize="12" Foreground="{DynamicResource OnSurfaceVariantBrush}" HorizontalAlignment="Center" Margin="0,0,0,24"/>
                     <Button Content="Add Your First Source" Padding="20,10"
                             FontSize="13" FontWeight="SemiBold" Cursor="Hand"
                             HorizontalAlignment="Center"
