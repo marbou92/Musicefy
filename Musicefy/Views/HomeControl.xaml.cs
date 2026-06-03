@@ -1,126 +1,114 @@
 using System;
-using System.ComponentModel;
-using System.Linq;
-using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
-using Musicefy.Services;
 using Musicefy.ViewModels;
 
 namespace Musicefy.Views
 {
+    /// <summary>
+    /// Home dashboard control implementing Echo Music's two-phase loading pattern.
+    /// Displays personalized content sections from all connected music sources.
+    /// </summary>
     public partial class HomeControl : UserControl
     {
-        private readonly PlaybackService _playback;
-        private readonly MainViewModel _viewModel;
+        private HomeViewModel _viewModel;
 
-        public HomeControl(PlaybackService playback, MainViewModel mainViewModel)
+        public HomeControl()
         {
             InitializeComponent();
-            _playback = playback ?? throw new ArgumentNullException(nameof(playback));
-            _viewModel = mainViewModel ?? throw new ArgumentNullException(nameof(mainViewModel));
+            Loaded += HomeControl_Loaded;
+        }
 
-            DataContext = _viewModel;
+        /// <summary>
+        /// Constructor with DI-injected ViewModel. Used when resolved from ServiceCollection.
+        /// </summary>
+        public HomeControl(HomeViewModel viewModel) : this()
+        {
+            DataContext = viewModel;
+        }
 
-            _viewModel.PropertyChanged += OnViewModelPropertyChanged;
-            Unloaded += OnUnloaded;
+        private async void HomeControl_Loaded(object sender, System.Windows.RoutedEventArgs e)
+        {
+            UpdateGreeting();
 
-            Loaded += async (s, e) =>
+            if (DataContext is HomeViewModel vm)
             {
-                try
+                _viewModel = vm;
+                _viewModel.PropertyChanged += ViewModel_PropertyChanged;
+                UpdateVisualState();
+
+                // Auto-load on first display if not already loaded
+                if (vm.LoadState == Core.Models.HomeLoadState.NotStarted)
                 {
-                    await _viewModel.ReloadAsync();
-                    UpdateViewState();
+                    await vm.LoadAsync();
                 }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"[HomeControl] Loaded handler failed: {ex}");
-                }
-            };
-        }
-
-        private void OnUnloaded(object sender, RoutedEventArgs e)
-        {
-            _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
-        }
-
-        private void OnViewModelPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(MainViewModel.IsLoading) ||
-                e.PropertyName == nameof(MainViewModel.IsEmpty))
-            {
-                UpdateViewState();
             }
         }
 
-        private void UpdateViewState()
+        private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (_viewModel.IsLoading)
+            switch (e.PropertyName)
             {
-                LoadingSkeleton.Visibility = Visibility.Visible;
-                ContentArea.Visibility = Visibility.Collapsed;
-                EmptyState.Visibility = Visibility.Collapsed;
-            }
-            else if (_viewModel.IsEmpty)
-            {
-                EmptyState.Visibility = Visibility.Visible;
-                ContentArea.Visibility = Visibility.Collapsed;
-                LoadingSkeleton.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                ContentArea.Visibility = Visibility.Visible;
-                EmptyState.Visibility = Visibility.Collapsed;
-                LoadingSkeleton.Visibility = Visibility.Collapsed;
+                case nameof(HomeViewModel.LoadState):
+                case nameof(HomeViewModel.IsEmpty):
+                    UpdateVisualState();
+                    break;
             }
         }
 
-        private void QuickPicksList_DoubleClick(object sender, MouseButtonEventArgs e)
+        private void UpdateVisualState()
         {
-            if (QuickPicksList.SelectedItem is TrackCard selected && selected.SourceTrack != null)
-                _playback.PlayTrack(selected.SourceTrack);
-        }
+            if (_viewModel == null) return;
 
-        private void PlayAllQuickPicks_Click(object sender, RoutedEventArgs e)
-        {
-            var tracks = _viewModel.FilteredQuickPicks
-                .Where(c => c.SourceTrack != null)
-                .Select(c => c.SourceTrack)
-                .ToList();
+            LoadingSkeleton.Visibility = _viewModel.IsLoading
+                ? System.Windows.Visibility.Visible
+                : System.Windows.Visibility.Collapsed;
 
-            if (tracks.Count == 0)
+            ErrorPanel.Visibility = _viewModel.HasError
+                ? System.Windows.Visibility.Visible
+                : System.Windows.Visibility.Collapsed;
+
+            EmptyPanel.Visibility = _viewModel.IsEmpty
+                ? System.Windows.Visibility.Visible
+                : System.Windows.Visibility.Collapsed;
+
+            MainScrollViewer.Visibility = _viewModel.IsLoaded && !_viewModel.IsEmpty
+                ? System.Windows.Visibility.Visible
+                : System.Windows.Visibility.Collapsed;
+
+            // Show chip bar when chips are available
+            ChipBar.Visibility = _viewModel.AvailableChips.Count > 0
+                ? System.Windows.Visibility.Visible
+                : System.Windows.Visibility.Collapsed;
+
+            if (_viewModel.HasError)
             {
-                tracks = _viewModel.QuickPicks
-                    .Where(c => c.SourceTrack != null)
-                    .Select(c => c.SourceTrack)
-                    .ToList();
+                ErrorText.Text = _viewModel.ErrorMessage ?? "An unexpected error occurred.";
             }
-
-            if (tracks.Count == 0) return;
-
-            foreach (var track in tracks)
-                _playback.EnqueueTrack(track);
-
-            _playback.PlayTrack(tracks[0]);
         }
 
-        private void RecentlyPlayed_MouseDown(object sender, MouseButtonEventArgs e)
+        private void UpdateGreeting()
         {
-            if (e.ClickCount == 2 && sender is Border border && border.DataContext is TrackCard selected && selected.SourceTrack != null)
-                _playback.PlayTrack(selected.SourceTrack);
+            var hour = DateTime.Now.Hour;
+            string greeting;
+            if (hour < 6) greeting = "Good Night";
+            else if (hour < 12) greeting = "Good Morning";
+            else if (hour < 18) greeting = "Good Afternoon";
+            else greeting = "Good Evening";
+
+            GreetingText.Text = greeting;
+            SubGreetingText.Text = "What would you like to listen to?";
         }
 
-        private void HeroCard_MouseDown(object sender, MouseButtonEventArgs e)
+        private async void RetryButton_Click(object sender, System.Windows.RoutedEventArgs e)
         {
-            if (e.ClickCount == 2 && _viewModel.HeroTrack?.SourceTrack != null)
-                _playback.PlayTrack(_viewModel.HeroTrack.SourceTrack);
+            if (_viewModel != null)
+                await _viewModel.LoadAsync();
         }
 
-        private void OpenSources_Click(object sender, RoutedEventArgs e)
+        private async void RefreshButton_Click(object sender, System.Windows.RoutedEventArgs e)
         {
-            if (Window.GetWindow(this) is MainWindow mainWindow)
-                mainWindow.NavigateToSettings();
-            _ = _viewModel.ReloadAsync();
+            if (_viewModel != null && _viewModel.RefreshCommand.CanExecute(null))
+                _viewModel.RefreshCommand.Execute(null);
         }
     }
 }
