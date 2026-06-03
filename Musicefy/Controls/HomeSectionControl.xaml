@@ -1,0 +1,102 @@
+<UserControl x:Class="Musicefy.Controls.HomeSectionControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="Transparent">
+
+    <Grid Margin="0,0,0,28">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Section Header -->
+        <Grid Grid.Row="0" Margin="0,0,0,12">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="{Binding Title}" FontSize="20" FontWeight="Bold"
+                           Foreground="{DynamicResource OnSurfaceBrush}"
+                           VerticalAlignment="Center"/>
+                <!-- Section type badge for non-local sources -->
+                <Border Background="{DynamicResource SurfaceVariantBrush}"
+                        CornerRadius="10" Padding="8,2" Margin="12,0,0,0"
+                        VerticalAlignment="Center"
+                        Visibility="{Binding SourceType, Converter={StaticResource NonLocalVisibilityConverter}}">
+                    <TextBlock Text="{Binding SourceType}" FontSize="10"
+                               Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                               VerticalAlignment="Center"/>
+                </Border>
+            </StackPanel>
+
+            <!-- See All button -->
+            <Button Content="See All" HorizontalAlignment="Right"
+                    FontSize="12" FontWeight="SemiBold"
+                    Foreground="{DynamicResource PrimaryBrush}"
+                    Background="Transparent" BorderThickness="0" Cursor="Hand"
+                    Visibility="Collapsed" x:Name="SeeAllButton"/>
+        </Grid>
+
+        <!-- Loading indicator for this section -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal"
+                    Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
+                    Margin="0,8,0,0">
+            <TextBlock Text="Loading..." FontSize="12"
+                       Foreground="{DynamicResource OnSurfaceVariantBrush}"/>
+        </StackPanel>
+
+        <!-- Horizontal scrolling content -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Disabled"
+                      HorizontalScrollBarVisibility="Auto"
+                      Visibility="{Binding IsLoading, Converter={StaticResource InverseBoolToVisConverter}}">
+            <ItemsControl ItemsSource="{Binding Items}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <!-- Quick Pick / Song Card -->
+                        <Border Width="160" Margin="0,0,16,0" Background="Transparent" Cursor="Hand"
+                                MouseLeftButtonUp="OnCardClick">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Opacity" Value="0.85"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel>
+                                <!-- Cover art -->
+                                <Border Background="{DynamicResource SurfaceVariantBrush}"
+                                        Width="160" Height="160" CornerRadius="12"
+                                        ClipToBounds="True" Margin="0,0,0,10">
+                                    <Grid>
+                                        <!-- Placeholder icon -->
+                                        <Path Data="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9Z"
+                                              Fill="{DynamicResource OutlineBrush}" Width="36" Height="36"
+                                              Stretch="Uniform" HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" Opacity="0.3"/>
+                                        <!-- Cover image (when available) -->
+                                        <Image Source="{Binding CoverPath}"
+                                               RenderOptions.BitmapScalingMode="HighQuality"
+                                               Stretch="UniformToFill" VerticalAlignment="Center"
+                                               HorizontalAlignment="Center"/>
+                                    </Grid>
+                                </Border>
+                                <!-- Title -->
+                                <TextBlock Text="{Binding Title}" FontSize="13" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource OnSurfaceBrush}"
+                                           TextTrimming="CharacterEllipsis" Margin="2,0,0,0"/>
+                                <!-- Subtitle (Artist or Album) -->
+                                <TextBlock Text="{Binding Artist}" FontSize="11"
+                                           Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                                           TextTrimming="CharacterEllipsis" Margin="2,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
+</UserControl>
