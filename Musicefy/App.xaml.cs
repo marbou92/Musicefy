@@ -131,6 +131,9 @@ namespace Musicefy
             services.AddSingleton<IHealthCheckService, HealthCheckService>();
             services.AddSingleton<IBrowseService, UnifiedBrowseService>();
 
+            // Phase 1: Home ViewModel (singleton for state persistence across navigation)
+            services.AddSingleton<HomeViewModel>();
+
             services.AddTransient<HomeControl>();
             services.AddTransient<SearchControl>();
             services.AddTransient<LibraryControl>();
