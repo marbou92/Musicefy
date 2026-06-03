@@ -47,7 +47,6 @@ namespace Musicefy.Views
         // FIX: Implement ISettingsControl.Cancel() for symmetry.
         public void Cancel()
         {
-            // Refresh sources from the manager to discard any uncommitted changes
             _viewModel?.RefreshSources();
             UpdateEmptyState();
         }
