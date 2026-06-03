@@ -23,9 +23,18 @@
                     <Ellipse Width="10" Height="10" Margin="0,0,8,0"
                              Fill="{Binding HealthStatusColor}"/>
 
-                    <!-- Source Type Icon -->
-                    <TextBlock Text="{Binding IconGlyph}" FontSize="20" Margin="0,0,8,0"
-                               VerticalAlignment="Center"/>
+                    <!-- Source Type Icon — FIX: replaced TextBlock with Path+IconGlyphConverter
+                         so that the icon renders as a proper SVG vector path instead of showing
+                         a fallback emoji character. This matches the icon rendering pattern used
+                         everywhere else in the app (ExtensionsSettingsControl, DiscoverSettingsControl, etc.) -->
+                    <Border Width="28" Height="28" CornerRadius="14"
+                            Background="#333333" Margin="0,0,8,0"
+                            VerticalAlignment="Center">
+                        <Path Data="{Binding Type, Converter={StaticResource IconGlyphConverter}}"
+                              Width="16" Height="16" Stretch="Uniform"
+                              Fill="White"
+                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
 
                     <!-- Source Name -->
                     <StackPanel VerticalAlignment="Center">
@@ -50,12 +59,12 @@
                             FontSize="11" Cursor="Hand"
                             Click="TestButton_Click"/>
                     <!-- Edit/Expand Button -->
-                    <Button Content="▼" Padding="6,4" Margin="4,0"
+                    <Button Content="&#x25BC;" Padding="6,4" Margin="4,0"
                             FontSize="10" Cursor="Hand"
                             Click="ExpandButton_Click"
                             x:Name="ExpandButton"/>
                     <!-- Remove Button -->
-                    <Button Content="✕" Padding="6,4" Margin="4,0"
+                    <Button Content="&#x2715;" Padding="6,4" Margin="4,0"
                             FontSize="11" Cursor="Hand" Foreground="#F44336"
                             Click="RemoveButton_Click"/>
                 </StackPanel>
