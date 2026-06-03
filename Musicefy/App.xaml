@@ -13,6 +13,9 @@
             </ResourceDictionary.MergedDictionaries>
 
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+            <conv:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisConverter"/>
+            <conv:NonLocalVisibilityConverter x:Key="NonLocalVisibilityConverter"/>
+            <conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
 
             <conv:ThemePreviewConverter x:Key="ThemePreviewConverter"/>
             <conv:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
