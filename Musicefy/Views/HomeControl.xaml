@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:Musicefy.Controls"
              xmlns:vm="clr-namespace:Musicefy.ViewModels"
+             xmlns:models="clr-namespace:Musicefy.Core.Models;assembly=Musicefy.Core"
              Background="Transparent"
              VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
 
@@ -137,7 +138,7 @@
                 <!-- Home Sections -->
                 <ItemsControl ItemsSource="{Binding Sections}">
                     <ItemsControl.ItemTemplate>
-                        <DataTemplate DataType="{x:Type vm:HomeSection}">
+                        <DataTemplate DataType="{x:Type models:HomeSection}">
                             <controls:HomeSectionControl DataContext="{Binding}"
                                                          Margin="0,0,0,8"/>
                         </DataTemplate>
