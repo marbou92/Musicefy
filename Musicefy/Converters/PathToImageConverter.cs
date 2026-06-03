@@ -106,7 +106,7 @@ namespace Musicefy.Converters
                 //   → https://i.ytimg.com/vi/VIDEO_ID/mqdefault.jpg
                 if (url.Contains("i.ytimg.com", StringComparison.OrdinalIgnoreCase))
                 {
-                    url = url.Replace("/vi_webp/", "/vi/", StringComparison.OrdinalIgnoreCase);
+                    url = System.Text.RegularExpressions.Regex.Replace(url, "/vi_webp/", "/vi/", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
                     if (url.EndsWith(".webp", StringComparison.OrdinalIgnoreCase))
                         url = url.Substring(0, url.Length - 5) + ".jpg";
                     return url;
@@ -131,7 +131,7 @@ namespace Musicefy.Converters
                     // If URL ends with =sN-c-k-c0x00ffffff-no-rw or similar, fix it
                     if (url.Contains("-no-rw", StringComparison.OrdinalIgnoreCase))
                     {
-                        url = url.Replace("-no-rw", "-no-rj", StringComparison.OrdinalIgnoreCase);
+                        url = System.Text.RegularExpressions.Regex.Replace(url, "-no-rw", "-no-rj", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
                     }
 
                     return url;
@@ -324,7 +324,7 @@ namespace Musicefy.Converters
             // Strategy 2: For ytimg.com, force /vi/ path and .jpg extension
             if (jpegUrl.Contains("ytimg.com", StringComparison.OrdinalIgnoreCase))
             {
-                jpegUrl = jpegUrl.Replace("/vi_webp/", "/vi/", StringComparison.OrdinalIgnoreCase);
+                jpegUrl = System.Text.RegularExpressions.Regex.Replace(jpegUrl, "/vi_webp/", "/vi/", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
                 if (!jpegUrl.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) &&
                     !jpegUrl.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
                 {
