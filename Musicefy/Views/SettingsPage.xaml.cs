@@ -11,55 +11,100 @@ namespace Musicefy.Views
     public partial class SettingsPage : UserControl
     {
         private AppearanceSettingsViewModel _appearanceVM;
-
         private bool _initialLoadPending = true;
 
         public SettingsPage()
         {
             InitializeComponent();
             this.Loaded += SettingsPage_Loaded;
+
+            // Initialize the default content IMMEDIATELY in the constructor
+            // instead of waiting for the Loaded event. This ensures content
+            // is visible even if Loaded fires late or not at all.
+            try
+            {
+                ShowAppearance();
+                _initialLoadPending = false;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SettingsPage] Constructor init failed: {ex.Message}");
+                // Fallback: set a placeholder so the page isn't blank
+                ShowFallbackContent($"Error loading Appearance: {ex.Message}");
+            }
         }
 
         private void SettingsPage_Loaded(object sender, System.Windows.RoutedEventArgs e)
         {
+            // Only show appearance if the constructor didn't already do it
             if (_initialLoadPending)
             {
                 _initialLoadPending = false;
-                ShowAppearance();
+                try
+                {
+                    ShowAppearance();
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[SettingsPage] Loaded init failed: {ex.Message}");
+                    ShowFallbackContent($"Error loading Appearance: {ex.Message}");
+                }
             }
         }
 
         private void AppearanceButton_Checked(object sender, System.Windows.RoutedEventArgs e)
         {
-            // Skip the spurious Checked event that fires during InitializeComponent
-            // when IsChecked="True" — the Loaded handler handles the initial display.
             if (_initialLoadPending) return;
-            if (AppearanceButton.IsChecked == true) ShowAppearance();
+            if (AppearanceButton.IsChecked == true)
+            {
+                try { ShowAppearance(); }
+                catch (Exception ex) { ShowFallbackContent($"Error: {ex.Message}"); }
+            }
         }
 
         private void DownloadsButton_Checked(object sender, System.Windows.RoutedEventArgs e)
         {
-            if (DownloadsButton.IsChecked == true) ShowDownloads();
+            if (DownloadsButton.IsChecked == true)
+            {
+                try { ShowDownloads(); }
+                catch (Exception ex) { ShowFallbackContent($"Error: {ex.Message}"); }
+            }
         }
 
         private void SourcesButton_Checked(object sender, System.Windows.RoutedEventArgs e)
         {
-            if (SourcesButton.IsChecked == true) ShowSources();
+            if (SourcesButton.IsChecked == true)
+            {
+                try { ShowSources(); }
+                catch (Exception ex) { ShowFallbackContent($"Error: {ex.Message}"); }
+            }
         }
 
         private void RepositoriesButton_Checked(object sender, System.Windows.RoutedEventArgs e)
         {
-            if (RepositoriesButton.IsChecked == true) ShowRepositories();
+            if (RepositoriesButton.IsChecked == true)
+            {
+                try { ShowRepositories(); }
+                catch (Exception ex) { ShowFallbackContent($"Error: {ex.Message}"); }
+            }
         }
 
         private void DiscoverButton_Checked(object sender, System.Windows.RoutedEventArgs e)
         {
-            if (DiscoverButton.IsChecked == true) ShowDiscover();
+            if (DiscoverButton.IsChecked == true)
+            {
+                try { ShowDiscover(); }
+                catch (Exception ex) { ShowFallbackContent($"Error: {ex.Message}"); }
+            }
         }
 
         private void ExtensionsButton_Checked(object sender, System.Windows.RoutedEventArgs e)
         {
-            if (ExtensionsButton.IsChecked == true) ShowExtensions();
+            if (ExtensionsButton.IsChecked == true)
+            {
+                try { ShowExtensions(); }
+                catch (Exception ex) { ShowFallbackContent($"Error: {ex.Message}"); }
+            }
         }
 
         private void ShowAppearance()
@@ -112,6 +157,21 @@ namespace Musicefy.Views
             AnimateContentChange(control, "Extensions", fromRight: true);
         }
 
+        private void ShowFallbackContent(string message)
+        {
+            if (SettingsContent == null || SectionTitle == null) return;
+            SectionTitle.Text = "Settings";
+            SettingsContent.Content = new TextBlock
+            {
+                Text = message,
+                Foreground = new SolidColorBrush(Colors.Red),
+                FontSize = 14,
+                TextWrapping = TextWrapping.Wrap,
+                Margin = new Thickness(0, 20, 0, 0),
+                VerticalAlignment = VerticalAlignment.Top
+            };
+        }
+
         private void AnimateContentChange(UserControl newContent, string title, bool fromRight)
         {
             // Persist whatever the outgoing panel last set
@@ -120,7 +180,7 @@ namespace Musicefy.Views
                 try { outgoing.Save(); }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[SettingsPage] Error saving settings: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"[SettingsPage] Save error: {ex.Message}");
                 }
             }
 
