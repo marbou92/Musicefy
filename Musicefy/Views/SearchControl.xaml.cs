@@ -1,149 +1,78 @@
-using System;
-using System.ComponentModel;
-using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media.Animation;
 using Musicefy.Core.Models;
 using Musicefy.ViewModels;
 
 namespace Musicefy.Views
 {
+    /// <summary>
+    /// Interaction logic for SearchControl.xaml
+    /// Implements Echo Music's search screen with state-driven UI
+    /// (Idle, Suggestions, Searching, Results).
+    /// </summary>
     public partial class SearchControl : UserControl
     {
-        private SearchViewModel ViewModel => DataContext as SearchViewModel;
-        private Storyboard _spinnerStoryboard;
-
         public SearchControl()
         {
             InitializeComponent();
-            Loaded += OnLoaded;
-            Unloaded += OnUnloaded;
         }
 
-        private void OnLoaded(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Handles filter tab clicks since WPF RadioButton doesn't natively
+        /// bind to enum values. Converts the Tag string to SearchResultFilter
+        /// and sets it on the ViewModel.
+        /// </summary>
+        private void FilterTab_Click(object sender, System.Windows.RoutedEventArgs e)
         {
-            if (ViewModel != null)
-                ViewModel.PropertyChanged += OnSearchPropertyChanged;
-        }
-
-        private void OnUnloaded(object sender, RoutedEventArgs e)
-        {
-            if (ViewModel != null)
-                ViewModel.PropertyChanged -= OnSearchPropertyChanged;
-            StopSpinner();
-        }
-
-        private void OnSearchPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(SearchViewModel.IsSearching))
+            if (sender is System.Windows.Controls.RadioButton radio &&
+                radio.Tag is string tag &&
+                DataContext is SearchViewModel vm)
             {
-                if (ViewModel.IsSearching)
-                    StartSpinner();
-                else
-                    StopSpinner();
+                SearchResultFilter filter;
+                switch (tag)
+                {
+                    case "Songs":
+                        filter = SearchResultFilter.Songs;
+                        break;
+                    case "Albums":
+                        filter = SearchResultFilter.Albums;
+                        break;
+                    case "Artists":
+                        filter = SearchResultFilter.Artists;
+                        break;
+                    case "Playlists":
+                        filter = SearchResultFilter.Playlists;
+                        break;
+                    default:
+                        filter = SearchResultFilter.All;
+                        break;
+                }
+                vm.SelectedFilter = filter;
             }
         }
 
-        private void StartSpinner()
+        /// <summary>
+        /// Handles click on a search result item. Determines the type
+        /// and invokes the appropriate ViewModel command.
+        /// </summary>
+        private void ResultItem_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            if (_spinnerStoryboard != null) return;
-            SearchSpinner.BeginAnimation(OpacityProperty, null);
-            SearchSpinner.Visibility = Visibility.Visible;
-            SearchSpinner.Opacity = 1;
-            _spinnerStoryboard = new Storyboard();
-            var rotate = new DoubleAnimation
+            if (sender is System.Windows.FrameworkElement fe && fe.DataContext != null && DataContext is SearchViewModel vm)
             {
-                From = 0,
-                To = 360,
-                Duration = new Duration(TimeSpan.FromSeconds(0.8)),
-                RepeatBehavior = RepeatBehavior.Forever,
-                EasingFunction = new SineEase { EasingMode = EasingMode.EaseInOut }
-            };
-            Storyboard.SetTargetName(rotate, "SpinnerArc");
-            Storyboard.SetTargetProperty(rotate, new PropertyPath("(Path.RenderTransform).(RotateTransform.Angle)"));
-            _spinnerStoryboard.Children.Add(rotate);
-            _spinnerStoryboard.Begin(SearchSpinner);
-        }
+                var item = fe.DataContext;
 
-        private void StopSpinner()
-        {
-            if (_spinnerStoryboard == null) return;
-            _spinnerStoryboard.Stop(SearchSpinner);
-            _spinnerStoryboard = null;
-            var fadeOut = new DoubleAnimation
-            {
-                From = 1,
-                To = 0,
-                Duration = new Duration(TimeSpan.FromMilliseconds(150)),
-                EasingFunction = new SineEase { EasingMode = EasingMode.EaseIn }
-            };
-            fadeOut.Completed += (s, a) => SearchSpinner.Visibility = Visibility.Collapsed;
-            SearchSpinner.BeginAnimation(OpacityProperty, fadeOut);
-        }
-
-        private void SearchBox_GotFocus(object sender, RoutedEventArgs e)
-        {
-            if (SearchBox.Text == "Search...")
-            {
-                SearchBox.Text = "";
-                SearchBox.Foreground = (System.Windows.Media.Brush)FindResource("TextBrush");
+                if (item is MusicFile track)
+                {
+                    vm.PlayTrackCommand.Execute(track);
+                }
+                else if (item is ArtistInfo artist)
+                {
+                    vm.NavigateToArtistCommand.Execute(artist);
+                }
+                else if (item is AlbumInfo album)
+                {
+                    vm.NavigateToAlbumCommand.Execute(album);
+                }
             }
-        }
-
-        private void SearchBox_LostFocus(object sender, RoutedEventArgs e)
-        {
-            if (string.IsNullOrWhiteSpace(SearchBox.Text))
-            {
-                SearchBox.Text = "Search...";
-                SearchBox.Foreground = (System.Windows.Media.Brush)FindResource("MutedTextBrush");
-            }
-        }
-
-        private void SearchBox_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter && ViewModel != null)
-            {
-                e.Handled = true;
-                ViewModel.SearchNow();
-            }
-        }
-
-        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (ViewModel != null)
-            {
-                ViewModel.SearchQuery = SearchBox.Text == "Search..." ? "" : SearchBox.Text;
-                if (!string.IsNullOrWhiteSpace(SearchBox.Text) && SearchBox.Text != "Search...")
-                    StartSpinner();
-                else
-                    StopSpinner();
-            }
-        }
-
-        private void BtnClear_Click(object sender, RoutedEventArgs e)
-        {
-            SearchBox.Text = "Search...";
-            SearchBox.Foreground = (System.Windows.Media.Brush)FindResource("MutedTextBrush");
-            if (ViewModel != null)
-                ViewModel.SearchQuery = "";
-            Keyboard.Focus(SearchBox);
-        }
-
-        private void SearchResults_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            if (SearchResultsListView.SelectedItem is MusicFile track && ViewModel != null)
-            {
-                ViewModel.SelectedResult = track;
-                if (ViewModel.PlayTrackCommand.CanExecute(track))
-                    ViewModel.PlayTrackCommand.Execute(track);
-            }
-        }
-
-        private void SearchBar_PreviewMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            if (!SearchBox.IsKeyboardFocusWithin)
-                Keyboard.Focus(SearchBox);
         }
     }
 }
