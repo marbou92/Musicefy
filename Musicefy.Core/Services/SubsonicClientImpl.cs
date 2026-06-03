@@ -207,19 +207,27 @@ namespace Musicefy.Core.Services
             var artist = response?.Element("artist");
             if (artist != null)
             {
-                foreach (var album in artist.Elements("album"))
+                var albumIds = artist.Elements("album")
+                    .Select(a => a.Attribute("id")?.Value)
+                    .Where(id => id != null)
+                    .ToList();
+
+                // Concurrent fetch instead of sequential N+1
+                var albumTasks = albumIds.Select(albumId => GetAlbumAsync(albumId, cancellationToken)).ToArray();
+                try
                 {
-                    var albumId = album.Attribute("id")?.Value;
-                    if (albumId != null)
+                    var albumResults = await Task.WhenAll(albumTasks);
+                    foreach (var albumSongs in albumResults)
+                        songs.AddRange(albumSongs);
+                }
+                catch
+                {
+                    // If WhenAll fails, fall back to results from completed tasks
+                    foreach (var task in albumTasks)
                     {
-                        try
+                        if (task.IsCompleted && task.Status == TaskStatus.RanToCompletion)
                         {
-                            var albumSongs = await GetAlbumAsync(albumId, cancellationToken);
-                            songs.AddRange(albumSongs);
-                        }
-                        catch
-                        {
-                            // Skip albums that fail to load
+                            try { songs.AddRange(task.Result); } catch { }
                         }
                     }
                 }
