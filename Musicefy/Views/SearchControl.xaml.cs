@@ -17,6 +17,16 @@ namespace Musicefy.Views
         }
 
         /// <summary>
+        /// Constructor with DI-injected ViewModel. Used when resolved from ServiceCollection.
+        /// This ensures the SearchControl has a proper DataContext so all bindings work.
+        /// Follows the same pattern as HomeControl(HomeViewModel).
+        /// </summary>
+        public SearchControl(SearchViewModel viewModel) : this()
+        {
+            DataContext = viewModel;
+        }
+
+        /// <summary>
         /// Handles filter tab clicks since WPF RadioButton doesn't natively
         /// bind to enum values. Converts the Tag string to SearchResultFilter
         /// and sets it on the ViewModel.
