@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;          // ← ADD THIS
 using System.Windows.Media.Animation;
 using Microsoft.Extensions.DependencyInjection;
 using Musicefy.Core.Interfaces;
