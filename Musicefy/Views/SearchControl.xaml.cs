@@ -26,11 +26,6 @@ namespace Musicefy.Views
             DataContext = viewModel;
         }
 
-        /// <summary>
-        /// Handles filter tab clicks since WPF RadioButton doesn't natively
-        /// bind to enum values. Converts the Tag string to SearchResultFilter
-        /// and sets it on the ViewModel.
-        /// </summary>
         private void FilterTab_Click(object sender, System.Windows.RoutedEventArgs e)
         {
             if (sender is System.Windows.Controls.RadioButton radio &&
@@ -60,10 +55,6 @@ namespace Musicefy.Views
             }
         }
 
-        /// <summary>
-        /// Handles click on a search result item. Determines the type
-        /// and invokes the appropriate ViewModel command.
-        /// </summary>
         private void ResultItem_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             if (sender is System.Windows.FrameworkElement fe && fe.DataContext != null && DataContext is SearchViewModel vm)
