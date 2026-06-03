@@ -7,8 +7,7 @@ using System.Windows.Media;
 namespace Musicefy.Converters
 {
     /// <summary>
-    /// Converts an integer count to Visibility:
-    ///   Non-zero → Visible, Zero → Collapsed.
+    /// Non-zero → Visible, Zero → Collapsed.
     /// </summary>
     public class NonZeroToVisibilityConverter : IValueConverter
     {
@@ -28,8 +27,7 @@ namespace Musicefy.Converters
     }
 
     /// <summary>
-    /// Converts an integer count to Visibility:
-    ///   Zero → Visible, Non-zero → Collapsed.
+    /// Zero → Visible, Non-zero → Collapsed.
     /// </summary>
     public class ZeroToVisibilityConverter : IValueConverter
     {
@@ -49,13 +47,8 @@ namespace Musicefy.Converters
     }
 
     /// <summary>
-    /// Converts a SearchSourceMode enum value to a Geometry object
-    /// for the source mode toggle icon.
-    ///   Local → Cloud-off icon, Online → Cloud icon
-    ///
-    /// IMPORTANT: Must return Geometry (not string) because Path.Data
-    /// expects a Geometry object — WPF binding does NOT auto-convert
-    /// strings through TypeConverters for converter return values.
+    /// Converts a SearchSourceMode enum to a Geometry for the source mode icon.
+    /// IMPORTANT: Must return Geometry (not string) because Path.Data expects Geometry.
     /// </summary>
     public class SearchModeIconConverter : IValueConverter
     {
