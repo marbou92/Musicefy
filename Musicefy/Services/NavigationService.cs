@@ -1,15 +1,44 @@
 using System;
+using System.Windows.Controls;
 using Musicefy.Core.Models;
 
 namespace Musicefy.Services
 {
     /// <summary>
     /// Manages navigation between pages in the main window.
-    /// Stub implementation for Phase 1 — full implementation in Phase 2.
+    /// Provides both page resolution and navigation event routing.
     /// </summary>
     public class NavigationService
     {
+        private readonly IServiceProvider _serviceProvider;
+
         public event Action<string> NavigationRequested;
+
+        public NavigationService(IServiceProvider serviceProvider)
+        {
+            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+        }
+
+        /// <summary>
+        /// Resolves a named page to a UserControl instance via DI.
+        /// Supported names: "Home", "Search", "Library", and any other registered key.
+        /// Returns null if the page name is not recognized or the service is not registered.
+        /// </summary>
+        public UserControl GetPage(string pageName)
+        {
+            if (string.IsNullOrEmpty(pageName))
+                throw new ArgumentNullException(nameof(pageName));
+
+            // Resolve page by mapping name to the fully-qualified type, then
+            // asking the DI container for it.  This avoids compile-time coupling
+            // to View types that may live in the Musicefy assembly only.
+            var pageType = System.Type.GetType($"Musicefy.Views.{pageName}Control, Musicefy");
+            if (pageType == null)
+                return null;
+
+            var service = _serviceProvider.GetService(pageType);
+            return service as UserControl;
+        }
 
         public void NavigateToHome() => NavigationRequested?.Invoke("Home");
         public void NavigateToSearch() => NavigationRequested?.Invoke("Search");
