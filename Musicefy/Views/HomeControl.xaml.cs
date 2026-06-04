@@ -36,8 +36,13 @@ namespace Musicefy.Views
                 _viewModel.PropertyChanged += ViewModel_PropertyChanged;
                 UpdateVisualState();
 
-                // Auto-load on first display if not already loaded
-                if (vm.LoadState == Core.Models.HomeLoadState.NotStarted)
+                // Reload if never loaded or if stale (> 5 min since last refresh).
+                // This ensures Home picks up newly added sources when the user
+                // navigates back from Settings after adding one.
+                bool isStale = vm.LastRefreshed == null ||
+                    (DateTime.UtcNow - vm.LastRefreshed.Value).TotalMinutes > 5;
+
+                if (vm.LoadState == Core.Models.HomeLoadState.NotStarted || isStale)
                 {
                     await vm.LoadAsync();
                 }
