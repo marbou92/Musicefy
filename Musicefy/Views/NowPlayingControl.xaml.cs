@@ -114,6 +114,8 @@ namespace Musicefy.Views
             {
                 Name = track.Album,
                 Artist = track.Artist,
+                // Phase 2: Set ArtistId from track's ArtistBrowseId for reliable navigation
+                ArtistId = track.ArtistBrowseId,
                 Year = track.Year,
                 SourceType = track.SourceType
             };
