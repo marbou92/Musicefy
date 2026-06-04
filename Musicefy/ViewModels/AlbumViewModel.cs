@@ -267,8 +267,10 @@ namespace Musicefy.ViewModels
                              || !string.IsNullOrEmpty(album.YouTubeAlbumId);
 
             // Capture artist YouTube ID from album tracks for artist navigation
-            ArtistYouTubeId = album.Tracks?
-                .FirstOrDefault(t => !string.IsNullOrEmpty(t.ArtistBrowseId))?.ArtistBrowseId;
+            // Phase 2: Prefer AlbumInfo.ArtistId, then fall back to track ArtistBrowseId
+            ArtistYouTubeId = album.ArtistId
+                              ?? album.Tracks?
+                                     .FirstOrDefault(t => !string.IsNullOrEmpty(t.ArtistBrowseId))?.ArtistBrowseId;
 
             Tracks.Clear();
             foreach (var track in album.Tracks)
