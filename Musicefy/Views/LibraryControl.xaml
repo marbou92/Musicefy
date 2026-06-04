@@ -588,6 +588,101 @@
                     </ListView.ItemTemplate>
                 </ListView>
             </Grid>
+
+            <!-- ── Phase 5: Panel F: Playlists ──────────────────────────── -->
+            <Grid x:Name="PlaylistsPanel" Visibility="{Binding PlaylistsPanelVisibility}"
+                  VerticalAlignment="Stretch">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Playlist count + empty state -->
+                <StackPanel Grid.Row="0" Orientation="Horizontal"
+                            VerticalAlignment="Center" Margin="4,0,0,16">
+                    <TextBlock Text="{Binding PlaylistCountText}" FontSize="13"
+                               Foreground="{DynamicResource OnSurfaceVariantBrush}"/>
+                    <TextBlock Text=" · Create playlists to see them here."
+                               FontSize="13" Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                               Visibility="{Binding IsPlaylistEmptyHintVisible}"/>
+                </StackPanel>
+
+                <!-- Playlists list -->
+                <ListView x:Name="PlaylistsListView" Grid.Row="1"
+                          Background="Transparent" BorderThickness="0"
+                          Foreground="{DynamicResource OnSurfaceBrush}"
+                          ItemsSource="{Binding Playlists}"
+                          SelectedItem="{Binding SelectedPlaylist}"
+                          VerticalAlignment="Stretch"
+                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                          ScrollViewer.VerticalScrollBarVisibility="Auto"
+                          VirtualizingPanel.IsVirtualizing="True"
+                          VirtualizingPanel.VirtualizationMode="Recycling"
+                          ItemContainerStyle="{StaticResource AlbumRowStyle}"
+                          Padding="0,4"
+                          MouseDoubleClick="PlaylistsListView_MouseDoubleClick">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Height="64">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="64"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="80"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Playlist cover -->
+                                <Border Width="52" Height="52" CornerRadius="10"
+                                        ClipToBounds="True" Margin="0,0,12,0"
+                                        Background="{DynamicResource SurfaceVariantBrush}"
+                                        SnapsToDevicePixels="True">
+                                    <Grid>
+                                        <Path Data="M12,2C6.48,2 2,6.48 2,12S6.48,22 12,22 22,17.52 22,12 17.52,2 12,2M12,16.5L7,11.5H10V6H14V11.5H17L12,16.5Z"
+                                              Fill="{DynamicResource OnSurfaceBrush}" Opacity="0.3"
+                                              Width="24" Height="24" Stretch="Uniform"
+                                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        <Image Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}}"
+                                               RenderOptions.BitmapScalingMode="HighQuality" Stretch="UniformToFill"/>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Playlist name + track count -->
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="Medium"
+                                               Foreground="{DynamicResource OnSurfaceBrush}"
+                                               TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock FontSize="12"
+                                               Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                                               TextTrimming="CharacterEllipsis" Margin="0,2,0,0">
+                                        <TextBlock.Text>
+                                            <Binding Path="TrackCount" StringFormat="{}{0} tracks"/>
+                                        </TextBlock.Text>
+                                    </TextBlock>
+                                </StackPanel>
+
+                                <!-- Source type -->
+                                <TextBlock Grid.Column="2" Text="{Binding SourceType}" FontSize="12"
+                                           Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                                           VerticalAlignment="Center" HorizontalAlignment="Center"/>
+
+                                <!-- Delete button -->
+                                <Button Grid.Column="3"
+                                        Style="{StaticResource IconButtonStyle}"
+                                        Command="{Binding DataContext.DeletePlaylistCommand,
+                                                  RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}"
+                                        ToolTip="Delete playlist"
+                                        VerticalAlignment="Center" HorizontalAlignment="Center"
+                                        Margin="8,0,0,0">
+                                    <Path Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"
+                                          Width="16" Height="16" Stretch="Uniform"
+                                          Fill="{DynamicResource OnSurfaceVariantBrush}"/>
+                                </Button>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
         </Grid>
     </Grid>
 </UserControl>
