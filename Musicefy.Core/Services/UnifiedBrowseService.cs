@@ -314,19 +314,27 @@ namespace Musicefy.Core.Services
                             .Where(g => !string.IsNullOrEmpty(g.Key))
                             .Select(g => new AlbumInfo
                             {
+                                // Phase 2: Populate Id, YouTubeAlbumId, and ArtistId
+                                Id = g.FirstOrDefault(t => !string.IsNullOrEmpty(t.AlbumBrowseId))?.AlbumBrowseId
+                                     ?? $"local_album:{g.Key}:{artistName}",
                                 Name = g.Key,
                                 Artist = artistName,
+                                ArtistId = g.FirstOrDefault(t => !string.IsNullOrEmpty(t.ArtistBrowseId))?.ArtistBrowseId,
                                 Year = g.Max(t => t.Year),
                                 CoverPath = g.FirstOrDefault(t => !string.IsNullOrEmpty(t.CoverPath))?.CoverPath,
                                 SourceType = g.FirstOrDefault()?.SourceType,
+                                YouTubeAlbumId = g.FirstOrDefault(t => !string.IsNullOrEmpty(t.AlbumBrowseId))?.AlbumBrowseId,
                                 Tracks = g.OrderBy(t => t.TrackNumber).ToList()
                             }).ToList();
 
                         return new ArtistInfo
                         {
+                            // Phase 2: Consistently populate Id and YouTube IDs
+                            Id = artistId,
                             Name = artistName,
                             CoverPath = tracks.FirstOrDefault(t => !string.IsNullOrEmpty(t.CoverPath))?.CoverPath,
                             SourceType = source.Type,
+                            YouTubeChannelId = source.Type == YouTube ? artistId : null,
                             Tracks = tracks.ToList(),
                             Albums = albums
                         };
@@ -366,13 +374,20 @@ namespace Musicefy.Core.Services
                     var tracks = await session.GetAlbumAsync(albumId);
                     if (tracks?.Count > 0)
                     {
+                        // Phase 2: Capture artist browse ID from tracks for ArtistId
+                        var artistBrowseId = tracks.FirstOrDefault(t => !string.IsNullOrEmpty(t.ArtistBrowseId))?.ArtistBrowseId;
+
                         return new AlbumInfo
                         {
+                            Id = albumId,
                             Name = tracks[0].Album,
                             Artist = tracks[0].Artist,
+                            ArtistId = artistBrowseId,
                             Year = tracks.Max(t => t.Year),
                             CoverPath = tracks.FirstOrDefault(t => !string.IsNullOrEmpty(t.CoverPath))?.CoverPath,
                             SourceType = source.Type,
+                            YouTubeAlbumId = source.Type == YouTube ? albumId : null,
+                            TrackCount = tracks.Count,
                             Tracks = tracks.OrderBy(t => t.TrackNumber).ToList()
                         };
                     }
