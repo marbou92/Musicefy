@@ -12,6 +12,12 @@ namespace Musicefy.Core.Interfaces
     public interface IStreamingSourceManager
     {
         /// <summary>
+        /// Raised when a new source is added via <see cref="AddSourceAsync"/>.
+        /// Subscribers can use this to trigger UI refreshes (e.g. reload Home).
+        /// </summary>
+        event EventHandler SourceAdded;
+
+        /// <summary>
         /// All configured sources
         /// </summary>
         IReadOnlyList<StreamingSource> Sources { get; }
