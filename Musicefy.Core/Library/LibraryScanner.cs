@@ -507,6 +507,17 @@ namespace Musicefy.Core.Library
                 }
             }
 
+            // 4b. Phase 4: Sync Artists/Albums from Tracks after scan completes
+            try
+            {
+                await SyncArtistsAlbumsFromTracksAsync(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(
+                    $"[LibraryScanner] SyncArtistsAlbumsFromTracks failed: {ex.Message}");
+            }
+
             // 5. Completion report ─────────────────────────────────────────
             progress?.Report(new ScanProgressInfo
             {
@@ -1067,6 +1078,172 @@ namespace Musicefy.Core.Library
             }
         }
 
+        // ── Phase 4: Full library browsing ────────────────────────────────
+
+        public async Task<List<ArtistInfo>> GetAllArtistsAsync(CancellationToken cancellationToken = default)
+        {
+            using (var connection = new SqliteConnection(_dbConnectionString))
+            {
+                await connection.OpenAsync(cancellationToken);
+                var rows = await connection.QueryAsync<ArtistRow>(
+                    "SELECT * FROM Artists ORDER BY Name COLLATE NOCASE");
+                return rows.Select(RowToArtistInfo).ToList();
+            }
+        }
+
+        public async Task<List<AlbumInfo>> GetAllAlbumsAsync(CancellationToken cancellationToken = default)
+        {
+            using (var connection = new SqliteConnection(_dbConnectionString))
+            {
+                await connection.OpenAsync(cancellationToken);
+                var rows = await connection.QueryAsync<AlbumRow>(
+                    "SELECT * FROM Albums ORDER BY ArtistName COLLATE NOCASE, Name COLLATE NOCASE");
+                return rows.Select(RowToAlbumInfo).ToList();
+            }
+        }
+
+        /// <summary>
+        /// Synchronize the Artists and Albums tables from the Tracks table.
+        /// Extracts distinct artists and albums from track metadata, then
+        /// upserts them into the Artists/Albums tables. Preserves existing
+        /// IsFollowed/IsSaved states. Enriches YouTube browse IDs from
+        /// track metadata (ArtistBrowseId, AlbumBrowseId columns).
+        /// Inspired by Echo Music's library-first entity model — every track
+        /// implicitly defines its artist and album.
+        /// </summary>
+        public async Task SyncArtistsAlbumsFromTracksAsync(CancellationToken cancellationToken = default)
+        {
+            using (var connection = new SqliteConnection(_dbConnectionString))
+            {
+                await connection.OpenAsync(cancellationToken);
+
+                using (var tx = connection.BeginTransaction())
+                {
+                    // ── Sync Artists from Tracks ──────────────────────────────
+                    // Group tracks by Artist name; for each group, derive a stable
+                    // ID (prefer YouTube channel ID if available, else local hash).
+                    var artistRows = await connection.QueryAsync<ArtistTrackRow>(
+                        @"SELECT
+                            COALESCE(NULLIF(Artist, ''), 'Unknown Artist') AS ArtistName,
+                            ArtistBrowseId,
+                            SourceType,
+                            MIN(CoverPath) AS CoverPath
+                          FROM Tracks
+                          GROUP BY COALESCE(NULLIF(Artist, ''), 'Unknown Artist')",
+                        transaction: tx);
+
+                    foreach (var row in artistRows)
+                    {
+                        string artistId = !string.IsNullOrEmpty(row.ArtistBrowseId)
+                            ? row.ArtistBrowseId
+                            : $"local_artist:{row.ArtistName}";
+
+                        // Check if this artist already exists — preserve IsFollowed
+                        var existingFollow = await connection.QueryFirstOrDefaultAsync<int?>(
+                            "SELECT IsFollowed FROM Artists WHERE Id = @Id",
+                            new { Id = artistId }, transaction: tx);
+
+                        // Preserve existing YouTubeChannelId/Description/SubscriberCount if we already have them
+                        var existingYtChannel = await connection.QueryFirstOrDefaultAsync<string>(
+                            "SELECT YouTubeChannelId FROM Artists WHERE Id = @Id",
+                            new { Id = artistId }, transaction: tx);
+
+                        string ytChannelId = !string.IsNullOrEmpty(row.ArtistBrowseId)
+                            ? row.ArtistBrowseId
+                            : existingYtChannel;
+
+                        int isFollowed = existingFollow ?? 0;
+
+                        await connection.ExecuteAsync(@"
+                            INSERT OR REPLACE INTO Artists (Id, Name, CoverPath, SourceType, YouTubeChannelId, Description, SubscriberCount, IsFollowed, LastBrowsedAt)
+                            VALUES (@Id, @Name, @CoverPath, @SourceType, @YouTubeChannelId,
+                                    (SELECT Description FROM Artists WHERE Id = @Id),
+                                    (SELECT SubscriberCount FROM Artists WHERE Id = @Id),
+                                    @IsFollowed,
+                                    (SELECT LastBrowsedAt FROM Artists WHERE Id = @Id))",
+                            new
+                            {
+                                Id = artistId,
+                                Name = row.ArtistName,
+                                row.CoverPath,
+                                row.SourceType,
+                                YouTubeChannelId = ytChannelId,
+                                IsFollowed = isFollowed
+                            }, transaction: tx);
+                    }
+
+                    // ── Sync Albums from Tracks ──────────────────────────────
+                    // Group tracks by Album + Artist; derive stable ID.
+                    var albumRows = await connection.QueryAsync<AlbumTrackRow>(
+                        @"SELECT
+                            COALESCE(NULLIF(Album, ''), 'Unknown Album') AS AlbumName,
+                            COALESCE(NULLIF(Artist, ''), 'Unknown Artist') AS ArtistName,
+                            AlbumBrowseId,
+                            ArtistBrowseId,
+                            SourceType,
+                            MAX(Year) AS Year,
+                            MIN(CoverPath) AS CoverPath,
+                            COUNT(*) AS TrackCount
+                          FROM Tracks
+                          GROUP BY COALESCE(NULLIF(Album, ''), 'Unknown Album'),
+                                   COALESCE(NULLIF(Artist, ''), 'Unknown Artist')",
+                        transaction: tx);
+
+                    foreach (var row in albumRows)
+                    {
+                        string albumId = !string.IsNullOrEmpty(row.AlbumBrowseId)
+                            ? row.AlbumBrowseId
+                            : $"local_album:{row.AlbumName}:{row.ArtistName}";
+
+                        // Derive ArtistId from the artist's stable ID
+                        string artistId = !string.IsNullOrEmpty(row.ArtistBrowseId)
+                            ? row.ArtistBrowseId
+                            : $"local_artist:{row.ArtistName}";
+
+                        // Check if this album already exists — preserve IsSaved
+                        var existingSaved = await connection.QueryFirstOrDefaultAsync<int?>(
+                            "SELECT IsSaved FROM Albums WHERE Id = @Id",
+                            new { Id = albumId }, transaction: tx);
+
+                        // Preserve existing YouTubeAlbumId if we already have a better one
+                        var existingYtAlbumId = await connection.QueryFirstOrDefaultAsync<string>(
+                            "SELECT YouTubeAlbumId FROM Albums WHERE Id = @Id",
+                            new { Id = albumId }, transaction: tx);
+
+                        string ytAlbumId = !string.IsNullOrEmpty(row.AlbumBrowseId)
+                            ? row.AlbumBrowseId
+                            : existingYtAlbumId;
+
+                        int isSaved = existingSaved ?? 0;
+
+                        await connection.ExecuteAsync(@"
+                            INSERT OR REPLACE INTO Albums (Id, Name, ArtistId, ArtistName, Year, CoverPath, SourceType, YouTubeAlbumId, Description, Genre, IsSaved, TrackCount, LastBrowsedAt)
+                            VALUES (@Id, @Name, @ArtistId, @ArtistName, @Year, @CoverPath, @SourceType, @YouTubeAlbumId,
+                                    (SELECT Description FROM Albums WHERE Id = @Id),
+                                    (SELECT Genre FROM Albums WHERE Id = @Id),
+                                    @IsSaved,
+                                    @TrackCount,
+                                    (SELECT LastBrowsedAt FROM Albums WHERE Id = @Id))",
+                            new
+                            {
+                                Id = albumId,
+                                Name = row.AlbumName,
+                                ArtistId = artistId,
+                                ArtistName = row.ArtistName,
+                                row.Year,
+                                row.CoverPath,
+                                row.SourceType,
+                                YouTubeAlbumId = ytAlbumId,
+                                IsSaved = isSaved,
+                                row.TrackCount
+                            }, transaction: tx);
+                    }
+
+                    tx.Commit();
+                }
+            }
+        }
+
         // ── Phase 2: Row → Model mappers ─────────────────────────────────
 
         private static ArtistInfo RowToArtistInfo(ArtistRow row)
@@ -1146,6 +1323,27 @@ namespace Musicefy.Core.Library
         {
             public string FilePath     { get; set; }
             public string LastModified { get; set; }
+        }
+
+        // Phase 4: Row types for SyncArtistsAlbumsFromTracksAsync queries
+        private class ArtistTrackRow
+        {
+            public string ArtistName { get; set; }
+            public string ArtistBrowseId { get; set; }
+            public string SourceType { get; set; }
+            public string CoverPath { get; set; }
+        }
+
+        private class AlbumTrackRow
+        {
+            public string AlbumName { get; set; }
+            public string ArtistName { get; set; }
+            public string AlbumBrowseId { get; set; }
+            public string ArtistBrowseId { get; set; }
+            public string SourceType { get; set; }
+            public int Year { get; set; }
+            public string CoverPath { get; set; }
+            public int TrackCount { get; set; }
         }
     }
 }
