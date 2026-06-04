@@ -453,8 +453,9 @@ namespace Musicefy.Core.Services
                         return albumTracks.ToList();
                 }
 
-                var songs = await session.SearchAsync("", 200);
-                return songs?.ToList() ?? new List<MusicFile>();
+                // Use GetAllTracksAsync for all sources — semantically correct
+                // and more complete than SearchAsync("")
+                return (await session.GetAllTracksAsync(200))?.ToList() ?? new List<MusicFile>();
             }
             catch (OperationCanceledException)
             {
