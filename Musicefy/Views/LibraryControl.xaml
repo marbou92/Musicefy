@@ -379,6 +379,12 @@
                                         CommandParameter="{Binding PlacementTarget.SelectedItem.DataContext,
                                                   RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                               <Separator/>
+                              <MenuItem Header="➕ Add to Playlist"
+                                        Command="{Binding DataContext.AddToPlaylistCommand,
+                                                  RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding PlacementTarget.SelectedItem,
+                                                  RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                              <Separator/>
                               <MenuItem Header="📂  Show in Explorer"
                                         Command="{Binding DataContext.ContextShowInExplorerCommand,
                                                   RelativeSource={RelativeSource AncestorType=UserControl}}"
