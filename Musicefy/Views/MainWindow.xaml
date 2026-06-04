@@ -296,10 +296,12 @@
                     </ContentControl.RenderTransform>
                 </ContentControl>
 
-                <!-- Artist/Album overlay views -->
+                <!-- Artist/Album/Playlist overlay views -->
                 <ContentControl x:Name="ArtistOverlay" Visibility="Collapsed"
                                 VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
                 <ContentControl x:Name="AlbumOverlay" Visibility="Collapsed"
+                                VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
+                <ContentControl x:Name="PlaylistOverlay" Visibility="Collapsed"
                                 VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
             </Grid>
         </DockPanel>
