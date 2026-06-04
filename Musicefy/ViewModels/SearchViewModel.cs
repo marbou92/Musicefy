@@ -603,31 +603,16 @@ namespace Musicefy.ViewModels
                         break;
 
                     case YouTubeUrlParser.UrlType.Playlist:
-                        // Navigate to playlist view (full implementation in Phase 2+)
+                        // Phase 5: Navigate to dedicated playlist view
                         var navService = App.Services?.GetService(typeof(NavigationService)) as NavigationService;
                         if (navService != null)
                         {
-                            // For now, search for the playlist content
-                            var ytSources = _sourceManager.Sources
-                                .Where(s => s.IsConnected && s.Type == YouTube)
-                                .ToList();
-                            foreach (var ytSource in ytSources)
+                            navService.NavigateToPlaylist(new PlaylistInfo
                             {
-                                var ytSession = _sourceManager.GetYouTubeSession(ytSource.Id);
-                                if (ytSession == null) continue;
-                                try
-                                {
-                                    var playlistTracks = await ytSession.GetPlaylistAsync(parsed.PlaylistId, 100);
-                                    if (playlistTracks != null && playlistTracks.Count > 0)
-                                    {
-                                        _queueManager.Clear();
-                                        _queueManager.EnqueueRange(playlistTracks);
-                                        _queueManager.JumpToIndex(0);
-                                        break;
-                                    }
-                                }
-                                catch { }
-                            }
+                                Name = "YouTube Playlist",
+                                YouTubePlaylistId = parsed.PlaylistId,
+                                SourceType = YouTube
+                            });
                         }
                         break;
 
