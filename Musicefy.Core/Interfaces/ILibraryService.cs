@@ -154,5 +154,30 @@ namespace Musicefy.Core.Interfaces
         /// If the album doesn't exist in the table yet, it will be created.
         /// </summary>
         Task ToggleSaveAlbumAsync(AlbumInfo album, CancellationToken cancellationToken = default);
+
+        // ── Phase 4: Full library browsing ────────────────────────────
+
+        /// <summary>
+        /// Get ALL artists from the Artists table (not just followed).
+        /// Enables the "All Artists" view in the Library.
+        /// Artists are auto-populated during library scan from the Tracks table.
+        /// </summary>
+        Task<List<ArtistInfo>> GetAllArtistsAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Get ALL albums from the Albums table (not just saved).
+        /// Enables the "All Albums" view in the Library.
+        /// Albums are auto-populated during library scan from the Tracks table.
+        /// </summary>
+        Task<List<AlbumInfo>> GetAllAlbumsAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Synchronize the Artists and Albums tables from the Tracks table.
+        /// Extracts distinct artists and albums from track metadata, then
+        /// upserts them into the Artists/Albums tables.
+        /// This is called automatically after ScanLibraryDeepAsync completes.
+        /// Inspired by Echo Music's library-first entity model.
+        /// </summary>
+        Task SyncArtistsAlbumsFromTracksAsync(CancellationToken cancellationToken = default);
     }
 }
