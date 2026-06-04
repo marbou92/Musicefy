@@ -14,6 +14,14 @@ namespace Musicefy.Core.Interfaces
         Task<IReadOnlyList<MusicFile>> GetAlbumListAsync(int count = 50);
         Task<IReadOnlyList<MusicFile>> GetAlbumAsync(string albumId);
         Task<IReadOnlyList<MusicFile>> GetArtistAsync(string artistId);
+
+        /// <summary>
+        /// Get all tracks from this source (full library, not a search).
+        /// Use instead of <c>SearchAsync("", limit)</c> which is slow, incomplete,
+        /// and semantically wrong for "get everything".
+        /// Default implementation falls back to SearchAsync with a large limit.
+        /// </summary>
+        Task<IReadOnlyList<MusicFile>> GetAllTracksAsync(int limit = 500);
     }
 
     /// <summary>
