@@ -594,13 +594,16 @@ namespace Musicefy.Core.Services
                     if (tracks == null || tracks.Count == 0) continue;
 
                     // Build ArtistInfo from browse results
+                    var artistName = tracks.FirstOrDefault()?.Artist ?? "YouTube Artist";
                     var artistInfo = new ArtistInfo
                     {
                         Id = channelId,
-                        Name = tracks.FirstOrDefault()?.Artist ?? "YouTube Artist",
+                        Name = artistName,
                         SourceType = YouTube,
                         YouTubeChannelId = channelId,
                         CoverPath = tracks.FirstOrDefault(t => !string.IsNullOrEmpty(t.CoverPath))?.CoverPath,
+                        // Phase 2: TopTracks are the first batch from browse (curated by YouTube)
+                        TopTracks = tracks.Take(10).ToList(),
                         Tracks = tracks.ToList(),
                         Albums = tracks
                             .Where(t => !string.IsNullOrEmpty(t.Album))
@@ -610,7 +613,9 @@ namespace Musicefy.Core.Services
                                 Id = g.FirstOrDefault(t => !string.IsNullOrEmpty(t.AlbumBrowseId))?.AlbumBrowseId
                                      ?? $"yt_album:{g.Key}",
                                 Name = g.Key,
-                                Artist = tracks.FirstOrDefault()?.Artist ?? "YouTube Artist",
+                                Artist = artistName,
+                                // Phase 2: Set ArtistId on all albums for reliable navigation
+                                ArtistId = channelId,
                                 Year = g.Max(t => t.Year),
                                 CoverPath = g.FirstOrDefault(t => !string.IsNullOrEmpty(t.CoverPath))?.CoverPath,
                                 SourceType = YouTube,
@@ -640,6 +645,8 @@ namespace Musicefy.Core.Services
                                     Id = albumTrack.AlbumBrowseId,
                                     Name = albumTrack.Album ?? albumTrack.Title,
                                     Artist = artistInfo.Name,
+                                    // Phase 2: Set ArtistId on enriched albums too
+                                    ArtistId = channelId,
                                     Year = albumTrack.Year,
                                     CoverPath = albumTrack.CoverPath,
                                     SourceType = YouTube,
@@ -697,12 +704,34 @@ namespace Musicefy.Core.Services
                         Id = browseId,
                         Name = tracks.FirstOrDefault()?.Album ?? "YouTube Album",
                         Artist = tracks.FirstOrDefault()?.Artist ?? "YouTube Music",
+                        // Phase 2: Populate ArtistId from track ArtistBrowseId
+                        ArtistId = tracks.FirstOrDefault(t => !string.IsNullOrEmpty(t.ArtistBrowseId))?.ArtistBrowseId,
                         Year = tracks.Max(t => t.Year),
                         CoverPath = tracks.FirstOrDefault(t => !string.IsNullOrEmpty(t.CoverPath))?.CoverPath,
                         SourceType = YouTube,
                         YouTubeAlbumId = browseId,
+                        TrackCount = tracks.Count,
                         Tracks = tracks.OrderBy(t => t.TrackNumber).ToList()
                     };
+
+                    // Phase 2: If no track had an ArtistBrowseId, try to find it
+                    // from the first track that has a YouTubeBrowseId pointing to an artist channel.
+                    // This avoids the fragile name-based SearchWithTypeAsync fallback.
+                    if (string.IsNullOrEmpty(albumInfo.ArtistId))
+                    {
+                        // Try to extract from any track's YouTubeBrowseId that looks like a channel ID
+                        var channelBrowseId = tracks.FirstOrDefault(t =>
+                            !string.IsNullOrEmpty(t.YouTubeBrowseId) &&
+                            t.YouTubeBrowseId.StartsWith("UC"))?.YouTubeBrowseId;
+                        if (!string.IsNullOrEmpty(channelBrowseId))
+                        {
+                            albumInfo.ArtistId = channelBrowseId;
+                            // Also set ArtistBrowseId on all tracks so the UI can navigate
+                            foreach (var track in albumInfo.Tracks)
+                                if (string.IsNullOrEmpty(track.ArtistBrowseId))
+                                    track.ArtistBrowseId = channelBrowseId;
+                        }
+                    }
 
                     // Enrich track ArtistBrowseId from the album browse so
                     // clicking the artist name inside the album page works.
