@@ -94,5 +94,65 @@ namespace Musicefy.Core.Interfaces
         /// Get random favourite tracks for Quick Picks generation
         /// </summary>
         Task<List<MusicFile>> GetRandomFavouriteTracksAsync(int limit, CancellationToken cancellationToken = default);
+
+        // ── Phase 2: Artist & Album persistence ───────────────────────────
+
+        /// <summary>
+        /// Save or update an artist in the Artists table.
+        /// Uses INSERT OR REPLACE to upsert by Id.
+        /// </summary>
+        Task SaveArtistAsync(ArtistInfo artist, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Get a persisted artist by its stable Id.
+        /// Returns null if the artist has never been saved.
+        /// </summary>
+        Task<ArtistInfo> GetArtistAsync(string artistId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Get a persisted artist by YouTube channel ID.
+        /// Returns null if not found.
+        /// </summary>
+        Task<ArtistInfo> GetArtistByYouTubeIdAsync(string channelId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Get all followed artists from the Artists table.
+        /// </summary>
+        Task<List<ArtistInfo>> GetFollowedArtistsAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Toggle the IsFollowed flag for an artist.
+        /// If the artist doesn't exist in the table yet, it will be created.
+        /// </summary>
+        Task ToggleFollowArtistAsync(ArtistInfo artist, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Save or update an album in the Albums table.
+        /// Uses INSERT OR REPLACE to upsert by Id.
+        /// </summary>
+        Task SaveAlbumAsync(AlbumInfo album, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Get a persisted album by its stable Id.
+        /// Returns null if the album has never been saved.
+        /// </summary>
+        Task<AlbumInfo> GetAlbumAsync(string albumId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Get a persisted album by YouTube album browse ID.
+        /// Returns null if not found.
+        /// </summary>
+        Task<AlbumInfo> GetAlbumByYouTubeIdAsync(string youTubeAlbumId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Get all saved albums from the Albums table.
+        /// </summary>
+        Task<List<AlbumInfo>> GetSavedAlbumsAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Toggle the IsSaved flag for an album.
+        /// If the album doesn't exist in the table yet, it will be created.
+        /// </summary>
+        Task ToggleSaveAlbumAsync(AlbumInfo album, CancellationToken cancellationToken = default);
     }
 }
