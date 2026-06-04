@@ -47,7 +47,7 @@ namespace Musicefy.ViewModels
         // ── Playlists data (Phase 5) ────────────────────────────────────
         public ObservableCollection<PlaylistInfo> Playlists { get; } = new ObservableCollection<PlaylistInfo>();
 
-        private enum SpecialMode { None, Favourites, History, Downloads, Artists, Albums, Playlists }
+        private enum SpecialMode { None, Favourites, History, Downloads, Artists, Albums, Playlists, MostPlayed, RecentlyAdded, Forgotten }
         private SpecialMode _currentMode = SpecialMode.None;
 
         // ── UI state ────────────────────────────────────────────────────
@@ -191,11 +191,15 @@ namespace Musicefy.ViewModels
         public ICommand NavigateToPlaylistCommand { get; }
         public ICommand DeletePlaylistCommand { get; }
 
+        // Phase 6: Add to Playlist command
+        public ICommand AddToPlaylistCommand { get; }
+
         public event Action<string> CreatePlaylistRequested;
         public event Action RequestFolderInit;
         public event Action<ArtistInfo> ArtistNavigationRequested;
         public event Action<AlbumInfo> AlbumNavigationRequested;
         public event Action<PlaylistInfo> PlaylistNavigationRequested;
+        public event Action<MusicFile> AddToPlaylistRequested;
         public IAudioPlayer PlaybackService => _playback;
 
         private MusicFile _selectedTrack;
@@ -281,6 +285,13 @@ namespace Musicefy.ViewModels
                 if (p is PlaylistInfo playlist)
                     await ExecuteDeletePlaylistAsync(playlist);
             });
+
+            // Phase 6: Add to Playlist command
+            AddToPlaylistCommand = new RelayCommand(p =>
+            {
+                if (p is MusicFile track)
+                    AddToPlaylistRequested?.Invoke(track);
+            });
         }
 
         private void BuildRootCards()
@@ -307,6 +318,26 @@ namespace Musicefy.ViewModels
                 Title = "Playlists", Subtitle = "Your playlists",
                 IconData = "M12,2C6.48,2 2,6.48 2,12S6.48,22 12,22 22,17.52 22,12 17.52,2 12,2M12,16.5L7,11.5H10V6H14V11.5H17L12,16.5Z",
                 TargetType = ItemTargetType.Playlist
+            });
+
+            // Phase 6: Auto-Playlists — virtual playlists resolved from track properties
+            RootCards.Add(new LibraryCardItem
+            {
+                Title = "Most Played", Subtitle = "Your top tracks",
+                IconData = "M16,6L18.29,8.29L13.41,13.17L9.41,9.17L2,16.59L3.41,18L9.41,12L13.41,16L19.71,9.71L22,12V6H16Z",
+                TargetType = ItemTargetType.MostPlayed
+            });
+            RootCards.Add(new LibraryCardItem
+            {
+                Title = "Recently Added", Subtitle = "New to your library",
+                IconData = "M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z",
+                TargetType = ItemTargetType.RecentlyAdded
+            });
+            RootCards.Add(new LibraryCardItem
+            {
+                Title = "Forgotten", Subtitle = "Unheard favorites",
+                IconData = "M12,2C6.48,2 2,6.48 2,12S6.48,22 12,22 22,17.52 22,12 17.52,2 12,2M12,20C7.59,20 4,16.41 4,12S7.59,4 12,4 20,7.59 20,12 16.41,20 12,20M11,7H13V13H11V7M11,15H13V17H11V15Z",
+                TargetType = ItemTargetType.Forgotten
             });
 
             // Original cards
@@ -400,6 +431,27 @@ namespace Musicefy.ViewModels
                     ShowPanel("Folder");
                     RequestFolderInit?.Invoke();
                     break;
+
+                case ItemTargetType.MostPlayed:
+                    _currentMode = SpecialMode.MostPlayed;
+                    SetHeaderState("Most Played", true, true);
+                    ShowPanel("Special");
+                    _ = RefreshSpecialCollectionAsync();
+                    break;
+
+                case ItemTargetType.RecentlyAdded:
+                    _currentMode = SpecialMode.RecentlyAdded;
+                    SetHeaderState("Recently Added", true, true);
+                    ShowPanel("Special");
+                    _ = RefreshSpecialCollectionAsync();
+                    break;
+
+                case ItemTargetType.Forgotten:
+                    _currentMode = SpecialMode.Forgotten;
+                    SetHeaderState("Forgotten Favorites", true, true);
+                    ShowPanel("Special");
+                    _ = RefreshSpecialCollectionAsync();
+                    break;
             }
         }
 
@@ -439,6 +491,21 @@ namespace Musicefy.ViewModels
 
                 case SpecialMode.Playlists:
                     await RefreshPlaylistsAsync();
+                    break;
+
+                case SpecialMode.MostPlayed:
+                    var mpTracks = await _scanner.GetMostPlayedAsync(90, 100, CancellationToken.None);
+                    SetSpecialTracks(mpTracks);
+                    break;
+
+                case SpecialMode.RecentlyAdded:
+                    var raTracks = await _scanner.GetRecentlyAddedAsync(100, CancellationToken.None);
+                    SetSpecialTracks(raTracks);
+                    break;
+
+                case SpecialMode.Forgotten:
+                    var fgTracks = await _scanner.GetForgottenFavoritesAsync(90, 100, CancellationToken.None);
+                    SetSpecialTracks(fgTracks);
                     break;
             }
         }
