@@ -44,6 +44,9 @@ namespace Musicefy
             _navService.ArtistNavigationRequested += OnArtistNavigationRequested;
             _navService.AlbumNavigationRequested += OnAlbumNavigationRequested;
 
+            // Phase 5: Subscribe to typed playlist navigation event
+            _navService.PlaylistNavigationRequested += OnPlaylistNavigationRequested;
+
             this.DataContext = _viewModel;
             InitializeComponent();
             InitializeWindowChromeCommands();
@@ -373,6 +376,7 @@ namespace Musicefy
         {
             ArtistOverlay.Visibility = Visibility.Collapsed;
             AlbumOverlay.Visibility = Visibility.Collapsed;
+            PlaylistOverlay.Visibility = Visibility.Collapsed;
         }
 
         // ── Phase 1: Typed Navigation Event Handlers ───────────────────────
@@ -393,6 +397,46 @@ namespace Musicefy
         private void OnAlbumNavigationRequested(AlbumInfo albumInfo)
         {
             NavigateToAlbum(albumInfo);
+        }
+
+        // ── Phase 5: Playlist navigation ────────────────────────────────
+
+        /// <summary>
+        /// Navigate to a playlist detail page using a full <see cref="PlaylistInfo"/> object.
+        /// Phase 5: Playlists & Collection Management.
+        /// </summary>
+        public void NavigateToPlaylist(PlaylistInfo playlistInfo)
+        {
+            if (playlistInfo == null) return;
+            var services = App.Services;
+            var viewModel = (PlaylistViewModel)services.GetService(typeof(PlaylistViewModel));
+            var playlistView = new PlaylistView(viewModel);
+            PlaylistOverlay.Content = playlistView;
+            PlaylistOverlay.Visibility = Visibility.Visible;
+            playlistView.LoadPlaylist(playlistInfo);
+        }
+
+        /// <summary>
+        /// Navigate to a playlist by its database ID.
+        /// </summary>
+        public void NavigateToPlaylist(string playlistId)
+        {
+            if (string.IsNullOrEmpty(playlistId)) return;
+            var services = App.Services;
+            var viewModel = (PlaylistViewModel)services.GetService(typeof(PlaylistViewModel));
+            var playlistView = new PlaylistView(viewModel);
+            PlaylistOverlay.Content = playlistView;
+            PlaylistOverlay.Visibility = Visibility.Visible;
+            playlistView.LoadPlaylist(playlistId);
+        }
+
+        /// <summary>
+        /// Handles <see cref="NavigationService.PlaylistNavigationRequested"/>.
+        /// Dispatches the full <see cref="PlaylistInfo"/> object to the playlist overlay.
+        /// </summary>
+        private void OnPlaylistNavigationRequested(PlaylistInfo playlistInfo)
+        {
+            NavigateToPlaylist(playlistInfo);
         }
     }
 }
