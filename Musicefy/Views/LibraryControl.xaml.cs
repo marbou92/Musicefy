@@ -17,6 +17,7 @@ namespace Musicefy.Views
         private Action<string> _createPlaylistHandler;
         private Action<ArtistInfo> _artistNavigationHandler;
         private Action<AlbumInfo> _albumNavigationHandler;
+        private Action<PlaylistInfo> _playlistNavigationHandler;
 
         public LibraryControl()
         {
@@ -53,11 +54,17 @@ namespace Musicefy.Views
                     if (Window.GetWindow(this) is MainWindow mainWindow)
                         mainWindow.NavigateToAlbum(album);
                 };
+                _playlistNavigationHandler = playlist =>
+                {
+                    if (Window.GetWindow(this) is MainWindow mainWindow)
+                        mainWindow.NavigateToPlaylist(playlist);
+                };
 
                 ViewModel.RequestFolderInit += _folderInitHandler;
                 ViewModel.CreatePlaylistRequested += _createPlaylistHandler;
                 ViewModel.ArtistNavigationRequested += _artistNavigationHandler;
                 ViewModel.AlbumNavigationRequested += _albumNavigationHandler;
+                ViewModel.PlaylistNavigationRequested += _playlistNavigationHandler;
             }
         }
 
@@ -73,11 +80,14 @@ namespace Musicefy.Views
                     ViewModel.ArtistNavigationRequested -= _artistNavigationHandler;
                 if (_albumNavigationHandler != null)
                     ViewModel.AlbumNavigationRequested -= _albumNavigationHandler;
+                if (_playlistNavigationHandler != null)
+                    ViewModel.PlaylistNavigationRequested -= _playlistNavigationHandler;
             }
             _folderInitHandler = null;
             _createPlaylistHandler = null;
             _artistNavigationHandler = null;
             _albumNavigationHandler = null;
+            _playlistNavigationHandler = null;
         }
 
         // ── Phase 3: Double-click navigation for artists ──────────────────
@@ -106,6 +116,20 @@ namespace Musicefy.Views
                 if (hitTest != null)
                 {
                     ViewModel.NavigateToAlbumCommand.Execute(ViewModel.SelectedAlbum);
+                }
+            }
+        }
+
+        // ── Phase 5: Double-click navigation for playlists ──────────────────
+
+        private void PlaylistsListView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (ViewModel?.SelectedPlaylist != null)
+            {
+                var hitTest = VisualTreeHelper.HitTest(PlaylistsListView, e.GetPosition(PlaylistsListView));
+                if (hitTest != null)
+                {
+                    ViewModel.NavigateToPlaylistCommand.Execute(ViewModel.SelectedPlaylist);
                 }
             }
         }
