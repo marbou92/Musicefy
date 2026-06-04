@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using Musicefy.Core.Interfaces;
 using Musicefy.Core.Models;
 using Musicefy.Core.Services;
@@ -16,6 +17,17 @@ namespace Musicefy.ViewModels
     {
         private readonly IAudioPlayer _playback;
         private readonly ILibraryService _libraryService;
+
+        // ── Phase 6: Sleep Timer ──────────────────────────────────────────
+        private DispatcherTimer _sleepTimer;
+        private TimeSpan _sleepTimeRemaining = TimeSpan.Zero;
+        private bool _sleepEndOfSong;
+
+        public string SleepTimerText => _sleepTimer?.IsEnabled == true
+            ? $"Sleep: {_sleepTimeRemaining:mm\\:ss}"
+            : null;
+
+        public bool IsSleepTimerActive => _sleepTimer?.IsEnabled == true;
 
         private MusicFile _nowPlaying;
         public MusicFile NowPlaying
@@ -217,7 +229,7 @@ namespace Musicefy.ViewModels
             ToggleLyricsCommand = new RelayCommand(_ => ToggleRightPanel(RightViewMode.Lyrics));
             ToggleQueueCommand = new RelayCommand(_ => ToggleRightPanel(RightViewMode.Queue));
             CollapseCommand = new RelayCommand(_ => RequestCollapse?.Invoke());
-            SleepTimerCommand = new RelayCommand(_ => System.Windows.MessageBox.Show("Sleep timer coming soon", "Coming Soon"));
+            SleepTimerCommand = new RelayCommand(_ => ExecuteSleepTimer());
             QueueItemClickCommand = new RelayCommand(p =>
             {
                 if (p is MusicFile track)
@@ -417,5 +429,67 @@ namespace Musicefy.ViewModels
         }
 
         public void UpdateActualWidth(double width) => ActualWidth = width;
+
+        // ── Phase 6: Sleep Timer Implementation ──────────────────────────
+
+        private void ExecuteSleepTimer()
+        {
+            if (_sleepTimer?.IsEnabled == true)
+            {
+                StopSleepTimer();
+                return;
+            }
+
+            // Show a simple input dialog for minutes (predefined options since Microsoft.VisualBasic is not referenced)
+            var dialog = new SleepTimerDialog { Owner = Application.Current.MainWindow };
+            if (dialog.ShowDialog() == true && dialog.SelectedMinutes > 0)
+            {
+                StartSleepTimer(TimeSpan.FromMinutes(dialog.SelectedMinutes));
+            }
+        }
+
+        private void StartSleepTimer(TimeSpan duration)
+        {
+            StopSleepTimer();
+
+            _sleepTimeRemaining = duration;
+            _sleepEndOfSong = false;
+
+            _sleepTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+            _sleepTimer.Tick += SleepTimer_Tick;
+            _sleepTimer.Start();
+
+            OnPropertyChanged(nameof(SleepTimerText));
+            OnPropertyChanged(nameof(IsSleepTimerActive));
+            ToastService.ShowToast($"Sleep timer set for {duration.TotalMinutes:0} minutes.", System.Windows.Media.Brushes.ForestGreen);
+        }
+
+        private void SleepTimer_Tick(object sender, EventArgs e)
+        {
+            _sleepTimeRemaining = _sleepTimeRemaining.Subtract(TimeSpan.FromSeconds(1));
+
+            if (_sleepTimeRemaining <= TimeSpan.Zero)
+            {
+                StopSleepTimer();
+                _playback.Pause();
+                ToastService.ShowToast("Sleep timer ended. Playback paused.", System.Windows.Media.Brushes.DimGray);
+                return;
+            }
+
+            OnPropertyChanged(nameof(SleepTimerText));
+        }
+
+        private void StopSleepTimer()
+        {
+            if (_sleepTimer != null)
+            {
+                _sleepTimer.Stop();
+                _sleepTimer.Tick -= SleepTimer_Tick;
+                _sleepTimer = null;
+            }
+            _sleepTimeRemaining = TimeSpan.Zero;
+            OnPropertyChanged(nameof(SleepTimerText));
+            OnPropertyChanged(nameof(IsSleepTimerActive));
+        }
     }
 }
