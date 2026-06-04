@@ -126,6 +126,10 @@ namespace Musicefy.ViewModels
 
             // Subscribe to health check events for reactive refresh
             _healthCheckService.SourceHealthChanged += OnSourceHealthChanged;
+
+            // Subscribe to source-added events so Home reloads when the user
+            // adds a new streaming source in Settings.
+            _sourceManager.SourceAdded += OnSourceAdded;
         }
 
         // ── Two-Phase Loading ───────────────────────────────────────────────
@@ -551,6 +555,17 @@ namespace Musicefy.ViewModels
             }
         }
 
+        // ── Source-Added Integration ───────────────────────────────────────
+
+        private void OnSourceAdded(object sender, EventArgs e)
+        {
+            // A new source was added — reload Home so the new content appears.
+            Application.Current?.Dispatcher?.Invoke(() =>
+            {
+                _ = LoadAsync();
+            });
+        }
+
         // ── Health Check Integration ────────────────────────────────────────
 
         private void OnSourceHealthChanged(object sender, SourceHealthEventArgs e)
@@ -591,6 +606,7 @@ namespace Musicefy.ViewModels
             _loadCts?.Cancel();
             _loadCts?.Dispose();
             _healthCheckService.SourceHealthChanged -= OnSourceHealthChanged;
+            _sourceManager.SourceAdded -= OnSourceAdded;
         }
 
         // ── Nested Delegate Commands ────────────────────────────────────────
