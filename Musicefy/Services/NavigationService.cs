@@ -31,6 +31,13 @@ namespace Musicefy.Services
         /// </summary>
         public event Action<AlbumInfo> AlbumNavigationRequested;
 
+        /// <summary>
+        /// Phase 5: Raised when navigation to a playlist page is requested.
+        /// Carries the full <see cref="PlaylistInfo"/> object so that
+        /// the target ViewModel can load tracks and metadata.
+        /// </summary>
+        public event Action<PlaylistInfo> PlaylistNavigationRequested;
+
         public NavigationService(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
@@ -118,6 +125,16 @@ namespace Musicefy.Services
 
             // Legacy string-based event kept for backward compatibility.
             NavigationRequested?.Invoke($"Album:{album?.Name}");
+        }
+
+        /// <summary>
+        /// Phase 5: Navigate to a playlist detail page.
+        /// Carries the full PlaylistInfo object for rich playlist browsing.
+        /// </summary>
+        public void NavigateToPlaylist(PlaylistInfo playlist)
+        {
+            PlaylistNavigationRequested?.Invoke(playlist);
+            NavigationRequested?.Invoke($"Playlist:{playlist?.Name}");
         }
     }
 }
