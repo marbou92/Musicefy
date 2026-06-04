@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Musicefy.Core.Models;
 using Musicefy.Core.Services;
 using Musicefy.Services;
 using Musicefy.ViewModels;
@@ -21,9 +22,24 @@ namespace Musicefy.Views
             _viewModel.RequestNavigateToArtist += OnRequestNavigateToArtist;
         }
 
+        /// <summary>
+        /// Load album by name (legacy path — local/subsonic sources).
+        /// </summary>
         public async void LoadAlbum(string albumName, string artistName = null)
         {
             await _viewModel.LoadAsync(albumName, artistName);
+            ExtractColorsFromCover();
+        }
+
+        /// <summary>
+        /// Load album from a full <see cref="AlbumInfo"/> object.
+        /// Preserves YouTube browse IDs for rich YouTube Music integration.
+        /// Inspired by Echo Music's two-step album fetch (list → detail).
+        /// </summary>
+        public async void LoadAlbum(AlbumInfo albumInfo)
+        {
+            if (albumInfo == null) return;
+            await _viewModel.LoadAsync(albumInfo);
             ExtractColorsFromCover();
         }
 
@@ -71,14 +87,41 @@ namespace Musicefy.Views
 
         private void ArtistText_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            if (!string.IsNullOrEmpty(_viewModel.ArtistName))
-                OnRequestNavigateToArtist(_viewModel.ArtistName);
+            // Phase 1: Navigate to artist using the full ArtistInfo object,
+            // preserving YouTube channel ID if available.
+            NavigateToArtistFromAlbum();
         }
 
-        private void OnRequestNavigateToArtist(string artistName)
+        /// <summary>
+        /// Navigate to the artist page from within the album view.
+        /// Uses the AlbumViewModel's ArtistYouTubeId when available
+        /// for seamless YouTube Music artist browsing.
+        /// </summary>
+        private void NavigateToArtistFromAlbum()
         {
             if (Window.GetWindow(this) is MainWindow mainWindow)
-                mainWindow.NavigateToArtist(artistName);
+            {
+                var artistInfo = new ArtistInfo
+                {
+                    Name = _viewModel.ArtistName,
+                    SourceType = _viewModel.IsYouTubeAlbum ? SourceTypes.YouTube : null
+                };
+
+                // Carry the YouTube channel ID if available
+                if (!string.IsNullOrEmpty(_viewModel.ArtistYouTubeId))
+                {
+                    artistInfo.Id = _viewModel.ArtistYouTubeId;
+                    artistInfo.YouTubeChannelId = _viewModel.ArtistYouTubeId;
+                }
+
+                mainWindow.NavigateToArtist(artistInfo);
+            }
+        }
+
+        private void OnRequestNavigateToArtist(ArtistInfo artistInfo)
+        {
+            if (Window.GetWindow(this) is MainWindow mainWindow)
+                mainWindow.NavigateToArtist(artistInfo);
         }
     }
 }
