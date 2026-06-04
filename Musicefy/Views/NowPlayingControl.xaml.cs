@@ -7,6 +7,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using Musicefy.Core.Interfaces;
+using Musicefy.Core.Models;
 using Musicefy.ViewModels;
 
 namespace Musicefy.Views
@@ -57,13 +58,73 @@ namespace Musicefy.Views
         private void OnRequestNavigateToArtist(string artistName)
         {
             if (Window.GetWindow(this) is MainWindow mainWindow)
-                mainWindow.NavigateToArtist(artistName);
+            {
+                // Phase 1: Build an ArtistInfo from the now-playing track so that
+                // the ArtistViewModel can use YouTube channel ID if available.
+                var artistInfo = BuildArtistInfoFromNowPlaying();
+                mainWindow.NavigateToArtist(artistInfo);
+            }
         }
 
         private void OnRequestNavigateToAlbum(string albumName, string artistName)
         {
             if (Window.GetWindow(this) is MainWindow mainWindow)
-                mainWindow.NavigateToAlbum(albumName, artistName);
+            {
+                // Phase 1: Build an AlbumInfo from the now-playing track so that
+                // the AlbumViewModel can use YouTube album browse ID if available.
+                var albumInfo = BuildAlbumInfoFromNowPlaying();
+                mainWindow.NavigateToAlbum(albumInfo);
+            }
+        }
+
+        /// <summary>
+        /// Build an <see cref="ArtistInfo"/> from the currently playing track,
+        /// preserving YouTube channel ID for rich browsing.
+        /// </summary>
+        private ArtistInfo BuildArtistInfoFromNowPlaying()
+        {
+            var track = _viewModel.NowPlaying;
+            if (track == null) return null;
+
+            var info = new ArtistInfo
+            {
+                Name = track.Artist,
+                SourceType = track.SourceType
+            };
+
+            if (!string.IsNullOrEmpty(track.ArtistBrowseId))
+            {
+                info.Id = track.ArtistBrowseId;
+                info.YouTubeChannelId = track.ArtistBrowseId;
+            }
+
+            return info;
+        }
+
+        /// <summary>
+        /// Build an <see cref="AlbumInfo"/> from the currently playing track,
+        /// preserving YouTube album browse ID for rich browsing.
+        /// </summary>
+        private AlbumInfo BuildAlbumInfoFromNowPlaying()
+        {
+            var track = _viewModel.NowPlaying;
+            if (track == null) return null;
+
+            var info = new AlbumInfo
+            {
+                Name = track.Album,
+                Artist = track.Artist,
+                Year = track.Year,
+                SourceType = track.SourceType
+            };
+
+            if (!string.IsNullOrEmpty(track.AlbumBrowseId))
+            {
+                info.Id = track.AlbumBrowseId;
+                info.YouTubeAlbumId = track.AlbumBrowseId;
+            }
+
+            return info;
         }
 
         private void ArtistText_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
