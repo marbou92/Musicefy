@@ -16,6 +16,8 @@ namespace Musicefy.Models
         History,
         FolderRoot,
         DirectoryItem,
-        Playlist
+        Playlist,
+        Artists,     // Phase 3: Followed artists section in Library
+        Albums       // Phase 3: Saved albums section in Library
     }
 }
