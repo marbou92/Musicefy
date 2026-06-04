@@ -105,7 +105,7 @@ namespace Musicefy.Views
                 var artistInfo = new ArtistInfo
                 {
                     Name = _viewModel.ArtistName,
-                    SourceType = _viewModel.IsYouTubeAlbum ? SourceTypes.YouTube : null
+                    SourceType = _viewModel.IsYouTubeAlbum ? YouTube : null
                 };
 
                 // Carry the YouTube channel ID if available
