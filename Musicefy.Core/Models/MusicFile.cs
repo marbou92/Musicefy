@@ -35,6 +35,17 @@ namespace Musicefy.Core.Models
         public bool IsFavourite { get; set; }
         public bool IsDownloaded { get; set; }
 
+        // AlbumArtist — distinct from Artist (Performer). Used for album grouping.
+        // TagLib: AlbumArtists vs Performers. Compilations break without this.
+        public string AlbumArtist { get; set; }
+
+        // YouTube-specific browse IDs — disambiguated from the generic YouTubeBrowseId
+        public string AlbumBrowseId { get; set; }    // YouTube album browse ID (MPRE...)
+        public string ArtistBrowseId { get; set; }   // YouTube artist channel ID (UC...)
+
+        // When the track was added to the library
+        public DateTime? DateAdded { get; set; }
+
         // YouTube-specific metadata (inspired by Echo Music's rich metadata model)
         // These fields enable album/artist/playlist browsing for YouTube content
         public string YouTubeVideoId { get; set; }
