@@ -16,6 +16,7 @@ namespace Musicefy.ViewModels
         private readonly IAudioPlayer _playback;
         private readonly ArtistAlbumService _artistAlbumService;
         private readonly IStreamingSourceManager _sourceManager;
+        private readonly ILibraryService _libraryService;
 
         private string _artistName;
         public string ArtistName
@@ -82,6 +83,53 @@ namespace Musicefy.ViewModels
             set => SetProperty(ref _isYouTubeArtist, value);
         }
 
+        /// <summary>
+        /// Whether the user has followed/subscribed to this artist.
+        /// Persisted in the Artists table via ILibraryService.
+        /// </summary>
+        private bool _isFollowed;
+        public bool IsFollowed
+        {
+            get => _isFollowed;
+            set => SetProperty(ref _isFollowed, value);
+        }
+
+        /// <summary>
+        /// Artist biography / description (from YouTube Music or local metadata).
+        /// Populated during YouTube browse and persisted in the Artists table.
+        /// </summary>
+        private string _description;
+        public string Description
+        {
+            get => _description;
+            set => SetProperty(ref _description, value);
+        }
+
+        /// <summary>
+        /// Number of subscribers (for YouTube Music artists).
+        /// </summary>
+        private long? _subscriberCount;
+        public long? SubscriberCount
+        {
+            get => _subscriberCount;
+            set { SetProperty(ref _subscriberCount, value); OnPropertyChanged(nameof(SubscriberText)); }
+        }
+
+        /// <summary>
+        /// Display text for subscriber count (e.g. "1.2M subscribers").
+        /// </summary>
+        public string SubscriberText
+        {
+            get
+            {
+                if (SubscriberCount == null || SubscriberCount <= 0) return "";
+                var count = SubscriberCount.Value;
+                if (count >= 1_000_000) return $"{count / 1_000_000.0:F1}M subscribers";
+                if (count >= 1_000) return $"{count / 1_000.0:F1}K subscribers";
+                return $"{count} subscribers";
+            }
+        }
+
         public ObservableCollection<MusicFile> Tracks { get; } = new ObservableCollection<MusicFile>();
         public ObservableCollection<AlbumInfo> Albums { get; } = new ObservableCollection<AlbumInfo>();
 
@@ -97,18 +145,20 @@ namespace Musicefy.ViewModels
 
         public event Action<AlbumInfo> RequestNavigateToAlbum;
 
-        public ArtistViewModel(IAudioPlayer playback, ArtistAlbumService artistAlbumService, IStreamingSourceManager sourceManager)
+        public ArtistViewModel(IAudioPlayer playback, ArtistAlbumService artistAlbumService,
+            IStreamingSourceManager sourceManager, ILibraryService libraryService)
         {
             _playback = playback;
             _artistAlbumService = artistAlbumService;
             _sourceManager = sourceManager;
+            _libraryService = libraryService;
 
             PlayAllCommand = new RelayCommand(_ => ExecutePlayAll());
             PlayTrackCommand = new RelayCommand(p => { if (p is MusicFile t) _playback.PlayTrack(t); });
             AlbumClickCommand = new RelayCommand(p => { if (p is AlbumInfo a) RequestNavigateToAlbum?.Invoke(a); });
             SwitchToAlbumsCommand = new RelayCommand(_ => IsAlbumsTab = true);
             SwitchToTracksCommand = new RelayCommand(_ => IsAlbumsTab = false);
-            SubscribeCommand = new RelayCommand(_ => System.Windows.MessageBox.Show("Subscribe feature coming soon", "Coming Soon"));
+            SubscribeCommand = new RelayCommand(async _ => await ExecuteToggleFollowAsync());
             RadioCommand = new RelayCommand(_ => System.Windows.MessageBox.Show("Radio feature coming soon", "Coming Soon"));
             ShufflePlayCommand = new RelayCommand(_ => ExecuteShufflePlay());
             TrackMoreCommand = new RelayCommand(p =>
@@ -176,8 +226,15 @@ namespace Musicefy.ViewModels
 
                     if (ytArtist != null)
                     {
+                        // Merge IsFollowed from the passed-in artistInfo (if it was loaded from DB)
+                        if (artistInfo.IsFollowed)
+                            ytArtist.IsFollowed = true;
+
                         ApplyArtistInfo(ytArtist);
                         IsYouTubeArtist = true;
+
+                        // Phase 3: Auto-persist the artist when browsed from YouTube
+                        await AutoSaveArtistAsync(ytArtist);
                         return;
                     }
                 }
@@ -200,6 +257,8 @@ namespace Musicefy.ViewModels
                             artist.Id = artistInfo.Id;
                         if (string.IsNullOrEmpty(artist.YouTubeChannelId) && !string.IsNullOrEmpty(artistInfo.YouTubeChannelId))
                             artist.YouTubeChannelId = artistInfo.YouTubeChannelId;
+                        if (artistInfo.IsFollowed)
+                            artist.IsFollowed = true;
 
                         ApplyArtistInfo(artist);
                     }
@@ -216,12 +275,14 @@ namespace Musicefy.ViewModels
                 OnPropertyChanged(nameof(SongsCountText));
                 OnPropertyChanged(nameof(AlbumsCountVal));
                 OnPropertyChanged(nameof(AlbumsCountText));
+                OnPropertyChanged(nameof(SubscriberText));
             }
         }
 
         /// <summary>
         /// Apply an <see cref="ArtistInfo"/> object to the ViewModel's bindable properties.
         /// Centralizes the mapping logic between the model and the ViewModel.
+        /// After applying, checks the database for the current follow state.
         /// </summary>
         private void ApplyArtistInfo(ArtistInfo artist)
         {
@@ -230,6 +291,9 @@ namespace Musicefy.ViewModels
             CoverPath = artist.CoverPath;
             IsYouTubeArtist = artist.SourceType == YouTube
                               || !string.IsNullOrEmpty(artist.YouTubeChannelId);
+            IsFollowed = artist.IsFollowed;
+            Description = artist.Description;
+            SubscriberCount = artist.SubscriberCount;
 
             Tracks.Clear();
             foreach (var track in artist.Tracks)
@@ -238,6 +302,107 @@ namespace Musicefy.ViewModels
             Albums.Clear();
             foreach (var album in artist.Albums)
                 Albums.Add(album);
+
+            // Check persisted follow state from database if we have an ID
+            if (!string.IsNullOrEmpty(artist.Id))
+            {
+                _ = CheckFollowStateAsync(artist.Id);
+            }
+        }
+
+        /// <summary>
+        /// Check the database for the current follow state of this artist.
+        /// Updates IsFollowed if the database has a different value.
+        /// </summary>
+        private async Task CheckFollowStateAsync(string artistId)
+        {
+            try
+            {
+                var persisted = await _libraryService.GetArtistAsync(artistId);
+                if (persisted != null)
+                {
+                    IsFollowed = persisted.IsFollowed;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[ArtistViewModel] CheckFollowState failed: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Toggle the follow/subscribed state of this artist.
+        /// Persists the change to the Artists table via ILibraryService.
+        /// </summary>
+        private async Task ExecuteToggleFollowAsync()
+        {
+            if (string.IsNullOrEmpty(ArtistId)) return;
+
+            var artistInfo = BuildCurrentArtistInfo();
+
+            try
+            {
+                await _libraryService.ToggleFollowArtistAsync(artistInfo);
+                IsFollowed = !IsFollowed;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[ArtistViewModel] ToggleFollow failed: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Auto-persist the artist when browsed from YouTube.
+        /// Sets LastBrowsedAt for cache invalidation.
+        /// Preserves the existing IsFollowed state from the database.
+        /// </summary>
+        private async Task AutoSaveArtistAsync(ArtistInfo artist)
+        {
+            try
+            {
+                // Check if we already have this artist persisted
+                var existing = await _libraryService.GetArtistAsync(artist.Id);
+                if (existing != null)
+                {
+                    // Preserve IsFollowed from existing record
+                    artist.IsFollowed = existing.IsFollowed;
+                    // Preserve Description/SubscriberCount if the browse didn't provide them
+                    if (string.IsNullOrEmpty(artist.Description) && !string.IsNullOrEmpty(existing.Description))
+                        artist.Description = existing.Description;
+                    if ((artist.SubscriberCount == null || artist.SubscriberCount <= 0) && existing.SubscriberCount > 0)
+                        artist.SubscriberCount = existing.SubscriberCount;
+                }
+
+                artist.LastBrowsedAt = DateTime.UtcNow;
+                await _libraryService.SaveArtistAsync(artist);
+
+                // Update IsFollowed from persisted state
+                IsFollowed = artist.IsFollowed;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[ArtistViewModel] AutoSave failed: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Build an <see cref="ArtistInfo"/> from the current ViewModel state.
+        /// Used for persistence operations (follow/unfollow, auto-save).
+        /// </summary>
+        private ArtistInfo BuildCurrentArtistInfo()
+        {
+            return new ArtistInfo
+            {
+                Id = ArtistId,
+                Name = ArtistName,
+                CoverPath = CoverPath,
+                SourceType = IsYouTubeArtist ? YouTube : null,
+                YouTubeChannelId = IsYouTubeArtist ? ArtistId : null,
+                Description = Description,
+                SubscriberCount = SubscriberCount,
+                IsFollowed = IsFollowed,
+                LastBrowsedAt = DateTime.UtcNow
+            };
         }
 
         private void ExecutePlayAll()
