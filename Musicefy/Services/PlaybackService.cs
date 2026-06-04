@@ -257,6 +257,8 @@ namespace Musicefy.Services
                 _wasapiOut.Play();
 
                 CurrentAudioFile = track;
+                // Phase 4: Auto-persist artist/album from now-playing track
+                _ = AutoPersistArtistAlbumAsync(track);
                 _timer.Start();
                 TrackChanged?.Invoke(track);
                 PlaybackStateChanged?.Invoke(true);
@@ -438,6 +440,57 @@ namespace Musicefy.Services
         public void Dispose()
         {
             StopPlayback();
+        }
+
+        /// <summary>
+        /// Phase 4: Auto-persist artist and album from a playing track's YouTube browse IDs.
+        /// This ensures the Artists/Albums tables are populated even if the user
+        /// never explicitly navigates to an artist or album page.
+        /// </summary>
+        private async Task AutoPersistArtistAlbumAsync(MusicFile track)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(track.ArtistBrowseId))
+                {
+                    var existingArtist = await _libraryService.GetArtistAsync(track.ArtistBrowseId);
+                    if (existingArtist == null)
+                    {
+                        await _libraryService.SaveArtistAsync(new Core.Models.ArtistInfo
+                        {
+                            Id = track.ArtistBrowseId,
+                            Name = track.Artist,
+                            CoverPath = track.CoverPath,
+                            SourceType = track.SourceType,
+                            YouTubeChannelId = track.ArtistBrowseId
+                        });
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(track.AlbumBrowseId))
+                {
+                    var existingAlbum = await _libraryService.GetAlbumAsync(track.AlbumBrowseId);
+                    if (existingAlbum == null)
+                    {
+                        string artistId = track.ArtistBrowseId ?? $"local_artist:{track.Artist}";
+                        await _libraryService.SaveAlbumAsync(new Core.Models.AlbumInfo
+                        {
+                            Id = track.AlbumBrowseId,
+                            Name = track.Album,
+                            Artist = track.Artist,
+                            ArtistId = artistId,
+                            Year = track.Year,
+                            CoverPath = track.CoverPath,
+                            SourceType = track.SourceType,
+                            YouTubeAlbumId = track.AlbumBrowseId
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[PlaybackService] AutoPersist failed: {ex.Message}");
+            }
         }
 
 
