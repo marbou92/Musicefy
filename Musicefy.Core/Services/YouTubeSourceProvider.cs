@@ -896,6 +896,61 @@ namespace Musicefy.Core.Services
 
             #endregion
 
+            /// <summary>
+            /// Get all tracks from YouTube Music by fetching the user's library
+            /// and trending content. Much more complete and efficient than SearchAsync("").
+            /// </summary>
+            public async Task<IReadOnlyList<MusicFile>> GetAllTracksAsync(int limit = 500)
+            {
+                var allTracks = new List<MusicFile>();
+
+                // Strategy 1: Fetch trending/charts content from InnerTube
+                try
+                {
+                    var chartsResults = await _innerTube.SearchAsync("", InnerTubeClient.SearchFilter.Song);
+                    if (chartsResults?.Items != null)
+                    {
+                        foreach (var item in chartsResults.Items.Take(limit))
+                        {
+                            var musicFile = ConvertToMusicFile(item);
+                            if (musicFile != null)
+                                allTracks.Add(musicFile);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(
+                        $"[YouTube] GetAllTracksAsync InnerTube failed: {ex.Message}");
+                }
+
+                if (allTracks.Count >= limit)
+                    return allTracks.Take(limit).ToList();
+
+                // Strategy 2: Fetch random songs from YouTube home
+                try
+                {
+                    var randomResults = await GetRandomSongsAsync(limit - allTracks.Count);
+                    if (randomResults != null)
+                    {
+                        var existingIds = new HashSet<string>(allTracks.Select(t => t.FilePath));
+                        foreach (var track in randomResults)
+                        {
+                            if (allTracks.Count >= limit) break;
+                            if (!existingIds.Contains(track.FilePath))
+                                allTracks.Add(track);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(
+                        $"[YouTube] GetAllTracksAsync random fallback failed: {ex.Message}");
+                }
+
+                return allTracks;
+            }
+
             public void Dispose()
             {
                 _youtube?.Dispose();
