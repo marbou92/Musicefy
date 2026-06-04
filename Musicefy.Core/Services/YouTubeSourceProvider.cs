@@ -662,7 +662,10 @@ namespace Musicefy.Core.Services
                 {
                     if (_provider._metadataCache.TryGetBrowseResults(browseId, out var cached))
                     {
-                        return cached.Tracks.Select(ConvertToMusicFile).Where(m => m != null).ToList();
+                        var cachedResults = cached.Tracks.Select(ConvertToMusicFile).Where(m => m != null).ToList();
+                        // Phase 1: Enrich cached results with album browse ID
+                        EnrichWithAlbumBrowseId(cachedResults, browseId);
+                        return cachedResults;
                     }
 
                     var browseResponse = await _innerTube.BrowseAsync(browseId);
@@ -678,6 +681,11 @@ namespace Musicefy.Core.Services
                             results.Add(musicFile);
                         }
                     }
+
+                    // Phase 1: Enrich all tracks with album browse ID so that
+                    // AlbumViewModel can navigate back to the album, and tracks
+                    // carry the AlbumBrowseId for library persistence.
+                    EnrichWithAlbumBrowseId(results, browseId);
 
                     return results;
                 }
@@ -701,16 +709,26 @@ namespace Musicefy.Core.Services
                 {
                     if (_provider._metadataCache.TryGetBrowseResults(artistId, out var cached))
                     {
-                        return cached.Tracks.Select(ConvertToMusicFile).Where(m => m != null).ToList();
+                        var cachedResults = cached.Tracks.Select(ConvertToMusicFile).Where(m => m != null).ToList();
+                        // Phase 1: Enrich cached results with artist browse ID
+                        EnrichWithArtistBrowseId(cachedResults, artistId);
+                        return cachedResults;
                     }
 
                     var browseResponse = await _innerTube.BrowseAsync(artistId);
                     _provider._metadataCache.PutBrowseResults(artistId, browseResponse);
 
-                    return browseResponse.Tracks
+                    var results = browseResponse.Tracks
                         .Select(ConvertToMusicFile)
                         .Where(m => m != null)
                         .ToList();
+
+                    // Phase 1: Enrich all tracks with artist browse ID so that
+                    // ArtistViewModel's album sub-items carry YouTubeAlbumId and
+                    // the tracks carry ArtistBrowseId for library persistence.
+                    EnrichWithArtistBrowseId(results, artistId);
+
+                    return results;
                 }
                 catch (Exception ex)
                 {
@@ -799,6 +817,40 @@ namespace Musicefy.Core.Services
 
             #region Conversion Helpers
 
+            /// <summary>
+            /// Enrich tracks with the album browse ID from the browse context.
+            /// When browsing an album page, the tracks themselves don't carry the
+            /// album browse ID — it comes from the page URL/header. This method
+            /// stamps it onto all tracks so AlbumBrowseId is available for
+            /// navigation (album → artist) and library persistence.
+            /// </summary>
+            private static void EnrichWithAlbumBrowseId(List<MusicFile> tracks, string albumBrowseId)
+            {
+                if (string.IsNullOrEmpty(albumBrowseId) || tracks == null) return;
+                foreach (var track in tracks)
+                {
+                    if (string.IsNullOrEmpty(track.AlbumBrowseId))
+                        track.AlbumBrowseId = albumBrowseId;
+                }
+            }
+
+            /// <summary>
+            /// Enrich tracks with the artist channel ID from the browse context.
+            /// When browsing an artist page, the tracks themselves don't carry the
+            /// artist channel ID — it comes from the page URL. This method stamps
+            /// it onto all tracks so ArtistBrowseId is available for navigation
+            /// (track → artist page) and library persistence.
+            /// </summary>
+            private static void EnrichWithArtistBrowseId(List<MusicFile> tracks, string artistChannelId)
+            {
+                if (string.IsNullOrEmpty(artistChannelId) || tracks == null) return;
+                foreach (var track in tracks)
+                {
+                    if (string.IsNullOrEmpty(track.ArtistBrowseId))
+                        track.ArtistBrowseId = artistChannelId;
+                }
+            }
+
             private MusicFile ConvertToMusicFile(InnerTubeClient.InnerTubeSearchItem item)
             {
                 if (item == null) return null;
@@ -835,6 +887,22 @@ namespace Musicefy.Core.Services
                 musicFile.YouTubeVideoId = item.VideoId;
                 musicFile.YouTubeBrowseId = item.BrowseId;
                 musicFile.YouTubePlaylistId = item.PlaylistId;
+
+                // Phase 1: Map BrowseId to the correct typed field based on result type.
+                // This is essential for YouTube browse navigation (artist → albums → tracks).
+                // Inspired by Echo Music's structured metadata model.
+                if (!string.IsNullOrEmpty(item.BrowseId))
+                {
+                    switch (item.Type)
+                    {
+                        case InnerTubeClient.SearchResultType.Album:
+                            musicFile.AlbumBrowseId = item.BrowseId;
+                            break;
+                        case InnerTubeClient.SearchResultType.Artist:
+                            musicFile.ArtistBrowseId = item.BrowseId;
+                            break;
+                    }
+                }
 
                 return musicFile;
             }
