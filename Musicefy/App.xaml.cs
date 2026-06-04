@@ -156,6 +156,9 @@ namespace Musicefy
             services.AddTransient<ArtistViewModel>();
             services.AddTransient<AlbumViewModel>();
 
+            // Phase 5: Playlist ViewModel
+            services.AddTransient<PlaylistViewModel>();
+
             _serviceProvider = services.BuildServiceProvider();
 
             var extManager = _serviceProvider.GetService<IExtensionManager>();
