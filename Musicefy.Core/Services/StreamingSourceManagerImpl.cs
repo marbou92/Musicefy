@@ -426,11 +426,14 @@ namespace Musicefy.Core.Services
                 .GroupBy(t => new { t.Album, t.Artist })
                 .Select(g => new AlbumInfo
                 {
+                    Id = g.FirstOrDefault(t => !string.IsNullOrEmpty(t.AlbumBrowseId))?.AlbumBrowseId
+                         ?? $"local_album:{g.Key.Album}:{g.Key.Artist}",
                     Name = g.Key.Album,
                     Artist = g.Key.Artist,
                     Year = g.Max(t => t.Year),
                     CoverPath = g.FirstOrDefault(t => !string.IsNullOrEmpty(t.CoverPath))?.CoverPath,
                     SourceType = g.FirstOrDefault()?.SourceType,
+                    YouTubeAlbumId = g.FirstOrDefault(t => !string.IsNullOrEmpty(t.AlbumBrowseId))?.AlbumBrowseId,
                     Tracks = g.OrderBy(t => t.TrackNumber).ToList()
                 })
                 .OrderBy(a => a.Artist).ThenBy(a => a.Name)
@@ -563,6 +566,171 @@ namespace Musicefy.Core.Services
             {
                 System.Diagnostics.Debug.WriteLine($"Error saving sources: {ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// Browse a YouTube Music artist page by channel ID (UC...).
+        /// Returns the artist's top tracks and album references with YouTube browse IDs.
+        /// Inspired by Echo Music's structured artist browsing.
+        /// </summary>
+        public async Task<ArtistInfo> BrowseArtistAsync(string channelId, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrEmpty(channelId))
+                return null;
+
+            List<KeyValuePair<string, IMusicSourceSession>> activeSessions;
+            lock (_lock) activeSessions = _activeSessions
+                .Where(s => _sources.Any(src => src.Id == s.Key && src.IsConnected && src.Type == YouTube))
+                .ToList();
+
+            foreach (var kvp in activeSessions)
+            {
+                var ytSession = kvp.Value as IYouTubeSourceSession;
+                if (ytSession == null) continue;
+
+                try
+                {
+                    var tracks = await ytSession.GetArtistAsync(channelId);
+                    if (tracks == null || tracks.Count == 0) continue;
+
+                    // Build ArtistInfo from browse results
+                    var artistInfo = new ArtistInfo
+                    {
+                        Id = channelId,
+                        Name = tracks.FirstOrDefault()?.Artist ?? "YouTube Artist",
+                        SourceType = YouTube,
+                        YouTubeChannelId = channelId,
+                        CoverPath = tracks.FirstOrDefault(t => !string.IsNullOrEmpty(t.CoverPath))?.CoverPath,
+                        Tracks = tracks.ToList(),
+                        Albums = tracks
+                            .Where(t => !string.IsNullOrEmpty(t.Album))
+                            .GroupBy(t => t.Album)
+                            .Select(g => new AlbumInfo
+                            {
+                                Id = g.FirstOrDefault(t => !string.IsNullOrEmpty(t.AlbumBrowseId))?.AlbumBrowseId
+                                     ?? $"yt_album:{g.Key}",
+                                Name = g.Key,
+                                Artist = tracks.FirstOrDefault()?.Artist ?? "YouTube Artist",
+                                Year = g.Max(t => t.Year),
+                                CoverPath = g.FirstOrDefault(t => !string.IsNullOrEmpty(t.CoverPath))?.CoverPath,
+                                SourceType = YouTube,
+                                YouTubeAlbumId = g.FirstOrDefault(t => !string.IsNullOrEmpty(t.AlbumBrowseId))?.AlbumBrowseId,
+                                Tracks = g.OrderBy(t => t.TrackNumber).ToList()
+                            })
+                            .ToList()
+                    };
+
+                    // Use the YouTubeVideoId-based search to get more albums
+                    // (browse only returns top songs — enrich with typed search)
+                    try
+                    {
+                        var albumResults = await ytSession.SearchWithTypeAsync(
+                            artistInfo.Name, "albums", 10);
+                        if (albumResults != null)
+                        {
+                            var existingAlbumNames = new HashSet<string>(
+                                artistInfo.Albums.Select(a => a.Name),
+                                StringComparer.OrdinalIgnoreCase);
+                            foreach (var albumTrack in albumResults)
+                            {
+                                if (albumTrack.AlbumBrowseId == null) continue;
+                                if (existingAlbumNames.Contains(albumTrack.Album)) continue;
+                                artistInfo.Albums.Add(new AlbumInfo
+                                {
+                                    Id = albumTrack.AlbumBrowseId,
+                                    Name = albumTrack.Album ?? albumTrack.Title,
+                                    Artist = artistInfo.Name,
+                                    Year = albumTrack.Year,
+                                    CoverPath = albumTrack.CoverPath,
+                                    SourceType = YouTube,
+                                    YouTubeAlbumId = albumTrack.AlbumBrowseId
+                                });
+                                existingAlbumNames.Add(albumTrack.Album ?? albumTrack.Title);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine(
+                            $"[StreamingSourceManager] Album enrichment failed: {ex.Message}");
+                    }
+
+                    return artistInfo;
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(
+                        $"[StreamingSourceManager] BrowseArtistAsync failed for {channelId}: {ex.Message}");
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Browse a YouTube Music album page by browse ID (MPRE...).
+        /// Returns the album's full track list with metadata.
+        /// Inspired by Echo Music's two-step album fetch (list → detail).
+        /// </summary>
+        public async Task<AlbumInfo> BrowseAlbumAsync(string browseId, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrEmpty(browseId))
+                return null;
+
+            List<KeyValuePair<string, IMusicSourceSession>> activeSessions;
+            lock (_lock) activeSessions = _activeSessions
+                .Where(s => _sources.Any(src => src.Id == s.Key && src.IsConnected && src.Type == YouTube))
+                .ToList();
+
+            foreach (var kvp in activeSessions)
+            {
+                var ytSession = kvp.Value as IYouTubeSourceSession;
+                if (ytSession == null) continue;
+
+                try
+                {
+                    var tracks = await ytSession.GetAlbumAsync(browseId);
+                    if (tracks == null || tracks.Count == 0) continue;
+
+                    var albumInfo = new AlbumInfo
+                    {
+                        Id = browseId,
+                        Name = tracks.FirstOrDefault()?.Album ?? "YouTube Album",
+                        Artist = tracks.FirstOrDefault()?.Artist ?? "YouTube Music",
+                        Year = tracks.Max(t => t.Year),
+                        CoverPath = tracks.FirstOrDefault(t => !string.IsNullOrEmpty(t.CoverPath))?.CoverPath,
+                        SourceType = YouTube,
+                        YouTubeAlbumId = browseId,
+                        Tracks = tracks.OrderBy(t => t.TrackNumber).ToList()
+                    };
+
+                    // Enrich track ArtistBrowseId from the album browse so
+                    // clicking the artist name inside the album page works.
+                    if (string.IsNullOrEmpty(albumInfo.Tracks.FirstOrDefault()?.ArtistBrowseId))
+                    {
+                        try
+                        {
+                            var artistResults = await ytSession.SearchWithTypeAsync(
+                                albumInfo.Artist, "artists", 1);
+                            if (artistResults?.Count > 0 && !string.IsNullOrEmpty(artistResults[0].ArtistBrowseId))
+                            {
+                                foreach (var track in albumInfo.Tracks)
+                                    track.ArtistBrowseId = artistResults[0].ArtistBrowseId;
+                            }
+                        }
+                        catch { /* non-critical enrichment */ }
+                    }
+
+                    return albumInfo;
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(
+                        $"[StreamingSourceManager] BrowseAlbumAsync failed for {browseId}: {ex.Message}");
+                }
+            }
+
+            return null;
         }
 
         protected virtual void OnSourceAdded()
