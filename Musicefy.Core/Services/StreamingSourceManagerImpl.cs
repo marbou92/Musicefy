@@ -30,6 +30,8 @@ namespace Musicefy.Core.Services
         private IReadOnlyList<StreamingSource> _sourcesSnapshot;
         private static readonly HttpClient _httpClient = new HttpClient();
 
+        public event EventHandler SourceAdded;
+
         public IReadOnlyList<StreamingSource> Sources
         {
             get
@@ -93,6 +95,7 @@ namespace Musicefy.Core.Services
                     _activeSessions[source.Id] = session;
                 }
                 SaveSources();
+                OnSourceAdded();
                 return true;
             }
             else
@@ -110,6 +113,7 @@ namespace Musicefy.Core.Services
                     _activeSessions[source.Id] = session;
                 }
                 SaveSources();
+                OnSourceAdded();
                 return true;
             }
         }
@@ -558,6 +562,11 @@ namespace Musicefy.Core.Services
             {
                 System.Diagnostics.Debug.WriteLine($"Error saving sources: {ex.Message}");
             }
+        }
+
+        protected virtual void OnSourceAdded()
+        {
+            try { SourceAdded?.Invoke(this, EventArgs.Empty); } catch { }
         }
 
         private void LoadSources()
