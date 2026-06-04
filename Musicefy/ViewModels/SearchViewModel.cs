@@ -354,7 +354,7 @@ namespace Musicefy.ViewModels
                     songGroup.Items.Add(item);
                 groups.Add(songGroup);
 
-                // Group albums
+                // Group albums — carry YouTubeAlbumId from tracks if available
                 var albumGroups = results
                     .Where(t => !string.IsNullOrEmpty(t.Album))
                     .GroupBy(t => new { t.Album, t.Artist })
@@ -373,11 +373,14 @@ namespace Musicefy.ViewModels
                     {
                         var albumInfo = new AlbumInfo
                         {
+                            Id = ag.FirstOrDefault(t => !string.IsNullOrEmpty(t.AlbumBrowseId))?.AlbumBrowseId
+                                 ?? $"local_album:{ag.Key.Album}:{ag.Key.Artist}",
                             Name = ag.Key.Album,
                             Artist = ag.Key.Artist,
                             Year = ag.Max(t => t.Year),
                             CoverPath = ag.FirstOrDefault(t => !string.IsNullOrEmpty(t.CoverPath))?.CoverPath,
                             SourceType = ag.FirstOrDefault()?.SourceType,
+                            YouTubeAlbumId = ag.FirstOrDefault(t => !string.IsNullOrEmpty(t.AlbumBrowseId))?.AlbumBrowseId,
                             Tracks = ag.OrderBy(t => t.TrackNumber).ToList()
                         };
                         albumGroup.Items.Add(albumInfo);
@@ -385,7 +388,7 @@ namespace Musicefy.ViewModels
                     groups.Add(albumGroup);
                 }
 
-                // Group artists
+                // Group artists — carry YouTubeChannelId from tracks if available
                 var artistGroups = results
                     .Where(t => !string.IsNullOrEmpty(t.Artist))
                     .GroupBy(t => t.Artist)
@@ -404,9 +407,12 @@ namespace Musicefy.ViewModels
                     {
                         var artistInfo = new ArtistInfo
                         {
+                            Id = artG.FirstOrDefault(t => !string.IsNullOrEmpty(t.ArtistBrowseId))?.ArtistBrowseId
+                                 ?? $"local_artist:{artG.Key}",
                             Name = artG.Key,
                             CoverPath = artG.FirstOrDefault(t => !string.IsNullOrEmpty(t.CoverPath))?.CoverPath,
                             SourceType = artG.FirstOrDefault()?.SourceType,
+                            YouTubeChannelId = artG.FirstOrDefault(t => !string.IsNullOrEmpty(t.ArtistBrowseId))?.ArtistBrowseId,
                             Tracks = artG.Take(5).ToList()
                         };
                         artistGroup.Items.Add(artistInfo);
@@ -627,12 +633,28 @@ namespace Musicefy.ViewModels
 
                     case YouTubeUrlParser.UrlType.Artist:
                         navService = App.Services?.GetService(typeof(NavigationService)) as NavigationService;
-                        navService?.NavigateToArtist(new ArtistInfo { Name = parsed.BrowseId });
+                        // Use the BrowseId as both the Id and YouTubeChannelId so the
+                        // ArtistViewModel can look up the artist on YouTube Music.
+                        navService?.NavigateToArtist(new ArtistInfo
+                        {
+                            Id = parsed.BrowseId,
+                            Name = "YouTube Artist",  // Will be filled in by ArtistViewModel
+                            YouTubeChannelId = parsed.BrowseId,
+                            SourceType = YouTube
+                        });
                         break;
 
                     case YouTubeUrlParser.UrlType.Album:
                         navService = App.Services?.GetService(typeof(NavigationService)) as NavigationService;
-                        navService?.NavigateToAlbum(new AlbumInfo { Name = parsed.BrowseId });
+                        // Use the BrowseId as both the Id and YouTubeAlbumId so the
+                        // AlbumViewModel can look up the album on YouTube Music.
+                        navService?.NavigateToAlbum(new AlbumInfo
+                        {
+                            Id = parsed.BrowseId,
+                            Name = "YouTube Album",  // Will be filled in by AlbumViewModel
+                            YouTubeAlbumId = parsed.BrowseId,
+                            SourceType = YouTube
+                        });
                         break;
                 }
             }
