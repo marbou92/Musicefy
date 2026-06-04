@@ -263,7 +263,7 @@ namespace Musicefy.ViewModels
             ArtistName = album.Artist;
             Year = album.Year;
             CoverPath = album.CoverPath;
-            IsYouTubeAlbum = album.SourceType == SourceTypes.YouTube
+            IsYouTubeAlbum = album.SourceType == YouTube
                              || !string.IsNullOrEmpty(album.YouTubeAlbumId);
 
             // Capture artist YouTube ID from album tracks for artist navigation
