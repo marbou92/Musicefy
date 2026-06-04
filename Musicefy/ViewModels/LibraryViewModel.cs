@@ -93,6 +93,24 @@ namespace Musicefy.ViewModels
             ? Visibility.Visible
             : Visibility.Collapsed;
 
+        private bool _showAllArtists;
+        public bool ShowAllArtists
+        {
+            get => _showAllArtists;
+            set { SetProperty(ref _showAllArtists, value); OnPropertyChanged(nameof(ShowAllArtistsText)); }
+        }
+
+        public string ShowAllArtistsText => ShowAllArtists ? "Showing all artists" : "Showing followed only";
+
+        private bool _showAllAlbums;
+        public bool ShowAllAlbums
+        {
+            get => _showAllAlbums;
+            set { SetProperty(ref _showAllAlbums, value); OnPropertyChanged(nameof(ShowAllAlbumsText)); }
+        }
+
+        public string ShowAllAlbumsText => ShowAllAlbums ? "Showing all albums" : "Showing saved only";
+
         // Panel visibility
         private Visibility _cardsPanelVisibility = Visibility.Visible;
         public Visibility CardsPanelVisibility
@@ -147,6 +165,8 @@ namespace Musicefy.ViewModels
         public ICommand NavigateToAlbumCommand { get; }
         public ICommand UnfollowArtistCommand { get; }
         public ICommand UnsaveAlbumCommand { get; }
+        public ICommand ToggleArtistsFilterCommand { get; }
+        public ICommand ToggleAlbumsFilterCommand { get; }
 
         public event Action<string> CreatePlaylistRequested;
         public event Action RequestFolderInit;
@@ -215,6 +235,9 @@ namespace Musicefy.ViewModels
                 if (p is AlbumInfo album)
                     await ExecuteUnsaveAlbumAsync(album);
             });
+
+            ToggleArtistsFilterCommand = new RelayCommand(_ => { ShowAllArtists = !ShowAllArtists; _ = RefreshSpecialCollectionAsync(); });
+            ToggleAlbumsFilterCommand = new RelayCommand(_ => { ShowAllAlbums = !ShowAllAlbums; _ = RefreshSpecialCollectionAsync(); });
         }
 
         private void BuildRootCards()
@@ -359,12 +382,15 @@ namespace Musicefy.ViewModels
 
         /// <summary>
         /// Phase 3: Load followed artists from the Artists table.
+        /// Phase 4: When ShowAllArtists is true, loads ALL artists from the library.
         /// </summary>
         private async Task RefreshFollowedArtistsAsync()
         {
             try
             {
-                var artists = await _scanner.GetFollowedArtistsAsync();
+                var artists = ShowAllArtists
+                    ? await _scanner.GetAllArtistsAsync()
+                    : await _scanner.GetFollowedArtistsAsync();
                 Application.Current?.Dispatcher?.Invoke(() =>
                 {
                     FollowedArtists.Clear();
@@ -382,12 +408,15 @@ namespace Musicefy.ViewModels
 
         /// <summary>
         /// Phase 3: Load saved albums from the Albums table.
+        /// Phase 4: When ShowAllAlbums is true, loads ALL albums from the library.
         /// </summary>
         private async Task RefreshSavedAlbumsAsync()
         {
             try
             {
-                var albums = await _scanner.GetSavedAlbumsAsync();
+                var albums = ShowAllAlbums
+                    ? await _scanner.GetAllAlbumsAsync()
+                    : await _scanner.GetSavedAlbumsAsync();
                 Application.Current?.Dispatcher?.Invoke(() =>
                 {
                     SavedAlbums.Clear();
