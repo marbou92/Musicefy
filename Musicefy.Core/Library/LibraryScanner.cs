@@ -158,6 +158,45 @@ namespace Musicefy.Core.Library
                         CreatedAt TEXT NOT NULL
                     );");
 
+                // ── Phase 5: PlaylistTracks junction table & Playlists enrichment ──
+                // Enables ordered track membership for playlists.
+                // Inspired by Echo Music's playlist model with full CRUD and reorder.
+
+                // Non-destructive migration — add columns to Playlists that may not exist
+                var playlistCols = (await connection.QueryAsync<string>(
+                    "SELECT name FROM pragma_table_info('Playlists')"))
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+                if (!playlistCols.Contains("LastModifiedAt"))
+                    await connection.ExecuteAsync("ALTER TABLE Playlists ADD COLUMN LastModifiedAt TEXT;");
+                if (!playlistCols.Contains("Description"))
+                    await connection.ExecuteAsync("ALTER TABLE Playlists ADD COLUMN Description TEXT;");
+                if (!playlistCols.Contains("CoverPath"))
+                    await connection.ExecuteAsync("ALTER TABLE Playlists ADD COLUMN CoverPath TEXT;");
+                if (!playlistCols.Contains("YouTubePlaylistId"))
+                    await connection.ExecuteAsync("ALTER TABLE Playlists ADD COLUMN YouTubePlaylistId TEXT;");
+                if (!playlistCols.Contains("SourceType"))
+                    await connection.ExecuteAsync("ALTER TABLE Playlists ADD COLUMN SourceType TEXT;");
+
+                await connection.ExecuteAsync(@"
+                    CREATE TABLE IF NOT EXISTS PlaylistTracks (
+                        PlaylistId  TEXT NOT NULL,
+                        TrackFilePath TEXT NOT NULL,
+                        Position    INTEGER NOT NULL,
+                        PRIMARY KEY (PlaylistId, TrackFilePath),
+                        FOREIGN KEY (PlaylistId) REFERENCES Playlists(Id) ON DELETE CASCADE
+                    );");
+
+                // Indexes for fast playlist track lookup and ordering
+                await connection.ExecuteAsync(@"
+                    CREATE INDEX IF NOT EXISTS idx_playlisttracks_playlist
+                        ON PlaylistTracks(PlaylistId, Position);
+                    CREATE INDEX IF NOT EXISTS idx_playlisttracks_track
+                        ON PlaylistTracks(TrackFilePath);
+                    CREATE INDEX IF NOT EXISTS idx_playlists_name
+                        ON Playlists(Name COLLATE NOCASE);
+                ");
+
                 // ── Phase 2: First-class Artists & Albums tables ──────────────
                 // These persist artist/album metadata independently from tracks,
                 // enabling "follow artist" / "save album" features and stable
@@ -1344,6 +1383,315 @@ namespace Musicefy.Core.Library
             public int Year { get; set; }
             public string CoverPath { get; set; }
             public int TrackCount { get; set; }
+        }
+
+        // ── Phase 5: Playlist persistence ─────────────────────────────────
+
+        public async Task<List<PlaylistInfo>> GetAllPlaylistsAsync(CancellationToken cancellationToken = default)
+        {
+            using (var connection = new SqliteConnection(_dbConnectionString))
+            {
+                await connection.OpenAsync(cancellationToken);
+                var rows = await connection.QueryAsync<PlaylistRow>(
+                    "SELECT * FROM Playlists ORDER BY Name COLLATE NOCASE");
+
+                var result = new List<PlaylistInfo>();
+                foreach (var row in rows)
+                {
+                    var playlist = RowToPlaylistInfo(row);
+                    // Get track count from junction table
+                    var trackCount = await connection.QueryFirstOrDefaultAsync<int>(
+                        "SELECT COUNT(*) FROM PlaylistTracks WHERE PlaylistId = @PlaylistId",
+                        new { PlaylistId = playlist.Id });
+                    playlist.TrackCount = trackCount;
+
+                    // Use the cover of the first track as a fallback
+                    if (string.IsNullOrEmpty(playlist.CoverPath) && trackCount > 0)
+                    {
+                        var firstCover = await connection.QueryFirstOrDefaultAsync<string>(
+                            @"SELECT t.CoverPath FROM PlaylistTracks pt
+                              JOIN Tracks t ON pt.TrackFilePath = t.FilePath
+                              WHERE pt.PlaylistId = @PlaylistId
+                              ORDER BY pt.Position LIMIT 1",
+                            new { PlaylistId = playlist.Id });
+                        playlist.CoverPath = firstCover;
+                    }
+
+                    result.Add(playlist);
+                }
+                return result;
+            }
+        }
+
+        public async Task<PlaylistInfo> GetPlaylistAsync(string playlistId, CancellationToken cancellationToken = default)
+        {
+            using (var connection = new SqliteConnection(_dbConnectionString))
+            {
+                await connection.OpenAsync(cancellationToken);
+                var row = await connection.QueryFirstOrDefaultAsync<PlaylistRow>(
+                    "SELECT * FROM Playlists WHERE Id = @Id",
+                    new { Id = playlistId });
+                if (row == null) return null;
+
+                var playlist = RowToPlaylistInfo(row);
+                var tracks = await GetPlaylistTracksAsync(playlistId, cancellationToken);
+                playlist.Tracks = tracks;
+                playlist.TrackCount = tracks.Count;
+                playlist.TotalDuration = TimeSpan.FromTicks(tracks.Sum(t => t.Duration.Ticks));
+
+                if (string.IsNullOrEmpty(playlist.CoverPath) && tracks.Count > 0)
+                {
+                    playlist.CoverPath = tracks[0].CoverPath;
+                }
+
+                return playlist;
+            }
+        }
+
+        public async Task<List<MusicFile>> GetPlaylistTracksAsync(string playlistId, CancellationToken cancellationToken = default)
+        {
+            using (var connection = new SqliteConnection(_dbConnectionString))
+            {
+                await connection.OpenAsync(cancellationToken);
+                var tracks = await connection.QueryAsync<MusicFile>(
+                    @"SELECT t.* FROM PlaylistTracks pt
+                      JOIN Tracks t ON pt.TrackFilePath = t.FilePath
+                      WHERE pt.PlaylistId = @PlaylistId
+                      ORDER BY pt.Position",
+                    new { PlaylistId = playlistId });
+                return tracks.ToList();
+            }
+        }
+
+        public async Task AddTrackToPlaylistAsync(string playlistId, string trackFilePath, CancellationToken cancellationToken = default)
+        {
+            using (var connection = new SqliteConnection(_dbConnectionString))
+            {
+                await connection.OpenAsync(cancellationToken);
+
+                // Check if the track is already in this playlist
+                var exists = await connection.QueryFirstOrDefaultAsync<int>(
+                    "SELECT COUNT(*) FROM PlaylistTracks WHERE PlaylistId = @PlaylistId AND TrackFilePath = @TrackFilePath",
+                    new { PlaylistId = playlistId, TrackFilePath = trackFilePath });
+                if (exists > 0) return; // No-op if already present
+
+                // Get the next position
+                var maxPos = await connection.QueryFirstOrDefaultAsync<int>(
+                    "SELECT COALESCE(MAX(Position), -1) FROM PlaylistTracks WHERE PlaylistId = @PlaylistId",
+                    new { PlaylistId = playlistId });
+
+                await connection.ExecuteAsync(
+                    "INSERT INTO PlaylistTracks (PlaylistId, TrackFilePath, Position) VALUES (@PlaylistId, @TrackFilePath, @Position)",
+                    new { PlaylistId = playlistId, TrackFilePath = trackFilePath, Position = maxPos + 1 });
+
+                // Update playlist's LastModifiedAt
+                await connection.ExecuteAsync(
+                    "UPDATE Playlists SET LastModifiedAt = @LastModifiedAt WHERE Id = @Id",
+                    new { LastModifiedAt = DateTime.UtcNow.ToString("o"), Id = playlistId });
+            }
+        }
+
+        public async Task AddTracksToPlaylistAsync(string playlistId, IEnumerable<string> trackFilePaths, CancellationToken cancellationToken = default)
+        {
+            using (var connection = new SqliteConnection(_dbConnectionString))
+            {
+                await connection.OpenAsync(cancellationToken);
+
+                // Get existing tracks to skip duplicates
+                var existing = (await connection.QueryAsync<string>(
+                    "SELECT TrackFilePath FROM PlaylistTracks WHERE PlaylistId = @PlaylistId",
+                    new { PlaylistId = playlistId }))
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+                // Get current max position
+                var maxPos = await connection.QueryFirstOrDefaultAsync<int>(
+                    "SELECT COALESCE(MAX(Position), -1) FROM PlaylistTracks WHERE PlaylistId = @PlaylistId",
+                    new { PlaylistId = playlistId });
+
+                using (var tx = connection.BeginTransaction())
+                {
+                    foreach (var filePath in trackFilePaths)
+                    {
+                        if (existing.Contains(filePath)) continue;
+                        maxPos++;
+                        await connection.ExecuteAsync(
+                            "INSERT INTO PlaylistTracks (PlaylistId, TrackFilePath, Position) VALUES (@PlaylistId, @TrackFilePath, @Position)",
+                            new { PlaylistId = playlistId, TrackFilePath = filePath, Position = maxPos },
+                            transaction: tx);
+                        existing.Add(filePath);
+                    }
+                    tx.Commit();
+                }
+
+                // Update playlist's LastModifiedAt
+                await connection.ExecuteAsync(
+                    "UPDATE Playlists SET LastModifiedAt = @LastModifiedAt WHERE Id = @Id",
+                    new { LastModifiedAt = DateTime.UtcNow.ToString("o"), Id = playlistId });
+            }
+        }
+
+        public async Task RemoveTrackFromPlaylistAsync(string playlistId, string trackFilePath, CancellationToken cancellationToken = default)
+        {
+            using (var connection = new SqliteConnection(_dbConnectionString))
+            {
+                await connection.OpenAsync(cancellationToken);
+
+                // Get the position of the track being removed
+                var removedPos = await connection.QueryFirstOrDefaultAsync<int?>(
+                    "SELECT Position FROM PlaylistTracks WHERE PlaylistId = @PlaylistId AND TrackFilePath = @TrackFilePath",
+                    new { PlaylistId = playlistId, TrackFilePath = trackFilePath });
+
+                if (removedPos == null) return; // Track not in playlist
+
+                using (var tx = connection.BeginTransaction())
+                {
+                    // Delete the track
+                    await connection.ExecuteAsync(
+                        "DELETE FROM PlaylistTracks WHERE PlaylistId = @PlaylistId AND TrackFilePath = @TrackFilePath",
+                        new { PlaylistId = playlistId, TrackFilePath = trackFilePath }, transaction: tx);
+
+                    // Re-order remaining tracks (shift positions down to fill the gap)
+                    await connection.ExecuteAsync(
+                        "UPDATE PlaylistTracks SET Position = Position - 1 WHERE PlaylistId = @PlaylistId AND Position > @RemovedPos",
+                        new { PlaylistId = playlistId, RemovedPos = removedPos.Value }, transaction: tx);
+
+                    tx.Commit();
+                }
+
+                // Update playlist's LastModifiedAt
+                await connection.ExecuteAsync(
+                    "UPDATE Playlists SET LastModifiedAt = @LastModifiedAt WHERE Id = @Id",
+                    new { LastModifiedAt = DateTime.UtcNow.ToString("o"), Id = playlistId });
+            }
+        }
+
+        public async Task MoveTrackInPlaylistAsync(string playlistId, int fromPosition, int toPosition, CancellationToken cancellationToken = default)
+        {
+            using (var connection = new SqliteConnection(_dbConnectionString))
+            {
+                await connection.OpenAsync(cancellationToken);
+
+                using (var tx = connection.BeginTransaction())
+                {
+                    if (fromPosition < toPosition)
+                    {
+                        // Moving down: shift items between [from+1, to] up by 1
+                        await connection.ExecuteAsync(
+                            "UPDATE PlaylistTracks SET Position = Position - 1 WHERE PlaylistId = @PlaylistId AND Position > @From AND Position <= @To",
+                            new { PlaylistId = playlistId, From = fromPosition, To = toPosition }, transaction: tx);
+                    }
+                    else
+                    {
+                        // Moving up: shift items between [to, from-1] down by 1
+                        await connection.ExecuteAsync(
+                            "UPDATE PlaylistTracks SET Position = Position + 1 WHERE PlaylistId = @PlaylistId AND Position >= @To AND Position < @From",
+                            new { PlaylistId = playlistId, From = fromPosition, To = toPosition }, transaction: tx);
+                    }
+
+                    // Set the moved track to its new position
+                    await connection.ExecuteAsync(
+                        "UPDATE PlaylistTracks SET Position = @To WHERE PlaylistId = @PlaylistId AND Position = @From",
+                        new { PlaylistId = playlistId, From = fromPosition, To = toPosition },
+                        transaction: tx);
+
+                    tx.Commit();
+                }
+
+                // Update playlist's LastModifiedAt
+                await connection.ExecuteAsync(
+                    "UPDATE Playlists SET LastModifiedAt = @LastModifiedAt WHERE Id = @Id",
+                    new { LastModifiedAt = DateTime.UtcNow.ToString("o"), Id = playlistId });
+            }
+        }
+
+        public async Task DeletePlaylistAsync(string playlistId, CancellationToken cancellationToken = default)
+        {
+            using (var connection = new SqliteConnection(_dbConnectionString))
+            {
+                await connection.OpenAsync(cancellationToken);
+                using (var tx = connection.BeginTransaction())
+                {
+                    // Delete all track associations first
+                    await connection.ExecuteAsync(
+                        "DELETE FROM PlaylistTracks WHERE PlaylistId = @PlaylistId",
+                        new { PlaylistId = playlistId }, transaction: tx);
+
+                    // Delete the playlist itself
+                    await connection.ExecuteAsync(
+                        "DELETE FROM Playlists WHERE Id = @Id",
+                        new { Id = playlistId }, transaction: tx);
+
+                    tx.Commit();
+                }
+            }
+        }
+
+        public async Task RenamePlaylistAsync(string playlistId, string newName, CancellationToken cancellationToken = default)
+        {
+            using (var connection = new SqliteConnection(_dbConnectionString))
+            {
+                await connection.OpenAsync(cancellationToken);
+                await connection.ExecuteAsync(
+                    "UPDATE Playlists SET Name = @Name, LastModifiedAt = @LastModifiedAt WHERE Id = @Id",
+                    new { Name = newName, LastModifiedAt = DateTime.UtcNow.ToString("o"), Id = playlistId });
+            }
+        }
+
+        public async Task UpdatePlaylistAsync(PlaylistInfo playlist, CancellationToken cancellationToken = default)
+        {
+            if (playlist == null) throw new ArgumentNullException(nameof(playlist));
+            using (var connection = new SqliteConnection(_dbConnectionString))
+            {
+                await connection.OpenAsync(cancellationToken);
+                await connection.ExecuteAsync(
+                    @"UPDATE Playlists SET
+                        Name = @Name,
+                        Description = @Description,
+                        CoverPath = @CoverPath,
+                        YouTubePlaylistId = @YouTubePlaylistId,
+                        SourceType = @SourceType,
+                        LastModifiedAt = @LastModifiedAt
+                      WHERE Id = @Id",
+                    new
+                    {
+                        playlist.Name,
+                        playlist.Description,
+                        playlist.CoverPath,
+                        playlist.YouTubePlaylistId,
+                        playlist.SourceType,
+                        LastModifiedAt = DateTime.UtcNow.ToString("o"),
+                        playlist.Id
+                    });
+            }
+        }
+
+        // ── Phase 5: Row mappers for Playlists ────────────────────────────
+
+        private static PlaylistInfo RowToPlaylistInfo(PlaylistRow row)
+        {
+            return new PlaylistInfo
+            {
+                Id = row.Id,
+                Name = row.Name,
+                CreatedAt = DateTime.TryParse(row.CreatedAt, out var createdAt) ? createdAt : DateTime.MinValue,
+                LastModifiedAt = DateTime.TryParse(row.LastModifiedAt, out var modified) ? (DateTime?)modified : null,
+                Description = row.Description,
+                CoverPath = row.CoverPath,
+                YouTubePlaylistId = row.YouTubePlaylistId,
+                SourceType = row.SourceType
+            };
+        }
+
+        private class PlaylistRow
+        {
+            public string Id { get; set; }
+            public string Name { get; set; }
+            public string CreatedAt { get; set; }
+            public string LastModifiedAt { get; set; }
+            public string Description { get; set; }
+            public string CoverPath { get; set; }
+            public string YouTubePlaylistId { get; set; }
+            public string SourceType { get; set; }
         }
     }
 }
