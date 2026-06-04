@@ -172,6 +172,11 @@ namespace Musicefy
                 var libraryService = _serviceProvider.GetService<ILibraryService>();
                 if (libraryService != null)
                     await libraryService.EnsureSchemaAsync();
+
+                // Phase 6: Restore queue state from previous session
+                var playback = _serviceProvider.GetService<PlaybackService>();
+                if (playback != null)
+                    await playback.RestoreQueueStateAsync();
             }
             catch (Exception ex)
             {
@@ -240,6 +245,14 @@ namespace Musicefy
 
         protected override void OnExit(ExitEventArgs e)
         {
+            // Phase 6: Save queue state before exit
+            try
+            {
+                var playback = _serviceProvider.GetService<PlaybackService>();
+                playback?.SaveQueueStateAsync().Wait();
+            }
+            catch { }
+
             if (_serviceProvider is IDisposable disposable)
                 disposable.Dispose();
 
