@@ -4,10 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Media;
-using static Musicefy.Core.SourceTypes;
 using Musicefy.Core.Interfaces;
 using Musicefy.Core.Models;
 using Musicefy.Core.Services;
+using static Musicefy.Core.SourceTypes;
 
 namespace Musicefy.ViewModels
 {
@@ -129,7 +129,9 @@ namespace Musicefy.ViewModels
         public ICommand MoreCommand { get; }
         public ICommand ShuffleAlbumCommand { get; }
 
+#pragma warning disable CS0067 // Event is subscribed to by AlbumView; will be used for track-level artist navigation
         public event Action<ArtistInfo> RequestNavigateToArtist;
+#pragma warning restore CS0067
 
         public AlbumViewModel(IAudioPlayer playback, ArtistAlbumService artistAlbumService, IStreamingSourceManager sourceManager)
         {
