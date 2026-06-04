@@ -7,6 +7,7 @@ using System.Windows.Media;
 using Musicefy.Core.Interfaces;
 using Musicefy.Core.Models;
 using Musicefy.Core.Services;
+using static Musicefy.Core.SourceTypes;
 
 namespace Musicefy.ViewModels
 {
