@@ -22,9 +22,24 @@ namespace Musicefy.Views
             _viewModel.RequestNavigateToAlbum += OnRequestNavigateToAlbum;
         }
 
+        /// <summary>
+        /// Load artist by name (legacy path — local/subsonic sources).
+        /// </summary>
         public async void LoadArtist(string artistName)
         {
             await _viewModel.LoadAsync(artistName);
+            ExtractColorsFromCover();
+        }
+
+        /// <summary>
+        /// Load artist from a full <see cref="ArtistInfo"/> object.
+        /// Preserves YouTube browse IDs for rich YouTube Music integration.
+        /// Inspired by Echo Music's first-class entity navigation.
+        /// </summary>
+        public async void LoadArtist(ArtistInfo artistInfo)
+        {
+            if (artistInfo == null) return;
+            await _viewModel.LoadAsync(artistInfo);
             ExtractColorsFromCover();
         }
 
@@ -73,7 +88,11 @@ namespace Musicefy.Views
         private void OnRequestNavigateToAlbum(AlbumInfo album)
         {
             if (Window.GetWindow(this) is MainWindow mainWindow)
-                mainWindow.NavigateToAlbum(album.Name, album.Artist);
+            {
+                // Phase 1: Pass the full AlbumInfo object (with YouTubeAlbumId)
+                // instead of just the name strings.
+                mainWindow.NavigateToAlbum(album);
+            }
         }
     }
 }
