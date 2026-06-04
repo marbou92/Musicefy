@@ -228,7 +228,7 @@ namespace Musicefy.ViewModels
             ArtistName = artist.Name;
             ArtistId = artist.Id;
             CoverPath = artist.CoverPath;
-            IsYouTubeArtist = artist.SourceType == SourceTypes.YouTube
+            IsYouTubeArtist = artist.SourceType == YouTube
                               || !string.IsNullOrEmpty(artist.YouTubeChannelId);
 
             Tracks.Clear();
