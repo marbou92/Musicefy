@@ -63,8 +63,14 @@
                     </StackPanel>
                 </StackPanel>
 
+                <!-- Subscriber count (Phase 3) -->
+                <TextBlock x:Name="SubscriberTextBlock" Text="{Binding SubscriberText}" FontSize="12"
+                           Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                           HorizontalAlignment="Center" Margin="0,4,0,16"/>
+
                 <!-- Section C: Action buttons -->
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,28">
+                    <!-- Phase 3: Follow/Unfollow button with state -->
                     <Border CornerRadius="24" Height="40" Padding="20,0"
                             Background="{DynamicResource SurfaceContainerHighBrush}" BorderBrush="{DynamicResource OutlineVariantBrush}" BorderThickness="1"
                             Margin="0,0,12,0" Cursor="Hand">
@@ -72,9 +78,38 @@
                             <MouseBinding MouseAction="LeftClick" Command="{Binding SubscribeCommand}"/>
                         </Border.InputBindings>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <!-- Unfollow state: checkmark -->
+                            <Path Data="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"
+                                  Fill="{DynamicResource PrimaryBrush}" Width="14" Height="14" Stretch="Uniform" Margin="0,0,6,0"
+                                  Visibility="{Binding IsFollowed, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            <!-- Follow state: plus -->
                             <TextBlock Text="+" FontSize="16" Foreground="{DynamicResource OnSurfaceBrush}"
-                                       FontWeight="Bold" Margin="0,0,6,0"/>
-                            <TextBlock Text="Subscribe" FontSize="13" Foreground="{DynamicResource OnSurfaceBrush}"/>
+                                       FontWeight="Bold" Margin="0,0,6,0">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsFollowed}" Value="True">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <!-- Button text changes based on state -->
+                            <TextBlock FontSize="13" Foreground="{DynamicResource OnSurfaceBrush}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="Follow"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsFollowed}" Value="True">
+                                                <Setter Property="Text" Value="Following"/>
+                                                <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
                         </StackPanel>
                     </Border>
                     <Border CornerRadius="24" Height="40" Padding="20,0"
