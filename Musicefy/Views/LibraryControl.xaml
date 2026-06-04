@@ -402,11 +402,20 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <!-- Artist count + empty state -->
+                <!-- Artist count + filter toggle + empty state -->
                 <StackPanel Grid.Row="0" Orientation="Horizontal"
                             VerticalAlignment="Center" Margin="4,0,0,16">
                     <TextBlock Text="{Binding ArtistCountText}" FontSize="13"
                                Foreground="{DynamicResource OnSurfaceVariantBrush}"/>
+                    <TextBlock Text="{Binding ShowAllArtistsText}" FontSize="12"
+                               Foreground="{DynamicResource PrimaryBrush}" Margin="12,0,0,0"
+                               VerticalAlignment="Center"/>
+                    <Button Style="{StaticResource IconButtonStyle}"
+                            Command="{Binding ToggleArtistsFilterCommand}" ToolTip="Toggle filter"
+                            Margin="4,-2,0,0" Padding="4">
+                        <Path Data="M3,9H17V7H3V9M3,13H17V11H3V13M3,17H17V15H3V17M19,17H21V15H19V17M19,7V9H21V7H19M19,13H21V11H19V13"
+                              Fill="{DynamicResource OnSurfaceVariantBrush}" Stretch="Uniform" Width="16" Height="16"/>
+                    </Button>
                     <TextBlock Text=" · Follow artists to see them here."
                                FontSize="13" Foreground="{DynamicResource OnSurfaceVariantBrush}"
                                Visibility="{Binding IsArtistEmptyHintVisible}"/>
@@ -490,11 +499,20 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <!-- Album count + empty state -->
+                <!-- Album count + filter toggle + empty state -->
                 <StackPanel Grid.Row="0" Orientation="Horizontal"
                             VerticalAlignment="Center" Margin="4,0,0,16">
                     <TextBlock Text="{Binding AlbumCountText}" FontSize="13"
                                Foreground="{DynamicResource OnSurfaceVariantBrush}"/>
+                    <TextBlock Text="{Binding ShowAllAlbumsText}" FontSize="12"
+                               Foreground="{DynamicResource PrimaryBrush}" Margin="12,0,0,0"
+                               VerticalAlignment="Center"/>
+                    <Button Style="{StaticResource IconButtonStyle}"
+                            Command="{Binding ToggleAlbumsFilterCommand}" ToolTip="Toggle filter"
+                            Margin="4,-2,0,0" Padding="4">
+                        <Path Data="M3,9H17V7H3V9M3,13H17V11H3V13M3,17H17V15H3V17M19,17H21V15H19V17M19,7V9H21V7H19M19,13H21V11H19V13"
+                              Fill="{DynamicResource OnSurfaceVariantBrush}" Stretch="Uniform" Width="16" Height="16"/>
+                    </Button>
                     <TextBlock Text=" · Save albums to see them here."
                                FontSize="13" Foreground="{DynamicResource OnSurfaceVariantBrush}"
                                Visibility="{Binding IsAlbumEmptyHintVisible}"/>
