@@ -49,6 +49,9 @@ namespace Musicefy.Core.Services
                                  ?? $"local_album:{ag.Key}:{g.Key}",
                             Name = ag.Key,
                             Artist = g.Key,
+                            // Phase 2: Set ArtistId from the artist's stable ID
+                            ArtistId = g.FirstOrDefault(t => !string.IsNullOrEmpty(t.ArtistBrowseId))?.ArtistBrowseId
+                                       ?? $"local_artist:{g.Key}",
                             Year = ag.Max(t => t.Year),
                             CoverPath = ag.FirstOrDefault(t => !string.IsNullOrEmpty(t.CoverPath))?.CoverPath,
                             SourceType = ag.FirstOrDefault()?.SourceType,
