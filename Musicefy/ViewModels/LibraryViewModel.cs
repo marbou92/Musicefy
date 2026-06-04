@@ -38,7 +38,13 @@ namespace Musicefy.ViewModels
             OnPropertyChanged(nameof(IsEmptyHintVisible));
         }
 
-        private enum SpecialMode { None, Favourites, History, Downloads }
+        // ── Artists data (Phase 3) ─────────────────────────────────────
+        public ObservableCollection<ArtistInfo> FollowedArtists { get; } = new ObservableCollection<ArtistInfo>();
+
+        // ── Albums data (Phase 3) ──────────────────────────────────────
+        public ObservableCollection<AlbumInfo> SavedAlbums { get; } = new ObservableCollection<AlbumInfo>();
+
+        private enum SpecialMode { None, Favourites, History, Downloads, Artists, Albums }
         private SpecialMode _currentMode = SpecialMode.None;
 
         // ── UI state ────────────────────────────────────────────────────
@@ -67,7 +73,23 @@ namespace Musicefy.ViewModels
             ? "1 track"
             : $"{SpecialTracks.Count} tracks";
 
+        public string ArtistCountText => FollowedArtists.Count == 1
+            ? "1 artist"
+            : $"{FollowedArtists.Count} artists";
+
+        public string AlbumCountText => SavedAlbums.Count == 1
+            ? "1 album"
+            : $"{SavedAlbums.Count} albums";
+
         public Visibility IsEmptyHintVisible => SpecialTracks.Count == 0
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+
+        public Visibility IsArtistEmptyHintVisible => FollowedArtists.Count == 0
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+
+        public Visibility IsAlbumEmptyHintVisible => SavedAlbums.Count == 0
             ? Visibility.Visible
             : Visibility.Collapsed;
 
@@ -93,6 +115,21 @@ namespace Musicefy.ViewModels
             set { SetProperty(ref _folderPanelVisibility, value); }
         }
 
+        // Phase 3: Artists & Albums panel visibility
+        private Visibility _artistsPanelVisibility = Visibility.Collapsed;
+        public Visibility ArtistsPanelVisibility
+        {
+            get => _artistsPanelVisibility;
+            set { SetProperty(ref _artistsPanelVisibility, value); }
+        }
+
+        private Visibility _albumsPanelVisibility = Visibility.Collapsed;
+        public Visibility AlbumsPanelVisibility
+        {
+            get => _albumsPanelVisibility;
+            set { SetProperty(ref _albumsPanelVisibility, value); }
+        }
+
         // ── Commands ────────────────────────────────────────────────────
         public ICommand CardClickCommand { get; }
         public ICommand BackCommand { get; }
@@ -105,8 +142,16 @@ namespace Musicefy.ViewModels
         public ICommand ContextShowInExplorerCommand { get; }
         public ICommand DoubleClickTrackCommand { get; }
 
+        // Phase 3: Navigation commands for artists and albums
+        public ICommand NavigateToArtistCommand { get; }
+        public ICommand NavigateToAlbumCommand { get; }
+        public ICommand UnfollowArtistCommand { get; }
+        public ICommand UnsaveAlbumCommand { get; }
+
         public event Action<string> CreatePlaylistRequested;
         public event Action RequestFolderInit;
+        public event Action<ArtistInfo> ArtistNavigationRequested;
+        public event Action<AlbumInfo> AlbumNavigationRequested;
         public IAudioPlayer PlaybackService => _playback;
 
         private MusicFile _selectedTrack;
@@ -114,6 +159,20 @@ namespace Musicefy.ViewModels
         {
             get => _selectedTrack;
             set { SetProperty(ref _selectedTrack, value); }
+        }
+
+        private ArtistInfo _selectedArtist;
+        public ArtistInfo SelectedArtist
+        {
+            get => _selectedArtist;
+            set { SetProperty(ref _selectedArtist, value); }
+        }
+
+        private AlbumInfo _selectedAlbum;
+        public AlbumInfo SelectedAlbum
+        {
+            get => _selectedAlbum;
+            set { SetProperty(ref _selectedAlbum, value); }
         }
 
         public LibraryViewModel(IAudioPlayer playback, ILibraryService scanner)
@@ -134,11 +193,49 @@ namespace Musicefy.ViewModels
             ContextToggleFavouriteCommand = new RelayCommand(async _ => await ExecuteContextToggleFav());
             ContextShowInExplorerCommand = new RelayCommand(_ => ExecuteShowInExplorer());
             DoubleClickTrackCommand = new RelayCommand(_ => PlaySelected());
+
+            // Phase 3: Navigation commands
+            NavigateToArtistCommand = new RelayCommand(p =>
+            {
+                if (p is ArtistInfo artist)
+                    ArtistNavigationRequested?.Invoke(artist);
+            });
+            NavigateToAlbumCommand = new RelayCommand(p =>
+            {
+                if (p is AlbumInfo album)
+                    AlbumNavigationRequested?.Invoke(album);
+            });
+            UnfollowArtistCommand = new RelayCommand(async p =>
+            {
+                if (p is ArtistInfo artist)
+                    await ExecuteUnfollowArtistAsync(artist);
+            });
+            UnsaveAlbumCommand = new RelayCommand(async p =>
+            {
+                if (p is AlbumInfo album)
+                    await ExecuteUnsaveAlbumAsync(album);
+            });
         }
 
         private void BuildRootCards()
         {
             RootCards.Clear();
+
+            // Phase 3: Artists and Albums cards first (prominent placement)
+            RootCards.Add(new LibraryCardItem
+            {
+                Title = "Artists", Subtitle = "Followed artists",
+                IconData = "M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z",
+                TargetType = ItemTargetType.Artists
+            });
+            RootCards.Add(new LibraryCardItem
+            {
+                Title = "Albums", Subtitle = "Saved albums",
+                IconData = "M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,16.5L7,11.5L8.41,10.09L12,13.67L15.59,10.09L17,11.5L12,16.5Z",
+                TargetType = ItemTargetType.Albums
+            });
+
+            // Original cards
             RootCards.Add(new LibraryCardItem
             {
                 Title = "Favourites", Subtitle = "Liked songs",
@@ -170,6 +267,8 @@ namespace Musicefy.ViewModels
             CardsPanelVisibility = panel == "Cards" ? Visibility.Visible : Visibility.Collapsed;
             SpecialPanelVisibility = panel == "Special" ? Visibility.Visible : Visibility.Collapsed;
             FolderPanelVisibility = panel == "Folder" ? Visibility.Visible : Visibility.Collapsed;
+            ArtistsPanelVisibility = panel == "Artists" ? Visibility.Visible : Visibility.Collapsed;
+            AlbumsPanelVisibility = panel == "Albums" ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void ExecuteCardClick(object parameter)
@@ -178,6 +277,20 @@ namespace Musicefy.ViewModels
 
             switch (card.TargetType)
             {
+                case ItemTargetType.Artists:
+                    _currentMode = SpecialMode.Artists;
+                    SetHeaderState("Artists", true, true);
+                    ShowPanel("Artists");
+                    _ = RefreshSpecialCollectionAsync();
+                    break;
+
+                case ItemTargetType.Albums:
+                    _currentMode = SpecialMode.Albums;
+                    SetHeaderState("Albums", true, true);
+                    ShowPanel("Albums");
+                    _ = RefreshSpecialCollectionAsync();
+                    break;
+
                 case ItemTargetType.Favourites:
                     _currentMode = SpecialMode.Favourites;
                     SetHeaderState("Favourites", true, true);
@@ -217,20 +330,121 @@ namespace Musicefy.ViewModels
 
         private async Task RefreshSpecialCollectionAsync()
         {
-            List<MusicFile> tracks;
             switch (_currentMode)
             {
                 case SpecialMode.Favourites:
-                    tracks = await _scanner.GetFavouriteTracksAsync(); break;
-                case SpecialMode.History:
-                    tracks = await _scanner.GetHistoryTracksAsync(100); break;
-                case SpecialMode.Downloads:
-                    tracks = await GetDownloadedTracksAsync(); break;
-                default:
-                    return;
-            }
+                    var favTracks = await _scanner.GetFavouriteTracksAsync();
+                    SetSpecialTracks(favTracks);
+                    break;
 
-            SetSpecialTracks(tracks);
+                case SpecialMode.History:
+                    var histTracks = await _scanner.GetHistoryTracksAsync(100);
+                    SetSpecialTracks(histTracks);
+                    break;
+
+                case SpecialMode.Downloads:
+                    var dlTracks = await GetDownloadedTracksAsync();
+                    SetSpecialTracks(dlTracks);
+                    break;
+
+                case SpecialMode.Artists:
+                    await RefreshFollowedArtistsAsync();
+                    break;
+
+                case SpecialMode.Albums:
+                    await RefreshSavedAlbumsAsync();
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Phase 3: Load followed artists from the Artists table.
+        /// </summary>
+        private async Task RefreshFollowedArtistsAsync()
+        {
+            try
+            {
+                var artists = await _scanner.GetFollowedArtistsAsync();
+                Application.Current?.Dispatcher?.Invoke(() =>
+                {
+                    FollowedArtists.Clear();
+                    foreach (var artist in artists)
+                        FollowedArtists.Add(artist);
+                    OnPropertyChanged(nameof(ArtistCountText));
+                    OnPropertyChanged(nameof(IsArtistEmptyHintVisible));
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[LibraryViewModel] RefreshFollowedArtists failed: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Phase 3: Load saved albums from the Albums table.
+        /// </summary>
+        private async Task RefreshSavedAlbumsAsync()
+        {
+            try
+            {
+                var albums = await _scanner.GetSavedAlbumsAsync();
+                Application.Current?.Dispatcher?.Invoke(() =>
+                {
+                    SavedAlbums.Clear();
+                    foreach (var album in albums)
+                        SavedAlbums.Add(album);
+                    OnPropertyChanged(nameof(AlbumCountText));
+                    OnPropertyChanged(nameof(IsAlbumEmptyHintVisible));
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[LibraryViewModel] RefreshSavedAlbums failed: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Phase 3: Unfollow an artist and refresh the list.
+        /// </summary>
+        private async Task ExecuteUnfollowArtistAsync(ArtistInfo artist)
+        {
+            if (artist == null) return;
+            try
+            {
+                await _scanner.ToggleFollowArtistAsync(artist);
+                Application.Current?.Dispatcher?.Invoke(() =>
+                {
+                    FollowedArtists.Remove(artist);
+                    OnPropertyChanged(nameof(ArtistCountText));
+                    OnPropertyChanged(nameof(IsArtistEmptyHintVisible));
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[LibraryViewModel] UnfollowArtist failed: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Phase 3: Unsave an album and refresh the list.
+        /// </summary>
+        private async Task ExecuteUnsaveAlbumAsync(AlbumInfo album)
+        {
+            if (album == null) return;
+            try
+            {
+                await _scanner.ToggleSaveAlbumAsync(album);
+                Application.Current?.Dispatcher?.Invoke(() =>
+                {
+                    SavedAlbums.Remove(album);
+                    OnPropertyChanged(nameof(AlbumCountText));
+                    OnPropertyChanged(nameof(IsAlbumEmptyHintVisible));
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[LibraryViewModel] UnsaveAlbum failed: {ex.Message}");
+            }
         }
 
         private async Task<List<MusicFile>> GetDownloadedTracksAsync(CancellationToken cancellationToken = default)
