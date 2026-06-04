@@ -179,5 +179,64 @@ namespace Musicefy.Core.Interfaces
         /// Inspired by Echo Music's library-first entity model.
         /// </summary>
         Task SyncArtistsAlbumsFromTracksAsync(CancellationToken cancellationToken = default);
+
+        // ── Phase 5: Playlists & Collection Management ───────────────────
+
+        /// <summary>
+        /// Get all playlists (without tracks loaded).
+        /// Returns basic metadata (Id, Name, CreatedAt, TrackCount, CoverPath, etc.).
+        /// </summary>
+        Task<List<PlaylistInfo>> GetAllPlaylistsAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Get a single playlist by ID, including all its tracks.
+        /// Returns null if the playlist does not exist.
+        /// </summary>
+        Task<PlaylistInfo> GetPlaylistAsync(string playlistId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Get all tracks in a playlist, ordered by their Position.
+        /// Returns an empty list if the playlist does not exist or has no tracks.
+        /// </summary>
+        Task<List<MusicFile>> GetPlaylistTracksAsync(string playlistId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Add a track to a playlist at the end (highest Position).
+        /// If the track is already in the playlist, this is a no-op.
+        /// </summary>
+        Task AddTrackToPlaylistAsync(string playlistId, string trackFilePath, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Add multiple tracks to a playlist at the end.
+        /// Skips tracks that are already in the playlist.
+        /// </summary>
+        Task AddTracksToPlaylistAsync(string playlistId, IEnumerable<string> trackFilePaths, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Remove a track from a playlist.
+        /// Reorders remaining tracks to fill the gap.
+        /// </summary>
+        Task RemoveTrackFromPlaylistAsync(string playlistId, string trackFilePath, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Move a track within a playlist from one position to another.
+        /// Other tracks shift to accommodate the move.
+        /// </summary>
+        Task MoveTrackInPlaylistAsync(string playlistId, int fromPosition, int toPosition, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Delete a playlist and all its track associations.
+        /// </summary>
+        Task DeletePlaylistAsync(string playlistId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Rename a playlist.
+        /// </summary>
+        Task RenamePlaylistAsync(string playlistId, string newName, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Update playlist metadata (description, cover path, YouTube playlist ID, etc.).
+        /// </summary>
+        Task UpdatePlaylistAsync(PlaylistInfo playlist, CancellationToken cancellationToken = default);
     }
 }
