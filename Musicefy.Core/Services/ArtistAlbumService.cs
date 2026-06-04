@@ -11,14 +11,16 @@ namespace Musicefy.Core.Services
     public class ArtistAlbumService
     {
         private readonly IStreamingSourceManager _sourceManager;
+        private readonly ILibraryService _libraryService;
         private List<ArtistInfo> _cachedArtists;
         private List<AlbumInfo> _cachedAlbums;
         private DateTime _cacheTime;
         private static readonly TimeSpan CacheTtl = TimeSpan.FromSeconds(60);
 
-        public ArtistAlbumService(IStreamingSourceManager sourceManager)
+        public ArtistAlbumService(IStreamingSourceManager sourceManager, ILibraryService libraryService)
         {
             _sourceManager = sourceManager;
+            _libraryService = libraryService;
         }
 
         public async Task<List<ArtistInfo>> GetArtistsAsync(CancellationToken ct = default)
@@ -62,6 +64,31 @@ namespace Musicefy.Core.Services
                 .OrderBy(a => a.Name)
                 .ToList();
 
+            // Phase 4: Enrich from persisted Artists table (YouTube IDs, descriptions, follow state)
+            try
+            {
+                var persistedArtists = await _libraryService.GetAllArtistsAsync(ct);
+                var persistedMap = persistedArtists.ToDictionary(a => a.Id, a => a);
+                foreach (var artist in _cachedArtists)
+                {
+                    if (persistedMap.TryGetValue(artist.Id, out var persisted))
+                    {
+                        if (string.IsNullOrEmpty(artist.YouTubeChannelId) && !string.IsNullOrEmpty(persisted.YouTubeChannelId))
+                            artist.YouTubeChannelId = persisted.YouTubeChannelId;
+                        if (string.IsNullOrEmpty(artist.Description) && !string.IsNullOrEmpty(persisted.Description))
+                            artist.Description = persisted.Description;
+                        if ((artist.SubscriberCount == null || artist.SubscriberCount <= 0) && persisted.SubscriberCount > 0)
+                            artist.SubscriberCount = persisted.SubscriberCount;
+                        if (persisted.IsFollowed)
+                            artist.IsFollowed = true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[ArtistAlbumService] Enrichment from DB failed: {ex.Message}");
+            }
+
             _cacheTime = DateTime.UtcNow;
             return _cachedArtists;
         }
@@ -78,6 +105,31 @@ namespace Musicefy.Core.Services
                 .Select(g => g.First())
                 .OrderBy(a => a.Artist).ThenBy(a => a.Name)
                 .ToList();
+
+            // Phase 4: Enrich from persisted Albums table
+            try
+            {
+                var persistedAlbums = await _libraryService.GetAllAlbumsAsync(ct);
+                var persistedMap = persistedAlbums.ToDictionary(a => a.Id, a => a);
+                foreach (var album in _cachedAlbums)
+                {
+                    if (persistedMap.TryGetValue(album.Id, out var persisted))
+                    {
+                        if (string.IsNullOrEmpty(album.YouTubeAlbumId) && !string.IsNullOrEmpty(persisted.YouTubeAlbumId))
+                            album.YouTubeAlbumId = persisted.YouTubeAlbumId;
+                        if (string.IsNullOrEmpty(album.Description) && !string.IsNullOrEmpty(persisted.Description))
+                            album.Description = persisted.Description;
+                        if (string.IsNullOrEmpty(album.Genre) && !string.IsNullOrEmpty(persisted.Genre))
+                            album.Genre = persisted.Genre;
+                        if (persisted.IsSaved)
+                            album.IsSaved = true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[ArtistAlbumService] Album enrichment from DB failed: {ex.Message}");
+            }
 
             return _cachedAlbums;
         }
