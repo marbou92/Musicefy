@@ -84,6 +84,22 @@ namespace Musicefy.Core.Interfaces
         /// Get all albums from all connected sources
         /// </summary>
         Task<List<AlbumInfo>> GetAllAlbumsAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Browse a YouTube Music artist page by channel ID (UC...).
+        /// Returns the artist's top tracks and album references.
+        /// Returns null if no YouTube source is connected or the browse fails.
+        /// Inspired by Echo Music's structured artist browsing.
+        /// </summary>
+        Task<ArtistInfo> BrowseArtistAsync(string channelId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Browse a YouTube Music album page by browse ID (MPRE...).
+        /// Returns the album's full track list with metadata.
+        /// Returns null if no YouTube source is connected or the browse fails.
+        /// Inspired by Echo Music's two-step album fetch (list → detail).
+        /// </summary>
+        Task<AlbumInfo> BrowseAlbumAsync(string browseId, CancellationToken cancellationToken = default);
     }
 
     /// <summary>
