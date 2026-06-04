@@ -104,7 +104,9 @@ namespace Musicefy.Core.Services
 
                 try
                 {
-                    var tracks = await session.SearchAsync("", 200);
+                    // Use GetAllTracksAsync instead of SearchAsync("") — semantically correct,
+                    // more complete, and avoids the empty-query hack.
+                    var tracks = await session.GetAllTracksAsync();
                     if (tracks != null)
                         allTracks.AddRange(tracks);
                 }
