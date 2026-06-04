@@ -475,6 +475,53 @@ namespace Musicefy.Core.Services
                 return new List<MusicFile>();
             }
 
+            public async Task<IReadOnlyList<MusicFile>> GetAllTracksAsync(int limit = 500)
+            {
+                // Use ILibraryService for all tracks if available
+                if (_libraryService != null)
+                {
+                    try
+                    {
+                        var allTracks = await _libraryService.GetAllTracksAsync();
+                        if (allTracks != null)
+                        {
+                            if (!string.IsNullOrEmpty(_folderPath))
+                            {
+                                allTracks = allTracks
+                                    .Where(t => t.FilePath != null &&
+                                                t.FilePath.StartsWith(_folderPath, StringComparison.OrdinalIgnoreCase))
+                                    .ToList();
+                            }
+                            return allTracks.Take(limit).ToList();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine(
+                            $"[LocalSourceProvider] GetAllTracksAsync failed: {ex.Message}");
+                    }
+                }
+
+                // Fallback: file system enumeration
+                if (!Directory.Exists(_folderPath))
+                    return new List<MusicFile>();
+
+                var results = Directory.EnumerateFiles(_folderPath, "*.*", SearchOption.AllDirectories)
+                    .Where(f => _extensions.Contains(System.IO.Path.GetExtension(f)))
+                    .Take(limit)
+                    .Select(f => new MusicFile
+                    {
+                        Title = Path.GetFileNameWithoutExtension(f),
+                        Artist = "Local",
+                        FilePath = f,
+                        SourceUri = f,
+                        SourceType = Local
+                    })
+                    .ToList();
+
+                return results;
+            }
+
             public void Dispose()
             {
             }
