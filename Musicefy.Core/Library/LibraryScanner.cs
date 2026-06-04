@@ -129,6 +129,28 @@ namespace Musicefy.Core.Library
                 if (!existingCols.Contains("IsDownloaded"))
                     await connection.ExecuteAsync("ALTER TABLE Tracks ADD COLUMN IsDownloaded INTEGER DEFAULT 0;");
 
+                // YouTube-specific fields (Phase 0a: persist YouTube metadata)
+                if (!existingCols.Contains("YouTubeVideoId"))
+                    await connection.ExecuteAsync("ALTER TABLE Tracks ADD COLUMN YouTubeVideoId TEXT;");
+                if (!existingCols.Contains("YouTubeBrowseId"))
+                    await connection.ExecuteAsync("ALTER TABLE Tracks ADD COLUMN YouTubeBrowseId TEXT;");
+                if (!existingCols.Contains("YouTubePlaylistId"))
+                    await connection.ExecuteAsync("ALTER TABLE Tracks ADD COLUMN YouTubePlaylistId TEXT;");
+                if (!existingCols.Contains("YouTubeMusicVideoType"))
+                    await connection.ExecuteAsync("ALTER TABLE Tracks ADD COLUMN YouTubeMusicVideoType TEXT;");
+                if (!existingCols.Contains("LoudnessDb"))
+                    await connection.ExecuteAsync("ALTER TABLE Tracks ADD COLUMN LoudnessDb REAL;");
+                if (!existingCols.Contains("AudioFormat"))
+                    await connection.ExecuteAsync("ALTER TABLE Tracks ADD COLUMN AudioFormat TEXT;");
+                if (!existingCols.Contains("AlbumArtist"))
+                    await connection.ExecuteAsync("ALTER TABLE Tracks ADD COLUMN AlbumArtist TEXT;");
+                if (!existingCols.Contains("AlbumBrowseId"))
+                    await connection.ExecuteAsync("ALTER TABLE Tracks ADD COLUMN AlbumBrowseId TEXT;");
+                if (!existingCols.Contains("ArtistBrowseId"))
+                    await connection.ExecuteAsync("ALTER TABLE Tracks ADD COLUMN ArtistBrowseId TEXT;");
+                if (!existingCols.Contains("DateAdded"))
+                    await connection.ExecuteAsync("ALTER TABLE Tracks ADD COLUMN DateAdded TEXT;");
+
                 await connection.ExecuteAsync(@"
                     CREATE TABLE IF NOT EXISTS Playlists (
                         Id        TEXT PRIMARY KEY,
@@ -242,12 +264,14 @@ namespace Musicefy.Core.Library
                     FilePath, Title, Artist, Album, Year, Genre, Duration,
                     TrackNumber, Bitrate, FileSize, CoverPath, Lyrics,
                     SourceUri, SourceType, LastModified,
-                    IsFavourite, PlayCount, IsDownloaded
+                    IsFavourite, PlayCount, IsDownloaded,
+                    AlbumArtist, DateAdded
                 ) VALUES (
                     @FilePath, @Title, @Artist, @Album, @Year, @Genre, @Duration,
                     @TrackNumber, @Bitrate, @FileSize, @CoverPath, @Lyrics,
                     @SourceUri, @SourceType, @LastModified,
-                    0, 0, 0
+                    0, 0, 0,
+                    @AlbumArtist, @DateAdded
                 );";
 
             // SQL for changed tracks — updates only metadata, NEVER touches user data
@@ -264,7 +288,8 @@ namespace Musicefy.Core.Library
                     FileSize    = @FileSize,
                     CoverPath   = @CoverPath,
                     Lyrics      = @Lyrics,
-                    LastModified= @LastModified
+                    LastModified= @LastModified,
+                    AlbumArtist = @AlbumArtist
                 WHERE FilePath = @FilePath;";
 
             // 3. Scan + upsert in batches ──────────────────────────────────
@@ -572,6 +597,7 @@ namespace Musicefy.Core.Library
             var    fileInfo   = new FileInfo(file);
             string title      = Path.GetFileNameWithoutExtension(file);
             string artist     = "Unknown Artist";
+            string albumArtist = null;
             string album      = "Unknown Album";
             string genre      = "Unknown";
             string lyrics     = string.Empty;
@@ -593,13 +619,17 @@ namespace Musicefy.Core.Library
                         if (!string.IsNullOrWhiteSpace(tag.Tag.Title))
                             title = tag.Tag.Title.Trim();
 
-                        // Performer → AlbumArtist → filename
+                        // AlbumArtist → primary field for album grouping
+                        if (tag.Tag.AlbumArtists != null && tag.Tag.AlbumArtists.Length > 0)
+                            albumArtist = string.Join(", ", Array.FindAll(tag.Tag.AlbumArtists,
+                                a => !string.IsNullOrWhiteSpace(a))).Trim();
+
+                        // Performer → Artist display field; fallback to AlbumArtist
                         if (tag.Tag.Performers != null && tag.Tag.Performers.Length > 0)
                             artist = string.Join(", ", Array.FindAll(tag.Tag.Performers,
                                 p => !string.IsNullOrWhiteSpace(p))).Trim();
-                        else if (tag.Tag.AlbumArtists != null && tag.Tag.AlbumArtists.Length > 0)
-                            artist = string.Join(", ", Array.FindAll(tag.Tag.AlbumArtists,
-                                a => !string.IsNullOrWhiteSpace(a))).Trim();
+                        else if (albumArtist != null)
+                            artist = albumArtist;
 
                         if (string.IsNullOrWhiteSpace(artist)) artist = "Unknown Artist";
 
@@ -657,6 +687,7 @@ namespace Musicefy.Core.Library
                 FilePath    = file,
                 Title       = title,
                 Artist      = artist,
+                AlbumArtist = albumArtist,
                 Album       = album,
                 Year        = year,
                 Genre       = genre,
@@ -667,7 +698,8 @@ namespace Musicefy.Core.Library
                 CoverPath   = coverPath,
                 Lyrics      = lyrics,
                 SourceUri   = file,
-                SourceType  = "FileItem"
+                SourceType  = "FileItem",
+                DateAdded   = DateTime.UtcNow
             };
         }
 
