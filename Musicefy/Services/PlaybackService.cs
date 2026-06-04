@@ -30,6 +30,11 @@ namespace Musicefy.Services
         private Dictionary<string, MusicFile> _libraryLookup;
         private DateTime _libraryLookupTime;
 
+        // ── Phase 6: Queue persistence path ────────────────────────────────
+        private static readonly string QueueStatePath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Musicefy", "queue_state.json");
+
         public event Action<MusicFile> TrackChanged;
         public event Action<TimeSpan, TimeSpan> ProgressChanged;
         public event Action<bool> PlaybackStateChanged;
@@ -260,8 +265,12 @@ namespace Musicefy.Services
                 CurrentAudioFile = track;
                 // Phase 4: Auto-persist artist/album from now-playing track
                 _ = AutoPersistArtistAlbumAsync(track);
+                // Phase 6: Record play event in library
+                _ = _libraryService.RecordPlayAsync(track.FilePath);
                 _timer.Start();
                 TrackChanged?.Invoke(track);
+                // Phase 6: Save queue state on track change
+                _ = SaveQueueStateAsync();
                 PlaybackStateChanged?.Invoke(true);
             }
             catch (Exception ex)
@@ -492,6 +501,93 @@ namespace Musicefy.Services
             {
                 System.Diagnostics.Debug.WriteLine($"[PlaybackService] AutoPersist failed: {ex.Message}");
             }
+        }
+
+        // ── Phase 6: Queue Persistence ────────────────────────────────────
+
+        public async Task SaveQueueStateAsync()
+        {
+            try
+            {
+                var tracks = _queueManager.Tracks.ToList();
+                var currentIndex = -1;
+                var current = CurrentAudioFile;
+                if (current != null)
+                {
+                    for (int i = 0; i < tracks.Count; i++)
+                    {
+                        if (tracks[i].FilePath == current.FilePath)
+                        {
+                            currentIndex = i;
+                            break;
+                        }
+                    }
+                }
+                var state = new QueueState
+                {
+                    Tracks = tracks.Select(t => t.FilePath).ToList(),
+                    CurrentIndex = currentIndex,
+                    ShuffleEnabled = _queueManager.ShuffleEnabled,
+                    RepeatEnabled = _queueManager.RepeatEnabled
+                };
+                var json = Newtonsoft.Json.JsonConvert.SerializeObject(state);
+                var dir = Path.GetDirectoryName(QueueStatePath);
+                if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+                await Task.Run(() => File.WriteAllText(QueueStatePath, json));
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[PlaybackService] SaveQueueState failed: {ex.Message}");
+            }
+        }
+
+        public async Task RestoreQueueStateAsync()
+        {
+            try
+            {
+                if (!File.Exists(QueueStatePath)) return;
+                var json = await Task.Run(() => File.ReadAllText(QueueStatePath));
+                var state = Newtonsoft.Json.JsonConvert.DeserializeObject<QueueState>(json);
+                if (state?.Tracks == null || state.Tracks.Count == 0) return;
+
+                // Resolve file paths back to MusicFile objects
+                var allTracks = await _libraryService.GetAllTracksAsync();
+                var lookup = allTracks.ToDictionary(t => t.FilePath, t => t, StringComparer.OrdinalIgnoreCase);
+
+                var resolved = new List<MusicFile>();
+                foreach (var path in state.Tracks)
+                {
+                    if (lookup.TryGetValue(path, out var track))
+                        resolved.Add(track);
+                }
+
+                if (resolved.Count == 0) return;
+
+                _queueManager.Clear();
+                _queueManager.EnqueueRange(resolved);
+                _queueManager.ShuffleEnabled = state.ShuffleEnabled;
+                _queueManager.RepeatEnabled = state.RepeatEnabled;
+
+                if (state.CurrentIndex >= 0 && state.CurrentIndex < resolved.Count)
+                {
+                    _queueManager.JumpToIndex(state.CurrentIndex);
+                    // Don't auto-play, just set the position
+                    CurrentAudioFile = resolved[state.CurrentIndex];
+                    TrackChanged?.Invoke(resolved[state.CurrentIndex]);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[PlaybackService] RestoreQueueState failed: {ex.Message}");
+            }
+        }
+
+        private class QueueState
+        {
+            public List<string> Tracks { get; set; }
+            public int CurrentIndex { get; set; }
+            public bool ShuffleEnabled { get; set; }
+            public bool RepeatEnabled { get; set; }
         }
 
 
