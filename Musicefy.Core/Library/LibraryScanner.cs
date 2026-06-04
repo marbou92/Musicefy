@@ -275,6 +275,20 @@ namespace Musicefy.Core.Library
                     CREATE INDEX IF NOT EXISTS idx_albums_saved       ON Albums(IsSaved) WHERE IsSaved = 1;
                 ");
 
+                // ── Phase 6: PlayEvents table for event-sourced play tracking ──
+                // Inspired by Echo Music's Event table for detailed play history.
+                await connection.ExecuteAsync(@"
+                    CREATE TABLE IF NOT EXISTS PlayEvents (
+                        Id            INTEGER PRIMARY KEY AUTOINCREMENT,
+                        TrackFilePath TEXT NOT NULL,
+                        Timestamp     TEXT NOT NULL,
+                        PlayTimeMs    INTEGER DEFAULT 0,
+                        FOREIGN KEY (TrackFilePath) REFERENCES Tracks(FilePath) ON DELETE CASCADE
+                    );
+                    CREATE INDEX IF NOT EXISTS idx_playevents_timestamp ON PlayEvents(Timestamp DESC);
+                    CREATE INDEX IF NOT EXISTS idx_playevents_track ON PlayEvents(TrackFilePath);
+                ");
+
                 // Drop old indexes first to recreate with optimized composite indexes
                 await connection.ExecuteAsync(@"
                     DROP INDEX IF EXISTS idx_tracks_artist;
@@ -591,6 +605,11 @@ namespace Musicefy.Core.Library
                 await connection.ExecuteAsync(
                     "UPDATE Tracks SET PlayCount = PlayCount + 1, LastPlayed = @LastPlayed WHERE FilePath = @FilePath",
                     new { FilePath = filePath, LastPlayed = DateTime.UtcNow.ToString("o") });
+
+                // Phase 6: Insert into PlayEvents for event-sourced play tracking
+                await connection.ExecuteAsync(
+                    "INSERT INTO PlayEvents (TrackFilePath, Timestamp, PlayTimeMs) VALUES (@FilePath, @Timestamp, @PlayTimeMs)",
+                    new { FilePath = filePath, Timestamp = DateTime.UtcNow.ToString("o"), PlayTimeMs = 0 });
             }
         }
 
@@ -946,6 +965,21 @@ namespace Musicefy.Core.Library
               WHERE IsFavourite = 1
               ORDER BY RANDOM()
               LIMIT @Limit",
+                    new { Limit = limit });
+                return tracks.ToList();
+            }
+        }
+
+        // ── Phase 6: Recently Added query ─────────────────────────────────
+        public async Task<List<MusicFile>> GetRecentlyAddedAsync(int limit, CancellationToken cancellationToken = default)
+        {
+            using (var connection = new SqliteConnection(_dbConnectionString))
+            {
+                await connection.OpenAsync(cancellationToken);
+                var tracks = await connection.QueryAsync<MusicFile>(
+                    @"SELECT * FROM Tracks 
+              WHERE DateAdded IS NOT NULL AND DateAdded != ''
+              ORDER BY DateAdded DESC LIMIT @Limit",
                     new { Limit = limit });
                 return tracks.ToList();
             }
