@@ -136,6 +136,25 @@ namespace Musicefy.Core.Services
                 return await _client.GetArtistAsync(artistId);
             }
 
+            /// <summary>
+            /// Get all tracks from Subsonic via GetAlbumList2 with multiple type pages.
+            /// Much more complete and efficient than SearchAsync("").
+            /// </summary>
+            public async Task<IReadOnlyList<MusicFile>> GetAllTracksAsync(int limit = 500)
+            {
+                try
+                {
+                    // Fetch from "alphabeticalByName" which returns the most complete listing
+                    return await _client.GetAlbumList2Async("alphabeticalByName", limit);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(
+                        $"[SubsonicSourceProvider] GetAllTracksAsync failed: {ex.Message}");
+                    return new List<MusicFile>();
+                }
+            }
+
             public void Dispose()
             {
                 _client?.Dispose();
