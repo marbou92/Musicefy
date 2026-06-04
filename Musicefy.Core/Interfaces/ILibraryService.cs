@@ -95,6 +95,12 @@ namespace Musicefy.Core.Interfaces
         /// </summary>
         Task<List<MusicFile>> GetRandomFavouriteTracksAsync(int limit, CancellationToken cancellationToken = default);
 
+        /// <summary>
+        /// Get recently added tracks ordered by DateAdded DESC.
+        /// Phase 6: Auto-playlist support — returns tracks newest first.
+        /// </summary>
+        Task<List<MusicFile>> GetRecentlyAddedAsync(int limit, CancellationToken cancellationToken = default);
+
         // ── Phase 2: Artist & Album persistence ───────────────────────────
 
         /// <summary>
