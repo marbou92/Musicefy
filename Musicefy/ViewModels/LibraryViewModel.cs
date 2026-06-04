@@ -44,7 +44,10 @@ namespace Musicefy.ViewModels
         // ── Albums data (Phase 3) ──────────────────────────────────────
         public ObservableCollection<AlbumInfo> SavedAlbums { get; } = new ObservableCollection<AlbumInfo>();
 
-        private enum SpecialMode { None, Favourites, History, Downloads, Artists, Albums }
+        // ── Playlists data (Phase 5) ────────────────────────────────────
+        public ObservableCollection<PlaylistInfo> Playlists { get; } = new ObservableCollection<PlaylistInfo>();
+
+        private enum SpecialMode { None, Favourites, History, Downloads, Artists, Albums, Playlists }
         private SpecialMode _currentMode = SpecialMode.None;
 
         // ── UI state ────────────────────────────────────────────────────
@@ -81,6 +84,10 @@ namespace Musicefy.ViewModels
             ? "1 album"
             : $"{SavedAlbums.Count} albums";
 
+        public string PlaylistCountText => Playlists.Count == 1
+            ? "1 playlist"
+            : $"{Playlists.Count} playlists";
+
         public Visibility IsEmptyHintVisible => SpecialTracks.Count == 0
             ? Visibility.Visible
             : Visibility.Collapsed;
@@ -90,6 +97,10 @@ namespace Musicefy.ViewModels
             : Visibility.Collapsed;
 
         public Visibility IsAlbumEmptyHintVisible => SavedAlbums.Count == 0
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+
+        public Visibility IsPlaylistEmptyHintVisible => Playlists.Count == 0
             ? Visibility.Visible
             : Visibility.Collapsed;
 
@@ -148,6 +159,14 @@ namespace Musicefy.ViewModels
             set { SetProperty(ref _albumsPanelVisibility, value); }
         }
 
+        // Phase 5: Playlists panel visibility
+        private Visibility _playlistsPanelVisibility = Visibility.Collapsed;
+        public Visibility PlaylistsPanelVisibility
+        {
+            get => _playlistsPanelVisibility;
+            set { SetProperty(ref _playlistsPanelVisibility, value); }
+        }
+
         // ── Commands ────────────────────────────────────────────────────
         public ICommand CardClickCommand { get; }
         public ICommand BackCommand { get; }
@@ -168,10 +187,15 @@ namespace Musicefy.ViewModels
         public ICommand ToggleArtistsFilterCommand { get; }
         public ICommand ToggleAlbumsFilterCommand { get; }
 
+        // Phase 5: Playlist navigation and management commands
+        public ICommand NavigateToPlaylistCommand { get; }
+        public ICommand DeletePlaylistCommand { get; }
+
         public event Action<string> CreatePlaylistRequested;
         public event Action RequestFolderInit;
         public event Action<ArtistInfo> ArtistNavigationRequested;
         public event Action<AlbumInfo> AlbumNavigationRequested;
+        public event Action<PlaylistInfo> PlaylistNavigationRequested;
         public IAudioPlayer PlaybackService => _playback;
 
         private MusicFile _selectedTrack;
@@ -193,6 +217,13 @@ namespace Musicefy.ViewModels
         {
             get => _selectedAlbum;
             set { SetProperty(ref _selectedAlbum, value); }
+        }
+
+        private PlaylistInfo _selectedPlaylist;
+        public PlaylistInfo SelectedPlaylist
+        {
+            get => _selectedPlaylist;
+            set { SetProperty(ref _selectedPlaylist, value); }
         }
 
         public LibraryViewModel(IAudioPlayer playback, ILibraryService scanner)
@@ -238,6 +269,18 @@ namespace Musicefy.ViewModels
 
             ToggleArtistsFilterCommand = new RelayCommand(_ => { ShowAllArtists = !ShowAllArtists; _ = RefreshSpecialCollectionAsync(); });
             ToggleAlbumsFilterCommand = new RelayCommand(_ => { ShowAllAlbums = !ShowAllAlbums; _ = RefreshSpecialCollectionAsync(); });
+
+            // Phase 5: Playlist commands
+            NavigateToPlaylistCommand = new RelayCommand(p =>
+            {
+                if (p is PlaylistInfo playlist)
+                    PlaylistNavigationRequested?.Invoke(playlist);
+            });
+            DeletePlaylistCommand = new RelayCommand(async p =>
+            {
+                if (p is PlaylistInfo playlist)
+                    await ExecuteDeletePlaylistAsync(playlist);
+            });
         }
 
         private void BuildRootCards()
@@ -256,6 +299,14 @@ namespace Musicefy.ViewModels
                 Title = "Albums", Subtitle = "Saved albums",
                 IconData = "M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,16.5L7,11.5L8.41,10.09L12,13.67L15.59,10.09L17,11.5L12,16.5Z",
                 TargetType = ItemTargetType.Albums
+            });
+
+            // Phase 5: Playlists card
+            RootCards.Add(new LibraryCardItem
+            {
+                Title = "Playlists", Subtitle = "Your playlists",
+                IconData = "M12,2C6.48,2 2,6.48 2,12S6.48,22 12,22 22,17.52 22,12 17.52,2 12,2M12,16.5L7,11.5H10V6H14V11.5H17L12,16.5Z",
+                TargetType = ItemTargetType.Playlist
             });
 
             // Original cards
@@ -292,6 +343,7 @@ namespace Musicefy.ViewModels
             FolderPanelVisibility = panel == "Folder" ? Visibility.Visible : Visibility.Collapsed;
             ArtistsPanelVisibility = panel == "Artists" ? Visibility.Visible : Visibility.Collapsed;
             AlbumsPanelVisibility = panel == "Albums" ? Visibility.Visible : Visibility.Collapsed;
+            PlaylistsPanelVisibility = panel == "Playlists" ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void ExecuteCardClick(object parameter)
@@ -311,6 +363,13 @@ namespace Musicefy.ViewModels
                     _currentMode = SpecialMode.Albums;
                     SetHeaderState("Albums", true, true);
                     ShowPanel("Albums");
+                    _ = RefreshSpecialCollectionAsync();
+                    break;
+
+                case ItemTargetType.Playlist:
+                    _currentMode = SpecialMode.Playlists;
+                    SetHeaderState("Playlists", true, true);
+                    ShowPanel("Playlists");
                     _ = RefreshSpecialCollectionAsync();
                     break;
 
@@ -376,6 +435,10 @@ namespace Musicefy.ViewModels
 
                 case SpecialMode.Albums:
                     await RefreshSavedAlbumsAsync();
+                    break;
+
+                case SpecialMode.Playlists:
+                    await RefreshPlaylistsAsync();
                     break;
             }
         }
@@ -473,6 +536,58 @@ namespace Musicefy.ViewModels
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[LibraryViewModel] UnsaveAlbum failed: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Phase 5: Load all playlists from the library.
+        /// </summary>
+        private async Task RefreshPlaylistsAsync()
+        {
+            try
+            {
+                var playlists = await _scanner.GetAllPlaylistsAsync();
+                Application.Current?.Dispatcher?.Invoke(() =>
+                {
+                    Playlists.Clear();
+                    foreach (var playlist in playlists)
+                        Playlists.Add(playlist);
+                    OnPropertyChanged(nameof(PlaylistCountText));
+                    OnPropertyChanged(nameof(IsPlaylistEmptyHintVisible));
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[LibraryViewModel] RefreshPlaylists failed: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Phase 5: Delete a playlist and refresh the list.
+        /// </summary>
+        private async Task ExecuteDeletePlaylistAsync(PlaylistInfo playlist)
+        {
+            if (playlist == null) return;
+            var result = System.Windows.MessageBox.Show(
+                $"Delete playlist \"{playlist.Name}\"?",
+                "Delete Playlist",
+                System.Windows.MessageBoxButton.YesNo,
+                System.Windows.MessageBoxImage.Warning);
+            if (result != System.Windows.MessageBoxResult.Yes) return;
+
+            try
+            {
+                await _scanner.DeletePlaylistAsync(playlist.Id);
+                Application.Current?.Dispatcher?.Invoke(() =>
+                {
+                    Playlists.Remove(playlist);
+                    OnPropertyChanged(nameof(PlaylistCountText));
+                    OnPropertyChanged(nameof(IsPlaylistEmptyHintVisible));
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[LibraryViewModel] DeletePlaylist failed: {ex.Message}");
             }
         }
 
