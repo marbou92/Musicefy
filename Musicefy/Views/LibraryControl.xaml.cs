@@ -1,12 +1,15 @@
 using System;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using Microsoft.Extensions.DependencyInjection;
+using Musicefy.Core.Interfaces;
 using Musicefy.Core.Models;
 using Musicefy.Services;
 using Musicefy.ViewModels;
+using PlaybackService = Musicefy.Services.PlaybackService;
 
 namespace Musicefy.Views
 {
@@ -18,6 +21,7 @@ namespace Musicefy.Views
         private Action<ArtistInfo> _artistNavigationHandler;
         private Action<AlbumInfo> _albumNavigationHandler;
         private Action<PlaylistInfo> _playlistNavigationHandler;
+        private Action<MusicFile> _addToPlaylistHandler;
 
         public LibraryControl()
         {
@@ -60,11 +64,23 @@ namespace Musicefy.Views
                         mainWindow.NavigateToPlaylist(playlist);
                 };
 
+                // Phase 6: Add to Playlist handler
+                _addToPlaylistHandler = track =>
+                {
+                    var scanner = App.Services.GetService<ILibraryService>();
+                    var dialog = new PlaylistPickerDialog(scanner) { Owner = Window.GetWindow(this) };
+                    if (dialog.ShowDialog() == true && dialog.SelectedPlaylist != null)
+                    {
+                        _ = AddTrackToPlaylistAsync(dialog.SelectedPlaylist.Id, track.FilePath);
+                    }
+                };
+
                 ViewModel.RequestFolderInit += _folderInitHandler;
                 ViewModel.CreatePlaylistRequested += _createPlaylistHandler;
                 ViewModel.ArtistNavigationRequested += _artistNavigationHandler;
                 ViewModel.AlbumNavigationRequested += _albumNavigationHandler;
                 ViewModel.PlaylistNavigationRequested += _playlistNavigationHandler;
+                ViewModel.AddToPlaylistRequested += _addToPlaylistHandler;
             }
         }
 
@@ -82,12 +98,15 @@ namespace Musicefy.Views
                     ViewModel.AlbumNavigationRequested -= _albumNavigationHandler;
                 if (_playlistNavigationHandler != null)
                     ViewModel.PlaylistNavigationRequested -= _playlistNavigationHandler;
+                if (_addToPlaylistHandler != null)
+                    ViewModel.AddToPlaylistRequested -= _addToPlaylistHandler;
             }
             _folderInitHandler = null;
             _createPlaylistHandler = null;
             _artistNavigationHandler = null;
             _albumNavigationHandler = null;
             _playlistNavigationHandler = null;
+            _addToPlaylistHandler = null;
         }
 
         // ── Phase 3: Double-click navigation for artists ──────────────────
@@ -131,6 +150,22 @@ namespace Musicefy.Views
                 {
                     ViewModel.NavigateToPlaylistCommand.Execute(ViewModel.SelectedPlaylist);
                 }
+            }
+        }
+
+        // ── Phase 6: Add to Playlist helper ──────────────────────────────
+
+        private async Task AddTrackToPlaylistAsync(string playlistId, string trackFilePath)
+        {
+            try
+            {
+                var scanner = App.Services.GetService<ILibraryService>();
+                await scanner.AddTrackToPlaylistAsync(playlistId, trackFilePath);
+                ToastService.ShowToast("Track added to playlist.", System.Windows.Media.Brushes.ForestGreen);
+            }
+            catch
+            {
+                ToastService.ShowToast("Failed to add track to playlist.", System.Windows.Media.Brushes.Red);
             }
         }
 
