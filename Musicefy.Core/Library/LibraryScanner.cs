@@ -158,6 +158,84 @@ namespace Musicefy.Core.Library
                         CreatedAt TEXT NOT NULL
                     );");
 
+                // ── Phase 2: First-class Artists & Albums tables ──────────────
+                // These persist artist/album metadata independently from tracks,
+                // enabling "follow artist" / "save album" features and stable
+                // navigation even when tracks aren't in the local library.
+                // Inspired by Echo Music's first-class entity model.
+
+                await connection.ExecuteAsync(@"
+                    CREATE TABLE IF NOT EXISTS Artists (
+                        Id               TEXT PRIMARY KEY,
+                        Name             TEXT NOT NULL,
+                        CoverPath        TEXT,
+                        SourceType       TEXT,
+                        YouTubeChannelId TEXT,
+                        Description      TEXT,
+                        SubscriberCount  INTEGER DEFAULT 0,
+                        IsFollowed       INTEGER DEFAULT 0,
+                        LastBrowsedAt    TEXT
+                    );");
+
+                // Non-destructive migrations for Artists table
+                var artistCols = (await connection.QueryAsync<string>(
+                    "SELECT name FROM pragma_table_info('Artists')"))
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+                if (!artistCols.Contains("Description"))
+                    await connection.ExecuteAsync("ALTER TABLE Artists ADD COLUMN Description TEXT;");
+                if (!artistCols.Contains("SubscriberCount"))
+                    await connection.ExecuteAsync("ALTER TABLE Artists ADD COLUMN SubscriberCount INTEGER DEFAULT 0;");
+                if (!artistCols.Contains("IsFollowed"))
+                    await connection.ExecuteAsync("ALTER TABLE Artists ADD COLUMN IsFollowed INTEGER DEFAULT 0;");
+                if (!artistCols.Contains("LastBrowsedAt"))
+                    await connection.ExecuteAsync("ALTER TABLE Artists ADD COLUMN LastBrowsedAt TEXT;");
+
+                await connection.ExecuteAsync(@"
+                    CREATE TABLE IF NOT EXISTS Albums (
+                        Id            TEXT PRIMARY KEY,
+                        Name          TEXT NOT NULL,
+                        ArtistId      TEXT,
+                        ArtistName    TEXT,
+                        Year          INTEGER,
+                        CoverPath     TEXT,
+                        SourceType    TEXT,
+                        YouTubeAlbumId TEXT,
+                        Description   TEXT,
+                        Genre         TEXT,
+                        IsSaved       INTEGER DEFAULT 0,
+                        TrackCount    INTEGER DEFAULT 0,
+                        LastBrowsedAt TEXT,
+                        FOREIGN KEY (ArtistId) REFERENCES Artists(Id)
+                    );");
+
+                // Non-destructive migrations for Albums table
+                var albumCols = (await connection.QueryAsync<string>(
+                    "SELECT name FROM pragma_table_info('Albums')"))
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+                if (!albumCols.Contains("Description"))
+                    await connection.ExecuteAsync("ALTER TABLE Albums ADD COLUMN Description TEXT;");
+                if (!albumCols.Contains("Genre"))
+                    await connection.ExecuteAsync("ALTER TABLE Albums ADD COLUMN Genre TEXT;");
+                if (!albumCols.Contains("IsSaved"))
+                    await connection.ExecuteAsync("ALTER TABLE Albums ADD COLUMN IsSaved INTEGER DEFAULT 0;");
+                if (!albumCols.Contains("TrackCount"))
+                    await connection.ExecuteAsync("ALTER TABLE Albums ADD COLUMN TrackCount INTEGER DEFAULT 0;");
+                if (!albumCols.Contains("LastBrowsedAt"))
+                    await connection.ExecuteAsync("ALTER TABLE Albums ADD COLUMN LastBrowsedAt TEXT;");
+
+                // Indexes for Artists & Albums tables
+                await connection.ExecuteAsync(@"
+                    CREATE INDEX IF NOT EXISTS idx_artists_name       ON Artists(Name COLLATE NOCASE);
+                    CREATE INDEX IF NOT EXISTS idx_artists_ytchannel  ON Artists(YouTubeChannelId) WHERE YouTubeChannelId IS NOT NULL;
+                    CREATE INDEX IF NOT EXISTS idx_artists_followed   ON Artists(IsFollowed) WHERE IsFollowed = 1;
+                    CREATE INDEX IF NOT EXISTS idx_albums_name        ON Albums(Name COLLATE NOCASE);
+                    CREATE INDEX IF NOT EXISTS idx_albums_artistid    ON Albums(ArtistId);
+                    CREATE INDEX IF NOT EXISTS idx_albums_ytalbumid   ON Albums(YouTubeAlbumId) WHERE YouTubeAlbumId IS NOT NULL;
+                    CREATE INDEX IF NOT EXISTS idx_albums_saved       ON Albums(IsSaved) WHERE IsSaved = 1;
+                ");
+
                 // Drop old indexes first to recreate with optimized composite indexes
                 await connection.ExecuteAsync(@"
                     DROP INDEX IF EXISTS idx_tracks_artist;
@@ -821,6 +899,246 @@ namespace Musicefy.Core.Library
                     new { Limit = limit });
                 return tracks.ToList();
             }
+        }
+
+        // ── Phase 2: Artist & Album persistence ────────────────────────────
+
+        public async Task SaveArtistAsync(ArtistInfo artist, CancellationToken cancellationToken = default)
+        {
+            if (artist == null || string.IsNullOrEmpty(artist.Id)) return;
+
+            using (var connection = new SqliteConnection(_dbConnectionString))
+            {
+                await connection.OpenAsync(cancellationToken);
+                await connection.ExecuteAsync(@"
+                    INSERT OR REPLACE INTO Artists (Id, Name, CoverPath, SourceType, YouTubeChannelId, Description, SubscriberCount, IsFollowed, LastBrowsedAt)
+                    VALUES (@Id, @Name, @CoverPath, @SourceType, @YouTubeChannelId, @Description, @SubscriberCount, @IsFollowed, @LastBrowsedAt)",
+                    new
+                    {
+                        artist.Id,
+                        artist.Name,
+                        artist.CoverPath,
+                        artist.SourceType,
+                        artist.YouTubeChannelId,
+                        artist.Description,
+                        SubscriberCount = artist.SubscriberCount ?? 0,
+                        IsFollowed = artist.IsFollowed ? 1 : 0,
+                        LastBrowsedAt = artist.LastBrowsedAt?.ToString("o")
+                    });
+            }
+        }
+
+        public async Task<ArtistInfo> GetArtistAsync(string artistId, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrEmpty(artistId)) return null;
+
+            using (var connection = new SqliteConnection(_dbConnectionString))
+            {
+                await connection.OpenAsync(cancellationToken);
+                var row = await connection.QueryFirstOrDefaultAsync<ArtistRow>(
+                    "SELECT * FROM Artists WHERE Id = @Id", new { Id = artistId });
+
+                return row != null ? RowToArtistInfo(row) : null;
+            }
+        }
+
+        public async Task<ArtistInfo> GetArtistByYouTubeIdAsync(string channelId, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrEmpty(channelId)) return null;
+
+            using (var connection = new SqliteConnection(_dbConnectionString))
+            {
+                await connection.OpenAsync(cancellationToken);
+                var row = await connection.QueryFirstOrDefaultAsync<ArtistRow>(
+                    "SELECT * FROM Artists WHERE YouTubeChannelId = @ChannelId", new { ChannelId = channelId });
+
+                return row != null ? RowToArtistInfo(row) : null;
+            }
+        }
+
+        public async Task<List<ArtistInfo>> GetFollowedArtistsAsync(CancellationToken cancellationToken = default)
+        {
+            using (var connection = new SqliteConnection(_dbConnectionString))
+            {
+                await connection.OpenAsync(cancellationToken);
+                var rows = await connection.QueryAsync<ArtistRow>(
+                    "SELECT * FROM Artists WHERE IsFollowed = 1 ORDER BY Name COLLATE NOCASE");
+                return rows.Select(RowToArtistInfo).ToList();
+            }
+        }
+
+        public async Task ToggleFollowArtistAsync(ArtistInfo artist, CancellationToken cancellationToken = default)
+        {
+            if (artist == null) return;
+
+            // Ensure the artist exists in the table first
+            await SaveArtistAsync(artist, cancellationToken);
+
+            using (var connection = new SqliteConnection(_dbConnectionString))
+            {
+                await connection.OpenAsync(cancellationToken);
+                await connection.ExecuteAsync(
+                    "UPDATE Artists SET IsFollowed = CASE WHEN IsFollowed = 1 THEN 0 ELSE 1 END WHERE Id = @Id",
+                    new { Id = artist.Id });
+            }
+        }
+
+        public async Task SaveAlbumAsync(AlbumInfo album, CancellationToken cancellationToken = default)
+        {
+            if (album == null || string.IsNullOrEmpty(album.Id)) return;
+
+            using (var connection = new SqliteConnection(_dbConnectionString))
+            {
+                await connection.OpenAsync(cancellationToken);
+                await connection.ExecuteAsync(@"
+                    INSERT OR REPLACE INTO Albums (Id, Name, ArtistId, ArtistName, Year, CoverPath, SourceType, YouTubeAlbumId, Description, Genre, IsSaved, TrackCount, LastBrowsedAt)
+                    VALUES (@Id, @Name, @ArtistId, @ArtistName, @Year, @CoverPath, @SourceType, @YouTubeAlbumId, @Description, @Genre, @IsSaved, @TrackCount, @LastBrowsedAt)",
+                    new
+                    {
+                        album.Id,
+                        album.Name,
+                        album.ArtistId,
+                        ArtistName = album.Artist,
+                        album.Year,
+                        album.CoverPath,
+                        album.SourceType,
+                        album.YouTubeAlbumId,
+                        album.Description,
+                        album.Genre,
+                        IsSaved = album.IsSaved ? 1 : 0,
+                        TrackCount = album.TrackCount > 0 ? album.TrackCount : (album.Tracks?.Count ?? 0),
+                        LastBrowsedAt = album.LastBrowsedAt?.ToString("o")
+                    });
+            }
+        }
+
+        public async Task<AlbumInfo> GetAlbumAsync(string albumId, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrEmpty(albumId)) return null;
+
+            using (var connection = new SqliteConnection(_dbConnectionString))
+            {
+                await connection.OpenAsync(cancellationToken);
+                var row = await connection.QueryFirstOrDefaultAsync<AlbumRow>(
+                    "SELECT * FROM Albums WHERE Id = @Id", new { Id = albumId });
+
+                return row != null ? RowToAlbumInfo(row) : null;
+            }
+        }
+
+        public async Task<AlbumInfo> GetAlbumByYouTubeIdAsync(string youTubeAlbumId, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrEmpty(youTubeAlbumId)) return null;
+
+            using (var connection = new SqliteConnection(_dbConnectionString))
+            {
+                await connection.OpenAsync(cancellationToken);
+                var row = await connection.QueryFirstOrDefaultAsync<AlbumRow>(
+                    "SELECT * FROM Albums WHERE YouTubeAlbumId = @YouTubeAlbumId", new { YouTubeAlbumId = youTubeAlbumId });
+
+                return row != null ? RowToAlbumInfo(row) : null;
+            }
+        }
+
+        public async Task<List<AlbumInfo>> GetSavedAlbumsAsync(CancellationToken cancellationToken = default)
+        {
+            using (var connection = new SqliteConnection(_dbConnectionString))
+            {
+                await connection.OpenAsync(cancellationToken);
+                var rows = await connection.QueryAsync<AlbumRow>(
+                    "SELECT * FROM Albums WHERE IsSaved = 1 ORDER BY ArtistName COLLATE NOCASE, Name COLLATE NOCASE");
+                return rows.Select(RowToAlbumInfo).ToList();
+            }
+        }
+
+        public async Task ToggleSaveAlbumAsync(AlbumInfo album, CancellationToken cancellationToken = default)
+        {
+            if (album == null) return;
+
+            // Ensure the album exists in the table first
+            await SaveAlbumAsync(album, cancellationToken);
+
+            using (var connection = new SqliteConnection(_dbConnectionString))
+            {
+                await connection.OpenAsync(cancellationToken);
+                await connection.ExecuteAsync(
+                    "UPDATE Albums SET IsSaved = CASE WHEN IsSaved = 1 THEN 0 ELSE 1 END WHERE Id = @Id",
+                    new { Id = album.Id });
+            }
+        }
+
+        // ── Phase 2: Row → Model mappers ─────────────────────────────────
+
+        private static ArtistInfo RowToArtistInfo(ArtistRow row)
+        {
+            return new ArtistInfo
+            {
+                Id = row.Id,
+                Name = row.Name,
+                CoverPath = row.CoverPath,
+                SourceType = row.SourceType,
+                YouTubeChannelId = row.YouTubeChannelId,
+                Description = row.Description,
+                SubscriberCount = row.SubscriberCount,
+                IsFollowed = row.IsFollowed == 1,
+                LastBrowsedAt = row.LastBrowsedAt != null
+                    ? (DateTime.TryParse(row.LastBrowsedAt, out var dt) ? dt : (DateTime?)null)
+                    : null
+            };
+        }
+
+        private static AlbumInfo RowToAlbumInfo(AlbumRow row)
+        {
+            return new AlbumInfo
+            {
+                Id = row.Id,
+                Name = row.Name,
+                Artist = row.ArtistName,
+                ArtistId = row.ArtistId,
+                Year = row.Year,
+                CoverPath = row.CoverPath,
+                SourceType = row.SourceType,
+                YouTubeAlbumId = row.YouTubeAlbumId,
+                Description = row.Description,
+                Genre = row.Genre,
+                IsSaved = row.IsSaved == 1,
+                TrackCount = row.TrackCount,
+                LastBrowsedAt = row.LastBrowsedAt != null
+                    ? (DateTime.TryParse(row.LastBrowsedAt, out var dt) ? dt : (DateTime?)null)
+                    : null
+            };
+        }
+
+        // ── Phase 2: Dapper row DTOs ─────────────────────────────────────
+
+        private class ArtistRow
+        {
+            public string Id { get; set; }
+            public string Name { get; set; }
+            public string CoverPath { get; set; }
+            public string SourceType { get; set; }
+            public string YouTubeChannelId { get; set; }
+            public string Description { get; set; }
+            public long SubscriberCount { get; set; }
+            public int IsFollowed { get; set; }
+            public string LastBrowsedAt { get; set; }
+        }
+
+        private class AlbumRow
+        {
+            public string Id { get; set; }
+            public string Name { get; set; }
+            public string ArtistId { get; set; }
+            public string ArtistName { get; set; }
+            public int Year { get; set; }
+            public string CoverPath { get; set; }
+            public string SourceType { get; set; }
+            public string YouTubeAlbumId { get; set; }
+            public string Description { get; set; }
+            public string Genre { get; set; }
+            public int IsSaved { get; set; }
+            public int TrackCount { get; set; }
+            public string LastBrowsedAt { get; set; }
         }
 
         // ── Private helpers ────────────────────────────────────────────────
