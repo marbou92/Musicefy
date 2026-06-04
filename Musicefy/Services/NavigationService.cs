@@ -17,6 +17,20 @@ namespace Musicefy.Services
 
         public event Action<string> NavigationRequested;
 
+        /// <summary>
+        /// Raised when navigation to an artist page is requested.
+        /// Carries the full <see cref="ArtistInfo"/> object so that
+        /// the target ViewModel can use YouTube browse IDs.
+        /// </summary>
+        public event Action<ArtistInfo> ArtistNavigationRequested;
+
+        /// <summary>
+        /// Raised when navigation to an album page is requested.
+        /// Carries the full <see cref="AlbumInfo"/> object so that
+        /// the target ViewModel can use YouTube browse IDs.
+        /// </summary>
+        public event Action<AlbumInfo> AlbumNavigationRequested;
+
         public NavigationService(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
@@ -88,11 +102,21 @@ namespace Musicefy.Services
 
         public void NavigateToArtist(ArtistInfo artist)
         {
+            // Raise the typed event first — MainWindow uses this to pass the
+            // full ArtistInfo (with YouTubeChannelId) to ArtistViewModel.
+            ArtistNavigationRequested?.Invoke(artist);
+
+            // Legacy string-based event kept for backward compatibility.
             NavigationRequested?.Invoke($"Artist:{artist?.Name}");
         }
 
         public void NavigateToAlbum(AlbumInfo album)
         {
+            // Raise the typed event first — MainWindow uses this to pass the
+            // full AlbumInfo (with YouTubeAlbumId) to AlbumViewModel.
+            AlbumNavigationRequested?.Invoke(album);
+
+            // Legacy string-based event kept for backward compatibility.
             NavigationRequested?.Invoke($"Album:{album?.Name}");
         }
     }
