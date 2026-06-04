@@ -10,6 +10,7 @@ using Musicefy.Core.Models;
 using Musicefy.Core.Services;
 using Musicefy.Core.Theme;
 using Musicefy.Services;
+using Musicefy.Views;
 
 namespace Musicefy.ViewModels
 {
@@ -21,7 +22,9 @@ namespace Musicefy.ViewModels
         // ── Phase 6: Sleep Timer ──────────────────────────────────────────
         private DispatcherTimer _sleepTimer;
         private TimeSpan _sleepTimeRemaining = TimeSpan.Zero;
+#pragma warning disable CS0414
         private bool _sleepEndOfSong;
+#pragma warning restore CS0414
 
         public string SleepTimerText => _sleepTimer?.IsEnabled == true
             ? $"Sleep: {_sleepTimeRemaining:mm\\:ss}"
