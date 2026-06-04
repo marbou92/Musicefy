@@ -147,17 +147,50 @@ namespace Musicefy.Core.Services
 
         private async Task CheckSourceWithLockAsync(StreamingSource source)
         {
+            bool isNewSource = false;
             SourceHealthState state;
             lock (_lock)
             {
                 if (!_healthStates.TryGetValue(source.Id, out state))
                 {
-                    state = new SourceHealthState { SourceId = source.Id };
+                    // New source discovered (added after StartMonitoring).
+                    // Initialize as Healthy since it was just connected.
+                    state = new SourceHealthState
+                    {
+                        SourceId = source.Id,
+                        Status = source.IsConnected
+                            ? SourceHealthStatus.Healthy
+                            : SourceHealthStatus.Unhealthy,
+                        LastSuccessfulConnection = source.IsConnected ? DateTime.UtcNow : (DateTime?)null
+                    };
                     _healthStates[source.Id] = state;
+                    isNewSource = true;
                 }
             }
 
             await CheckSourceHealthAsync(source, state);
+
+            // If a brand-new source is connected and healthy, fire SourceReconnected
+            // so that HomeViewModel.OnSourceHealthChanged triggers a reload as a
+            // secondary safety net alongside the SourceAdded event.
+            if (isNewSource && source.IsConnected && state.Status == SourceHealthStatus.Healthy)
+            {
+                OnSourceReconnected(new SourceHealthEventArgs
+                {
+                    SourceId = source.Id,
+                    SourceName = source.Name,
+                    PreviousStatus = SourceHealthStatus.Unhealthy,
+                    NewStatus = SourceHealthStatus.Healthy
+                });
+
+                OnSourceHealthChanged(new SourceHealthEventArgs
+                {
+                    SourceId = source.Id,
+                    SourceName = source.Name,
+                    PreviousStatus = SourceHealthStatus.Unhealthy,
+                    NewStatus = SourceHealthStatus.Healthy
+                });
+            }
         }
 
         private async Task CheckSourceHealthAsync(StreamingSource source, SourceHealthState state)
