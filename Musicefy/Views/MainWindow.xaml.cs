@@ -6,6 +6,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using Musicefy.Core.Interfaces;
+using Musicefy.Core.Models;
 using Musicefy.Views;
 using Musicefy.Services;
 using Musicefy.ViewModels;
@@ -25,15 +26,23 @@ namespace Musicefy
         private double _dragStartTranslateY;
         private bool _hasDraggedSignificantly = false;
 
+        private NavigationService _navService;
+
         public MainWindow()
         {
             var services = App.Services;
             var playback = (PlaybackService)services.GetService(typeof(PlaybackService));
             _libService = (ILibraryService)services.GetService(typeof(ILibraryService));
-            var navService = (NavigationService)services.GetService(typeof(NavigationService));
+            _navService = (NavigationService)services.GetService(typeof(NavigationService));
 
-            _viewModel = new MainWindowViewModel(playback, navService);
+            _viewModel = new MainWindowViewModel(playback, _navService);
             _viewModel.PropertyChanged += OnMainWindowViewModelPropertyChanged;
+
+            // Phase 1: Subscribe to typed artist/album navigation events
+            // so that full ArtistInfo/AlbumInfo objects (with YouTube browse IDs)
+            // are passed through to the target ViewModels.
+            _navService.ArtistNavigationRequested += OnArtistNavigationRequested;
+            _navService.AlbumNavigationRequested += OnAlbumNavigationRequested;
 
             this.DataContext = _viewModel;
             InitializeComponent();
@@ -300,6 +309,10 @@ namespace Musicefy
                 new DoubleAnimation(40, 0, TimeSpan.FromMilliseconds(350)) { EasingFunction = easeOut });
         }
 
+        /// <summary>
+        /// Navigate to artist by name only (legacy path).
+        /// Used by code paths that don't have an ArtistInfo object.
+        /// </summary>
         public void NavigateToArtist(string artistName)
         {
             var services = App.Services;
@@ -310,6 +323,26 @@ namespace Musicefy
             artistView.LoadArtist(artistName);
         }
 
+        /// <summary>
+        /// Navigate to artist using a full <see cref="ArtistInfo"/> object.
+        /// Preserves YouTube channel ID for rich YouTube Music artist browsing.
+        /// Inspired by Echo Music's first-class entity navigation.
+        /// </summary>
+        public void NavigateToArtist(ArtistInfo artistInfo)
+        {
+            if (artistInfo == null) return;
+            var services = App.Services;
+            var viewModel = (ArtistViewModel)services.GetService(typeof(ArtistViewModel));
+            var artistView = new ArtistView(viewModel);
+            ArtistOverlay.Content = artistView;
+            ArtistOverlay.Visibility = Visibility.Visible;
+            artistView.LoadArtist(artistInfo);
+        }
+
+        /// <summary>
+        /// Navigate to album by name only (legacy path).
+        /// Used by code paths that don't have an AlbumInfo object.
+        /// </summary>
         public void NavigateToAlbum(string albumName, string artistName)
         {
             var services = App.Services;
@@ -320,10 +353,46 @@ namespace Musicefy
             albumView.LoadAlbum(albumName, artistName);
         }
 
+        /// <summary>
+        /// Navigate to album using a full <see cref="AlbumInfo"/> object.
+        /// Preserves YouTube album browse ID for rich YouTube Music album browsing.
+        /// Inspired by Echo Music's two-step album fetch (list → detail).
+        /// </summary>
+        public void NavigateToAlbum(AlbumInfo albumInfo)
+        {
+            if (albumInfo == null) return;
+            var services = App.Services;
+            var viewModel = (AlbumViewModel)services.GetService(typeof(AlbumViewModel));
+            var albumView = new AlbumView(viewModel);
+            AlbumOverlay.Content = albumView;
+            AlbumOverlay.Visibility = Visibility.Visible;
+            albumView.LoadAlbum(albumInfo);
+        }
+
         public void NavigateBack()
         {
             ArtistOverlay.Visibility = Visibility.Collapsed;
             AlbumOverlay.Visibility = Visibility.Collapsed;
+        }
+
+        // ── Phase 1: Typed Navigation Event Handlers ───────────────────────
+
+        /// <summary>
+        /// Handles <see cref="NavigationService.ArtistNavigationRequested"/>.
+        /// Dispatches the full <see cref="ArtistInfo"/> object to the artist overlay.
+        /// </summary>
+        private void OnArtistNavigationRequested(ArtistInfo artistInfo)
+        {
+            NavigateToArtist(artistInfo);
+        }
+
+        /// <summary>
+        /// Handles <see cref="NavigationService.AlbumNavigationRequested"/>.
+        /// Dispatches the full <see cref="AlbumInfo"/> object to the album overlay.
+        /// </summary>
+        private void OnAlbumNavigationRequested(AlbumInfo albumInfo)
+        {
+            NavigateToAlbum(albumInfo);
         }
     }
 }
