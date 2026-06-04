@@ -18,6 +18,9 @@ namespace Musicefy.Models
         DirectoryItem,
         Playlist,
         Artists,     // Phase 3: Followed artists section in Library
-        Albums       // Phase 3: Saved albums section in Library
+        Albums,      // Phase 3: Saved albums section in Library
+        MostPlayed,    // Phase 6: Auto-playlist
+        RecentlyAdded, // Phase 6: Auto-playlist
+        Forgotten      // Phase 6: Auto-playlist
     }
 }
