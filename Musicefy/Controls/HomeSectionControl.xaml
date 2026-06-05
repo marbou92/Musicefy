@@ -10,7 +10,8 @@
         <!-- Square card with cover art, title, artist, and play button overlay on hover -->
         <DataTemplate x:Key="TrackCardTemplate">
             <Border Width="160" Margin="0,0,16,0" Background="Transparent" Cursor="Hand"
-                    MouseLeftButtonUp="OnCardClick">
+                    MouseLeftButtonUp="OnCardClick"
+                    conv:CardColorGlowBehavior.IsEnabled="True">
                 <Border.Style>
                     <Style TargetType="Border">
                         <Style.Triggers>
@@ -93,7 +94,8 @@
         <!-- Square card with cover art, album name, artist + year -->
         <DataTemplate x:Key="AlbumCardTemplate">
             <Border Width="160" Margin="0,0,16,0" Background="Transparent" Cursor="Hand"
-                    MouseLeftButtonUp="OnAlbumCardClick">
+                    MouseLeftButtonUp="OnAlbumCardClick"
+                    conv:CardColorGlowBehavior.IsEnabled="True">
                 <Border.Style>
                     <Style TargetType="Border">
                         <Style.Triggers>
@@ -221,8 +223,67 @@
         <StackPanel Grid.Row="1" Orientation="Horizontal"
                     Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
                     Margin="0,8,0,0">
-            <TextBlock Text="Loading..." FontSize="12"
-                       Foreground="{DynamicResource OnSurfaceVariantBrush}"/>
+
+            <!-- ═══ Session 4: Shimmer Placeholders ════════════════════════ -->
+            <!-- Animated pulsing placeholder cards while section loads from network -->
+            <StackPanel Orientation="Horizontal">
+                <Border Width="160" Height="200" CornerRadius="12" Margin="0,0,16,0"
+                        Background="{DynamicResource SurfaceVariantBrush}" Opacity="0.3">
+                    <Border.Triggers>
+                        <EventTrigger RoutedEvent="Loaded">
+                            <BeginStoryboard>
+                                <Storyboard RepeatBehavior="Forever">
+                                    <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                     From="0.3" To="0.15" Duration="0:0:0.8"
+                                                     AutoReverse="True"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </Border.Triggers>
+                </Border>
+                <Border Width="160" Height="200" CornerRadius="12" Margin="0,0,16,0"
+                        Background="{DynamicResource SurfaceVariantBrush}" Opacity="0.25">
+                    <Border.Triggers>
+                        <EventTrigger RoutedEvent="Loaded">
+                            <BeginStoryboard>
+                                <Storyboard RepeatBehavior="Forever">
+                                    <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                     From="0.25" To="0.1" Duration="0:0:0.8"
+                                                     AutoReverse="True" BeginTime="0:0:0.15"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </Border.Triggers>
+                </Border>
+                <Border Width="160" Height="200" CornerRadius="12" Margin="0,0,16,0"
+                        Background="{DynamicResource SurfaceVariantBrush}" Opacity="0.2">
+                    <Border.Triggers>
+                        <EventTrigger RoutedEvent="Loaded">
+                            <BeginStoryboard>
+                                <Storyboard RepeatBehavior="Forever">
+                                    <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                     From="0.2" To="0.08" Duration="0:0:0.8"
+                                                     AutoReverse="True" BeginTime="0:0:0.3"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </Border.Triggers>
+                </Border>
+                <Border Width="160" Height="200" CornerRadius="12" Margin="0,0,16,0"
+                        Background="{DynamicResource SurfaceVariantBrush}" Opacity="0.15">
+                    <Border.Triggers>
+                        <EventTrigger RoutedEvent="Loaded">
+                            <BeginStoryboard>
+                                <Storyboard RepeatBehavior="Forever">
+                                    <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                     From="0.15" To="0.06" Duration="0:0:0.8"
+                                                     AutoReverse="True" BeginTime="0:0:0.45"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </Border.Triggers>
+                </Border>
+            </StackPanel>
         </StackPanel>
 
         <!-- Horizontal scrolling content -->
