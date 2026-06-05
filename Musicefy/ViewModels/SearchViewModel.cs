@@ -78,6 +78,7 @@ namespace Musicefy.ViewModels
                     OnPropertyChanged(nameof(IsSearching));
                     OnPropertyChanged(nameof(HasResults));
                     OnPropertyChanged(nameof(HasError));
+                    OnPropertyChanged(nameof(IsEmptyResults));
                 }
             }
         }
@@ -116,7 +117,13 @@ namespace Musicefy.ViewModels
         public string ErrorMessage
         {
             get => _errorMessage;
-            set => SetProperty(ref _errorMessage, value);
+            set
+            {
+                if (SetProperty(ref _errorMessage, value))
+                {
+                    OnPropertyChanged(nameof(IsEmptyResults));
+                }
+            }
         }
 
         // ── Derived Properties ───────────────────────────────────────────
@@ -127,6 +134,11 @@ namespace Musicefy.ViewModels
         public bool HasResults => State == SearchState.Results && ResultGroups.Count > 0;
         public bool HasError => State == SearchState.Results && !string.IsNullOrEmpty(ErrorMessage);
         public bool HasQuery => !string.IsNullOrWhiteSpace(Query);
+
+        /// <summary>Whether search completed but returned no results (empty state).</summary>
+        public bool IsEmptyResults => State == SearchState.Results
+            && ResultGroups.Count == 0
+            && string.IsNullOrEmpty(ErrorMessage);
 
         /// <summary>Whether the "All" filter is selected (show grouped results).</summary>
         public bool IsAllFilter => SelectedFilter == SearchResultFilter.All;
