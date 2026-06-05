@@ -10,6 +10,7 @@
         <converters:PathToImageConverter x:Key="PathToImageConverter"/>
         <converters:LyricsToLinesConverter x:Key="LyricsToLinesConverter"/>
         <converters:IsEqualConverter x:Key="IsEqualConverter"/>
+        <converters:AsyncCoverConverter x:Key="AsyncCoverConverter"/>
 
         <Style x:Key="NowPlayingIconButton" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
@@ -142,9 +143,10 @@
         <!-- Background layers (span all rows) — dynamic gradient from scheme -->
         <Grid Grid.RowSpan="3" ClipToBounds="True" IsHitTestVisible="False">
             <Image x:Name="BgCoverImage"
-                   Source="{Binding NowPlaying.CoverPath, Converter={StaticResource PathToImageConverter}}"
+                   Source="{Binding NowPlaying.CoverPath, Converter={StaticResource PathToImageConverter}, ConverterParameter=full}"
                    Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"
-                   HorizontalAlignment="Center" VerticalAlignment="Center">
+                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                   converters:CoverFadeBehavior.IsEnabled="True">
                 <Image.RenderTransform>
                     <ScaleTransform ScaleX="1.2" ScaleY="1.2"/>
                 </Image.RenderTransform>
@@ -198,8 +200,9 @@
                     <Border.Effect>
                         <DropShadowEffect BlurRadius="48" ShadowDepth="16" Opacity="0.6" Color="Black"/>
                     </Border.Effect>
-                    <Image Source="{Binding NowPlaying.CoverPath, Converter={StaticResource PathToImageConverter}}"
-                           Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
+                    <Image Source="{Binding NowPlaying.CoverPath, Converter={StaticResource PathToImageConverter}, ConverterParameter=hero}"
+                           Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"
+                           converters:CoverFadeBehavior.IsEnabled="True"/>
                 </Border>
                 <TextBlock Text="{Binding NowPlaying.Title, FallbackValue='Not Playing'}"
                            FontSize="24" FontWeight="Bold" Foreground="{DynamicResource OnSurfaceBrush}"
@@ -470,8 +473,9 @@
                                                 <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition Width="*"/>
                                             </Grid.ColumnDefinitions>
-                                            <Image Grid.Column="0" Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}}"
-                                                   Width="40" Height="40" Stretch="UniformToFill" Margin="0,0,12,0">
+                                            <Image Grid.Column="0" Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}, ConverterParameter=list}"
+                                                   Width="40" Height="40" Stretch="UniformToFill" Margin="0,0,12,0"
+                                                   converters:CoverFadeBehavior.IsEnabled="True">
                                                 <Image.Clip><RectangleGeometry Rect="0,0,40,40" RadiusX="6" RadiusY="6"/></Image.Clip>
                                             </Image>
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
