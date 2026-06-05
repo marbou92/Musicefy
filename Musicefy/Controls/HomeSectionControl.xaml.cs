@@ -7,6 +7,8 @@ namespace Musicefy.Controls
     /// <summary>
     /// Reusable control that renders a single Home section with a title
     /// and horizontally scrolling content cards.
+    /// Supports differentiated card layouts for tracks, albums, and artists
+    /// via HomeSectionItemTemplateSelector.
     /// </summary>
     public partial class HomeSectionControl : UserControl
     {
@@ -34,20 +36,67 @@ namespace Musicefy.Controls
             InitializeComponent();
         }
 
+        /// <summary>
+        /// Handles click on a track card. Bubbles up to HomeViewModel's PlayTrackCommand.
+        /// </summary>
         private void OnCardClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             if (sender is Border border && border.DataContext is MusicFile track)
             {
-                // Bubble up to HomeViewModel's PlayTrackCommand
                 if (DataContext is HomeSection section)
                 {
-                    // Find the HomeViewModel through the visual tree
                     var parent = System.Windows.Media.VisualTreeHelper.GetParent(this);
                     while (parent != null)
                     {
                         if (parent is FrameworkElement fe && fe.DataContext is ViewModels.HomeViewModel vm)
                         {
                             vm.PlayTrackCommand.Execute(track);
+                            break;
+                        }
+                        parent = System.Windows.Media.VisualTreeHelper.GetParent(parent);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles click on an album card. Navigates to the album detail view.
+        /// </summary>
+        private void OnAlbumCardClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (sender is Border border && border.DataContext is AlbumInfo album)
+            {
+                if (DataContext is HomeSection section)
+                {
+                    var parent = System.Windows.Media.VisualTreeHelper.GetParent(this);
+                    while (parent != null)
+                    {
+                        if (parent is FrameworkElement fe && fe.DataContext is ViewModels.HomeViewModel vm)
+                        {
+                            vm.NavigateToAlbumCommand.Execute(album);
+                            break;
+                        }
+                        parent = System.Windows.Media.VisualTreeHelper.GetParent(parent);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles click on an artist card. Navigates to the artist detail view.
+        /// </summary>
+        private void OnArtistCardClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (sender is Border border && border.DataContext is ArtistInfo artist)
+            {
+                if (DataContext is HomeSection section)
+                {
+                    var parent = System.Windows.Media.VisualTreeHelper.GetParent(this);
+                    while (parent != null)
+                    {
+                        if (parent is FrameworkElement fe && fe.DataContext is ViewModels.HomeViewModel vm)
+                        {
+                            vm.NavigateToArtistCommand.Execute(artist);
                             break;
                         }
                         parent = System.Windows.Media.VisualTreeHelper.GetParent(parent);
