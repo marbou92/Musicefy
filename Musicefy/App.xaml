@@ -33,6 +33,10 @@
 
             <!-- Home section converters -->
             <conv:CountGreaterThanOrEqualConverter x:Key="CountGreaterThanOrEqualConverter"/>
+            <conv:AlbumYearSuffixConverter x:Key="AlbumYearSuffixConverter"/>
+
+            <!-- Session 3: Template selector for differentiated home section cards -->
+            <conv:HomeSectionItemTemplateSelector x:Key="HomeSectionItemTemplateSelector"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
