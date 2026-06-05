@@ -10,6 +10,10 @@
     <Grid>
         <!-- Search Bar (always visible) -->
         <Grid x:Name="SearchBar" VerticalAlignment="Top" Margin="24,16,24,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
@@ -55,7 +59,7 @@
                               Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
 
-                    <!-- Source Toggle Button -->
+                    <!-- Source Toggle Icon (secondary indicator inside search box) -->
                     <Button Grid.Column="3" Width="32" Height="32" Margin="4,0,4,0"
                             Background="Transparent" BorderThickness="0"
                             Cursor="Hand" Command="{Binding ToggleSourceModeCommand}"
@@ -67,10 +71,84 @@
                     </Button>
                 </Grid>
             </Border>
+
+            <!-- ═══ Session 4: Online / Library Toggle Pill ════════════════ -->
+            <!-- Two-segment pill below the search bar, always visible when there's a query -->
+            <Border Grid.Row="1" Grid.Column="0" HorizontalAlignment="Left"
+                    Background="{DynamicResource SurfaceVariantBrush}"
+                    CornerRadius="20" Padding="2" Margin="0,10,0,0"
+                    Visibility="{Binding HasQuery, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <StackPanel Orientation="Horizontal">
+                    <!-- Online segment -->
+                    <RadioButton x:Name="OnlinePill" GroupName="SourcePill"
+                                 Content="Online" Padding="20,7"
+                                 FontSize="12" FontWeight="SemiBold"
+                                 Cursor="Hand" IsChecked="True"
+                                 Command="{Binding SetOnlineModeCommand}">
+                        <RadioButton.Style>
+                            <Style TargetType="RadioButton">
+                                <Setter Property="Foreground" Value="{DynamicResource OnSurfaceVariantBrush}"/>
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="RadioButton">
+                                            <Border x:Name="PillBorder" Background="{TemplateBinding Background}"
+                                                    CornerRadius="18" Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsChecked" Value="True">
+                                                    <Setter TargetName="PillBorder" Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+                                                    <Setter Property="Foreground" Value="{DynamicResource OnPrimaryBrush}"/>
+                                                </Trigger>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="PillBorder" Property="Opacity" Value="0.85"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </RadioButton.Style>
+                    </RadioButton>
+                    <!-- Library segment -->
+                    <RadioButton x:Name="LibraryPill" GroupName="SourcePill"
+                                 Content="Library" Padding="20,7"
+                                 FontSize="12" FontWeight="SemiBold"
+                                 Cursor="Hand"
+                                 Command="{Binding SetLocalModeCommand}">
+                        <RadioButton.Style>
+                            <Style TargetType="RadioButton">
+                                <Setter Property="Foreground" Value="{DynamicResource OnSurfaceVariantBrush}"/>
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="RadioButton">
+                                            <Border x:Name="PillBorder" Background="{TemplateBinding Background}"
+                                                    CornerRadius="18" Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsChecked" Value="True">
+                                                    <Setter TargetName="PillBorder" Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+                                                    <Setter Property="Foreground" Value="{DynamicResource OnPrimaryBrush}"/>
+                                                </Trigger>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="PillBorder" Property="Opacity" Value="0.85"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </RadioButton.Style>
+                    </RadioButton>
+                </StackPanel>
+            </Border>
         </Grid>
 
-        <!-- Content Area (below search bar) -->
-        <Grid Margin="24,68,24,0">
+        <!-- Content Area (below search bar + toggle pill) -->
+        <Grid Margin="24,110,24,0">
 
             <!-- ═══ Idle State: Search History ═══════════════════════════ -->
             <ScrollViewer x:Name="IdlePanel"
@@ -168,11 +246,63 @@
                   Visibility="{Binding HasResults, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
+                <!-- ═══ Session 4: Top Result Featured Card ═══════════════ -->
+                <!-- Shown when the "Top result" category exists in ResultGroups -->
+                <Border Grid.Row="0" x:Name="TopResultCard"
+                        Background="{DynamicResource SurfaceBrush}"
+                        CornerRadius="12" Padding="16" Margin="0,0,0,16"
+                        Cursor="Hand"
+                        MouseLeftButtonUp="TopResultCard_Click"
+                        Visibility="{Binding HasTopResult, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Large thumbnail -->
+                        <Border Grid.Column="0" Width="120" Height="120"
+                                CornerRadius="12" ClipToBounds="True" Margin="0,0,16,0"
+                                Background="{DynamicResource SurfaceVariantBrush}">
+                            <Grid>
+                                <!-- Placeholder -->
+                                <Path Data="M12,3V12.26C11.5,12.09 11,12 10.5,12C8,12 6,14 6,16.5C6,19 8,21 10.5,21C13,21 15,19 15,16.5V6H19V3H12Z"
+                                      Fill="{DynamicResource OnSurfaceVariantBrush}" Width="36" Height="36"
+                                      Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.3"/>
+                                <!-- Cover image -->
+                                <Image Source="{Binding TopResult.CoverPath, Converter={StaticResource PathToImageConverter}, ConverterParameter=hero}"
+                                       RenderOptions.BitmapScalingMode="HighQuality"
+                                       Stretch="UniformToFill"
+                                       VerticalAlignment="Center" HorizontalAlignment="Center"
+                                       conv:CoverFadeBehavior.IsEnabled="True"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Title, artist, type badge -->
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding TopResultTitle}" FontSize="20" FontWeight="Bold"
+                                       Foreground="{DynamicResource OnSurfaceBrush}"
+                                       TextTrimming="CharacterEllipsis" MaxHeight="28"/>
+                            <TextBlock Text="{Binding TopResultSubtitle}" FontSize="14"
+                                       Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                                       TextTrimming="CharacterEllipsis" Margin="0,4,0,0"/>
+                            <!-- Type badge (Song / Artist / Album) -->
+                            <Border Background="{DynamicResource PrimaryBrush}"
+                                    CornerRadius="10" Padding="10,3" Margin="0,8,0,0"
+                                    HorizontalAlignment="Left">
+                                <TextBlock Text="{Binding TopResultType}" FontSize="10" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource OnPrimaryBrush}"/>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
                 <!-- Filter Tabs — wired via SelectedFilterCommand -->
-                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+                <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,16">
                     <RadioButton Content="All" GroupName="SearchFilter"
                                  IsChecked="True"
                                  Margin="0,0,12,0" Padding="16,8" FontSize="12" FontWeight="SemiBold"
@@ -202,7 +332,7 @@
                 </StackPanel>
 
                 <!-- ═══ Grouped Results (visible when filter = All) ═══ -->
-                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto"
                               HorizontalScrollBarVisibility="Disabled"
                               Visibility="{Binding IsAllFilter, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <ItemsControl ItemsSource="{Binding ResultGroups}">
@@ -284,7 +414,7 @@
                 </ScrollViewer>
 
                 <!-- ═══ Flat Filtered Results (visible when specific filter selected) ═══ -->
-                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto"
                               HorizontalScrollBarVisibility="Disabled"
                               Visibility="{Binding IsAllFilter, Converter={StaticResource InverseBoolToVisConverter}}">
                     <ItemsControl ItemsSource="{Binding FlatResults}">
