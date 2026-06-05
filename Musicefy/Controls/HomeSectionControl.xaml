@@ -26,12 +26,13 @@
                 </Border>
             </StackPanel>
 
-            <!-- See All button -->
+            <!-- See All button — visible when section has 5+ items -->
             <Button Content="See All" HorizontalAlignment="Right"
                     FontSize="12" FontWeight="SemiBold"
                     Foreground="{DynamicResource PrimaryBrush}"
                     Background="Transparent" BorderThickness="0" Cursor="Hand"
-                    Visibility="Collapsed" x:Name="SeeAllButton"/>
+                    Visibility="{Binding Items.Count, Converter={StaticResource CountGreaterThanOrEqualConverter}}"
+                    Click="SeeAllButton_Click"/>
         </Grid>
 
         <!-- Loading indicator for this section -->
@@ -78,7 +79,7 @@
                                               Stretch="Uniform" HorizontalAlignment="Center"
                                               VerticalAlignment="Center" Opacity="0.3"/>
                                         <!-- Cover image (when available) -->
-                                        <Image Source="{Binding CoverPath}"
+                                        <Image Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}, ConverterParameter=grid}"
                                                RenderOptions.BitmapScalingMode="HighQuality"
                                                Stretch="UniformToFill" VerticalAlignment="Center"
                                                HorizontalAlignment="Center"/>
