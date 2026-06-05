@@ -37,6 +37,8 @@
 
             <!-- Session 3: Template selector for differentiated home section cards -->
             <conv:HomeSectionItemTemplateSelector x:Key="HomeSectionItemTemplateSelector"/>
+
+            <!-- Session 4: No additional global resources needed — behaviors are attached properties -->
         </ResourceDictionary>
     </Application.Resources>
 </Application>
