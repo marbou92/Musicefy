@@ -20,6 +20,7 @@
             <conv:ThemePreviewConverter x:Key="ThemePreviewConverter"/>
             <conv:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
             <conv:PathToImageConverter x:Key="PathToImageConverter"/>
+            <conv:AsyncCoverConverter x:Key="AsyncCoverConverter"/>
             <conv:LyricsToLinesConverter x:Key="LyricsToLinesConverter"/>
             <conv:IndexToBoolConverter x:Key="IndexToBoolConverter"/>
             <conv:IconGlyphConverter x:Key="IconGlyphConverter"/>
