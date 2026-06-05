@@ -80,10 +80,8 @@ namespace Musicefy.Views
                 ? System.Windows.Visibility.Visible
                 : System.Windows.Visibility.Collapsed;
 
-            // Show chip bar when chips are available
-            ChipBar.Visibility = _viewModel.AvailableChips.Count > 0
-                ? System.Windows.Visibility.Visible
-                : System.Windows.Visibility.Collapsed;
+            // ChipBar visibility is now data-bound to AvailableChips.Count
+            // via NonZeroToVisibilityConverter in XAML — no manual update needed.
 
             if (_viewModel.HasError)
             {
@@ -114,6 +112,21 @@ namespace Musicefy.Views
         {
             if (_viewModel != null && _viewModel.RefreshCommand.CanExecute(null))
                 _viewModel.RefreshCommand.Execute(null);
+        }
+
+        /// <summary>
+        /// Handles the SeeAllRequested routed event from HomeSectionControl.
+        /// Routes to HomeViewModel's SeeAllForSectionCommand.
+        /// </summary>
+        private void HomeSection_SeeAllRequested(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (e.OriginalSource is Controls.HomeSectionControl sectionControl &&
+                sectionControl.DataContext is Musicefy.Core.Models.HomeSection section &&
+                _viewModel != null)
+            {
+                _viewModel.SeeAllForSectionCommand.Execute(section);
+            }
+            e.Handled = true;
         }
     }
 }
