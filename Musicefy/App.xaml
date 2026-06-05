@@ -28,6 +28,10 @@
             <conv:NonZeroToVisibilityConverter x:Key="NonZeroToVisibilityConverter"/>
             <conv:ZeroToVisibilityConverter x:Key="ZeroToVisibilityConverter"/>
             <conv:SearchModeIconConverter x:Key="SearchModeIconConverter"/>
+            <conv:ItemTypeToCornerRadiusConverter x:Key="ItemTypeToCornerRadiusConverter"/>
+
+            <!-- Home section converters -->
+            <conv:CountGreaterThanOrEqualConverter x:Key="CountGreaterThanOrEqualConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
