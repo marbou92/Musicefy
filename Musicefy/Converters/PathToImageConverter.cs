@@ -448,9 +448,26 @@ namespace Musicefy.Converters
                 var child = VisualTreeHelper.GetChild(parent, i);
                 if (child is Image img && (ReferenceEquals(img.Source, _fallbackImage) || img.Source == null))
                 {
-                    var dc = (child as FrameworkElement)?.DataContext as Musicefy.Core.Models.MusicFile;
-                    if (dc?.CoverPath != null &&
-                        string.Equals(dc.CoverPath, coverPath, StringComparison.OrdinalIgnoreCase))
+                    // Check MusicFile items
+                    if ((child as FrameworkElement)?.DataContext is Musicefy.Core.Models.MusicFile mf &&
+                        mf.CoverPath != null &&
+                        string.Equals(mf.CoverPath, coverPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (_cache.TryGetValue(coverPath, out var bmp))
+                            img.Source = bmp;
+                    }
+                    // Check AlbumInfo items
+                    else if ((child as FrameworkElement)?.DataContext is Musicefy.Core.Models.AlbumInfo ai &&
+                             ai.CoverPath != null &&
+                             string.Equals(ai.CoverPath, coverPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (_cache.TryGetValue(coverPath, out var bmp))
+                            img.Source = bmp;
+                    }
+                    // Check ArtistInfo items
+                    else if ((child as FrameworkElement)?.DataContext is Musicefy.Core.Models.ArtistInfo ar &&
+                             ar.CoverPath != null &&
+                             string.Equals(ar.CoverPath, coverPath, StringComparison.OrdinalIgnoreCase))
                     {
                         if (_cache.TryGetValue(coverPath, out var bmp))
                             img.Source = bmp;
