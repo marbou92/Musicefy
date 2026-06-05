@@ -6,6 +6,7 @@
 
     <UserControl.Resources>
         <converters:PathToImageConverter x:Key="PathToImageConverter"/>
+        <converters:AsyncCoverConverter x:Key="AsyncCoverConverter"/>
     </UserControl.Resources>
 
     <Grid>
@@ -42,8 +43,9 @@
                                   Fill="{DynamicResource OnSurfaceBrush}" Opacity="0.3"
                                   Width="64" Height="64" Stretch="Uniform"
                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            <Image Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}}"
-                                   Stretch="UniformToFill"/>
+                            <Image Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}, ConverterParameter=hero}"
+                                   Stretch="UniformToFill"
+                                   converters:CoverFadeBehavior.IsEnabled="True"/>
                         </Grid>
                     </Border>
                     <TextBlock Text="{Binding PlaylistName}" FontSize="28" FontWeight="Bold"
