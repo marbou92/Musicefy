@@ -107,6 +107,7 @@ namespace Musicefy.ViewModels
             {
                 if (SetProperty(ref _selectedFilter, value))
                 {
+                    OnPropertyChanged(nameof(IsAllFilter));
                     ApplyFilter(value);
                 }
             }
@@ -127,6 +128,9 @@ namespace Musicefy.ViewModels
         public bool HasError => State == SearchState.Results && !string.IsNullOrEmpty(ErrorMessage);
         public bool HasQuery => !string.IsNullOrWhiteSpace(Query);
 
+        /// <summary>Whether the "All" filter is selected (show grouped results).</summary>
+        public bool IsAllFilter => SelectedFilter == SearchResultFilter.All;
+
         /// <summary>Whether a YouTube URL was detected in the query.</summary>
         public bool IsFromLink { get; private set; }
 
@@ -141,6 +145,7 @@ namespace Musicefy.ViewModels
         public ICommand NavigateToAlbumCommand { get; }
         public ICommand ToggleSourceModeCommand { get; }
         public ICommand ClearHistoryCommand { get; }
+        public ICommand SelectedFilterCommand { get; }
 
         // ── Constructor ──────────────────────────────────────────────────
 
@@ -168,6 +173,7 @@ namespace Musicefy.ViewModels
             NavigateToAlbumCommand = new DelegateCommand<AlbumInfo>(ExecuteNavigateToAlbum);
             ToggleSourceModeCommand = new DelegateCommand(ExecuteToggleSourceMode);
             ClearHistoryCommand = new DelegateCommand(async () => await ExecuteClearHistoryAsync());
+            SelectedFilterCommand = new DelegateCommand<string>(ExecuteSelectedFilter);
 
             // Load initial history
             _ = LoadSearchHistoryAsync();
@@ -784,6 +790,26 @@ namespace Musicefy.ViewModels
             {
                 ExecuteSearch();
             }
+        }
+
+        /// <summary>
+        /// MVVM-bound filter tab selection command. Replaces the code-behind FilterTab_Click.
+        /// Accepts the filter name as a string (e.g. "All", "Songs", "Albums", "Artists", "Playlists").
+        /// </summary>
+        private void ExecuteSelectedFilter(string filterName)
+        {
+            if (string.IsNullOrEmpty(filterName)) return;
+
+            SearchResultFilter filter = filterName switch
+            {
+                "Songs" => SearchResultFilter.Songs,
+                "Albums" => SearchResultFilter.Albums,
+                "Artists" => SearchResultFilter.Artists,
+                "Playlists" => SearchResultFilter.Playlists,
+                _ => SearchResultFilter.All
+            };
+
+            SelectedFilter = filter;
         }
 
         private async Task ExecuteClearHistoryAsync()
