@@ -79,6 +79,7 @@ namespace Musicefy.ViewModels
                     OnPropertyChanged(nameof(HasResults));
                     OnPropertyChanged(nameof(HasError));
                     OnPropertyChanged(nameof(IsEmptyResults));
+                    NotifyTopResultChanged();
                 }
             }
         }
@@ -146,6 +147,45 @@ namespace Musicefy.ViewModels
         /// <summary>Whether a YouTube URL was detected in the query.</summary>
         public bool IsFromLink { get; private set; }
 
+        // ── Top Result Properties ─────────────────────────────────────────
+
+        /// <summary>Whether a "Top result" category exists in the result groups.</summary>
+        public bool HasTopResult => ResultGroups.Any(g =>
+            g.Category.Equals("Top result", StringComparison.OrdinalIgnoreCase) &&
+            g.Items.Count > 0);
+
+        /// <summary>The first item from the "Top result" group.</summary>
+        public object TopResult => ResultGroups
+            .FirstOrDefault(g => g.Category.Equals("Top result", StringComparison.OrdinalIgnoreCase))
+            ?.Items.FirstOrDefault();
+
+        /// <summary>Title for the top result card (adapts to MusicFile.Title or AlbumInfo.Name or ArtistInfo.Name).</summary>
+        public string TopResultTitle => TopResult switch
+        {
+            MusicFile t => t.Title,
+            AlbumInfo a => a.Name,
+            ArtistInfo ar => ar.Name,
+            _ => ""
+        };
+
+        /// <summary>Subtitle for the top result card (artist/album info).</summary>
+        public string TopResultSubtitle => TopResult switch
+        {
+            MusicFile t => t.Artist,
+            AlbumInfo a => a.Artist,
+            ArtistInfo ar => ar.SubscriberCount.HasValue ? $"{ar.SubscriberCount.Value:N0} subscribers" : "Artist",
+            _ => ""
+        };
+
+        /// <summary>Type badge text for the top result card.</summary>
+        public string TopResultType => TopResult switch
+        {
+            MusicFile _ => "Song",
+            AlbumInfo _ => "Album",
+            ArtistInfo _ => "Artist",
+            _ => ""
+        };
+
         // ── Commands ─────────────────────────────────────────────────────
 
         public ICommand SearchCommand { get; }
@@ -158,6 +198,12 @@ namespace Musicefy.ViewModels
         public ICommand ToggleSourceModeCommand { get; }
         public ICommand ClearHistoryCommand { get; }
         public ICommand SelectedFilterCommand { get; }
+
+        /// <summary>Sets source mode to Online (bound from toggle pill).</summary>
+        public ICommand SetOnlineModeCommand { get; }
+
+        /// <summary>Sets source mode to Local (bound from toggle pill).</summary>
+        public ICommand SetLocalModeCommand { get; }
 
         // ── Constructor ──────────────────────────────────────────────────
 
@@ -186,6 +232,8 @@ namespace Musicefy.ViewModels
             ToggleSourceModeCommand = new DelegateCommand(ExecuteToggleSourceMode);
             ClearHistoryCommand = new DelegateCommand(async () => await ExecuteClearHistoryAsync());
             SelectedFilterCommand = new DelegateCommand<string>(ExecuteSelectedFilter);
+            SetOnlineModeCommand = new DelegateCommand(() => ExecuteSetSourceMode(SearchSourceMode.Online));
+            SetLocalModeCommand = new DelegateCommand(() => ExecuteSetSourceMode(SearchSourceMode.Local));
 
             // Load initial history
             _ = LoadSearchHistoryAsync();
@@ -805,6 +853,22 @@ namespace Musicefy.ViewModels
         }
 
         /// <summary>
+        /// Sets the search source mode directly (called by the Online/Library toggle pill).
+        /// Re-runs the search if results are currently displayed.
+        /// </summary>
+        private void ExecuteSetSourceMode(SearchSourceMode mode)
+        {
+            if (SourceMode == mode) return;
+            SourceMode = mode;
+
+            // Re-run search if there's an active query
+            if (!string.IsNullOrWhiteSpace(Query) && State == SearchState.Results)
+            {
+                ExecuteSearch();
+            }
+        }
+
+        /// <summary>
         /// MVVM-bound filter tab selection command. Replaces the code-behind FilterTab_Click.
         /// Accepts the filter name as a string (e.g. "All", "Songs", "Albums", "Artists", "Playlists").
         /// </summary>
@@ -873,6 +937,19 @@ namespace Musicefy.ViewModels
             field = value;
             OnPropertyChanged(propertyName);
             return true;
+        }
+
+        /// <summary>
+        /// Notifies that Top Result related properties have changed.
+        /// Called when search results are updated.
+        /// </summary>
+        private void NotifyTopResultChanged()
+        {
+            OnPropertyChanged(nameof(HasTopResult));
+            OnPropertyChanged(nameof(TopResult));
+            OnPropertyChanged(nameof(TopResultTitle));
+            OnPropertyChanged(nameof(TopResultSubtitle));
+            OnPropertyChanged(nameof(TopResultType));
         }
 
         // ── IDisposable ──────────────────────────────────────────────────
