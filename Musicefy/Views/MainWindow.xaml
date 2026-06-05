@@ -11,6 +11,7 @@
 
     <Window.Resources>
         <converters:PathToImageConverter x:Key="PathToImageConverter"/>
+        <converters:AsyncCoverConverter x:Key="AsyncCoverConverter"/>
 
         <!-- ── Upgraded M3 Navigation Rail Item ──────────────────────────── -->
         <Style x:Key="SidebarIconButtonStyle" TargetType="ListBoxItem">
@@ -340,7 +341,8 @@
                     <Border Grid.Column="0" Width="44" Height="44" CornerRadius="22"
                             Background="{DynamicResource SurfaceVariantBrush}"
                             VerticalAlignment="Center" Margin="10,0,0,0">
-                        <Image Source="{Binding NowPlaying.CoverPath, Converter={StaticResource PathToImageConverter}}" Stretch="UniformToFill">
+                        <Image Source="{Binding NowPlaying.CoverPath, Converter={StaticResource PathToImageConverter}, ConverterParameter=list}" Stretch="UniformToFill"
+                               converters:CoverFadeBehavior.IsEnabled="True">
                             <Image.Clip>
                                 <EllipseGeometry Center="22,22" RadiusX="22" RadiusY="22"/>
                             </Image.Clip>
