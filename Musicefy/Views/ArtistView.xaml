@@ -6,6 +6,7 @@
 
     <UserControl.Resources>
         <converters:PathToImageConverter x:Key="PathToImageConverter"/>
+        <converters:AsyncCoverConverter x:Key="AsyncCoverConverter"/>
     </UserControl.Resources>
 
     <Grid ClipToBounds="True">
@@ -38,8 +39,9 @@
                                               Opacity="0.5" Color="Black"/>
                         </Border.Effect>
                         <Grid>
-                            <Image Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}}"
-                                   Stretch="UniformToFill"/>
+                            <Image Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}, ConverterParameter=hero}"
+                                   Stretch="UniformToFill"
+                                   converters:CoverFadeBehavior.IsEnabled="True"/>
                         </Grid>
                     </Border>
                     <TextBlock Text="{Binding ArtistName}" FontSize="32" FontWeight="Bold"
@@ -176,8 +178,9 @@
                                     <Border Grid.Column="0" Width="52" Height="52"
                                             CornerRadius="10" ClipToBounds="True"
                                             Background="{DynamicResource SurfaceVariantBrush}">
-                                        <Image Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}}"
-                                               Stretch="UniformToFill"/>
+                                        <Image Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}, ConverterParameter=list}"
+                                               Stretch="UniformToFill"
+                                               converters:CoverFadeBehavior.IsEnabled="True"/>
                                     </Border>
                                     <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
                                         <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="Medium"
