@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Threading;
@@ -31,7 +32,7 @@ namespace Musicefy.Converters
     ///   1. Size-aware DecodePixelWidth (prevents loading 3000x3000 images for 48px thumbnails)
     ///   2. BitmapImage.Freeze() for cross-thread safety
     ///   3. ConcurrentDictionary cache with WeakReference for memory efficiency
-    ///   4. ImageOpened fade-in via attached property (see CoverFadeBehavior)
+    ///   4. Source-change fade-in via attached property (see CoverFadeBehavior)
     /// </summary>
     public class AsyncCoverConverter : IValueConverter
     {
@@ -171,11 +172,17 @@ namespace Musicefy.Converters
     ///          converters:CoverFadeBehavior.IsEnabled="True"/&gt;
     ///
     /// When IsEnabled is true, the Image starts at Opacity=0 and fades to 1
-    /// when the ImageOpened event fires, creating a smooth content-reveal effect.
+    /// when the Source property changes to a non-null value, creating a smooth
+    /// content-reveal effect. WPF does not have ImageOpened (that's UWP/WinUI),
+    /// so we use DependencyPropertyDescriptor to watch Source changes instead.
     /// </summary>
     public static class CoverFadeBehavior
     {
         private static readonly Duration FadeDuration = new Duration(TimeSpan.FromMilliseconds(250));
+
+        // Track whether a given Image is being observed so we can clean up
+        private static readonly ConditionalWeakTable<Image, SourceWatcher> _watchers =
+            new ConditionalWeakTable<Image, SourceWatcher>();
 
         public static readonly DependencyProperty IsEnabledProperty =
             DependencyProperty.RegisterAttached(
@@ -196,39 +203,142 @@ namespace Musicefy.Converters
             {
                 if ((bool)e.NewValue)
                 {
-                    img.ImageOpened += OnImageOpened;
-                    img.Loaded += OnImageLoaded;
+                    // Attach a SourceWatcher that monitors Source property changes
+                    // via DependencyPropertyDescriptor (WPF-compatible alternative
+                    // to UWP's ImageOpened event)
+                    var watcher = new SourceWatcher(img);
+                    _watchers.Add(img, watcher);
 
-                    // Start invisible — will fade in when image source loads
-                    if (img.Source != null)
-                        img.Opacity = 1; // Already has source, show it
-                    else
-                        img.Opacity = 0;
+                    // Initial state: invisible if no source yet, visible otherwise
+                    img.Opacity = img.Source != null ? 1 : 0;
                 }
                 else
                 {
-                    img.ImageOpened -= OnImageOpened;
-                    img.Loaded -= OnImageLoaded;
+                    // Remove watcher if it exists
+                    if (_watchers.TryGetValue(img, out var watcher))
+                    {
+                        watcher.Detach();
+                        _watchers.Remove(img);
+                    }
                     img.Opacity = 1;
                 }
             }
         }
 
-        private static void OnImageLoaded(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Helper class that subscribes to Source property changes on an Image
+        /// and triggers the fade-in animation. Uses ConditionalWeakTable for
+        /// automatic cleanup when the Image is garbage-collected.
+        /// </summary>
+        private sealed class SourceWatcher
         {
-            // When the Image control loads in the visual tree, check if it already has a source
-            // If it does (from cache), show it immediately — no need to fade in cached content
-            if (sender is Image img && img.Source != null)
-            {
-                img.Opacity = 1;
-            }
-        }
+            private readonly Image _image;
+            private readonly EventHandler _sourceChangedHandler;
 
-        private static void OnImageOpened(object sender, RoutedEventArgs e)
-        {
-            if (sender is Image img)
+            public SourceWatcher(Image image)
             {
-                // Animate from transparent to visible
+                _image = image;
+
+                // Use DependencyPropertyDescriptor to watch Source changes —
+                // this is the WPF equivalent of UWP's ImageOpened event
+                var descriptor = DependencyPropertyDescriptor.FromProperty(
+                    Image.SourceProperty, typeof(Image));
+
+                _sourceChangedHandler = OnSourceChanged;
+                descriptor.AddValueChanged(_image, _sourceChangedHandler);
+
+                // Also subscribe to Loaded to handle cached images that are
+                // already set when the control enters the visual tree
+                _image.Loaded += OnImageLoaded;
+
+                // If the source is already downloading asynchronously,
+                // subscribe to BitmapImage.DownloadCompleted for remote URIs
+                HookBitmapDownload(image.Source as BitmapImage);
+            }
+
+            public void Detach()
+            {
+                var descriptor = DependencyPropertyDescriptor.FromProperty(
+                    Image.SourceProperty, typeof(Image));
+                descriptor.RemoveValueChanged(_image, _sourceChangedHandler);
+                _image.Loaded -= OnImageLoaded;
+                UnhookBitmapDownload(_image.Source as BitmapImage);
+            }
+
+            private void OnSourceChanged(object sender, EventArgs e)
+            {
+                var img = (Image)sender;
+
+                // Unhook previous BitmapImage download handler if any
+                UnhookBitmapDownload(img.Source as BitmapImage);
+
+                if (img.Source == null)
+                {
+                    // Source cleared — go invisible
+                    img.Opacity = 0;
+                    return;
+                }
+
+                // If the BitmapImage is still downloading (remote URI), wait for it
+                if (img.Source is BitmapImage bmp && bmp.IsDownloading)
+                {
+                    HookBitmapDownload(bmp);
+                    img.Opacity = 0;
+                    return;
+                }
+
+                // Source is ready (local, cached, or already downloaded) — fade in
+                FadeIn(img);
+            }
+
+            private void OnImageLoaded(object sender, RoutedEventArgs e)
+            {
+                // When the Image control loads in the visual tree, check if it
+                // already has a source. If it does (from cache), show it — no
+                // need to fade in cached content that appears instantly.
+                if (_image.Source != null && !(_image.Source is BitmapImage bmp && bmp.IsDownloading))
+                {
+                    _image.Opacity = 1;
+                }
+            }
+
+            private BitmapImage _downloadingBitmap;
+
+            private void HookBitmapDownload(BitmapImage bmp)
+            {
+                if (bmp == null || !bmp.IsDownloading) return;
+                _downloadingBitmap = bmp;
+                bmp.DownloadCompleted += OnDownloadCompleted;
+                bmp.DownloadFailed += OnDownloadFailed;
+            }
+
+            private void UnhookBitmapDownload(BitmapImage bmp)
+            {
+                if (bmp == null) return;
+                bmp.DownloadCompleted -= OnDownloadCompleted;
+                bmp.DownloadFailed -= OnDownloadFailed;
+                if (_downloadingBitmap == bmp)
+                    _downloadingBitmap = null;
+            }
+
+            private void OnDownloadCompleted(object sender, EventArgs e)
+            {
+                // Remote image finished downloading — fade in on the UI thread
+                var bmp = (BitmapImage)sender;
+                UnhookBitmapDownload(bmp);
+                _image.Dispatcher.BeginInvoke(new Action(() => FadeIn(_image)));
+            }
+
+            private void OnDownloadFailed(object sender, ExceptionEventArgs e)
+            {
+                // Download failed — still make the Image visible (shows fallback)
+                var bmp = (BitmapImage)sender;
+                UnhookBitmapDownload(bmp);
+                _image.Dispatcher.BeginInvoke(new Action(() => { _image.Opacity = 1; }));
+            }
+
+            private static void FadeIn(Image img)
+            {
                 var animation = new DoubleAnimation
                 {
                     From = 0,
@@ -236,7 +346,6 @@ namespace Musicefy.Converters
                     Duration = FadeDuration,
                     EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
                 };
-
                 img.BeginAnimation(UIElement.OpacityProperty, animation);
             }
         }
