@@ -8,6 +8,7 @@
 
     <UserControl.Resources>
         <converters:PathToImageConverter x:Key="PathToImageConverter"/>
+        <converters:AsyncCoverConverter x:Key="AsyncCoverConverter"/>
 
         <Style x:Key="EchoActionButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="{DynamicResource SurfaceVariantBrush}"/>
@@ -303,7 +304,8 @@
                                                   Visibility="Visible"/>
                                             <Image x:Name="ListCoverImage"
                                                    Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}, ConverterParameter=list}"
-                                                   RenderOptions.BitmapScalingMode="HighQuality" Stretch="UniformToFill"/>
+                                                   RenderOptions.BitmapScalingMode="HighQuality" Stretch="UniformToFill"
+                                                   converters:CoverFadeBehavior.IsEnabled="True"/>
                                         </Grid>
                                     </Border>
                                     <StackPanel VerticalAlignment="Center">
@@ -415,7 +417,8 @@
                                                   Fill="{DynamicResource OutlineBrush}" Width="40" Height="40"
                                                   Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                             <Image Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}, ConverterParameter=grid}"
-                                                   RenderOptions.BitmapScalingMode="HighQuality" Stretch="UniformToFill"/>
+                                                   RenderOptions.BitmapScalingMode="HighQuality" Stretch="UniformToFill"
+                                                   converters:CoverFadeBehavior.IsEnabled="True"/>
                                         </Grid>
                                     </Grid>
                                 </Border>
