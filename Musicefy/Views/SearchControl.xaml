@@ -240,10 +240,11 @@
                                                                       Width="20" Height="20" Stretch="Uniform"
                                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                                 <!-- Cover image -->
-                                                                <Image Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}}"
+                                                                <Image Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}, ConverterParameter=list}"
                                                                        RenderOptions.BitmapScalingMode="HighQuality"
                                                                        Stretch="UniformToFill"
-                                                                       VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                                                       VerticalAlignment="Center" HorizontalAlignment="Center"
+                                                                       conv:CoverFadeBehavior.IsEnabled="True"/>
                                                             </Grid>
                                                         </Border>
 
@@ -312,10 +313,11 @@
                                                       Width="20" Height="20" Stretch="Uniform"
                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                 <!-- Cover image -->
-                                                <Image Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}}"
+                                                <Image Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}, ConverterParameter=list}"
                                                        RenderOptions.BitmapScalingMode="HighQuality"
                                                        Stretch="UniformToFill"
-                                                       VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                                       VerticalAlignment="Center" HorizontalAlignment="Center"
+                                                       conv:CoverFadeBehavior.IsEnabled="True"/>
                                             </Grid>
                                         </Border>
 
