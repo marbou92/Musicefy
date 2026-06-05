@@ -10,6 +10,25 @@ namespace Musicefy.Controls
     /// </summary>
     public partial class HomeSectionControl : UserControl
     {
+        // ── Routed Events ──────────────────────────────────────────────────
+
+        /// <summary>
+        /// Raised when the user clicks "See All" for a section.
+        /// The DataContext of this control (a HomeSection) is carried in the event args.
+        /// </summary>
+        public static readonly RoutedEvent SeeAllRequestedEvent =
+            EventManager.RegisterRoutedEvent(
+                nameof(SeeAllRequested),
+                RoutingStrategy.Bubble,
+                typeof(RoutedEventHandler),
+                typeof(HomeSectionControl));
+
+        public event RoutedEventHandler SeeAllRequested
+        {
+            add { AddHandler(SeeAllRequestedEvent, value); }
+            remove { RemoveHandler(SeeAllRequestedEvent, value); }
+        }
+
         public HomeSectionControl()
         {
             InitializeComponent();
@@ -35,6 +54,18 @@ namespace Musicefy.Controls
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Handles the "See All" button click. Raises the SeeAllRequested routed event
+        /// so parent controls (HomeControl) can handle navigation.
+        /// </summary>
+        private void SeeAllButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Raise the bubble event with this control's DataContext (the HomeSection) as the data
+            var args = new RoutedEventArgs(SeeAllRequestedEvent, this);
+            RaiseEvent(args);
+            e.Handled = true;
         }
     }
 }
