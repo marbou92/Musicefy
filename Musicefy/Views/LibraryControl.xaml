@@ -9,6 +9,7 @@
 
     <UserControl.Resources>
         <converters:PathToImageConverter x:Key="PathToImageConverter"/>
+        <converters:AsyncCoverConverter x:Key="AsyncCoverConverter"/>
 
         <!-- Root library card (Favourites / Downloads / History / Folder / Artists / Albums) -->
         <Style x:Key="LibraryCardStyle" TargetType="Button">
@@ -310,8 +311,9 @@
                                             ClipToBounds="True" Margin="0,0,14,0"
                                             Background="{DynamicResource SurfaceVariantBrush}"
                                             SnapsToDevicePixels="True">
-                                        <Image Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}}"
-                                               RenderOptions.BitmapScalingMode="HighQuality" Stretch="UniformToFill"/>
+                                        <Image Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}, ConverterParameter=list}"
+                                               RenderOptions.BitmapScalingMode="HighQuality" Stretch="UniformToFill"
+                                               converters:CoverFadeBehavior.IsEnabled="True"/>
                                     </Border>
                                     <StackPanel VerticalAlignment="Center" MaxWidth="280">
                                         <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="Medium"
@@ -458,8 +460,9 @@
                                     <Border.Clip>
                                         <EllipseGeometry RadiusX="24" RadiusY="24" Center="24,24"/>
                                     </Border.Clip>
-                                    <Image Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}}"
-                                           RenderOptions.BitmapScalingMode="HighQuality" Stretch="UniformToFill"/>
+                                    <Image Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}, ConverterParameter=list}"
+                                           RenderOptions.BitmapScalingMode="HighQuality" Stretch="UniformToFill"
+                                           converters:CoverFadeBehavior.IsEnabled="True"/>
                                 </Border>
 
                                 <!-- Artist name + source type -->
@@ -553,8 +556,9 @@
                                         ClipToBounds="True" Margin="0,0,12,0"
                                         Background="{DynamicResource SurfaceVariantBrush}"
                                         SnapsToDevicePixels="True">
-                                    <Image Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}}"
-                                           RenderOptions.BitmapScalingMode="HighQuality" Stretch="UniformToFill"/>
+                                    <Image Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}, ConverterParameter=list}"
+                                           RenderOptions.BitmapScalingMode="HighQuality" Stretch="UniformToFill"
+                                           converters:CoverFadeBehavior.IsEnabled="True"/>
                                 </Border>
 
                                 <!-- Album name + Artist name -->
@@ -647,8 +651,9 @@
                                               Fill="{DynamicResource OnSurfaceBrush}" Opacity="0.3"
                                               Width="24" Height="24" Stretch="Uniform"
                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        <Image Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}}"
-                                               RenderOptions.BitmapScalingMode="HighQuality" Stretch="UniformToFill"/>
+                                        <Image Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}, ConverterParameter=list}"
+                                               RenderOptions.BitmapScalingMode="HighQuality" Stretch="UniformToFill"
+                                               converters:CoverFadeBehavior.IsEnabled="True"/>
                                     </Grid>
                                 </Border>
 
