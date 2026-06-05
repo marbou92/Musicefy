@@ -62,4 +62,32 @@ namespace Musicefy.Converters
             throw new NotImplementedException();
         }
     }
+
+    /// <summary>
+    /// Converts an integer count to Visible when count >= threshold (parameter),
+    /// Collapsed otherwise. Default threshold is 5.
+    /// Used for the "See All" button visibility: show when a section has 5+ items.
+    /// </summary>
+    public class CountGreaterThanOrEqualConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            int count = 0;
+            if (value is int i)
+                count = i;
+            else if (value is System.Collections.ICollection col)
+                count = col.Count;
+
+            int threshold = 5;
+            if (parameter != null && int.TryParse(parameter.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int t))
+                threshold = t;
+
+            return count >= threshold ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }
