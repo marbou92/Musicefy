@@ -6,6 +6,7 @@
 
     <UserControl.Resources>
         <converters:PathToImageConverter x:Key="PathToImageConverter"/>
+        <converters:AsyncCoverConverter x:Key="AsyncCoverConverter"/>
     </UserControl.Resources>
 
     <Grid>
@@ -37,8 +38,9 @@
                             <DropShadowEffect BlurRadius="36" ShadowDepth="8"
                                               Opacity="0.45" Color="Black"/>
                         </Border.Effect>
-                        <Image Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}}"
-                               Stretch="UniformToFill"/>
+                        <Image Source="{Binding CoverPath, Converter={StaticResource PathToImageConverter}, ConverterParameter=hero}"
+                               Stretch="UniformToFill"
+                               converters:CoverFadeBehavior.IsEnabled="True"/>
                     </Border>
                     <TextBlock Text="{Binding AlbumName}" FontSize="28" FontWeight="Bold"
                                Foreground="{DynamicResource OnSurfaceBrush}" HorizontalAlignment="Center"
