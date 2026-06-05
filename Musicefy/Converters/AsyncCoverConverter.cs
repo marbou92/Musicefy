@@ -33,7 +33,7 @@ namespace Musicefy.Converters
     ///   1. Size-aware DecodePixelWidth (prevents loading 3000x3000 images for 48px thumbnails)
     ///   2. BitmapImage.Freeze() for cross-thread safety
     ///   3. ConcurrentDictionary cache with WeakReference for memory efficiency
-    ///   4. Source-change fade-in via attached property (see CoverFadeBehavior)
+    ///   4. ImageOpened fade-in via attached property (see CoverFadeBehavior)
     /// </summary>
     public class AsyncCoverConverter : IValueConverter
     {
@@ -263,15 +263,21 @@ namespace Musicefy.Converters
                     Image.SourceProperty, typeof(Image));
                 descriptor.RemoveValueChanged(_image, _sourceChangedHandler);
                 _image.Loaded -= OnImageLoaded;
-                UnhookBitmapDownload(_image.Source as BitmapImage);
+                // Unhook the tracked downloading bitmap (if any) instead of
+                // _image.Source which might be a different (frozen) instance
+                if (_downloadingBitmap != null)
+                    UnhookBitmapDownload(_downloadingBitmap);
             }
 
             private void OnSourceChanged(object sender, EventArgs e)
             {
                 var img = (Image)sender;
 
-                // Unhook previous BitmapImage download handler if any
-                UnhookBitmapDownload(img.Source as BitmapImage);
+                // Unhook previous downloading BitmapImage handler if any.
+                // Note: img.Source is already the NEW source at this point,
+                // so we unhook the tracked _downloadingBitmap (the old one) instead.
+                if (_downloadingBitmap != null)
+                    UnhookBitmapDownload(_downloadingBitmap);
 
                 if (img.Source == null)
                 {
@@ -307,7 +313,10 @@ namespace Musicefy.Converters
 
             private void HookBitmapDownload(BitmapImage bmp)
             {
-                if (bmp == null || !bmp.IsDownloading) return;
+                // Frozen bitmaps are immutable — they cannot have event handlers
+                // added/removed. A frozen bitmap is already fully decoded, so
+                // there's nothing to wait for.
+                if (bmp == null || bmp.IsFrozen || !bmp.IsDownloading) return;
                 _downloadingBitmap = bmp;
                 bmp.DownloadCompleted += OnDownloadCompleted;
                 bmp.DownloadFailed += OnDownloadFailed;
@@ -316,8 +325,14 @@ namespace Musicefy.Converters
             private void UnhookBitmapDownload(BitmapImage bmp)
             {
                 if (bmp == null) return;
-                bmp.DownloadCompleted -= OnDownloadCompleted;
-                bmp.DownloadFailed -= OnDownloadFailed;
+                // Frozen bitmaps cannot be modified — attempting to -= from events
+                // throws InvalidOperationException. Since frozen bitmaps are
+                // already fully loaded, the event handlers will never fire anyway.
+                if (!bmp.IsFrozen)
+                {
+                    bmp.DownloadCompleted -= OnDownloadCompleted;
+                    bmp.DownloadFailed -= OnDownloadFailed;
+                }
                 if (_downloadingBitmap == bmp)
                     _downloadingBitmap = null;
             }
