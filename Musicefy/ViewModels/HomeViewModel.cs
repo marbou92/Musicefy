@@ -104,6 +104,8 @@ namespace Musicefy.ViewModels
         public ICommand NavigateToArtistCommand { get; }
         public ICommand NavigateToAlbumCommand { get; }
         public ICommand LoadMoreCommand { get; }
+        public ICommand SeeAllForSectionCommand { get; }
+        public ICommand ChipSelectedCommand { get; }
 
         // ── Constructor ─────────────────────────────────────────────────────
 
@@ -123,6 +125,8 @@ namespace Musicefy.ViewModels
             NavigateToArtistCommand = new DelegateCommand<ArtistInfo>(ExecuteNavigateToArtist);
             NavigateToAlbumCommand = new DelegateCommand<AlbumInfo>(ExecuteNavigateToAlbum);
             LoadMoreCommand = new DelegateCommand<string>(ExecuteLoadMore, CanLoadMore);
+            SeeAllForSectionCommand = new DelegateCommand<HomeSection>(ExecuteSeeAllForSection);
+            ChipSelectedCommand = new DelegateCommand<ChipItem>(ExecuteChipSelected);
 
             // Subscribe to health check events for reactive refresh
             _healthCheckService.SourceHealthChanged += OnSourceHealthChanged;
@@ -448,6 +452,16 @@ namespace Musicefy.ViewModels
 
         // ── Chip Filtering ──────────────────────────────────────────────────
 
+        /// <summary>
+        /// MVVM-bound command for chip selection. Wires the RadioButton click
+        /// in the ChipBar to the OnChipSelectedAsync handler.
+        /// </summary>
+        private void ExecuteChipSelected(ChipItem chip)
+        {
+            if (chip == null) return;
+            SelectedChip = chip;
+        }
+
         private async Task OnChipSelectedAsync(ChipItem chip)
         {
             if (chip == null)
@@ -552,6 +566,46 @@ namespace Musicefy.ViewModels
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[HomeViewModel] NavigateToAlbum failed: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Handles "See All" for a home section. Routes based on section type:
+        /// - QuickPicks/KeepListening/RecentlyPlayed → Library view (favourites/history)
+        /// - YouTubeHome/DailyDiscover → Search or Explore view
+        /// - SubsonicAlbums → Library albums view
+        /// </summary>
+        private void ExecuteSeeAllForSection(HomeSection section)
+        {
+            if (section == null) return;
+
+            try
+            {
+                var navService = App.Services?.GetService(typeof(NavigationService)) as NavigationService;
+                if (navService == null) return;
+
+                // Route based on section type to the most relevant page.
+                switch (section.SectionType)
+                {
+                    case HomeSectionType.QuickPicks:
+                    case HomeSectionType.KeepListening:
+                    case HomeSectionType.RecentlyPlayed:
+                    case HomeSectionType.SubsonicAlbums:
+                        // Navigate to Library page — user can browse full collection there
+                        navService.NavigateToLibrary();
+                        break;
+
+                    case HomeSectionType.YouTubeHome:
+                    case HomeSectionType.DailyDiscover:
+                    case HomeSectionType.SimilarRecommendation:
+                        // Navigate to Search page for further exploration
+                        navService.NavigateToSearch();
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[HomeViewModel] SeeAllForSection failed: {ex.Message}");
             }
         }
 
