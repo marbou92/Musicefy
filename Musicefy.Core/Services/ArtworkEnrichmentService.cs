@@ -248,7 +248,7 @@ namespace Musicefy.Core.Services
             }
 
             // Fallback: find any image URL in the JSON
-            var urlMatch = Regex.Match(json, @"""#text"":""(https?://[^\"]+)""");
+            var urlMatch = Regex.Match(json, "\"#text\":\"(https?://[^\"]+)\"");
             return urlMatch.Success ? urlMatch.Groups[1].Value : null;
         }
 
