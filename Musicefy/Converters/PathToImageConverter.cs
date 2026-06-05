@@ -11,6 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Microsoft.Extensions.DependencyInjection;
 using Musicefy.Core.Interfaces;
+using Musicefy.Core.Services;
 
 namespace Musicefy.Converters
 {
@@ -30,8 +31,10 @@ namespace Musicefy.Converters
         private static IStreamingSourceManager _sourceManager;
 
         private const int MaxCacheEntries = 800;
-        private const int ListDecodeWidth  = 48;
-        private const int GridDecodeWidth  = 200;
+        private const int ListDecodeWidth  = 96;   // 48px × 2 for HiDPI
+        private const int GridDecodeWidth  = 320;  // 160px × 2 for HiDPI
+        private const int HeroDecodeWidth  = 800;  // 340-400px × 2 for HiDPI
+        private const int FullDecodeWidth  = 1280; // Full-screen × 2 for HiDPI
 
         // WebP byte signature: "RIFF" at offset 0, "WEBP" at offset 8
         private static readonly byte[] WebP_Riff = { 0x52, 0x49, 0x46, 0x46 }; // "RIFF"
@@ -71,14 +74,15 @@ namespace Musicefy.Converters
             // Pre-process URLs to request JPEG format from YouTube/Google CDNs
             path = SanitizeImageUrl(path);
 
+            // Optimize YouTube thumbnail URLs based on target render size
+            path = OptimizeThumbnailUrl(path, parameter);
+
             if (_cache.TryGetValue(path, out var cached))
                 return cached;
 
             if (_inFlight.TryAdd(path, 0))
             {
-                bool isGrid = string.Equals(parameter?.ToString(), "grid",
-                    StringComparison.OrdinalIgnoreCase);
-                int decodeWidth = isGrid ? GridDecodeWidth : ListDecodeWidth;
+                int decodeWidth = GetDecodeWidth(parameter);
                 _ = LoadAsync(path, decodeWidth);
             }
 
@@ -88,6 +92,52 @@ namespace Musicefy.Converters
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Determines the DecodePixelWidth based on the ConverterParameter.
+        /// This ensures images are decoded at the right resolution for their render size.
+        /// </summary>
+        private static int GetDecodeWidth(object parameter)
+        {
+            string size = parameter?.ToString()?.ToLowerInvariant();
+            switch (size)
+            {
+                case "list": return ListDecodeWidth;
+                case "grid": return GridDecodeWidth;
+                case "hero": return HeroDecodeWidth;
+                case "full": return FullDecodeWidth;
+                default: return ListDecodeWidth; // Default to list size for backwards compat
+            }
+        }
+
+        /// <summary>
+        /// Optimizes YouTube/Google CDN thumbnail URLs to request the best resolution
+        /// for the target render size, using YouTubeThumbnailHelper.
+        /// This prevents loading 120×90 thumbnails for 160px grid cards,
+        /// or loading maxresdefault for tiny 48px list items.
+        /// </summary>
+        private static string OptimizeThumbnailUrl(string url, object parameter)
+        {
+            if (string.IsNullOrEmpty(url) || !url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                return url;
+
+            // Only optimize YouTube/Google CDN URLs
+            if (!url.Contains("ytimg.com", StringComparison.OrdinalIgnoreCase) &&
+                !url.Contains("googleusercontent.com", StringComparison.OrdinalIgnoreCase) &&
+                !url.Contains("ggpht.com", StringComparison.OrdinalIgnoreCase))
+                return url;
+
+            var targetSize = parameter?.ToString()?.ToLowerInvariant() switch
+            {
+                "list" => YouTubeThumbnailHelper.ThumbnailSize.List,
+                "grid" => YouTubeThumbnailHelper.ThumbnailSize.Grid,
+                "hero" => YouTubeThumbnailHelper.ThumbnailSize.Hero,
+                "full" => YouTubeThumbnailHelper.ThumbnailSize.Full,
+                _ => YouTubeThumbnailHelper.ThumbnailSize.List
+            };
+
+            return YouTubeThumbnailHelper.GetBestUrl(url, targetSize);
         }
 
         /// <summary>
