@@ -90,4 +90,24 @@ namespace Musicefy.Converters
             throw new NotImplementedException();
         }
     }
+
+    /// <summary>
+    /// Converts an album Year integer to a display suffix string.
+    /// Returns " · YYYY" when Year > 0, or empty string when Year is 0 or default.
+    /// Used in the AlbumCardTemplate subtitle: "Artist · 2024"
+    /// </summary>
+    public class AlbumYearSuffixConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is int year && year > 0)
+                return $" \u00B7 {year}";
+            return string.Empty;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }
