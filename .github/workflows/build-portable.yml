@@ -22,6 +22,13 @@ jobs:
           target: 'desktop'
           arch: 'win64_msvc2019_64'
 
+      - name: Export Qt path
+        id: qt
+        shell: cmd
+        run: |
+          echo QT_ROOT=${{ steps.install-qt.outputs.qt-path }}>> "%GITHUB_OUTPUT%"
+          echo Qt installed at: ${{ steps.install-qt.outputs.qt-path }}
+
       - name: Configure CMake
         shell: cmd
         run: |
@@ -34,43 +41,51 @@ jobs:
         run: |
           cmake --build build --config Release --parallel
 
-      - name: Run windeployqt
-        shell: cmd
-        run: |
-          "${{ steps.install-qt.outputs.qt-path }}\bin\windeployqt.exe" ^
-            --release ^
-            --no-translations ^
-            --no-system-d3d-compiler ^
-            --no-opengl-sw ^
-            --verbose 1 ^
-            build\bin\Release\musicefy.exe
-
-      - name: Copy SQL driver plugins
-        shell: cmd
-        run: |
-          if not exist "build\bin\Release\sqldrivers" mkdir "build\bin\Release\sqldrivers"
-          copy /Y "${{ steps.install-qt.outputs.qt-path }}\plugins\sqldrivers\qsqlite.dll" "build\bin\Release\sqldrivers\" >nul 2>&1
-
-      - name: Copy database migrations
-        shell: cmd
-        run: |
-          if not exist "build\bin\Release\migrations" mkdir "build\bin\Release\migrations"
-          copy /Y "src\core\database\migrations\*" "build\bin\Release\migrations\" >nul 2>&1
-
-      - name: Create ZIP of portable folder
+      - name: Package portable build
         shell: pwsh
         run: |
-          $out = Join-Path $PWD 'build\bin\Release'
+          $qtRoot = "${{ steps.qt.outputs.QT_ROOT }}"
+          if (-not $qtRoot -or -not (Test-Path $qtRoot)) {
+            # Fallback: find windeployqt from PATH
+            $windeploy = (Get-Command windeployqt.exe -ErrorAction SilentlyContinue).Source
+            if ($windeploy) {
+              $qtRoot = Split-Path (Split-Path $windeploy)
+              Write-Host "Found Qt from PATH: $qtRoot"
+            } else {
+              throw "Cannot find Qt installation"
+            }
+          }
+          Write-Host "Qt root: $qtRoot"
+
+          # Deploy Qt dependencies
+          & "$qtRoot\bin\windeployqt.exe" --release --no-translations --no-system-d3d-compiler --no-opengl-sw --verbose 1 build\bin\Release\musicefy.exe
+
+          # Copy SQL driver plugins
+          $sqldrivers = "build\bin\Release\sqldrivers"
+          New-Item -ItemType Directory -Path $sqldrivers -Force | Out-Null
+          $qsqlite = Join-Path $qtRoot "plugins\sqldrivers\qsqlite.dll"
+          if (Test-Path $qsqlite) {
+            Copy-Item $qsqlite $sqldrivers -Force
+            Write-Host "Copied qsqlite.dll"
+          }
+
+          # Copy database migrations
+          $migrations = "build\bin\Release\migrations"
+          New-Item -ItemType Directory -Path $migrations -Force | Out-Null
+          Copy-Item "src\core\database\migrations\*" $migrations -Force
+
+          # Create portable folder
           $portable = Join-Path $PWD 'Musicefy-Portable'
           if (Test-Path $portable) { Remove-Item -Recurse -Force $portable }
           New-Item -ItemType Directory -Path $portable | Out-Null
-          Copy-Item -Path (Join-Path $out '*') -Destination $portable -Recurse -Force
-          
+          Copy-Item -Path "build\bin\Release\*" -Destination $portable -Recurse -Force
+
+          # Create ZIP
           $zip = Join-Path $PWD 'Musicefy-Portable.zip'
           if (Test-Path $zip) { Remove-Item $zip -Force }
           Add-Type -AssemblyName System.IO.Compression.FileSystem
           [System.IO.Compression.ZipFile]::CreateFromDirectory($portable, $zip)
-          Write-Host "Created $zip"
+          Write-Host "Created portable ZIP: $zip"
 
       - name: Upload portable artifacts
         uses: actions/upload-artifact@v4

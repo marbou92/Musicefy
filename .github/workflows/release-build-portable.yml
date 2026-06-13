@@ -22,6 +22,13 @@ jobs:
           target: 'desktop'
           arch: 'win64_msvc2019_64'
 
+      - name: Export Qt path
+        id: qt
+        shell: cmd
+        run: |
+          echo QT_ROOT=${{ steps.install-qt.outputs.qt-path }}>> "%GITHUB_OUTPUT%"
+          echo Qt installed at: ${{ steps.install-qt.outputs.qt-path }}
+
       - name: Configure CMake
         shell: cmd
         run: |
@@ -34,28 +41,45 @@ jobs:
         run: |
           cmake --build build --config Release --parallel
 
-      - name: Run windeployqt
-        shell: cmd
+      - name: Package portable build
+        shell: pwsh
         run: |
-          "${{ steps.install-qt.outputs.qt-path }}\bin\windeployqt.exe" ^
-            --release ^
-            --no-translations ^
-            --no-system-d3d-compiler ^
-            --no-opengl-sw ^
-            --verbose 1 ^
-            build\bin\Release\musicefy.exe
+          $qtRoot = "${{ steps.qt.outputs.QT_ROOT }}"
+          if (-not $qtRoot -or -not (Test-Path $qtRoot)) {
+            $windeploy = (Get-Command windeployqt.exe -ErrorAction SilentlyContinue).Source
+            if ($windeploy) {
+              $qtRoot = Split-Path (Split-Path $windeploy)
+              Write-Host "Found Qt from PATH: $qtRoot"
+            } else {
+              throw "Cannot find Qt installation"
+            }
+          }
+          Write-Host "Qt root: $qtRoot"
 
-      - name: Copy SQL driver plugins
-        shell: cmd
-        run: |
-          if not exist "build\bin\Release\sqldrivers" mkdir "build\bin\Release\sqldrivers"
-          copy /Y "${{ steps.install-qt.outputs.qt-path }}\plugins\sqldrivers\qsqlite.dll" "build\bin\Release\sqldrivers\" >nul 2>&1
+          & "$qtRoot\bin\windeployqt.exe" --release --no-translations --no-system-d3d-compiler --no-opengl-sw --verbose 1 build\bin\Release\musicefy.exe
 
-      - name: Copy database migrations
-        shell: cmd
-        run: |
-          if not exist "build\bin\Release\migrations" mkdir "build\bin\Release\migrations"
-          copy /Y "src\core\database\migrations\*" "build\bin\Release\migrations\" >nul 2>&1
+          $sqldrivers = "build\bin\Release\sqldrivers"
+          New-Item -ItemType Directory -Path $sqldrivers -Force | Out-Null
+          $qsqlite = Join-Path $qtRoot "plugins\sqldrivers\qsqlite.dll"
+          if (Test-Path $qsqlite) {
+            Copy-Item $qsqlite $sqldrivers -Force
+            Write-Host "Copied qsqlite.dll"
+          }
+
+          $migrations = "build\bin\Release\migrations"
+          New-Item -ItemType Directory -Path $migrations -Force | Out-Null
+          Copy-Item "src\core\database\migrations\*" $migrations -Force
+
+          $portable = Join-Path $PWD 'Musicefy-Portable'
+          if (Test-Path $portable) { Remove-Item -Recurse -Force $portable }
+          New-Item -ItemType Directory -Path $portable | Out-Null
+          Copy-Item -Path "build\bin\Release\*" -Destination $portable -Recurse -Force
+
+          $zip = Join-Path $PWD 'Musicefy-Portable.zip'
+          if (Test-Path $zip) { Remove-Item $zip -Force }
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          [System.IO.Compression.ZipFile]::CreateFromDirectory($portable, $zip)
+          Write-Host "Created portable ZIP: $zip"
 
       - name: Sign release binary
         if: env.SIGN_CERT_FILE != ''
@@ -65,21 +89,6 @@ jobs:
         env:
           SIGN_CERT_FILE: ${{ secrets.SIGN_CERT_FILE }}
           SIGN_CERT_PASS: ${{ secrets.SIGN_CERT_PASS }}
-
-      - name: Create ZIP of portable folder
-        shell: pwsh
-        run: |
-          $out = Join-Path $PWD 'build\bin\Release'
-          $portable = Join-Path $PWD 'Musicefy-Portable'
-          if (Test-Path $portable) { Remove-Item -Recurse -Force $portable }
-          New-Item -ItemType Directory -Path $portable | Out-Null
-          Copy-Item -Path (Join-Path $out '*') -Destination $portable -Recurse -Force
-          
-          $zip = Join-Path $PWD 'Musicefy-Portable.zip'
-          if (Test-Path $zip) { Remove-Item $zip -Force }
-          Add-Type -AssemblyName System.IO.Compression.FileSystem
-          [System.IO.Compression.ZipFile]::CreateFromDirectory($portable, $zip)
-          Write-Host "Created $zip"
 
       - name: Create GitHub Release and Upload Assets
         uses: softprops/action-gh-release@v2
