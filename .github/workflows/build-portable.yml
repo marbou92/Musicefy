@@ -9,6 +9,8 @@ on:
 jobs:
   build:
     runs-on: windows-2022
+    env:
+      QT_PATH: ${{ steps.install-qt.outputs.qt-path }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -22,11 +24,17 @@ jobs:
           target: 'desktop'
           arch: 'win64_msvc2019_64'
 
+      - name: Verify Qt installation
+        shell: cmd
+        run: |
+          echo Qt path: %QT_PATH%
+          dir "%QT_PATH%\bin\windeployqt.exe"
+
       - name: Configure CMake
         shell: cmd
         run: |
           cmake -G "Visual Studio 17 2022" -A x64 ^
-            -DCMAKE_PREFIX_PATH="${{ steps.install-qt.outputs.qt-path }}" ^
+            -DCMAKE_PREFIX_PATH="%QT_PATH%" ^
             -S . -B build
 
       - name: Build Release
@@ -37,7 +45,7 @@ jobs:
       - name: Run windeployqt
         shell: cmd
         run: |
-          "${{ steps.install-qt.outputs.qt-path }}\bin\windeployqt.exe" ^
+          "%QT_PATH%\bin\windeployqt.exe" ^
             --release ^
             --no-translations ^
             --no-system-d3d-compiler ^
@@ -49,7 +57,7 @@ jobs:
         shell: cmd
         run: |
           if not exist "build\bin\Release\sqldrivers" mkdir "build\bin\Release\sqldrivers"
-          copy /Y "${{ steps.install-qt.outputs.qt-path }}\plugins\sqldrivers\qsqlite.dll" "build\bin\Release\sqldrivers\" >nul 2>&1
+          copy /Y "%QT_PATH%\plugins\sqldrivers\qsqlite.dll" "build\bin\Release\sqldrivers\" >nul 2>&1
 
       - name: Copy database migrations
         shell: cmd
