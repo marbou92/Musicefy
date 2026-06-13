@@ -1,0 +1,50 @@
+name: Build Portable EXE
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-2019
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '5.15.2'
+          host: 'windows'
+          target: 'desktop'
+          arch: 'win64_msvc2019_64'
+
+      - name: Run Build Portable script
+        shell: cmd
+        run: |
+          call scripts\build-portable.bat "${{ env.QT_PATH }}\bin"
+
+      - name: Create ZIP of portable folder
+        shell: pwsh
+        run: |
+          $out = Join-Path $PWD 'build\bin\Release'
+          $portable = Join-Path $PWD 'Musicefy-Portable'
+          if (Test-Path $portable) { Remove-Item -Recurse -Force $portable }
+          New-Item -ItemType Directory -Path $portable | Out-Null
+          Copy-Item -Path (Join-Path $out '*') -Destination $portable -Recurse -Force
+          
+          $zip = Join-Path $PWD 'Musicefy-Portable.zip'
+          if (Test-Path $zip) { Remove-Item $zip -Force }
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          [System.IO.Compression.ZipFile]::CreateFromDirectory($portable, $zip)
+          Write-Host "Created $zip"
+
+      - name: Upload portable artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Musicefy-Portable
+          path: |
+            Musicefy-Portable
+            Musicefy-Portable.zip

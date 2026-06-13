@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!--
+  musicefy.manifest
+  Application manifest declaring the OS compatibility matrix and DPI
+  awareness. Embedded into musicefy.exe by the MSVC linker (CMake adds
+  the file to the target's source list).
+
+  Compatibility:
+    - Win 7   (35138b9a-5d96-4fbd-8e2d-a2440225f93a)
+    - Win 8   (4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38)
+    - Win 8.1 (1f676c76-80e1-4239-95bb-83d0f6d0da78)
+    - Win 10  (8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a)
+  Declaring all four stops Windows from applying the "shim database"
+  workarounds for apps that don't opt out.
+
+  DPI:
+    - PerMonitorV1 is the highest DPI awareness level that still works
+      on Win 7 (V2 requires Win 10 1703+). Win 8.1/10 get per-monitor
+      DPI; Win 7 falls back to system-DPI awareness automatically.
+    - longPathAware is intentionally false: Win 7 does not support
+      long paths even with the manifest, and the scanner enforces the
+      MAX_PATH limit explicitly (see LibraryService).
+-->
+<assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
+  <assemblyIdentity
+      version="2.0.0.0"
+      processorArchitecture="amd64"
+      name="Musicefy.app"/>
+
+  <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+    <security>
+      <requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
+        <requestedExecutionLevel level="asInvoker" uiAccess="false"/>
+      </requestedPrivileges>
+    </security>
+  </trustInfo>
+
+  <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
+    <application>
+      <supportedOS Id="{35138b9a-5d96-4fbd-8e2d-a2440225f93a}"/>
+      <supportedOS Id="{4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38}"/>
+      <supportedOS Id="{1f676c76-80e1-4239-95bb-83d0f6d0da78}"/>
+      <supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}"/>
+    </application>
+  </compatibility>
+
+  <application xmlns="urn:schemas-microsoft-com:asm.v3">
+    <windowsSettings>
+      <dpiAware xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">true/pm</dpiAware>
+      <dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitorV1</dpiAwareness>
+      <longPathAware xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">false</longPathAware>
+    </windowsSettings>
+  </application>
+</assembly>

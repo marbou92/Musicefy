@@ -1,0 +1,14 @@
+// musicefy.rc
+// Windows resources for the musicefy.exe.
+//
+// The icon is the same multi-resolution .ico that ships with v1
+// (Musicefy/Assets/musicefy.ico). It contains 16, 32, 48, 64, 128,
+// and 256 px sizes, so it renders correctly in the Explorer list
+// view, the taskbar, and the Alt-Tab switcher.
+//
+// CMake's generator picks the right resource compiler
+// (MSVC's `rc.exe` or MinGW's `windres`) based on the toolchain.
+
+#include <winuser.h>
+
+IDI_ICON1   ICON    DISCARDABLE "musicefy.ico"

@@ -1,0 +1,89 @@
+# ── Build artifacts ─────────────────────────────────────────────────────
+*.exe
+*.dll
+*.so
+*.a
+*.obj
+*.out
+*.o
+*.pdb
+*.ilk
+*.iobj
+*.ipdb
+*.exp
+*.lib
+build/
+bin/
+obj/
+Debug/
+Release/
+x64/
+x86/
+Win32/
+out/
+
+# ── CMake ──────────────────────────────────────────────────────────────
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CMakeSettings.json
+CTestTestfile.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
+!cmake/*.cmake
+Testing/
+_deps/
+install_manifest.txt
+
+# ── Qt / MOC / UIC / RCC ──────────────────────────────────────────────
+moc_*.cpp
+ui_*.h
+qrc_*.cpp
+*.qmlc
+*.jsc
+
+# ── IDE files ──────────────────────────────────────────────────────────
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userprefs
+*.sln.docstates
+*.aps
+*.ncb
+*.DotSettings
+*.sln.iml
+
+# ── OS files ───────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Icon?
+desktop.ini
+
+# ── Logs ───────────────────────────────────────────────────────────────
+*.log
+
+# ── Temporary / cache ─────────────────────────────────────────────────
+*.tmp
+*.temp
+*.bak
+*.cache
+*.jar
+
+# ── NuGet (for C++/WinRT FetchContent) ────────────────────────────────
+packages/
+*.nupkg
+
+# ── Benchmark / perf ──────────────────────────────────────────────────
+BenchmarkDotNet.Artifacts/
+
+# ── Transition temp files (migration scripts) ─────────────────────────
+compare*.bat
+compare*.txt
+musfiles.txt
+srcfiles.txt
+src_nested_files.txt
+src_root_files.txt
