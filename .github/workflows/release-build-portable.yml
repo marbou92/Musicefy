@@ -14,6 +14,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Qt
+        id: install-qt
         uses: jurplel/install-qt-action@v3
         with:
           version: '5.15.2'
@@ -21,10 +22,40 @@ jobs:
           target: 'desktop'
           arch: 'win64_msvc2019_64'
 
-      - name: Run Build Portable script
+      - name: Configure CMake
         shell: cmd
         run: |
-          call scripts\build-portable.bat "${{ env.QT_PATH }}\bin"
+          cmake -G "Visual Studio 17 2022" -A x64 ^
+            -DCMAKE_PREFIX_PATH="${{ steps.install-qt.outputs.qt-path }}" ^
+            -S . -B build
+
+      - name: Build Release
+        shell: cmd
+        run: |
+          cmake --build build --config Release --parallel
+
+      - name: Run windeployqt
+        shell: cmd
+        run: |
+          "${{ steps.install-qt.outputs.qt-path }}\bin\windeployqt.exe" ^
+            --release ^
+            --no-translations ^
+            --no-system-d3d-compiler ^
+            --no-opengl-sw ^
+            --verbose 1 ^
+            build\bin\Release\musicefy.exe
+
+      - name: Copy SQL driver plugins
+        shell: cmd
+        run: |
+          if not exist "build\bin\Release\sqldrivers" mkdir "build\bin\Release\sqldrivers"
+          copy /Y "${{ steps.install-qt.outputs.qt-path }}\plugins\sqldrivers\qsqlite.dll" "build\bin\Release\sqldrivers\" >nul 2>&1
+
+      - name: Copy database migrations
+        shell: cmd
+        run: |
+          if not exist "build\bin\Release\migrations" mkdir "build\bin\Release\migrations"
+          copy /Y "src\core\database\migrations\*" "build\bin\Release\migrations\" >nul 2>&1
 
       - name: Sign release binary
         if: env.SIGN_CERT_FILE != ''
