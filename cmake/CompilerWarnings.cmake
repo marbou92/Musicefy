@@ -20,6 +20,7 @@ if(MSVC)
     endif()
 
     # Disable some noisy warnings:
+    # 4100: unreferenced formal parameter (common in callback-heavy Qt code)
     # 4127: conditional expression is constant
     # 4244: conversion from 'X' to 'Y', possible loss of data
     # 4251: 'X' needs to have dll-interface to be used by clients
@@ -30,6 +31,7 @@ if(MSVC)
     # 4820: padding added after data member
     # 5039: exception throws in extern "C" functions
     set(MUSICEFY_WARNINGS_DISABLE
+        4100
         4127
         4244
         4251
@@ -59,6 +61,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
         -Wold-style-cast
         -Wcast-align
         -Wunused
+        -Wno-unused-parameter
         -Woverloaded-virtual
         -Wconversion
         -Wsign-conversion

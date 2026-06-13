@@ -118,7 +118,7 @@ void CoverImage::resizeEvent(QResizeEvent* e) {
 void CoverImage::startAsyncLoad(const QUrl& url, quint64 requestId) {
     QPointer<CoverImage> self(this);
     loader_(url, [self, requestId](QByteArray bytes,
-                                   QString contentType,
+                                   QString /*contentType*/,
                                    QString error) {
         // The widget may have been destroyed (or the request
         // superseded by a newer setSource) between dispatch and
