@@ -22,19 +22,11 @@ jobs:
           target: 'desktop'
           arch: 'win64_msvc2019_64'
 
-      - name: Set Qt path
-        id: qt-path
-        shell: pwsh
-        run: |
-          $qtPath = "${{ steps.install-qt.outputs.qt-path }}"
-          Write-Host "Qt path: $qtPath"
-          "QT_DIR=$qtPath" | Out-File -Append -FilePath $env:GITHUB_ENV
-
       - name: Configure CMake
         shell: cmd
         run: |
           cmake -G "Visual Studio 17 2022" -A x64 ^
-            -DCMAKE_PREFIX_PATH="%QT_DIR%" ^
+            -DCMAKE_PREFIX_PATH="${{ steps.install-qt.outputs.qt-path }}" ^
             -S . -B build
 
       - name: Build Release
@@ -42,38 +34,33 @@ jobs:
         run: |
           cmake --build build --config Release --parallel
 
-      - name: Run windeployqt
-        shell: cmd
-        run: |
-          "%QT_DIR%\bin\windeployqt.exe" ^
-            --release ^
-            --no-translations ^
-            --no-system-d3d-compiler ^
-            --no-opengl-sw ^
-            --verbose 1 ^
-            build\bin\Release\musicefy.exe
-
-      - name: Copy SQL driver plugins
-        shell: cmd
-        run: |
-          if not exist "build\bin\Release\sqldrivers" mkdir "build\bin\Release\sqldrivers"
-          copy /Y "%QT_DIR%\plugins\sqldrivers\qsqlite.dll" "build\bin\Release\sqldrivers\" >nul 2>&1
-
-      - name: Copy database migrations
-        shell: cmd
-        run: |
-          if not exist "build\bin\Release\migrations" mkdir "build\bin\Release\migrations"
-          copy /Y "src\core\database\migrations\*" "build\bin\Release\migrations\" >nul 2>&1
-
-      - name: Create ZIP of portable folder
+      - name: Run windeployqt and package
         shell: pwsh
         run: |
-          $out = Join-Path $PWD 'build\bin\Release'
+          $qtPath = "${{ steps.install-qt.outputs.qt-path }}"
+          $deployExe = Join-Path $qtPath "bin\windeployqt.exe"
+          Write-Host "Qt path: $qtPath"
+          Write-Host "windeployqt: $deployExe"
+
+          & $deployExe --release --no-translations --no-system-d3d-compiler --no-opengl-sw --verbose 1 build\bin\Release\musicefy.exe
+
+          # Copy SQL driver plugins
+          $sqldrivers = "build\bin\Release\sqldrivers"
+          New-Item -ItemType Directory -Path $sqldrivers -Force | Out-Null
+          Copy-Item (Join-Path $qtPath "plugins\sqldrivers\qsqlite.dll") $sqldrivers -Force
+
+          # Copy database migrations
+          $migrations = "build\bin\Release\migrations"
+          New-Item -ItemType Directory -Path $migrations -Force | Out-Null
+          Copy-Item "src\core\database\migrations\*" $migrations -Force
+
+          # Create portable folder
           $portable = Join-Path $PWD 'Musicefy-Portable'
           if (Test-Path $portable) { Remove-Item -Recurse -Force $portable }
           New-Item -ItemType Directory -Path $portable | Out-Null
-          Copy-Item -Path (Join-Path $out '*') -Destination $portable -Recurse -Force
+          Copy-Item -Path "build\bin\Release\*" -Destination $portable -Recurse -Force
 
+          # Create ZIP
           $zip = Join-Path $PWD 'Musicefy-Portable.zip'
           if (Test-Path $zip) { Remove-Item $zip -Force }
           Add-Type -AssemblyName System.IO.Compression.FileSystem
