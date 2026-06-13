@@ -170,7 +170,7 @@ void SubsonicSession::searchTracks(QString query, int limit,
     });
 }
 
-void SubsonicSession::fetchStreamUrl(QString trackId, StringCallback onDone, StringCallback onError) {
+void SubsonicSession::fetchStreamUrl(QString trackId, StringCallback onDone, StringCallback /*onError*/) {
     // Subsonic stream URLs are stateless: anyone with credentials can fetch
     // the audio. We return a pre-signed URL the player can use directly.
     QString url = buildAuthedUrl(QStringLiteral("stream"), {{QStringLiteral("id"), trackId}});
@@ -377,7 +377,7 @@ void SubsonicSession::updatePlaylist(QString id, QString name, QStringList track
                                                  : QStringLiteral("false")},
     };
     getJson(QStringLiteral("updatePlaylist"), params,
-            [onDone](QJsonObject obj, QString err) {
+            [onDone](QJsonObject /*obj*/, QString err) {
         // Subsonic returns an empty body on success. We pass the
         // (possibly-empty) Playlist list back so the caller can
         // distinguish success vs error.
