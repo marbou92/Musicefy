@@ -192,7 +192,7 @@ int main(int argc, char* argv[]) {
         splash->startAnimation();
         splash->setProgress(10);
         splash->setMessage(QStringLiteral("Initializing\u2026"));
-        app.processEvents();
+        splash->repaint();
     }
 
     // ── Container Build + Lifecycle ────────────────────────────────
@@ -201,7 +201,7 @@ int main(int argc, char* argv[]) {
         if (splash) {
             splash->setProgress(20);
             splash->setMessage(QStringLiteral("Building services\u2026"));
-            app.processEvents();
+            splash->repaint();
         }
 
         mf::app::AppContainer container;
@@ -211,7 +211,7 @@ int main(int argc, char* argv[]) {
             splash->stopAnimation();
             splash->setProgress(60);
             splash->setMessage(QStringLiteral("Starting services\u2026"));
-            app.processEvents();
+            splash->repaint();
         }
 
         mf::app::AppLifecycle lifecycle(container);
@@ -220,7 +220,7 @@ int main(int argc, char* argv[]) {
         if (splash) {
             splash->setProgress(90);
             splash->setMessage(QStringLiteral("Loading interface\u2026"));
-            app.processEvents();
+            splash->repaint();
         }
 
         exitCode = 0;
@@ -246,7 +246,7 @@ int main(int argc, char* argv[]) {
             if (splash) {
                 splash->setProgress(100);
                 splash->setMessage(QStringLiteral("Ready"));
-                app.processEvents();
+                splash->repaint();
             }
 
             mf::app::MainWindow window(container);
