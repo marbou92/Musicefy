@@ -8,11 +8,19 @@
 //                   CI smoke tests that just want to exercise the
 //                   container graph.
 //   --exit-after=N  exit cleanly after N seconds. Used by smoke tests.
+//
+// Crash / error logging:
+//   All errors, warnings, and fatal crashes are logged to:
+//     %LOCALAPPDATA%/Musicefy/error.log
+//   Hard crashes (SIGSEGV, etc.) are caught by platform signal handlers
+//   that write a stack trace to the same file before aborting.
 
 #include "AppContainer.h"
 #include "AppLifecycle.h"
 #include "MainWindow.h"
 #include "widgets/SplashScreen.h"
+#include "../core/services/CrashLogger.h"
+#include "../core/services/StackTrace.h"
 
 #include <QApplication>
 #include <QCommandLineParser>
@@ -21,9 +29,89 @@
 #include <QTimer>
 #include <exception>
 
+#include <csignal>
+
+#ifdef Q_OS_WIN
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <windows.h>   // SetUnhandledExceptionFilter, EXCEPTION_POINTERS
+#endif
+
 #if defined(MUSICEFY_ENABLE_WINRT_SRTC) && defined(Q_OS_WIN)
 #  include <winrt/base.h>
 #endif
+
+// ── Crash / Signal Handlers ───────────────────────────────────────────────
+//
+// These run outside the Qt event loop, so they only use async-signal-safe
+// or mutex-protected calls. The goal is to write a stack trace to
+// error.log before the process terminates.
+
+namespace {
+
+void signalHandler(int sig) {
+    auto& log = mf::core::services::CrashLogger::instance();
+
+    const char* name = "UNKNOWN";
+    switch (sig) {
+        case SIGSEGV: name = "SIGSEGV (segmentation fault)"; break;
+        case SIGABRT: name = "SIGABRT (abort)";              break;
+        case SIGFPE:  name = "SIGFPE (floating-point error)"; break;
+        case SIGILL:  name = "SIGILL (illegal instruction)";  break;
+#ifdef Q_OS_WIN
+        case SIGBREAK: name = "SIGBREAK (Ctrl+Break)";       break;
+#endif
+    }
+
+    log.writeSignal(name);
+    log.write(mf::core::services::captureStackTrace());
+    log.flush();
+
+    // Re-raise with default handler so the OS generates a crash dump.
+    std::signal(sig, SIG_DFL);
+    std::raise(sig);
+}
+
+#ifdef Q_OS_WIN
+LONG WINAPI sehHandler(EXCEPTION_POINTERS* info) {
+    auto& log = mf::core::services::CrashLogger::instance();
+
+    const char* name = "UNKNOWN";
+    if (info && info->ExceptionRecord) {
+        switch (info->ExceptionRecord->ExceptionCode) {
+            case EXCEPTION_ACCESS_VIOLATION:     name = "ACCESS_VIOLATION (0xC0000005)"; break;
+            case EXCEPTION_STACK_OVERFLOW:       name = "STACK_OVERFLOW (0xC00000FD)";   break;
+            case EXCEPTION_INT_DIVIDE_BY_ZERO:   name = "INT_DIVIDE_BY_ZERO";           break;
+            case EXCEPTION_FLT_DIVIDE_BY_ZERO:   name = "FLT_DIVIDE_BY_ZERO";           break;
+            case EXCEPTION_ILLEGAL_INSTRUCTION:  name = "ILLEGAL_INSTRUCTION";          break;
+            case EXCEPTION_INVALID_DISPOSITION:  name = "INVALID_DISPOSITION";          break;
+            case EXCEPTION_GUARD_PAGE:           name = "GUARD_PAGE";                   break;
+        }
+    }
+
+    log.writeSignal(name);
+    log.write(mf::core::services::captureStackTrace());
+    log.flush();
+
+    return EXCEPTION_EXECUTE_HANDLER;
+}
+#endif
+
+void installCrashHandlers() {
+    // POSIX signals
+    std::signal(SIGSEGV, signalHandler);
+    std::signal(SIGABRT, signalHandler);
+    std::signal(SIGFPE,  signalHandler);
+    std::signal(SIGILL,  signalHandler);
+#ifdef Q_OS_WIN
+    std::signal(SIGBREAK, signalHandler);
+    // Windows SEH for access violations, stack overflows, etc.
+    SetUnhandledExceptionFilter(sehHandler);
+#endif
+}
+
+} // anonymous namespace
 
 int main(int argc, char* argv[]) {
 #if defined(MUSICEFY_ENABLE_WINRT_SRTC) && defined(Q_OS_WIN)
@@ -35,6 +123,9 @@ int main(int argc, char* argv[]) {
     QCoreApplication::setOrganizationDomain(QStringLiteral("musicefy.local"));
     QCoreApplication::setApplicationName(QStringLiteral("Musicefy"));
     QCoreApplication::setApplicationVersion(QStringLiteral("2.0.0"));
+
+    // ── Install crash signal handlers ────────────────────────────────
+    installCrashHandlers();
 
     QCommandLineParser parser;
     parser.setApplicationDescription(QStringLiteral("Musicefy \u2014 a modern music player for Windows 7+"));
@@ -51,16 +142,26 @@ int main(int argc, char* argv[]) {
     // ── Global Error Handler ─────────────────────────────────────────
     // Route all Qt messages to stderr so they survive the splash screen
     // disappearing and are visible in the console / CI logs.
+    // Also mirror warnings+ to error.log for crash diagnostics.
     qInstallMessageHandler([](QtMsgType type, const QMessageLogContext& ctx,
                               const QString& msg) {
         Q_UNUSED(ctx);
+        const char* prefix = "";
         auto* output = qPrintable(msg);
         switch (type) {
-            case QtDebugMsg:    fprintf(stderr, "[DEBUG] %s\n", output); break;
-            case QtInfoMsg:     fprintf(stderr, "[INFO]  %s\n", output); break;
-            case QtWarningMsg:  fprintf(stderr, "[WARN]  %s\n", output); break;
-            case QtCriticalMsg: fprintf(stderr, "[ERROR] %s\n", output); break;
-            case QtFatalMsg:    fprintf(stderr, "[FATAL] %s\n", output); break;
+            case QtDebugMsg:    fprintf(stderr, "[DEBUG] %s\n", output); prefix = "DEBUG"; break;
+            case QtInfoMsg:     fprintf(stderr, "[INFO]  %s\n", output); prefix = "INFO";  break;
+            case QtWarningMsg:  fprintf(stderr, "[WARN]  %s\n", output); prefix = "WARN";  break;
+            case QtCriticalMsg: fprintf(stderr, "[ERROR] %s\n", output); prefix = "ERROR"; break;
+            case QtFatalMsg:    fprintf(stderr, "[FATAL] %s\n", output); prefix = "FATAL"; break;
+        }
+        // Mirror warnings, errors, and fatals to the persistent log file.
+        if (type >= QtWarningMsg) {
+            mf::core::services::CrashLogger::instance().write(
+                QStringLiteral("[%1] %2").arg(QString::fromLatin1(prefix)).arg(msg));
+        }
+        if (type == QtFatalMsg) {
+            mf::core::services::CrashLogger::instance().flush();
         }
     });
 
@@ -158,6 +259,12 @@ int main(int argc, char* argv[]) {
         lifecycle.shutdown();
 
     } catch (const std::exception& ex) {
+        // Log the exception with full stack trace before showing UI.
+        mf::core::services::CrashLogger::instance().writeException(ex);
+        mf::core::services::CrashLogger::instance().write(
+            mf::core::services::captureStackTrace());
+        mf::core::services::CrashLogger::instance().flush();
+
         // Clean up the splash screen so the error dialog is visible.
         if (splash) {
             splash->stopAnimation();
@@ -165,22 +272,35 @@ int main(int argc, char* argv[]) {
             delete splash;
             splash = nullptr;
         }
+
+        const QString logPath = mf::core::services::CrashLogger::instance().logFilePath();
         QMessageBox::critical(nullptr,
             QStringLiteral("Musicefy \u2014 Error"),
-            QStringLiteral("An error occurred during startup:\n\n%1")
-                .arg(QString::fromUtf8(ex.what())));
+            QStringLiteral("An error occurred during startup:\n\n%1\n\n"
+                           "Details have been logged to:\n%2")
+                .arg(QString::fromUtf8(ex.what()))
+                .arg(logPath));
         exitCode = 1;
     } catch (...) {
+        mf::core::services::CrashLogger::instance().write(
+            QStringLiteral("Unknown exception (catch ...)"));
+        mf::core::services::CrashLogger::instance().write(
+            mf::core::services::captureStackTrace());
+        mf::core::services::CrashLogger::instance().flush();
+
         if (splash) {
             splash->stopAnimation();
             splash->close();
             delete splash;
             splash = nullptr;
         }
+
+        const QString logPath = mf::core::services::CrashLogger::instance().logFilePath();
         QMessageBox::critical(nullptr,
             QStringLiteral("Musicefy \u2014 Error"),
             QStringLiteral("An unknown error occurred during startup.\n\n"
-                           "Check the debug console for details."));
+                           "Details have been logged to:\n%1")
+                .arg(logPath));
         exitCode = 1;
     }
 

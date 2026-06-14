@@ -74,6 +74,7 @@ set(MUSICEFY_CORE_SOURCES
     services/EqualizerService.cpp
     services/ExtensionRepoService.cpp
     services/YouTubeThumbnailHelper.cpp
+    services/CrashLogger.cpp
 )
 
 set(MUSICEFY_CORE_HEADERS
@@ -164,6 +165,7 @@ set(MUSICEFY_CORE_HEADERS
     services/EqualizerService.h
     services/ExtensionRepoService.h
     services/YouTubeThumbnailHelper.h
+    services/CrashLogger.h
 )
 
 add_library(musicefy_core STATIC
@@ -191,6 +193,11 @@ target_link_libraries(musicefy_core PUBLIC
     Qt5::Network
     Qt5::Qml
 )
+
+# Windows: link DbgHelp for StackTrace symbol resolution.
+if(WIN32)
+    target_link_libraries(musicefy_core PUBLIC dbghelp)
+endif()
 
 # Optional C++/WinRT linkage (MUSICEFY_ENABLE_WINRT_SRTC).
 # Pulls in runtimeobject.lib (RoInitialize, RoUninitialize, etc.) and the
