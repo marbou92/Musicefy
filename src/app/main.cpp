@@ -118,14 +118,19 @@ int main(int argc, char* argv[]) {
     winrt::init_apartment(winrt::apartment_type::multi_threaded);
 #endif
 
+    // ── Install crash signal handlers FIRST ─────────────────────────
+    // Must be before QApplication so hard crashes (SIGSEGV etc.) are
+    // caught even if the crash happens during Qt initialization.
+    installCrashHandlers();
+    // Force-initialize the logger + write a session marker.
+    mf::core::services::CrashLogger::instance().write(
+        QStringLiteral("main() — crash handlers installed, argc=%1").arg(argc));
+
     QApplication app(argc, argv);
     QCoreApplication::setOrganizationName(QStringLiteral("Musicefy"));
     QCoreApplication::setOrganizationDomain(QStringLiteral("musicefy.local"));
     QCoreApplication::setApplicationName(QStringLiteral("Musicefy"));
     QCoreApplication::setApplicationVersion(QStringLiteral("2.0.0"));
-
-    // ── Install crash signal handlers ────────────────────────────────
-    installCrashHandlers();
 
     QCommandLineParser parser;
     parser.setApplicationDescription(QStringLiteral("Musicefy \u2014 a modern music player for Windows 7+"));
@@ -155,8 +160,8 @@ int main(int argc, char* argv[]) {
             case QtCriticalMsg: fprintf(stderr, "[ERROR] %s\n", output); prefix = "ERROR"; break;
             case QtFatalMsg:    fprintf(stderr, "[FATAL] %s\n", output); prefix = "FATAL"; break;
         }
-        // Mirror warnings, errors, and fatals to the persistent log file.
-        if (type >= QtWarningMsg) {
+        // Mirror info, warnings, errors, and fatals to the persistent log file.
+        if (type >= QtInfoMsg) {
             mf::core::services::CrashLogger::instance().write(
                 QStringLiteral("[%1] %2").arg(QString::fromLatin1(prefix)).arg(msg));
         }
@@ -274,12 +279,14 @@ int main(int argc, char* argv[]) {
         }
 
         const QString logPath = mf::core::services::CrashLogger::instance().logFilePath();
+        const QString fbPath  = mf::core::services::CrashLogger::instance().fallbackLogPath();
         QMessageBox::critical(nullptr,
             QStringLiteral("Musicefy \u2014 Error"),
             QStringLiteral("An error occurred during startup:\n\n%1\n\n"
-                           "Details have been logged to:\n%2")
+                           "Details have been logged to:\n%2\nAlso: %3")
                 .arg(QString::fromUtf8(ex.what()))
-                .arg(logPath));
+                .arg(logPath)
+                .arg(fbPath));
         exitCode = 1;
     } catch (...) {
         mf::core::services::CrashLogger::instance().write(
@@ -296,11 +303,13 @@ int main(int argc, char* argv[]) {
         }
 
         const QString logPath = mf::core::services::CrashLogger::instance().logFilePath();
+        const QString fbPath  = mf::core::services::CrashLogger::instance().fallbackLogPath();
         QMessageBox::critical(nullptr,
             QStringLiteral("Musicefy \u2014 Error"),
             QStringLiteral("An unknown error occurred during startup.\n\n"
-                           "Details have been logged to:\n%1")
-                .arg(logPath));
+                           "Details have been logged to:\n%1\nAlso: %2")
+                .arg(logPath)
+                .arg(fbPath));
         exitCode = 1;
     }
 

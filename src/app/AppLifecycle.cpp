@@ -42,6 +42,7 @@ AppLifecycle::~AppLifecycle() {
 void AppLifecycle::start() {
     if (started_) return;
 
+    qInfo() << "AppLifecycle::start() — resolving services...";
     auto playback = container_.playback();
     auto queue    = container_.queue();
     auto smtc     = container_.smtc();
@@ -53,6 +54,14 @@ void AppLifecycle::start() {
     Q_UNUSED(mgr);
     Q_UNUSED(theme);
 
+    // ── Null-service diagnostics ───────────────────────────────────
+    // If any core service is null, log it (to error.log) and bail
+    // instead of segfaulting on a connect() call.
+    if (!playback) { qCritical() << "AppLifecycle::start() FATAL: playback is null"; return; }
+    if (!queue)    { qCritical() << "AppLifecycle::start() FATAL: queue is null";    return; }
+    if (!smtc)     { qCritical() << "AppLifecycle::start() FATAL: smtc is null";     return; }
+
+    qInfo() << "AppLifecycle::start() — wiring queue → playback";
     // Wire queue → playback: when the current track changes, load it
     // into the player.
     QObject::connect(queue.get(), &QueueManager::indexChangedQ,
@@ -63,12 +72,14 @@ void AppLifecycle::start() {
         }
     });
 
+    qInfo() << "AppLifecycle::start() — wiring queue → SMTC";
     // Wire queue → SMTC: title/artist/album updates ride along.
     QObject::connect(queue.get(), &QueueManager::indexChangedQ,
                      this, [smtc, queue](int) {
         smtc->updateMetadata(queue->currentTrack());
     });
 
+    qInfo() << "AppLifecycle::start() — wiring playback → SMTC";
     // Wire playback state → SMTC.
     QObject::connect(playback.get(), &PlaybackService::stateChangedQ,
                      this, [smtc](int state) {
@@ -77,6 +88,7 @@ void AppLifecycle::start() {
                                    false);
     });
 
+    qInfo() << "AppLifecycle::start() — wiring playback position → SMTC";
     // Wire playback position → SMTC. Throttled to 1 Hz because the OS
     // only refreshes the lock-screen progress bar that often anyway.
     if (smtc) {
@@ -96,6 +108,7 @@ void AppLifecycle::start() {
         timelineTimer->start();
     }
 
+    qInfo() << "AppLifecycle::start() — wiring SMTC commands";
     // OS-originated SMTC commands → playback/queue. On Windows 8+ the
     // SMTC surface (lock screen, volume flyout, Cortana, media keys) is
     // the canonical entry point for media commands while the app is in
@@ -103,17 +116,21 @@ void AppLifecycle::start() {
     // — hardware keys are still picked up by MediaKeyFilter.
     wireSmtc();
 
+    qInfo() << "AppLifecycle::start() — restoring persisted queue";
     // Restore persisted queue from last session.
     queue->restore();
 
+    qInfo() << "AppLifecycle::start() — wiring media keys";
     // Wire media keys to playback actions.
     wireMediaKeys();
 
+    qInfo() << "AppLifecycle::start() — starting health check";
     // Start the periodic health check loop.
     if (health) {
         health->start();
     }
 
+    qInfo() << "AppLifecycle::start() — wiring library → toast notifications";
     // ── Library scan → toast notifications ───────────────────────────
     // The user sees a live "Scanning…" toast while a scan runs, then
     // a success/warning toast when it finishes.
@@ -141,6 +158,7 @@ void AppLifecycle::start() {
         });
     }
 
+    qInfo() << "AppLifecycle::start() — all services wired OK";
     started_ = true;
 }
 

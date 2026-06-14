@@ -1,4 +1,4 @@
-﻿// AppContainer.cpp
+// AppContainer.cpp
 // Composition root implementation.
 
 #include "AppContainer.h"
@@ -47,6 +47,7 @@
 #include "viewmodels/SearchViewModel.h"
 
 #include <QCoreApplication>
+#include <QDebug>
 
 namespace mf::app {
 
@@ -63,8 +64,10 @@ void AppContainer::build() {
     if (built_) return;
 
     auto& s = *services_;
+    qInfo() << "AppContainer::build() — start";
 
     // ── Database ───────────────────────────────────────────────────────
+    qInfo() << "AppContainer::build() — registering Database";
     s.registerFactory<mf::core::database::Database, mf::core::database::Database>(
         []() -> std::shared_ptr<mf::core::database::Database> {
             auto db = std::make_shared<mf::core::database::Database>(
@@ -75,6 +78,7 @@ void AppContainer::build() {
     );
 
     // ── Library repository (depends on Database) ───────────────────────
+    qInfo() << "AppContainer::build() — registering LibraryRepository";
     s.registerFactory<mf::core::database::LibraryRepository,
                       mf::core::database::LibraryRepository>(
         [this]() -> std::shared_ptr<mf::core::database::LibraryRepository> {
@@ -83,20 +87,24 @@ void AppContainer::build() {
     );
 
     // ── HTTP client (shared by all streaming providers) ────────────────
+    qInfo() << "AppContainer::build() — registering HttpClient";
     s.registerType<mf::core::sources::HttpClient,
                    mf::core::sources::HttpClient>(ServiceCollection::Lifetime::Singleton);
 
     // ── Streaming source manager (registry of providers) ───────────────
+    qInfo() << "AppContainer::build() — registering StreamingSourceManager";
     s.registerType<mf::core::sources::StreamingSourceManager,
                    mf::core::sources::StreamingSourceManager>(ServiceCollection::Lifetime::Singleton);
 
     // ── Providers ──────────────────────────────────────────────────────
+    qInfo() << "AppContainer::build() — registering SubsonicProvider";
     s.registerFactory<mf::core::sources::SubsonicProvider,
                       mf::core::sources::SubsonicProvider>(
         [this]() -> std::shared_ptr<mf::core::sources::SubsonicProvider> {
             return std::make_shared<mf::core::sources::SubsonicProvider>(http().get());
         }
     );
+    qInfo() << "AppContainer::build() — registering YouTubeProvider";
     s.registerFactory<mf::core::sources::YouTubeProvider,
                       mf::core::sources::YouTubeProvider>(
         [this]() -> std::shared_ptr<mf::core::sources::YouTubeProvider> {
@@ -105,52 +113,66 @@ void AppContainer::build() {
     );
 
     // ── Playback ───────────────────────────────────────────────────────
+    qInfo() << "AppContainer::build() — registering PlaybackService";
     s.registerType<mf::core::playback::PlaybackService,
                    mf::core::playback::PlaybackService>(ServiceCollection::Lifetime::Singleton);
+    qInfo() << "AppContainer::build() — registering QueueManager";
     s.registerType<mf::core::playback::QueueManager,
                    mf::core::playback::QueueManager>(ServiceCollection::Lifetime::Singleton);
+    qInfo() << "AppContainer::build() — registering MediaKeyFilter";
     s.registerType<mf::core::playback::MediaKeyFilter,
                    mf::core::playback::MediaKeyFilter>(ServiceCollection::Lifetime::Singleton);
+    qInfo() << "AppContainer::build() — registering SmtcController";
     s.registerType<mf::core::playback::SmtcController,
                    mf::core::playback::SmtcController>(ServiceCollection::Lifetime::Singleton);
 
     // ── Services ───────────────────────────────────────────────────────
+    qInfo() << "AppContainer::build() — registering SettingsControl";
     s.registerType<mf::core::services::SettingsControl,
                    mf::core::services::SettingsControl>(ServiceCollection::Lifetime::Singleton);
+    qInfo() << "AppContainer::build() — registering SearchHistoryService";
     s.registerFactory<mf::core::services::SearchHistoryService,
                       mf::core::services::SearchHistoryService>(
         [this]() -> std::shared_ptr<mf::core::services::SearchHistoryService> {
             return std::make_shared<mf::core::services::SearchHistoryService>(library().get());
         }
     );
+    qInfo() << "AppContainer::build() — registering HealthCheckService";
     s.registerFactory<mf::core::services::HealthCheckService,
                       mf::core::services::HealthCheckService>(
         [this]() -> std::shared_ptr<mf::core::services::HealthCheckService> {
             return std::make_shared<mf::core::services::HealthCheckService>(sourceManager().get(), nullptr);
         }
     );
+    qInfo() << "AppContainer::build() — registering BrowseService";
     s.registerFactory<mf::core::services::BrowseService,
                       mf::core::services::BrowseService>(
         [this]() -> std::shared_ptr<mf::core::services::BrowseService> {
             return std::make_shared<mf::core::services::BrowseService>(sourceManager().get(), nullptr);
         }
     );
+    qInfo() << "AppContainer::build() — registering ExtensionManager";
     s.registerType<mf::core::services::ExtensionManager,
                    mf::core::services::ExtensionManager>(ServiceCollection::Lifetime::Singleton);
+    qInfo() << "AppContainer::build() — registering DownloadService";
     s.registerType<mf::core::services::DownloadService,
                    mf::core::services::DownloadService>(ServiceCollection::Lifetime::Singleton);
+    qInfo() << "AppContainer::build() — registering LibraryService";
     s.registerFactory<mf::core::services::LibraryService,
                       mf::core::services::LibraryService>(
         [this]() -> std::shared_ptr<mf::core::services::LibraryService> {
             return std::make_shared<mf::core::services::LibraryService>(library().get());
         }
     );
+    qInfo() << "AppContainer::build() — registering NavigationService";
     s.registerType<mf::core::services::NavigationService,
                    mf::core::services::NavigationService>(ServiceCollection::Lifetime::Singleton);
+    qInfo() << "AppContainer::build() — registering ToastService";
     s.registerType<mf::core::services::ToastService,
                    mf::core::services::ToastService>(ServiceCollection::Lifetime::Singleton);
 
     // ── Sleep timer (depends on PlaybackService) ──────────────────────
+    qInfo() << "AppContainer::build() — registering SleepTimer";
     s.registerFactory<mf::core::services::SleepTimer,
                       mf::core::services::SleepTimer>(
         [this]() -> std::shared_ptr<mf::core::services::SleepTimer> {
@@ -160,6 +182,7 @@ void AppContainer::build() {
     );
 
     // ── Image cache + artwork enrichment ───────────────────────────────
+    qInfo() << "AppContainer::build() — registering ImageCache";
     s.registerFactory<mf::core::services::ImageCache,
                       mf::core::services::ImageCache>(
         [this]() -> std::shared_ptr<mf::core::services::ImageCache> {
@@ -167,6 +190,7 @@ void AppContainer::build() {
                 http().get());
         }
     );
+    qInfo() << "AppContainer::build() — registering ArtworkEnrichment";
     s.registerFactory<mf::core::services::ArtworkEnrichment,
                       mf::core::services::ArtworkEnrichment>(
         [this]() -> std::shared_ptr<mf::core::services::ArtworkEnrichment> {
@@ -176,6 +200,7 @@ void AppContainer::build() {
     );
 
     // ── Lyrics service (depends on HttpClient) ────────────────────────
+    qInfo() << "AppContainer::build() — registering LyricsService";
     s.registerFactory<mf::core::services::LyricsService,
                       mf::core::services::LyricsService>(
         [this]() -> std::shared_ptr<mf::core::services::LyricsService> {
@@ -185,6 +210,7 @@ void AppContainer::build() {
     );
 
     // ── Scrobble service (depends on HttpClient + SettingsControl) ────
+    qInfo() << "AppContainer::build() — registering ScrobbleService";
     s.registerFactory<mf::core::services::ScrobbleService,
                       mf::core::services::ScrobbleService>(
         [this]() -> std::shared_ptr<mf::core::services::ScrobbleService> {
@@ -194,6 +220,7 @@ void AppContainer::build() {
     );
 
     // ── Artist/Album service (depends on LibraryRepository + BrowseService) ──
+    qInfo() << "AppContainer::build() — registering ArtistAlbumService";
     s.registerFactory<mf::core::services::ArtistAlbumService,
                       mf::core::services::ArtistAlbumService>(
         [this]() -> std::shared_ptr<mf::core::services::ArtistAlbumService> {
@@ -203,14 +230,17 @@ void AppContainer::build() {
     );
 
     // ── ReplayGain service (standalone, reads tags from files) ────────
+    qInfo() << "AppContainer::build() — registering ReplayGainService";
     s.registerType<mf::core::services::ReplayGainService,
                    mf::core::services::ReplayGainService>(ServiceCollection::Lifetime::Singleton);
 
     // ── Equalizer service (standalone, preset-based EQ) ──────────────
+    qInfo() << "AppContainer::build() — registering EqualizerService";
     s.registerType<mf::core::services::EqualizerService,
                    mf::core::services::EqualizerService>(ServiceCollection::Lifetime::Singleton);
 
     // ── Extension repo service (fetches manifests from remote repos) ──
+    qInfo() << "AppContainer::build() — registering ExtensionRepoService";
     s.registerFactory<mf::core::services::ExtensionRepoService,
                       mf::core::services::ExtensionRepoService>(
         [this]() -> std::shared_ptr<mf::core::services::ExtensionRepoService> {
@@ -220,6 +250,7 @@ void AppContainer::build() {
     );
 
     // ── YouTube thumbnail helper (depends on ImageCache) ─────────────
+    qInfo() << "AppContainer::build() — registering YouTubeThumbnailHelper";
     s.registerFactory<mf::core::services::YouTubeThumbnailHelper,
                       mf::core::services::YouTubeThumbnailHelper>(
         [this]() -> std::shared_ptr<mf::core::services::YouTubeThumbnailHelper> {
@@ -229,6 +260,7 @@ void AppContainer::build() {
     );
 
     // ── Theme ──────────────────────────────────────────────────────────
+    qInfo() << "AppContainer::build() — registering ThemeManager";
     s.registerFactory<mf::core::theme::ThemeManager,
                       mf::core::theme::ThemeManager>(
         [this]() -> std::shared_ptr<mf::core::theme::ThemeManager> {
@@ -240,6 +272,7 @@ void AppContainer::build() {
     );
 
     // ── ViewModels ────────────────────────────────────────────────────
+    qInfo() << "AppContainer::build() — registering ViewModels";
     s.registerFactory<mf::app::viewmodels::PlayerViewModel,
                       mf::app::viewmodels::PlayerViewModel>(
         [this]() -> std::shared_ptr<mf::app::viewmodels::PlayerViewModel> {
@@ -311,10 +344,12 @@ void AppContainer::build() {
     );
 
     // ── Register default providers ────────────────────────────────────
+    qInfo() << "AppContainer::build() — registering default providers";
     auto sm = sourceManager();
     sm->registerProvider(s.resolve<mf::core::sources::SubsonicProvider>());
     sm->registerProvider(s.resolve<mf::core::sources::YouTubeProvider>());
 
+    qInfo() << "AppContainer::build() — done";
     built_ = true;
 }
 
@@ -434,4 +469,3 @@ std::shared_ptr<mf::core::services::YouTubeThumbnailHelper> AppContainer::youTub
 }
 
 } // namespace mf::app
-

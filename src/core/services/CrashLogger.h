@@ -36,21 +36,25 @@ public:
     /// Return the full path of the current log file (for UI display).
     QString logFilePath() const;
 
+    /// Return the fallback log path (next to the executable).
+    QString fallbackLogPath() const;
+
 private:
     CrashLogger();
     ~CrashLogger();
     CrashLogger(const CrashLogger&) = delete;
     CrashLogger& operator=(const CrashLogger&) = delete;
 
-    void openLogFile();
+    void openLogFiles();
     void rotateIfNeeded();
     QString timestamp() const;
     QString appDataPath() const;
 
     mutable QMutex mutex_;
-    FILE* file_ = nullptr;
-    QString filePath_;
-    bool opened_ = false;
+    FILE* primaryFile_ = nullptr;
+    FILE* fallbackFile_ = nullptr;
+    QString primaryPath_;
+    QString fallbackPath_;
 };
 
 } // namespace mf::core::services
