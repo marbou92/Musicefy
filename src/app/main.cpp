@@ -208,6 +208,7 @@ int main(int argc, char* argv[]) {
         container.build();
 
         if (splash) {
+            splash->stopAnimation();
             splash->setProgress(60);
             splash->setMessage(QStringLiteral("Starting services\u2026"));
             app.processEvents();

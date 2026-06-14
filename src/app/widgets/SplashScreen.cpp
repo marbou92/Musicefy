@@ -134,23 +134,25 @@ void SplashScreen::onPulse() {
         pulseDirection_ = -1;
     }
 
-    if (logoLabel_) {
-        QPixmap original;
-        // Cache the original logo to avoid re-scaling each frame.
-        static QPixmap cachedOriginal;
-        if (cachedOriginal.isNull()) {
-            cachedOriginal = *logoLabel_->pixmap();
-        }
-        original = cachedOriginal;
-        if (!original.isNull()) {
-            QPixmap faded(original.size());
-            faded.fill(Qt::transparent);
-            QPainter p(&faded);
-            p.setOpacity(pulseOpacity_);
-            p.drawPixmap(0, 0, original);
-            p.end();
-            logoLabel_->setPixmap(faded);
-        }
+    if (!logoLabel_) return;
+
+    const QPixmap* currentPixmap = logoLabel_->pixmap();
+    if (!currentPixmap || currentPixmap->isNull()) return;
+
+    // Cache the original (non-faded) logo to avoid re-scaling each frame.
+    if (cachedOriginal_.isNull()) {
+        cachedOriginal_ = *currentPixmap;
+    }
+    if (cachedOriginal_.isNull()) return;
+
+    QPixmap faded(cachedOriginal_.size());
+    faded.fill(Qt::transparent);
+    QPainter p(&faded);
+    if (p.isActive()) {
+        p.setOpacity(pulseOpacity_);
+        p.drawPixmap(0, 0, cachedOriginal_);
+        p.end();
+        logoLabel_->setPixmap(faded);
     }
 }
 

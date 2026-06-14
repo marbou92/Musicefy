@@ -45,6 +45,7 @@ private:
     QLabel*       statusLabel_  = nullptr;
     QProgressBar* progressBar_  = nullptr;
     QTimer*       pulseTimer_   = nullptr;
+    QPixmap       cachedOriginal_;    // non-faded logo, reused each frame
     qreal         pulseOpacity_ = 1.0;
     int           pulseDirection_ = -1;
 };
