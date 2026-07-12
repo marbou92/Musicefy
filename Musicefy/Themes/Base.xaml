@@ -38,10 +38,12 @@
         <Setter Property="UseLayoutRounding" Value="True"/>
         <Setter Property="TextElement.FontFamily" Value="Segoe UI"/>
         <Setter Property="TextElement.FontSize" Value="14"/>
-        <!-- Use WindowStyle="None" WITHOUT AllowsTransparency to keep
-             native window animations (minimize/restore slide effects).
-             The drop shadow is provided by the OS via WindowChrome. -->
-        <Setter Property="WindowStyle" Value="None"/>
+        <!-- Do NOT set WindowStyle="None" — it disables native window
+             animations (minimize/restore slide, snap). WindowChrome alone
+             makes the window borderless while keeping Windows treating
+             it as a standard window with full animation support.
+             GlassFrameThickness="-1" extends the glass frame to the
+             entire window for the native drop shadow. -->
         <Setter Property="ResizeMode" Value="CanResize"/>
         <Setter Property="WindowChrome.WindowChrome">
             <Setter.Value>
