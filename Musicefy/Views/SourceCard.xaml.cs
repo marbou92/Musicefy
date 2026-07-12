@@ -8,7 +8,7 @@ namespace Musicefy.Views
     /// <summary>
     /// Interaction logic for SourceCard.xaml
     /// A UserControl displaying a single source card with health status,
-    /// connection info, and action buttons.
+    /// connection info, action buttons, and home-screen visibility toggle.
     /// </summary>
     public partial class SourceCard : UserControl
     {
@@ -37,7 +37,6 @@ namespace Musicefy.Views
             var items = new List<KeyValuePair<string, string>>();
             foreach (var kvp in vm.Source.Configuration)
             {
-                // Mask password values
                 var value = kvp.Key.ToLowerInvariant().Contains("password")
                     ? "••••••••"
                     : kvp.Value ?? "";
@@ -52,7 +51,17 @@ namespace Musicefy.Views
             var vm = DataContext as SourceViewModel;
             if (vm == null) return;
 
-            // Find the parent SourcesSettingsControl to relay the command
+            // Don't attempt a test if the provider is missing (orphaned source).
+            if (vm.IsProviderMissing)
+            {
+                System.Windows.MessageBox.Show(
+                    "The provider for this source is no longer available. Please remove this source.",
+                    "Provider Missing",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
+            }
+
             var parent = FindParent<SourcesSettingsControl>(this);
             parent?.TestSourceConnection(vm);
         }
@@ -78,6 +87,20 @@ namespace Musicefy.Views
 
             var parent = FindParent<SourcesSettingsControl>(this);
             parent?.RemoveSource(vm);
+        }
+
+        /// <summary>
+        /// Handle the "Show on Home" checkbox toggle.
+        /// Delegates to SourcesSettingsViewModel which persists the setting
+        /// and refreshes all sources of the same type.
+        /// </summary>
+        private void HomeVisibility_Click(object sender, RoutedEventArgs e)
+        {
+            var vm = DataContext as SourceViewModel;
+            if (vm == null) return;
+
+            var parent = FindParent<SourcesSettingsControl>(this);
+            parent?.ToggleHomeVisibility(vm);
         }
 
         private static T FindParent<T>(DependencyObject child) where T : DependencyObject

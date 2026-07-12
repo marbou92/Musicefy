@@ -109,9 +109,8 @@ namespace Musicefy
             services.AddSingleton<IFolderDataProvider>(sp =>
                 new SqliteFolderDataProvider(DatabaseConfig.ConnectionString));
 
-            services.AddSingleton<IExtensionManager>(sp => new ExtensionManagerImpl(sp));
-
-            services.AddSingleton<IMusicSourceProvider, SubsonicSourceProvider>();
+            // Built-in music source providers: Local + YouTube only.
+            // Subsonic and the extension system have been removed.
             // LocalSourceProvider needs ILibraryService and IServiceProvider (for lazy ArtistAlbumService resolution)
             // to avoid circular dependency: ArtistAlbumService -> IStreamingSourceManager -> IMusicSourceProvider -> LocalSourceProvider
             services.AddSingleton<IMusicSourceProvider>(sp => new LocalSourceProvider(
@@ -150,9 +149,6 @@ namespace Musicefy
             services.AddSingleton<LibraryViewModel>();
             services.AddSingleton<AppearanceSettingsViewModel>();
             services.AddSingleton<DownloadsSettingsViewModel>();
-            services.AddTransient<ExtensionsSettingsViewModel>();
-            services.AddTransient<RepositoriesSettingsViewModel>();
-            services.AddTransient<DiscoverSettingsViewModel>();
             services.AddTransient<SourcesSettingsViewModel>();
 
             services.AddSingleton<ArtistAlbumService>();
@@ -163,9 +159,6 @@ namespace Musicefy
             services.AddTransient<PlaylistViewModel>();
 
             _serviceProvider = services.BuildServiceProvider();
-
-            var extManager = _serviceProvider.GetService<IExtensionManager>();
-            extManager?.LoadExtensions();
         }
 
         private async Task InitializeLibraryAsync()

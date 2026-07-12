@@ -8,16 +8,21 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using Microsoft.Extensions.DependencyInjection;
 using Musicefy.Core.Interfaces;
 using Musicefy.Core.Models;
 using Musicefy.Core.Services;
+using Musicefy.Properties;
+using Newtonsoft.Json;
+using static Musicefy.Core.SourceTypes;
 
 namespace Musicefy.ViewModels
 {
     /// <summary>
     /// Main ViewModel for source management.
     /// Provides CRUD operations for streaming sources, connection testing,
-    /// and real-time health status integration.
+    /// real-time health status, and home-screen visibility toggles
+    /// (absorbed from the former Discover settings tab).
     /// </summary>
     public class SourcesSettingsViewModel : INotifyPropertyChanged, IDisposable
     {
@@ -92,7 +97,6 @@ namespace Musicefy.ViewModels
             LoadSources();
             LoadProviders();
 
-            // Subscribe to health check events
             _healthCheckService.SourceHealthChanged += OnSourceHealthChanged;
         }
 
@@ -109,7 +113,6 @@ namespace Musicefy.ViewModels
                 var provider = AvailableProviders.FirstOrDefault(p => p.SourceType == source.Type);
                 var vm = new SourceViewModel(source, provider);
 
-                // Apply current health state if available
                 var healthState = _healthCheckService.GetHealthState(source.Id);
                 if (healthState != null)
                 {
@@ -122,33 +125,16 @@ namespace Musicefy.ViewModels
             OnPropertyChanged(nameof(HasSources));
         }
 
+        /// <summary>
+        /// Load all registered IMusicSourceProvider implementations from DI.
+        /// With the extension system removed, this is always Local + YouTube.
+        /// </summary>
         private void LoadProviders()
         {
-            // AvailableProviders should ONLY contain providers whose extension is
-            // currently installed (i.e. enabled in the IExtensionManager).
-            // Local is always enabled. Subsonic/YouTube show up only after the user
-            // installs them from the Extensions tab. Extension DLLs show up after
-            // the user installs them from the Repositories tab.
-            //
-            // This fixes the bug where the Add Source dialog showed providers whose
-            // extension was not installed.
             AvailableProviders.Clear();
 
             try
             {
-                var extensionManager = App.Services?.GetService(typeof(IExtensionManager)) as IExtensionManager;
-                if (extensionManager != null)
-                {
-                    foreach (var provider in extensionManager.EnabledProviders)
-                    {
-                        AvailableProviders.Add(provider);
-                    }
-                }
-            }
-            catch
-            {
-                // Fallback: if ExtensionManager is unavailable for some reason,
-                // load all DI providers so the dialog is still usable.
                 var providers = App.Services?.GetService(typeof(IEnumerable<IMusicSourceProvider>)) as System.Collections.IEnumerable;
                 if (providers != null)
                 {
@@ -158,16 +144,10 @@ namespace Musicefy.ViewModels
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Re-load providers from the ExtensionManager. Called when the user
-        /// installs/uninstalls an extension on another tab and returns to Sources.
-        /// </summary>
-        public void RefreshProviders()
-        {
-            LoadProviders();
-            OnPropertyChanged(nameof(AvailableProviders));
+            catch
+            {
+                // If DI isn't available yet (designer), leave the list empty.
+            }
         }
 
         private bool CanAddSource() => !IsAddingSource && AvailableProviders.Count > 0;
@@ -196,14 +176,13 @@ namespace Musicefy.ViewModels
                     Configuration = configuration
                 };
 
-                // Map common config fields to legacy properties
                 if (configuration.TryGetValue("url", out var url))
                     source.Url = url;
                 if (configuration.TryGetValue("username", out var username))
                     source.Username = username;
                 if (configuration.TryGetValue("password", out var password))
                     source.Password = password;
-                if (configuration.TryGetValue("folderPath", out var folderPath) && provider.SourceType == "Local")
+                if (configuration.TryGetValue("folderPath", out var folderPath) && provider.SourceType == Local)
                     source.Url = folderPath;
 
                 var result = await _sourceManager.AddSourceAsync(source);
@@ -306,9 +285,82 @@ namespace Musicefy.ViewModels
             source.IsExpanded = !source.IsExpanded;
         }
 
+        /// <summary>
+        /// Toggle whether a source type is shown on the Home screen.
+        /// Persisted via Settings.Default.Discover* properties
+        /// (same keys the former Discover tab used).
+        /// </summary>
+        public void ToggleHomeVisibility(SourceViewModel source)
+        {
+            if (source == null || string.IsNullOrEmpty(source.Type)) return;
+
+            var newValue = !IsHomeEnabled(source.Type);
+            SetHomeEnabled(source.Type, newValue);
+
+            // Refresh the bindable property on all sources of the same type
+            foreach (var s in Sources.Where(s => s.Type == source.Type))
+            {
+                s.RefreshHomeEnabled();
+            }
+        }
+
+        /// <summary>
+        /// Returns true if the given source type should appear on the Home screen.
+        /// </summary>
+        public static bool IsHomeEnabled(string sourceType)
+        {
+            return sourceType switch
+            {
+                Local => Settings.Default.DiscoverLibrary,
+                YouTube => Settings.Default.DiscoverYouTube,
+                Subsonic => Settings.Default.DiscoverSubsonic,
+                _ => GetEnabledExtraSources().Contains(sourceType)
+            };
+        }
+
+        /// <summary>
+        /// Persists the Home-visibility setting for a source type.
+        /// </summary>
+        public static void SetHomeEnabled(string sourceType, bool enabled)
+        {
+            switch (sourceType)
+            {
+                case Local:
+                    Settings.Default.DiscoverLibrary = enabled;
+                    break;
+                case YouTube:
+                    Settings.Default.DiscoverYouTube = enabled;
+                    break;
+                case Subsonic:
+                    Settings.Default.DiscoverSubsonic = enabled;
+                    break;
+                default:
+                    var extra = GetEnabledExtraSources();
+                    if (enabled) extra.Add(sourceType);
+                    else extra.Remove(sourceType);
+                    Settings.Default.DiscoverExtraSources = JsonConvert.SerializeObject(extra.ToList());
+                    break;
+            }
+            Settings.Default.Save();
+        }
+
+        private static HashSet<string> GetEnabledExtraSources()
+        {
+            var json = Settings.Default.DiscoverExtraSources;
+            if (string.IsNullOrEmpty(json)) return new HashSet<string>();
+            try
+            {
+                var list = JsonConvert.DeserializeObject<List<string>>(json);
+                return list != null ? new HashSet<string>(list) : new HashSet<string>();
+            }
+            catch
+            {
+                return new HashSet<string>();
+            }
+        }
+
         private void OnSourceHealthChanged(object sender, SourceHealthEventArgs e)
         {
-            // Update the source VM on the UI thread
             Application.Current?.Dispatcher?.Invoke(() =>
             {
                 var sourceVm = Sources.FirstOrDefault(s => s.Id == e.SourceId);
@@ -353,10 +405,6 @@ namespace Musicefy.ViewModels
 
         #region Delegate Command Implementations
 
-        /// <summary>
-        /// Non-generic delegate command. Named DelegateCommand to avoid collision
-        /// with any RelayCommand that may exist elsewhere in the project.
-        /// </summary>
         private class DelegateCommand : ICommand
         {
             private readonly Action _execute;
@@ -378,9 +426,6 @@ namespace Musicefy.ViewModels
             public void Execute(object parameter) => _execute();
         }
 
-        /// <summary>
-        /// Generic delegate command for typed command parameters.
-        /// </summary>
         private class DelegateCommand<T> : ICommand
         {
             private readonly Action<T> _execute;
@@ -404,5 +449,4 @@ namespace Musicefy.ViewModels
 
         #endregion
     }
-
 }

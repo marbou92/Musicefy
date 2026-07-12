@@ -9,6 +9,7 @@ namespace Musicefy.Views
     /// Main sources settings page control.
     /// Displays a scrollable list of SourceCard controls and provides
     /// an "Add Source" button for adding new sources.
+    /// Also handles home-screen visibility toggles (absorbed from Discover).
     /// </summary>
     public partial class SourcesSettingsControl : UserControl, ISettingsControl
     {
@@ -116,9 +117,19 @@ namespace Musicefy.Views
             }
         }
 
+        /// <summary>
+        /// Toggle home-screen visibility for the source's type.
+        /// Called by SourceCard's "Show on Home" checkbox.
+        /// </summary>
+        public void ToggleHomeVisibility(SourceViewModel source)
+        {
+            _viewModel?.ToggleHomeVisibility(source);
+        }
+
         public void Save()
         {
             // Sources are saved immediately on add/remove.
+            // Home visibility is saved immediately on toggle.
         }
 
         public void Cancel()

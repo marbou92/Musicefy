@@ -1,8 +1,7 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;          // ← ADD THIS
-using System.Windows.Media.Animation;
+using System.Windows.Media;
 using Microsoft.Extensions.DependencyInjection;
 using Musicefy.Core.Interfaces;
 using Musicefy.ViewModels;
@@ -19,9 +18,6 @@ namespace Musicefy.Views
             InitializeComponent();
             this.Loaded += SettingsPage_Loaded;
 
-            // Initialize the default content IMMEDIATELY in the constructor
-            // instead of waiting for the Loaded event. This ensures content
-            // is visible even if Loaded fires late or not at all.
             try
             {
                 ShowAppearance();
@@ -30,14 +26,12 @@ namespace Musicefy.Views
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[SettingsPage] Constructor init failed: {ex.Message}");
-                // Fallback: set a placeholder so the page isn't blank
                 ShowFallbackContent($"Error loading Appearance: {ex.Message}");
             }
         }
 
         private void SettingsPage_Loaded(object sender, System.Windows.RoutedEventArgs e)
         {
-            // Only show appearance if the constructor didn't already do it
             if (_initialLoadPending)
             {
                 _initialLoadPending = false;
@@ -81,40 +75,13 @@ namespace Musicefy.Views
             }
         }
 
-        private void RepositoriesButton_Checked(object sender, System.Windows.RoutedEventArgs e)
-        {
-            if (RepositoriesButton.IsChecked == true)
-            {
-                try { ShowRepositories(); }
-                catch (Exception ex) { ShowFallbackContent($"Error: {ex.Message}"); }
-            }
-        }
-
-        private void DiscoverButton_Checked(object sender, System.Windows.RoutedEventArgs e)
-        {
-            if (DiscoverButton.IsChecked == true)
-            {
-                try { ShowDiscover(); }
-                catch (Exception ex) { ShowFallbackContent($"Error: {ex.Message}"); }
-            }
-        }
-
-        private void ExtensionsButton_Checked(object sender, System.Windows.RoutedEventArgs e)
-        {
-            if (ExtensionsButton.IsChecked == true)
-            {
-                try { ShowExtensions(); }
-                catch (Exception ex) { ShowFallbackContent($"Error: {ex.Message}"); }
-            }
-        }
-
         private void ShowAppearance()
         {
             _appearanceVM = App.Services.GetService<AppearanceSettingsViewModel>();
             var control = new AppearanceSettingsControl();
             if (_appearanceVM != null)
                 control.DataContext = _appearanceVM;
-            AnimateContentChange(control, "Appearance Settings", fromRight: false);
+            AnimateContentChange(control, "Appearance Settings");
         }
 
         private void ShowDownloads()
@@ -123,7 +90,7 @@ namespace Musicefy.Views
             var control = new DownloadsSettingsControl();
             if (vm != null)
                 control.DataContext = vm;
-            AnimateContentChange(control, "Downloads Settings", fromRight: true);
+            AnimateContentChange(control, "Downloads Settings");
         }
 
         private void ShowSources()
@@ -131,36 +98,8 @@ namespace Musicefy.Views
             var vm = App.Services.GetService<SourcesSettingsViewModel>();
             var control = new SourcesSettingsControl();
             if (vm != null)
-            {
-                // Re-load providers each time the Sources tab is shown so the dialog
-                // reflects the latest install/uninstall state of extensions.
-                vm.RefreshProviders();
                 control.Initialize(vm);
-            }
-            AnimateContentChange(control, "Sources Settings", fromRight: true);
-        }
-
-        private void ShowDiscover()
-        {
-            AnimateContentChange(new DiscoverSettingsControl(), "Discover", fromRight: true);
-        }
-
-        private void ShowRepositories()
-        {
-            var vm = App.Services.GetService<RepositoriesSettingsViewModel>();
-            var control = new RepositoriesSettingsControl();
-            if (vm != null)
-                control.DataContext = vm;
-            AnimateContentChange(control, "Extension Repositories", fromRight: true);
-        }
-
-        private void ShowExtensions()
-        {
-            var vm = App.Services.GetService<ExtensionsSettingsViewModel>();
-            var control = new ExtensionsSettingsControl();
-            if (vm != null)
-                control.DataContext = vm;
-            AnimateContentChange(control, "Extensions", fromRight: true);
+            AnimateContentChange(control, "Sources");
         }
 
         private void ShowFallbackContent(string message)
@@ -178,9 +117,8 @@ namespace Musicefy.Views
             };
         }
 
-        private void AnimateContentChange(UserControl newContent, string title, bool fromRight)
+        private void AnimateContentChange(UserControl newContent, string title)
         {
-            // Persist whatever the outgoing panel last set
             if (SettingsContent?.Content is ISettingsControl outgoing)
             {
                 try { outgoing.Save(); }
@@ -193,7 +131,6 @@ namespace Musicefy.Views
             if (SettingsContent == null || SectionTitle == null)
                 return;
 
-            // Instant swap — no animation. Animation was causing lag.
             SettingsContent.Content = newContent;
             SectionTitle.Text = title;
         }

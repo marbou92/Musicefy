@@ -9,7 +9,8 @@ namespace Musicefy.ViewModels
 {
     /// <summary>
     /// Wrapper ViewModel for a single streaming source with UI-friendly properties.
-    /// Provides bindable properties for source health, connection status, and configuration.
+    /// Provides bindable properties for source health, connection status,
+    /// configuration, and home-screen visibility.
     /// </summary>
     public class SourceViewModel : INotifyPropertyChanged
     {
@@ -19,6 +20,7 @@ namespace Musicefy.ViewModels
         private SourceHealthStatus _healthStatus;
         private DateTime? _lastHealthCheck;
         private bool _isHealthy;
+        private bool _isHomeEnabled;
 
         public StreamingSource Source { get; }
         public IMusicSourceProvider Provider { get; }
@@ -29,6 +31,13 @@ namespace Musicefy.ViewModels
         public string IconGlyph => Provider?.IconGlyph ?? "🎵";
         public string DisplayName => Provider?.DisplayName ?? Source?.Type ?? "Unknown";
         public string Description => Provider?.Description ?? "";
+
+        /// <summary>
+        /// True if the provider for this source's type is loaded.
+        /// False for orphaned sources (e.g. Subsonic sources from a previous
+        /// install, after Subsonic was removed from the built-in providers).
+        /// </summary>
+        public bool IsProviderMissing => Provider == null;
 
         public bool IsConnected
         {
@@ -62,6 +71,16 @@ namespace Musicefy.ViewModels
         {
             get => _errorMessage;
             set => SetProperty(ref _errorMessage, value);
+        }
+
+        /// <summary>
+        /// Whether this source's type appears on the Home screen.
+        /// Persisted via SourcesSettingsViewModel.SetHomeEnabled.
+        /// </summary>
+        public bool IsHomeEnabled
+        {
+            get => _isHomeEnabled;
+            set => SetProperty(ref _isHomeEnabled, value);
         }
 
         public SourceHealthStatus HealthStatus
@@ -117,13 +136,13 @@ namespace Musicefy.ViewModels
                 switch (HealthStatus)
                 {
                     case SourceHealthStatus.Healthy:
-                        return "#4CAF50"; // Green
+                        return "#4CAF50";
                     case SourceHealthStatus.Degraded:
-                        return "#FF9800"; // Orange
+                        return "#FF9800";
                     case SourceHealthStatus.Unhealthy:
-                        return "#F44336"; // Red
+                        return "#F44336";
                     case SourceHealthStatus.PermanentlyUnhealthy:
-                        return "#9E9E9E"; // Gray
+                        return "#9E9E9E";
                     default:
                         return "#9E9E9E";
                 }
@@ -154,6 +173,15 @@ namespace Musicefy.ViewModels
             Provider = provider;
             _isHealthy = source.IsConnected;
             _healthStatus = source.IsConnected ? SourceHealthStatus.Healthy : SourceHealthStatus.Unhealthy;
+            _isHomeEnabled = SourcesSettingsViewModel.IsHomeEnabled(source.Type);
+        }
+
+        /// <summary>
+        /// Re-read the IsHomeEnabled value from settings (call after toggling).
+        /// </summary>
+        public void RefreshHomeEnabled()
+        {
+            IsHomeEnabled = SourcesSettingsViewModel.IsHomeEnabled(Type);
         }
 
         public void UpdateHealthState(SourceHealthState healthState)
