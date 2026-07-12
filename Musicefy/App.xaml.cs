@@ -138,9 +138,12 @@ namespace Musicefy
             // Phase 1: Home ViewModel (singleton for state persistence across navigation)
             services.AddSingleton<HomeViewModel>();
 
-            services.AddTransient<HomeControl>();
-            services.AddTransient<SearchControl>();
-            services.AddTransient<LibraryControl>();
+            // Pages are Singleton so they're created once and reused.
+            // Transient caused lag — every navigation created a new page
+            // from scratch (re-parsing XAML, re-loading data, re-decoding images).
+            services.AddSingleton<HomeControl>();
+            services.AddSingleton<SearchControl>();
+            services.AddSingleton<LibraryControl>();
 
             services.AddSingleton<MainViewModel>();
             services.AddSingleton<SearchViewModel>();

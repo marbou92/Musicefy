@@ -19,6 +19,15 @@ namespace Musicefy
         private readonly ILibraryService _libService;
         private bool _isInitializing = true;
 
+        // Cache pages so they're only created once. Creating a new
+        // HomeControl/SearchControl/etc. on every navigation is the
+        // main cause of lag — it re-parses XAML, re-loads data, and
+        // re-decodes all images from scratch.
+        private HomeControl _homePage;
+        private SearchControl _searchPage;
+        private LibraryControl _libraryPage;
+        private SettingsPage _settingsPage;
+
         private NowPlayingControl _nowPlayingView;
         private bool _isDraggingMiniPlayer = false;
         private Point _dragStartPoint;
@@ -137,17 +146,17 @@ namespace Musicefy
             _viewModel.NavigateToPage(index);
             var targetPage = _viewModel.CurrentPage;
 
-            // Fallback: if navigation returned null, create the page directly
+            // Fallback: if navigation returned null, use cached page
             if (targetPage == null)
             {
                 try
                 {
                     targetPage = index switch
                     {
-                        0 => new HomeControl(),
-                        1 => new SearchControl(),
-                        2 => new LibraryControl(),
-                        3 => new SettingsPage(),
+                        0 => _homePage ??= new HomeControl(),
+                        1 => _searchPage ??= new SearchControl(),
+                        2 => _libraryPage ??= new LibraryControl(),
+                        3 => _settingsPage ??= new SettingsPage(),
                         _ => null
                     };
                     _viewModel.CurrentPage = targetPage;
