@@ -1,54 +1,36 @@
-# Fix: Remove White Outline + Add Drop Shadow
+# Fix: Remove Sidebar Line + Restore Window Animations
 
-## File Changed (1)
+## Files Changed (2)
 
 ```
-Musicefy/Themes/Base.xaml
+Musicefy/Themes/Base.xaml       — remove AllowsTransparency, use GlassFrameThickness for shadow
+Musicefy/Views/MainWindow.xaml  — remove border between sidebar and content
 ```
 
-## Root Cause
+## Fix 1: White line between navigation bar and content
 
-The window used `WindowChrome` for a custom title bar but did NOT set `WindowStyle="None"` or `AllowsTransparency="True"`. This means WPF still drew the **default Windows window border** under the custom chrome — a thin white/light-grey line around the entire window edge.
+**Root cause:** The sidebar Border had `BorderBrush="{DynamicResource OutlineBrush}"` with `BorderThickness="0,0,1,0"` — drawing a visible line on the right edge of the sidebar.
 
-Additionally, the window template had `BorderBrush="{DynamicResource BorderBrush}"` with `BorderThickness="1"` — drawing a SECOND visible border line on top of the Windows one.
+**Fix:** Changed to `BorderBrush="Transparent"` + `BorderThickness="0"`.
 
-## Fix (3 changes in Base.xaml)
+## Fix 2: Window animations removed
 
-### 1. Remove the default Windows border
-Added to `EchoCustomWindowStyle`:
-```xml
-<Setter Property="WindowStyle" Value="None"/>
-<Setter Property="AllowsTransparency" Value="True"/>
-<Setter Property="ResizeMode" Value="CanResize"/>
-```
+**Root cause:** `AllowsTransparency="True"` disables ALL native Windows window animations (minimize/restore slide, snap effects).
 
-`WindowStyle="None"` removes the default Windows border entirely.
-`AllowsTransparency="True"` enables the window to have transparent areas (needed for drop shadow).
+**Fix:** Removed `AllowsTransparency="True"`. Kept `WindowStyle="None"` (removes the border). Changed `GlassFrameThickness` from `"0"` to `"0,0,0,1"` — this extends a tiny sliver of glass frame on the bottom edge, which tells the DWM to draw the native drop shadow. This gives us:
+- No visible border (WindowStyle="None")
+- Native drop shadow (GlassFrameThickness)
+- Native window animations (no AllowsTransparency)
+- Resizable (ResizeMode="CanResize")
 
-### 2. Remove the visible border line
-Changed the window template's outer Border:
-- `BorderBrush="{DynamicResource BorderBrush}"` → `BorderBrush="Transparent"`
-- `BorderThickness="1"` → `BorderThickness="0"`
-
-### 3. Add a drop shadow
-Added a `DropShadowEffect` to the outer Border:
-```xml
-<Border.Effect>
-    <DropShadowEffect Color="#000000" 
-                      BlurRadius="12" 
-                      ShadowDepth="0" 
-                      Opacity="0.5" 
-                      Direction="270"/>
-</Border.Effect>
-```
-
-This creates a soft shadow around all 4 edges of the window (ShadowDepth=0 = centered shadow, BlurRadius=12 = soft spread).
+Also removed the `DropShadowEffect` from the template (the OS shadow replaces it).
 
 ## Testing
 
-1. Upload `Musicefy/Themes/Base.xaml`.
+1. Upload both files.
 2. Build and launch.
-3. The white outline around the window should be GONE.
-4. A soft drop shadow should appear around the window edges instead.
-5. The window should still be resizable (drag any edge).
-6. The custom title bar should still work (drag to move, min/max/close buttons).
+3. No white line between sidebar and content
+4. No white outline around window
+5. Window has a native drop shadow
+6. Minimize/restore should have the native Windows slide animation
+7. Window snapping (Aero Snap) should work

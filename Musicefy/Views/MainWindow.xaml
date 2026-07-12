@@ -230,8 +230,8 @@
             <!-- ── Upgraded Sidebar ────────────────────────────────────────── -->
             <Border x:Name="SidebarBorder" DockPanel.Dock="Left" Width="80"
                     Background="{DynamicResource SurfaceContainerLowBrush}"
-                    BorderBrush="{DynamicResource OutlineBrush}"
-                    BorderThickness="0,0,1,0"
+                    BorderBrush="Transparent"
+                    BorderThickness="0"
                     Padding="0,8,0,8">
 
                 <Grid>
