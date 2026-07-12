@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Musicefy.Core.Interfaces;
 using Musicefy.Core.Models;
 using static Musicefy.Core.SourceTypes;
 
