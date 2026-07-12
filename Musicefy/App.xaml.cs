@@ -214,7 +214,7 @@ namespace Musicefy
 
                 // Sprint 4: Auto-provision Local + YouTube sources on first launch.
                 // No more "Add Source" dialog — these are always available.
-                EnsureDefaultSources();
+                await EnsureDefaultSourcesAsync();
 
                 // Phase 6: Restore queue state from previous session
                 var playback = _serviceProvider.GetService<PlaybackService>();
@@ -232,11 +232,12 @@ namespace Musicefy
         /// sources.json. No user action required — these are the app's two
         /// built-in providers and are auto-provisioned on first launch.
         ///
-        /// Local source uses the first folder from Settings.LocalMusicFolders,
-        /// or the user's Music folder as a default.
-        /// YouTube source uses Settings.YouTubeApiKey + YouTubeCookie if set.
+        /// IMPORTANT: This method is async (not sync-over-async) to avoid
+        /// deadlocking the UI thread. The previous version used
+        /// GetAwaiter().GetResult() which blocked the UI thread and caused
+        /// the splash screen to never appear.
         /// </summary>
-        private void EnsureDefaultSources()
+        private async Task EnsureDefaultSourcesAsync()
         {
             try
             {
@@ -275,7 +276,7 @@ namespace Musicefy
                             },
                             Url = folders[0]
                         };
-                        try { sourceManager.AddSourceAsync(localSource).GetAwaiter().GetResult(); }
+                        try { await sourceManager.AddSourceAsync(localSource); }
                         catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[App] Failed to auto-create Local source: {ex.Message}"); }
                     }
                 }
@@ -296,13 +297,13 @@ namespace Musicefy
                             ["audioQuality"] = Musicefy.Properties.Settings.Default.YouTubeAudioQuality ?? "opus"
                         }
                     };
-                    try { sourceManager.AddSourceAsync(ytSource).GetAwaiter().GetResult(); }
+                    try { await sourceManager.AddSourceAsync(ytSource); }
                     catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[App] Failed to auto-create YouTube source: {ex.Message}"); }
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[App] EnsureDefaultSources failed: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[App] EnsureDefaultSourcesAsync failed: {ex.Message}");
             }
         }
 
