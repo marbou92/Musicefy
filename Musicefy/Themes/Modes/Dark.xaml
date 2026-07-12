@@ -54,7 +54,9 @@
     <SolidColorBrush x:Key="ForegroundBrush" Color="#E6E0E9"/>
     <SolidColorBrush x:Key="TextBrush" Color="#E6E0E9"/>
     <SolidColorBrush x:Key="MutedTextBrush" Color="#CAC4D0"/>
-    <SolidColorBrush x:Key="BorderBrush" Color="#938F99"/>
+    <!-- Dark mode: use the darker outline variant for window border
+         (was #938F99 which appeared as a white outline) -->
+    <SolidColorBrush x:Key="BorderBrush" Color="#49454F"/>
     <SolidColorBrush x:Key="DynamicPrimaryBrush" Color="#FFB4AB"/>
 
     <!-- Skeleton / shimmer colors -->

@@ -6,19 +6,25 @@
          This XAML provides the complete set of brush fallbacks for design-time
          and initial-load, matching Dark.xaml but with pure-black surfaces. -->
 
-    <!-- ── Surface / Neutral (Pure Black) ── -->
+    <!-- ── Surface / Neutral (Pure Black — true AMOLED) ── -->
+    <!-- True AMOLED: ALL surfaces are pure black or very near-black.
+         The visual difference from Dark mode should be immediately
+         obvious — Dark mode uses purple-tinted dark grey (#141218),
+         AMOLED uses pure black (#000000) for maximum OLED battery
+         savings and deepest contrast. -->
     <SolidColorBrush x:Key="SurfaceBrush" Color="#000000"/>
-    <SolidColorBrush x:Key="OnSurfaceBrush" Color="#E6E0E9"/>
-    <SolidColorBrush x:Key="SurfaceVariantBrush" Color="#49454F"/>
-    <SolidColorBrush x:Key="OnSurfaceVariantBrush" Color="#CAC4D0"/>
+    <SolidColorBrush x:Key="OnSurfaceBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="SurfaceVariantBrush" Color="#1A1A1A"/>
+    <SolidColorBrush x:Key="OnSurfaceVariantBrush" Color="#AAAAAA"/>
     <SolidColorBrush x:Key="SurfaceContainerLowestBrush" Color="#000000"/>
-    <SolidColorBrush x:Key="SurfaceContainerLowBrush" Color="#050505"/>
+    <SolidColorBrush x:Key="SurfaceContainerLowBrush" Color="#000000"/>
     <SolidColorBrush x:Key="SurfaceContainerBrush" Color="#0A0A0A"/>
-    <SolidColorBrush x:Key="SurfaceContainerHighBrush" Color="#0F0F0F"/>
-    <SolidColorBrush x:Key="SurfaceContainerHighestBrush" Color="#141414"/>
-    <SolidColorBrush x:Key="OutlineBrush" Color="#938F99"/>
-    <SolidColorBrush x:Key="OutlineVariantBrush" Color="#49454F"/>
-    <SolidColorBrush x:Key="HoverBrush" Color="#1A1A1A"/>
+    <SolidColorBrush x:Key="SurfaceContainerHighBrush" Color="#111111"/>
+    <SolidColorBrush x:Key="SurfaceContainerHighestBrush" Color="#1A1A1A"/>
+    <!-- AMOLED: borders should be invisible (near-black, not light grey) -->
+    <SolidColorBrush x:Key="OutlineBrush" Color="#1A1A1A"/>
+    <SolidColorBrush x:Key="OutlineVariantBrush" Color="#0A0A0A"/>
+    <SolidColorBrush x:Key="HoverBrush" Color="#0A0A0A"/>
     <SolidColorBrush x:Key="InverseSurfaceBrush" Color="#E6E0E9"/>
     <SolidColorBrush x:Key="InverseOnSurfaceBrush" Color="#313033"/>
     <SolidColorBrush x:Key="InversePrimaryBrush" Color="#6750A4"/>
@@ -55,11 +61,12 @@
 
     <!-- ── Legacy aliases ── -->
     <SolidColorBrush x:Key="BackgroundBrush" Color="#000000"/>
-    <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#050505"/>
-    <SolidColorBrush x:Key="ForegroundBrush" Color="#E6E0E9"/>
-    <SolidColorBrush x:Key="TextBrush" Color="#E6E0E9"/>
-    <SolidColorBrush x:Key="MutedTextBrush" Color="#CAC4D0"/>
-    <SolidColorBrush x:Key="BorderBrush" Color="#938F99"/>
+    <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#000000"/>
+    <SolidColorBrush x:Key="ForegroundBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="TextBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="MutedTextBrush" Color="#AAAAAA"/>
+    <!-- AMOLED: border should be invisible -->
+    <SolidColorBrush x:Key="BorderBrush" Color="#1A1A1A"/>
     <SolidColorBrush x:Key="DynamicPrimaryBrush" Color="#FFB4AB"/>
 
     <!-- ── Skeleton / shimmer colors ── -->
