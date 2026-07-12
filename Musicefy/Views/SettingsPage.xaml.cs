@@ -188,47 +188,9 @@ namespace Musicefy.Views
             if (SettingsContent == null || SectionTitle == null)
                 return;
 
-            void BeginInwardAnimation()
-            {
-                SettingsContent.Content = newContent;
-                SectionTitle.Text = title;
-
-                newContent.Opacity = 0;
-                newContent.Margin = new System.Windows.Thickness(fromRight ? 40 : -40, 0, 0, 0);
-
-                var fadeIn = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromMilliseconds(180)));
-                var slideIn = new ThicknessAnimation
-                {
-                    From = newContent.Margin,
-                    To = new System.Windows.Thickness(0),
-                    Duration = TimeSpan.FromMilliseconds(180)
-                };
-
-                fadeIn.Completed += (sender, ev) => this.UpdateLayout();
-
-                newContent.BeginAnimation(OpacityProperty, fadeIn);
-                newContent.BeginAnimation(MarginProperty, slideIn);
-            }
-
-            if (SettingsContent.Content is FrameworkElement currentContent)
-            {
-                var fadeOut = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromMilliseconds(180)));
-                var slideOut = new ThicknessAnimation
-                {
-                    From = new System.Windows.Thickness(0),
-                    To = new System.Windows.Thickness(fromRight ? -40 : 40, 0, 0, 0),
-                    Duration = TimeSpan.FromMilliseconds(180)
-                };
-
-                fadeOut.Completed += (s, e) => BeginInwardAnimation();
-
-                currentContent.BeginAnimation(OpacityProperty, fadeOut);
-                currentContent.BeginAnimation(MarginProperty, slideOut);
-            }
-            else
-            {
-                BeginInwardAnimation();
-            }
+            // Instant swap — no animation. Animation was causing lag.
+            SettingsContent.Content = newContent;
+            SectionTitle.Text = title;
         }
     }
 }
