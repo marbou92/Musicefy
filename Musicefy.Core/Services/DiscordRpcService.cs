@@ -93,18 +93,10 @@ namespace Musicefy.Core.Services
         }
 
         /// <summary>
-        /// Returns true if Discord RPC is enabled and connected.
+        /// Returns true if Discord RPC is connected.
+        /// Callers in the app project should also check Settings.DiscordRpcEnabled.
         /// </summary>
-        public bool IsEnabled()
-        {
-            try
-            {
-                return Musicefy.Properties.Settings.Default.DiscordRpcEnabled
-                    && _initialized
-                    && _connected;
-            }
-            catch { return false; }
-        }
+        public bool IsConnected => _initialized && _connected;
 
         /// <summary>
         /// Attempt to connect to the Discord IPC pipe.

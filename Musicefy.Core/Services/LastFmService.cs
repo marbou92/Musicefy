@@ -21,6 +21,9 @@ namespace Musicefy.Core.Services
     ///   - track.scrobble
     ///
     /// API docs: https://www.last.fm/api
+    ///
+    /// Note: This service is settings-agnostic. Callers in the app project
+    /// pass the session key and check Settings.LastFmEnabled before calling.
     /// </summary>
     public class LastFmService
     {
@@ -55,7 +58,6 @@ namespace Musicefy.Core.Services
             };
 
             parameters["api_sig"] = SignRequest(parameters);
-            parameters["sk"] = ""; // Not needed for auth
 
             var content = new FormUrlEncodedContent(parameters);
             var response = await _client.PostAsync(ApiRoot, content);
@@ -75,9 +77,10 @@ namespace Musicefy.Core.Services
         /// <summary>
         /// Notify Last.fm that a track is now playing.
         /// </summary>
-        public async Task UpdateNowPlayingAsync(MusicFile track)
+        /// <param name="sessionKey">The stored Last.fm session key.</param>
+        public async Task UpdateNowPlayingAsync(MusicFile track, string sessionKey)
         {
-            if (!IsEnabled() || track == null) return;
+            if (string.IsNullOrEmpty(sessionKey) || track == null) return;
 
             try
             {
@@ -87,7 +90,7 @@ namespace Musicefy.Core.Services
                     { "artist", track.Artist ?? "Unknown" },
                     { "track", track.Title ?? "Unknown" },
                     { "api_key", ApiKey },
-                    { "sk", Musicefy.Properties.Settings.Default.LastFmSessionKey },
+                    { "sk", sessionKey },
                     { "format", "json" }
                 };
 
@@ -112,9 +115,10 @@ namespace Musicefy.Core.Services
         /// Should be called when the track has been played for at least 50%
         /// or 4 minutes, whichever comes first.
         /// </summary>
-        public async Task ScrobbleAsync(MusicFile track)
+        /// <param name="sessionKey">The stored Last.fm session key.</param>
+        public async Task ScrobbleAsync(MusicFile track, string sessionKey)
         {
-            if (!IsEnabled() || track == null) return;
+            if (string.IsNullOrEmpty(sessionKey) || track == null) return;
 
             try
             {
@@ -127,7 +131,7 @@ namespace Musicefy.Core.Services
                     { "track", track.Title ?? "Unknown" },
                     { "timestamp", timestamp },
                     { "api_key", ApiKey },
-                    { "sk", Musicefy.Properties.Settings.Default.LastFmSessionKey },
+                    { "sk", sessionKey },
                     { "format", "json" }
                 };
 
@@ -145,19 +149,6 @@ namespace Musicefy.Core.Services
             {
                 System.Diagnostics.Debug.WriteLine($"[LastFm] Scrobble failed: {ex.Message}");
             }
-        }
-
-        /// <summary>
-        /// Returns true if Last.fm scrobbling is enabled and authenticated.
-        /// </summary>
-        public bool IsEnabled()
-        {
-            try
-            {
-                return Musicefy.Properties.Settings.Default.LastFmEnabled
-                    && !string.IsNullOrEmpty(Musicefy.Properties.Settings.Default.LastFmSessionKey);
-            }
-            catch { return false; }
         }
 
         // ── Last.fm API signature ────────────────────────────────────────────

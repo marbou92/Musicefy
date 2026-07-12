@@ -140,15 +140,11 @@ namespace Musicefy.Core.Services
 
         /// <summary>
         /// Returns true if AI translation is enabled and configured.
+        /// Callers in the app project should pass their Settings values.
         /// </summary>
-        public bool IsConfigured()
+        public bool IsConfigured(bool enabled, string apiKey)
         {
-            try
-            {
-                return Musicefy.Properties.Settings.Default.AiTranslationEnabled
-                    && !string.IsNullOrEmpty(Musicefy.Properties.Settings.Default.AiTranslationApiKey);
-            }
-            catch { return false; }
+            return enabled && !string.IsNullOrEmpty(apiKey);
         }
     }
 }

@@ -618,12 +618,18 @@ namespace Musicefy.Services
         {
             try
             {
+                // Check settings (app project can access Settings)
+                if (!Musicefy.Properties.Settings.Default.LastFmEnabled) return;
+
+                var sessionKey = Musicefy.Properties.Settings.Default.LastFmSessionKey;
+                if (string.IsNullOrEmpty(sessionKey)) return;
+
                 var lastFm = _serviceProvider?.GetService(typeof(Musicefy.Core.Services.LastFmService))
                              as Musicefy.Core.Services.LastFmService;
-                if (lastFm == null || !lastFm.IsEnabled()) return;
+                if (lastFm == null) return;
 
                 // Send now-playing immediately
-                await lastFm.UpdateNowPlayingAsync(track);
+                await lastFm.UpdateNowPlayingAsync(track, sessionKey);
 
                 // Schedule scrobble after 4 minutes or 50% of track (whichever is first)
                 var delay = TimeSpan.FromMinutes(4);
@@ -638,7 +644,7 @@ namespace Musicefy.Services
                     // Only scrobble if still playing the same track
                     if (CurrentTrack == track && IsPlaying)
                     {
-                        await lastFm.ScrobbleAsync(track);
+                        await lastFm.ScrobbleAsync(track, sessionKey);
                     }
                 });
             }
