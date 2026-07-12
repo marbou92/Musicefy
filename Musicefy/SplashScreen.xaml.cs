@@ -130,6 +130,10 @@ namespace Musicefy
             fadeOut.Completed += (s, ev) =>
             {
                 var main = new Musicefy.MainWindow();
+                // Must set MainWindow BEFORE closing the splash screen.
+                // Otherwise ShutdownMode="OnMainWindowClose" sees the
+                // splash close and shuts down the app instantly.
+                Application.Current.MainWindow = main;
                 main.Show();
                 this.Close();
             };
@@ -142,6 +146,7 @@ namespace Musicefy
             {
                 System.Diagnostics.Debug.WriteLine($"[SplashScreen] Animation error: {ex.Message}");
                 var main = new Musicefy.MainWindow();
+                Application.Current.MainWindow = main;
                 main.Show();
                 this.Close();
             }
