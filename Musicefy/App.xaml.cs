@@ -138,9 +138,6 @@ namespace Musicefy
             // Sprint 6: Backup & Restore service
             services.AddSingleton<Musicefy.Core.Services.BackupService>();
 
-            // Sprint 7: AI Lyrics Translation
-            services.AddSingleton<Musicefy.Core.Services.AiTranslationService>();
-
             // Sprint 7: Last.fm scrobbling
             services.AddSingleton<Musicefy.Core.Services.LastFmService>();
 

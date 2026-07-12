@@ -9,11 +9,10 @@ namespace Musicefy.ViewModels
 {
     /// <summary>
     /// Sprint 7: ViewModel for the Integrations settings tab.
-    /// Handles AI Lyrics Translation, Last.fm, and Discord RPC configuration.
+    /// Handles Last.fm and Discord RPC configuration.
     /// </summary>
     public class IntegrationsViewModel : ViewModelBase
     {
-        private readonly AiTranslationService _aiService;
         private readonly LastFmService _lastFmService;
         private readonly DiscordRpcService _discordService;
         private bool _isBusy;
@@ -29,37 +28,6 @@ namespace Musicefy.ViewModels
         {
             get => _statusText;
             set => SetProperty(ref _statusText, value);
-        }
-
-        // ── AI Lyrics Translation ────────────────────────────────────────────
-        public bool AiTranslationEnabled
-        {
-            get => Musicefy.Properties.Settings.Default.AiTranslationEnabled;
-            set { Musicefy.Properties.Settings.Default.AiTranslationEnabled = value; OnPropertyChanged(); }
-        }
-
-        public string AiTranslationProvider
-        {
-            get => Musicefy.Properties.Settings.Default.AiTranslationProvider ?? "OpenRouter";
-            set { Musicefy.Properties.Settings.Default.AiTranslationProvider = value; OnPropertyChanged(); }
-        }
-
-        public string AiTranslationApiKey
-        {
-            get => Musicefy.Properties.Settings.Default.AiTranslationApiKey ?? "";
-            set { Musicefy.Properties.Settings.Default.AiTranslationApiKey = value; OnPropertyChanged(); }
-        }
-
-        public string AiTranslationModel
-        {
-            get => Musicefy.Properties.Settings.Default.AiTranslationModel ?? "google/gemini-2.5-flash-lite";
-            set { Musicefy.Properties.Settings.Default.AiTranslationModel = value; OnPropertyChanged(); }
-        }
-
-        public string AiTranslationTargetLang
-        {
-            get => Musicefy.Properties.Settings.Default.AiTranslationTargetLang ?? "en";
-            set { Musicefy.Properties.Settings.Default.AiTranslationTargetLang = value; OnPropertyChanged(); }
         }
 
         // ── Last.fm ──────────────────────────────────────────────────────────
@@ -103,11 +71,9 @@ namespace Musicefy.ViewModels
         public ICommand LastFmLogoutCommand { get; }
 
         public IntegrationsViewModel(
-            AiTranslationService aiService,
             LastFmService lastFmService,
             DiscordRpcService discordService)
         {
-            _aiService = aiService ?? throw new ArgumentNullException(nameof(aiService));
             _lastFmService = lastFmService ?? throw new ArgumentNullException(nameof(lastFmService));
             _discordService = discordService ?? throw new ArgumentNullException(nameof(discordService));
 
@@ -117,7 +83,6 @@ namespace Musicefy.ViewModels
         }
 
         public IntegrationsViewModel() : this(
-            App.Services.GetService<AiTranslationService>(),
             App.Services.GetService<LastFmService>(),
             App.Services.GetService<DiscordRpcService>())
         {

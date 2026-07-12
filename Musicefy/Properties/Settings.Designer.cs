@@ -381,52 +381,6 @@ namespace Musicefy.Properties {
             set => this["LastBackupPath"] = value;
         }
 
-        // ── Sprint 7: AI Lyrics Translation ──────────────────────────────────
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool AiTranslationEnabled
-        {
-            get => ((bool)(this["AiTranslationEnabled"]));
-            set => this["AiTranslationEnabled"] = value;
-        }
-
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("OpenRouter")]
-        public string AiTranslationProvider
-        {
-            get => ((string)(this["AiTranslationProvider"]));
-            set => this["AiTranslationProvider"] = value;
-        }
-
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string AiTranslationApiKey
-        {
-            get => ((string)(this["AiTranslationApiKey"]));
-            set => this["AiTranslationApiKey"] = value;
-        }
-
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("google/gemini-2.5-flash-lite")]
-        public string AiTranslationModel
-        {
-            get => ((string)(this["AiTranslationModel"]));
-            set => this["AiTranslationModel"] = value;
-        }
-
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("en")]
-        public string AiTranslationTargetLang
-        {
-            get => ((string)(this["AiTranslationTargetLang"]));
-            set => this["AiTranslationTargetLang"] = value;
-        }
-
         // ── Sprint 7: Last.fm Scrobbling ─────────────────────────────────────
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]

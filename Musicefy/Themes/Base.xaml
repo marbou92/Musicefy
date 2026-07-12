@@ -749,4 +749,100 @@
         </Setter>
     </Style>
 
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- M3 CheckBox — global style applied to ALL CheckBoxes without       -->
+    <!-- an explicit Style. Replaces the default WPF checkbox with a clean  -->
+    <!-- rounded-corner M3 design that matches the app's accent color.      -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <Style TargetType="CheckBox">
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Foreground" Value="{DynamicResource OnSurfaceBrush}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <!-- The checkbox square -->
+                        <Grid Width="20" Height="20" Margin="0,0,8,0" VerticalAlignment="Center">
+                            <!-- Unchecked border -->
+                            <Border x:Name="UncheckedBorder"
+                                    BorderBrush="{DynamicResource OutlineBrush}"
+                                    BorderThickness="2"
+                                    CornerRadius="4"
+                                    Background="Transparent"/>
+                            <!-- Checked fill (fades in when checked) -->
+                            <Border x:Name="CheckedFill"
+                                    Background="{DynamicResource PrimaryBrush}"
+                                    CornerRadius="4"
+                                    Opacity="0"/>
+                            <!-- Checkmark path (fades in when checked) -->
+                            <Path x:Name="Checkmark"
+                                  Data="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"
+                                  Width="14" Height="14" Stretch="Uniform"
+                                  Fill="{DynamicResource OnPrimaryBrush}"
+                                  HorizontalAlignment="Center" VerticalAlignment="Center"
+                                  Opacity="0"/>
+                        </Grid>
+                        <!-- Content (label text) -->
+                        <ContentPresenter VerticalAlignment="Center"
+                                          Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                    </StackPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="CheckedFill"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="1" Duration="0:0:0.15">
+                                            <DoubleAnimation.EasingFunction>
+                                                <QuadraticEase EasingMode="EaseOut"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <DoubleAnimation Storyboard.TargetName="Checkmark"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="1" Duration="0:0:0.15">
+                                            <DoubleAnimation.EasingFunction>
+                                                <QuadraticEase EasingMode="EaseOut"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="CheckedFill"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="0" Duration="0:0:0.15">
+                                            <DoubleAnimation.EasingFunction>
+                                                <QuadraticEase EasingMode="EaseIn"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <DoubleAnimation Storyboard.TargetName="Checkmark"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="0" Duration="0:0:0.15">
+                                            <DoubleAnimation.EasingFunction>
+                                                <QuadraticEase EasingMode="EaseIn"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="UncheckedBorder" Property="BorderBrush"
+                                    Value="{DynamicResource PrimaryBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.4"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
 </ResourceDictionary>
