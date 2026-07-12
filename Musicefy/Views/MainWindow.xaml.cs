@@ -142,21 +142,11 @@ namespace Musicefy
         {
             if (MainContent == null) return;
 
-            // ── Cancel any in-flight animation immediately ──
-            // When switching fast, the previous fade animation may still
-            // be running. Calling BeginAnimation with null cancels it.
-            // Without this, multiple animations stack and fight each
-            // other = FPS drop.
-            MainContent.BeginAnimation(OpacityProperty, null);
-            PageSlideTransform.BeginAnimation(TranslateTransform.YProperty, null);
-            MainContent.Opacity = 1;
-            PageSlideTransform.Y = 0;
-
-            // Resolve the page NOW (before animation starts) so we know if it's null
+            // Resolve the page
             _viewModel.NavigateToPage(index);
             var targetPage = _viewModel.CurrentPage;
 
-            // Fallback: if navigation returned null, use cached page
+            // Fallback: use cached page
             if (targetPage == null)
             {
                 try
@@ -173,45 +163,16 @@ namespace Musicefy
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[MainWindow] Direct page creation failed for index {index}: {ex}");
+                    System.Diagnostics.Debug.WriteLine($"[MainWindow] Page creation failed: {ex}");
                 }
             }
 
-            // If still null, show error placeholder instead of blank
-            if (targetPage == null)
-            {
-                MainContent.Content = new TextBlock
-                {
-                    Text = $"Failed to load page {index}. Check the Output window for errors.",
-                    Foreground = new SolidColorBrush(Colors.Red),
-                    FontSize = 16,
-                    Margin = new Thickness(40),
-                    VerticalAlignment = VerticalAlignment.Center,
-                    HorizontalAlignment = HorizontalAlignment.Center
-                };
-                return;
-            }
+            if (targetPage == null) return;
 
-            // If switching to the SAME page that's already showing, skip animation
-            if (MainContent.Content == targetPage)
-                return;
-
-            var durationOut = TimeSpan.FromMilliseconds(80);
-            var durationIn  = TimeSpan.FromMilliseconds(120);
-            var easeOut = new CubicEase { EasingMode = EasingMode.EaseOut };
-            var easeIn  = new CubicEase { EasingMode = EasingMode.EaseIn };
-
-            var fadeOut = new DoubleAnimation(1, 0, durationOut) { EasingFunction = easeIn };
-
-            fadeOut.Completed += (s, ev) =>
-            {
-                MainContent.Content = targetPage;
-
-                var fadeIn  = new DoubleAnimation(0, 1, durationIn) { EasingFunction = easeOut };
-                MainContent.BeginAnimation(OpacityProperty, fadeIn);
-            };
-
-            MainContent.BeginAnimation(OpacityProperty, fadeOut);
+            // Instant swap — no animation. Animation was causing FPS drops
+            // when switching fast. ContentControl content swap is already
+            // visually smooth enough without explicit fade/slide.
+            MainContent.Content = targetPage;
         }
 
         public void NavigateToSettings()
