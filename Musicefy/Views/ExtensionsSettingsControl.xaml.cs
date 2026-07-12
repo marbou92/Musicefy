@@ -8,7 +8,21 @@ namespace Musicefy.Views
         public ExtensionsSettingsControl()
         {
             InitializeComponent();
-            DataContext = new ExtensionsSettingsViewModel();
+
+            // DataContext is normally set externally by SettingsPage.ShowExtensions()
+            // via App.Services.GetService<ExtensionsSettingsViewModel>(). Provide a
+            // fallback here so the control also works standalone (e.g. designer).
+            if (DataContext == null)
+            {
+                try
+                {
+                    DataContext = App.Services?.GetService<ExtensionsSettingsViewModel>();
+                }
+                catch
+                {
+                    // Designer / very early init — ignore.
+                }
+            }
         }
     }
 }

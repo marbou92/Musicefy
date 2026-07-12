@@ -6,26 +6,56 @@ using System.Net.Http;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Musicefy.Core.Interfaces;
 using Musicefy.Core.Models;
 using Newtonsoft.Json;
+using static Musicefy.Core.SourceTypes;
 
 namespace Musicefy.Core.Services
 {
+    /// <summary>
+    /// Manages extension repositories, installed extension manifests, and the
+    /// runtime loading of extension DLLs.
+    ///
+    /// Provider visibility model
+    /// -------------------------
+    ///   * <see cref="Local"/> is ALWAYS enabled and CANNOT be uninstalled
+    ///     (it is the in-app local-library provider and is required for the
+    ///      app to function). This is enforced in
+    ///     <see cref="IsProtectedSourceType"/> and
+    ///     <see cref="MarkBuiltInAsUninstalled"/> / <see cref="UninstallExtensionAsync"/>.
+    ///   * Other built-in providers (Subsonic, YouTube) are loaded from DI
+    ///     but are NOT enabled until their <c>builtin_&lt;type&gt;</c>
+    ///     extension manifest is marked installed via
+    ///     <see cref="MarkBuiltInAsInstalled"/>.
+    ///   * Extension DLL providers are enabled as soon as the corresponding
+    ///     extension is installed.
+    /// </summary>
     public class ExtensionManagerImpl : IExtensionManager
     {
+        private const string OfficialRepoUrl = "https://raw.githubusercontent.com/marbou92/Musicefy-Extensions/main/repo.json";
+
         private readonly HttpClient _httpClient;
         private readonly string _extensionsDir;
         private readonly string _reposFilePath;
         private readonly List<string> _repoUrls = new List<string>();
         private readonly List<IMusicSourceProvider> _extensionProviders = new List<IMusicSourceProvider>();
         private readonly List<ExtensionManifest> _installed = new List<ExtensionManifest>();
+        private readonly HashSet<string> _enabledSourceTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        public IReadOnlyList<IMusicSourceProvider> ExtensionProviders => _extensionProviders.AsReadOnly();
-        public IReadOnlyList<string> RepoUrls => _repoUrls.AsReadOnly();
+        private readonly Lazy<IEnumerable<IMusicSourceProvider>> _diProvidersLazy;
+        private readonly IServiceProvider _serviceProvider;
 
-        public ExtensionManagerImpl()
+        public IReadOnlyList<string> ProtectedSourceTypes { get; } = new List<string> { Local };
+
+        public ExtensionManagerImpl() : this(null)
         {
+        }
+
+        public ExtensionManagerImpl(IServiceProvider serviceProvider)
+        {
+            _serviceProvider = serviceProvider;
             _httpClient = new HttpClient();
             _httpClient.DefaultRequestHeaders.Add("User-Agent", "Musicefy/1.0");
             _httpClient.Timeout = TimeSpan.FromSeconds(30);
@@ -38,8 +68,64 @@ namespace Musicefy.Core.Services
             if (!Directory.Exists(_extensionsDir))
                 Directory.CreateDirectory(_extensionsDir);
 
+            // Local is ALWAYS enabled — non-bypassable.
+            _enabledSourceTypes.Add(Local);
+
+            _diProvidersLazy = new Lazy<IEnumerable<IMusicSourceProvider>>(() =>
+            {
+                try
+                {
+                    return _serviceProvider?.GetServices<IMusicSourceProvider>()
+                        ?? Enumerable.Empty<IMusicSourceProvider>();
+                }
+                catch
+                {
+                    return Enumerable.Empty<IMusicSourceProvider>();
+                }
+            }, System.Threading.LazyThreadSafetyMode.ExecutionAndPublication);
+
             LoadRepos();
             LoadInstalledExtensions();
+            RebuildEnabledSet();
+        }
+
+        public IReadOnlyList<IMusicSourceProvider> ExtensionProviders => _extensionProviders.AsReadOnly();
+
+        public IReadOnlyList<IMusicSourceProvider> EnabledProviders
+        {
+            get
+            {
+                var result = new List<IMusicSourceProvider>();
+                foreach (var p in _diProvidersLazy.Value)
+                {
+                    if (_enabledSourceTypes.Contains(p.SourceType))
+                        result.Add(p);
+                }
+                foreach (var p in _extensionProviders)
+                {
+                    if (_enabledSourceTypes.Contains(p.SourceType) &&
+                        !result.Any(r => string.Equals(r.SourceType, p.SourceType, StringComparison.OrdinalIgnoreCase)))
+                        result.Add(p);
+                }
+                return result.AsReadOnly();
+            }
+        }
+
+        public IReadOnlyList<string> RepoUrls => _repoUrls.AsReadOnly();
+
+        public bool IsProviderEnabled(string sourceType)
+        {
+            if (string.IsNullOrEmpty(sourceType)) return false;
+            // Local is always enabled — non-bypassable.
+            if (string.Equals(sourceType, Local, StringComparison.OrdinalIgnoreCase))
+                return true;
+            return _enabledSourceTypes.Contains(sourceType);
+        }
+
+        public bool IsProtectedSourceType(string sourceType)
+        {
+            return ProtectedSourceTypes.Any(p =>
+                string.Equals(p, sourceType, StringComparison.OrdinalIgnoreCase));
         }
 
         public async Task AddRepoAsync(string repoUrl)
@@ -57,13 +143,12 @@ namespace Musicefy.Core.Services
 
             _repoUrls.Add(repoUrl);
             SaveRepos();
+            await Task.CompletedTask;
         }
 
         public bool RemoveRepo(string repoUrl)
         {
-            const string officialRepoUrl = "https://raw.githubusercontent.com/marbou92/Musicefy-Extensions/main/repo.json";
-
-            if (string.Equals(repoUrl, officialRepoUrl, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(repoUrl, OfficialRepoUrl, StringComparison.OrdinalIgnoreCase))
                 return false;
 
             _repoUrls.Remove(repoUrl);
@@ -131,29 +216,53 @@ namespace Musicefy.Core.Services
                 _installed.Add(extension);
 
             LoadExtensionAssembly(extDir);
+
+            if (!string.IsNullOrEmpty(extension.SourceType))
+                _enabledSourceTypes.Add(extension.SourceType);
         }
 
         public async Task UninstallExtensionAsync(string extensionId)
         {
+            if (string.IsNullOrEmpty(extensionId))
+                throw new ArgumentException("Extension ID is required.", nameof(extensionId));
+
+            // Defense-in-depth: never allow uninstalling a protected source type's extension.
+            var manifest = _installed.FirstOrDefault(e => e.Id == extensionId);
+            if (manifest != null && IsProtectedSourceType(manifest.SourceType))
+                throw new InvalidOperationException(
+                    $"The '{manifest.SourceType}' source type is protected and cannot be uninstalled.");
+
             var safeId = SanitizeExtensionId(extensionId);
             var extDir = Path.Combine(_extensionsDir, safeId);
             if (Directory.Exists(extDir))
             {
-                Directory.Delete(extDir, true);
+                try { Directory.Delete(extDir, true); }
+                catch (IOException) { /* file may be locked; ignore */ }
             }
 
             _installed.RemoveAll(e => e.Id == extensionId);
-            _extensionProviders.RemoveAll(p =>
-                _installed.All(i => i.SourceType != p.SourceType));
+
+            if (manifest != null && !string.IsNullOrEmpty(manifest.SourceType))
+            {
+                _extensionProviders.RemoveAll(p =>
+                    string.Equals(p.SourceType, manifest.SourceType, StringComparison.OrdinalIgnoreCase));
+                _enabledSourceTypes.Remove(manifest.SourceType);
+            }
 
             await Task.CompletedTask;
         }
 
         public void MarkBuiltInAsInstalled(string sourceType, string displayName)
         {
+            if (string.IsNullOrWhiteSpace(sourceType))
+                throw new ArgumentException("Source type is required.", nameof(sourceType));
+
             var id = $"builtin_{sourceType.ToLower()}";
             if (_installed.Any(e => e.Id == id))
+            {
+                _enabledSourceTypes.Add(sourceType);
                 return;
+            }
 
             var manifest = new ExtensionManifest
             {
@@ -174,19 +283,32 @@ namespace Musicefy.Core.Services
 
             if (!_installed.Any(e => e.Id == id))
                 _installed.Add(manifest);
+
+            _enabledSourceTypes.Add(sourceType);
         }
 
         public void MarkBuiltInAsUninstalled(string extensionId)
         {
-            if (!extensionId.StartsWith("builtin_"))
+            if (string.IsNullOrEmpty(extensionId) || !extensionId.StartsWith("builtin_"))
                 return;
+
+            var sourceType = extensionId.Substring("builtin_".Length);
+
+            // Non-bypassable: Local cannot be uninstalled.
+            if (IsProtectedSourceType(sourceType))
+                throw new InvalidOperationException(
+                    $"The '{sourceType}' source type is protected and cannot be uninstalled.");
 
             var safeId = SanitizeExtensionId(extensionId);
             var extDir = Path.Combine(_extensionsDir, safeId);
             if (Directory.Exists(extDir))
-                Directory.Delete(extDir, true);
+            {
+                try { Directory.Delete(extDir, true); }
+                catch (IOException) { /* ignore */ }
+            }
 
             _installed.RemoveAll(e => e.Id == extensionId);
+            _enabledSourceTypes.Remove(sourceType);
         }
 
         public IReadOnlyList<ExtensionManifest> GetInstalledExtensions()
@@ -205,6 +327,7 @@ namespace Musicefy.Core.Services
             }
 
             LoadInstalledExtensions();
+            RebuildEnabledSet();
         }
 
         private void LoadExtensionAssembly(string extDir)
@@ -220,6 +343,8 @@ namespace Musicefy.Core.Services
                         {
                             var provider = (IMusicSourceProvider)Activator.CreateInstance(type);
                             _extensionProviders.Add(provider);
+                            if (!string.IsNullOrEmpty(provider.SourceType))
+                                _enabledSourceTypes.Add(provider.SourceType);
                         }
                     }
                 }
@@ -254,14 +379,36 @@ namespace Musicefy.Core.Services
             }
         }
 
+        /// <summary>
+        /// Rebuilds the enabled-source-types set from the installed manifests.
+        /// Local is always re-added (protected).
+        /// </summary>
+        private void RebuildEnabledSet()
+        {
+            _enabledSourceTypes.Clear();
+            _enabledSourceTypes.Add(Local); // non-bypassable
+
+            foreach (var manifest in _installed)
+            {
+                if (!string.IsNullOrEmpty(manifest.SourceType))
+                    _enabledSourceTypes.Add(manifest.SourceType);
+            }
+
+            // Extension DLL providers that are loaded are also implicitly enabled.
+            foreach (var provider in _extensionProviders)
+            {
+                if (!string.IsNullOrEmpty(provider.SourceType))
+                    _enabledSourceTypes.Add(provider.SourceType);
+            }
+        }
+
         private void LoadRepos()
         {
-            const string officialRepoUrl = "https://raw.githubusercontent.com/marbou92/Musicefy-Extensions/main/repo.json";
             try
             {
                 if (!File.Exists(_reposFilePath))
                 {
-                    _repoUrls.Add(officialRepoUrl);
+                    _repoUrls.Add(OfficialRepoUrl);
                     return;
                 }
 
@@ -278,17 +425,16 @@ namespace Musicefy.Core.Services
                 System.Diagnostics.Debug.WriteLine($"Failed to load repos: {ex.Message}");
             }
 
-            if (!_repoUrls.Contains(officialRepoUrl, StringComparer.OrdinalIgnoreCase))
-                _repoUrls.Add(officialRepoUrl);
+            if (!_repoUrls.Contains(OfficialRepoUrl, StringComparer.OrdinalIgnoreCase))
+                _repoUrls.Add(OfficialRepoUrl);
         }
 
         private void SaveRepos()
         {
-            const string officialRepoUrl = "https://raw.githubusercontent.com/marbou92/Musicefy-Extensions/main/repo.json";
             try
             {
                 var urlsToSave = _repoUrls
-                    .Where(u => !string.Equals(u, officialRepoUrl, StringComparison.OrdinalIgnoreCase))
+                    .Where(u => !string.Equals(u, OfficialRepoUrl, StringComparison.OrdinalIgnoreCase))
                     .ToList();
                 var json = JsonConvert.SerializeObject(urlsToSave, Formatting.Indented);
                 File.WriteAllText(_reposFilePath, json);

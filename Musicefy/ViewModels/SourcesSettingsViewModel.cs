@@ -124,14 +124,31 @@ namespace Musicefy.ViewModels
 
         private void LoadProviders()
         {
-            // Available providers are injected from DI; we load them from the source manager's
-            // existing source types. In a real scenario, IMusicSourceProvider instances
-            // would be injected directly. Here we discover them from existing sources.
+            // AvailableProviders should ONLY contain providers whose extension is
+            // currently installed (i.e. enabled in the IExtensionManager).
+            // Local is always enabled. Subsonic/YouTube show up only after the user
+            // installs them from the Extensions tab. Extension DLLs show up after
+            // the user installs them from the Repositories tab.
+            //
+            // This fixes the bug where the Add Source dialog showed providers whose
+            // extension was not installed.
             AvailableProviders.Clear();
 
-            // We need to get providers from DI - this is typically done through App.Services
             try
             {
+                var extensionManager = App.Services?.GetService(typeof(IExtensionManager)) as IExtensionManager;
+                if (extensionManager != null)
+                {
+                    foreach (var provider in extensionManager.EnabledProviders)
+                    {
+                        AvailableProviders.Add(provider);
+                    }
+                }
+            }
+            catch
+            {
+                // Fallback: if ExtensionManager is unavailable for some reason,
+                // load all DI providers so the dialog is still usable.
                 var providers = App.Services?.GetService(typeof(IEnumerable<IMusicSourceProvider>)) as System.Collections.IEnumerable;
                 if (providers != null)
                 {
@@ -141,17 +158,16 @@ namespace Musicefy.ViewModels
                     }
                 }
             }
-            catch
-            {
-                // Fallback: add providers based on source types found in sources
-                foreach (var source in _sourceManager.Sources)
-                {
-                    if (!AvailableProviders.Any(p => p.SourceType == source.Type))
-                    {
-                        // Create placeholder providers - real ones come from DI
-                    }
-                }
-            }
+        }
+
+        /// <summary>
+        /// Re-load providers from the ExtensionManager. Called when the user
+        /// installs/uninstalls an extension on another tab and returns to Sources.
+        /// </summary>
+        public void RefreshProviders()
+        {
+            LoadProviders();
+            OnPropertyChanged(nameof(AvailableProviders));
         }
 
         private bool CanAddSource() => !IsAddingSource && AvailableProviders.Count > 0;

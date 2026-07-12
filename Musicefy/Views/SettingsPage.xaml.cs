@@ -131,7 +131,12 @@ namespace Musicefy.Views
             var vm = App.Services.GetService<SourcesSettingsViewModel>();
             var control = new SourcesSettingsControl();
             if (vm != null)
+            {
+                // Re-load providers each time the Sources tab is shown so the dialog
+                // reflects the latest install/uninstall state of extensions.
+                vm.RefreshProviders();
                 control.Initialize(vm);
+            }
             AnimateContentChange(control, "Sources Settings", fromRight: true);
         }
 

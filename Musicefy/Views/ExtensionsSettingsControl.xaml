@@ -15,19 +15,44 @@
             <Setter Property="FontSize" Value="14"/>
         </Style>
 
-        <Style x:Key="ItemIconCircle" TargetType="Border">
-            <Setter Property="Width" Value="40"/>
-            <Setter Property="Height" Value="40"/>
-            <Setter Property="CornerRadius" Value="20"/>
-            <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
-            <Setter Property="HorizontalAlignment" Value="Center"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-        </Style>
-
-        <Style TargetType="Button" BasedOn="{StaticResource TonalButtonStyle}">
+        <!-- Tonal "Install" button -->
+        <Style x:Key="InstallButtonStyle" TargetType="Button" BasedOn="{StaticResource TonalButtonStyle}">
             <Setter Property="Padding" Value="16,8"/>
             <Setter Property="Height" Value="34"/>
             <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <!-- Subtle "Uninstall" button -->
+        <Style x:Key="UninstallButtonStyle" TargetType="Button" BasedOn="{StaticResource TonalButtonStyle}">
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="Height" Value="34"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="{DynamicResource ErrorBrush}"/>
+        </Style>
+
+        <!-- Refresh button -->
+        <Style x:Key="RefreshButtonStyle" TargetType="Button" BasedOn="{StaticResource TonalButtonStyle}">
+            <Setter Property="Padding" Value="14,8"/>
+            <Setter Property="Height" Value="34"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Width" Value="100"/>
+        </Style>
+
+        <!-- Section header text style -->
+        <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+            <Setter Property="Foreground" Value="{DynamicResource OnSurfaceBrush}"/>
+        </Style>
+
+        <!-- Section subtitle text style -->
+        <Style x:Key="SectionSubtitleStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Foreground" Value="{DynamicResource OnSurfaceVariantBrush}"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
         </Style>
     </UserControl.Resources>
 
@@ -36,33 +61,37 @@
             <StackPanel Orientation="Vertical">
 
                 <!-- Header -->
-                <Grid Margin="4,0,0,4">
+                <Grid Margin="4,0,0,16">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
                         <TextBlock Text="Extensions" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource OnSurfaceBrush}"/>
-                        <TextBlock Text="Manage source extensions and community repositories." Foreground="{DynamicResource OnSurfaceVariantBrush}" FontSize="12" Margin="0,2,0,0"/>
+                        <TextBlock Text="Install, uninstall, and manage source providers — built-in and community-built."
+                                   Foreground="{DynamicResource OnSurfaceVariantBrush}" FontSize="12" Margin="0,4,0,0" TextWrapping="Wrap"/>
                     </StackPanel>
-                    <Button Grid.Column="1" Command="{Binding RefreshCommand}" VerticalAlignment="Center" Width="100" Margin="0,0,0,4">
+                    <Button Grid.Column="1" Command="{Binding RefreshCommand}" Style="{StaticResource RefreshButtonStyle}" VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <Path Data="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"
-                                  Width="14" Height="14" Stretch="Uniform"                                Fill="{DynamicResource OnPrimaryBrush}" Margin="0,0,6,0"/>
+                                  Width="14" Height="14" Stretch="Uniform"
+                                  Fill="{DynamicResource OnPrimaryBrush}" Margin="0,0,6,0"/>
                             <TextBlock Text="Refresh"/>
                         </StackPanel>
                     </Button>
                 </Grid>
 
-                <!-- Pre-installed (built-in) providers -->
+                <!-- Pre-installed (protected built-in providers — Local only) -->
                 <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="12" Padding="16" Margin="0,0,0,16">
                     <StackPanel>
-                        <TextBlock Text="Pre-installed" FontWeight="Bold" FontSize="13" Margin="0,0,0,12" Foreground="{DynamicResource OnSurfaceBrush}"/>
+                        <TextBlock Text="Pre-installed" Style="{StaticResource SectionHeaderStyle}"/>
+                        <TextBlock Text="The local-library provider is always available and cannot be uninstalled."
+                                   Style="{StaticResource SectionSubtitleStyle}"/>
 
                         <ItemsControl ItemsSource="{Binding BuiltInProviders}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Background="{DynamicResource SurfaceContainerHighBrush}" CornerRadius="10" Padding="12" Margin="0,4">
+                                    <Border Background="{DynamicResource SurfaceContainerHighBrush}" CornerRadius="10" Padding="14" Margin="0,4">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto"/>
@@ -70,20 +99,25 @@
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
 
-                                            <Border Grid.Column="0" Width="40" Height="40" CornerRadius="20"
-                                                    Background="{DynamicResource PrimaryBrush}" Margin="0,0,12,0">
+                                            <Border Grid.Column="0" Width="44" Height="44" CornerRadius="22"
+                                                    Background="{DynamicResource PrimaryBrush}" Margin="0,0,14,0">
                                                 <Path Data="{Binding SourceType, Converter={StaticResource IconGlyphConverter}}"
-                                                      Width="20" Height="20" Stretch="Uniform"
+                                                      Width="22" Height="22" Stretch="Uniform"
                                                       Fill="{DynamicResource OnPrimaryBrush}"
                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                             </Border>
 
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource OnSurfaceBrush}"/>
-                                                <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}" TextTrimming="CharacterEllipsis"/>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource OnSurfaceBrush}" VerticalAlignment="Center"/>
+                                                    <Border Background="{DynamicResource PrimaryContainerBrush}" CornerRadius="4" Padding="6,2" Margin="8,0,0,0" VerticalAlignment="Center">
+                                                        <TextBlock Text="Protected" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource OnPrimaryContainerBrush}"/>
+                                                    </Border>
+                                                </StackPanel>
+                                                <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}" TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
                                             </StackPanel>
 
-                                            <Border Grid.Column="2" Background="{DynamicResource PrimaryBrush}" CornerRadius="6" Padding="10,4" VerticalAlignment="Center">
+                                            <Border Grid.Column="2" Background="{DynamicResource PrimaryBrush}" CornerRadius="6" Padding="12,5" VerticalAlignment="Center">
                                                 <TextBlock Text="Installed" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource OnPrimaryBrush}"/>
                                             </Border>
                                         </Grid>
@@ -94,15 +128,17 @@
                     </StackPanel>
                 </Border>
 
-                <!-- Available Extensions (built-in) -->
+                <!-- Available Extensions (built-in providers not yet installed) -->
                 <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="12" Padding="16" Margin="0,0,0,16">
                     <StackPanel>
-                        <TextBlock Text="Available Extensions" FontWeight="Bold" FontSize="13" Margin="0,0,0,12" Foreground="{DynamicResource OnSurfaceBrush}"/>
+                        <TextBlock Text="Available Extensions" Style="{StaticResource SectionHeaderStyle}"/>
+                        <TextBlock Text="Built-in source providers you can install. After installation, they will appear in the Sources tab."
+                                   Style="{StaticResource SectionSubtitleStyle}"/>
 
                         <ItemsControl ItemsSource="{Binding AvailableExtensions}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Background="{DynamicResource SurfaceContainerHighBrush}" CornerRadius="10" Padding="12" Margin="0,4">
+                                    <Border Background="{DynamicResource SurfaceContainerHighBrush}" CornerRadius="10" Padding="14" Margin="0,4">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto"/>
@@ -110,43 +146,65 @@
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
 
-                                            <Border Grid.Column="0" Width="40" Height="40" CornerRadius="20"
-                                                    Background="{DynamicResource PrimaryBrush}" Margin="0,0,12,0">
+                                            <Border Grid.Column="0" Width="44" Height="44" CornerRadius="22"
+                                                    Background="{DynamicResource PrimaryBrush}" Margin="0,0,14,0">
                                                 <Path Data="{Binding SourceType, Converter={StaticResource IconGlyphConverter}}"
-                                                      Width="20" Height="20" Stretch="Uniform"
+                                                      Width="22" Height="22" Stretch="Uniform"
                                                       Fill="{DynamicResource OnPrimaryBrush}"
                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                             </Border>
 
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource OnSurfaceBrush}"/>
-                                                <StackPanel Orientation="Horizontal" Margin="0,1,0,1">
-                                                    <TextBlock Text="{Binding Author, StringFormat='by {0}'}" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,0,10,0" TextTrimming="CharacterEllipsis"/>
-                                                    <TextBlock Text="{Binding Version, StringFormat='v{0}'}" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"/>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource OnSurfaceBrush}" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="{Binding Version, StringFormat=' v{0}'}" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}" VerticalAlignment="Center" Margin="6,0,0,0"/>
                                                 </StackPanel>
-                                                <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}" TextTrimming="CharacterEllipsis"/>
+                                                <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                                                    <TextBlock Text="{Binding Author, StringFormat='by {0}'}" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,0,10,0" TextTrimming="CharacterEllipsis"/>
+                                                </StackPanel>
+                                                <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}" TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
                                             </StackPanel>
 
                                             <Button Grid.Column="2" Content="Install"
+                                                    Style="{StaticResource InstallButtonStyle}"
                                                     Command="{Binding DataContext.InstallCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                    CommandParameter="{Binding}" Margin="8,0,0,0"/>
+                                                    CommandParameter="{Binding}" Margin="12,0,0,0" VerticalAlignment="Center"/>
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
+
+                        <!-- Empty state when no available extensions -->
+                        <Border Background="{DynamicResource SurfaceContainerHighBrush}" CornerRadius="10" Padding="14" Margin="0,4">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding AvailableExtensions.Count}" Value="0">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <TextBlock Text="All built-in extensions are already installed."
+                                       FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                                       HorizontalAlignment="Center" Padding="0,4"/>
+                        </Border>
                     </StackPanel>
                 </Border>
 
                 <!-- Installed Extensions -->
                 <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="12" Padding="16" Margin="0,0,0,16">
                     <StackPanel>
-                        <TextBlock Text="Installed Extensions" FontWeight="Bold" FontSize="13" Margin="0,0,0,12" Foreground="{DynamicResource OnSurfaceBrush}"/>
+                        <TextBlock Text="Installed Extensions" Style="{StaticResource SectionHeaderStyle}"/>
+                        <TextBlock Text="Extensions you have installed from a repository or built-in. Click Uninstall to remove."
+                                   Style="{StaticResource SectionSubtitleStyle}"/>
 
                         <ItemsControl ItemsSource="{Binding InstalledExtensions}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Background="{DynamicResource SurfaceContainerHighBrush}" CornerRadius="10" Padding="12" Margin="0,4">
+                                    <Border Background="{DynamicResource SurfaceContainerHighBrush}" CornerRadius="10" Padding="14" Margin="0,4">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto"/>
@@ -154,31 +212,57 @@
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
 
-                                            <Border Grid.Column="0" Width="40" Height="40" CornerRadius="20"
-                                                    Background="{DynamicResource PrimaryBrush}" Margin="0,0,12,0">
+                                            <Border Grid.Column="0" Width="44" Height="44" CornerRadius="22"
+                                                    Background="{DynamicResource PrimaryBrush}" Margin="0,0,14,0">
                                                 <Path Data="{Binding SourceType, Converter={StaticResource IconGlyphConverter}}"
-                                                      Width="20" Height="20" Stretch="Uniform"
+                                                      Width="22" Height="22" Stretch="Uniform"
                                                       Fill="{DynamicResource OnPrimaryBrush}"
                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                             </Border>
 
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource OnSurfaceBrush}"/>
-                                                <StackPanel Orientation="Horizontal" Margin="0,1,0,1">
-                                                    <TextBlock Text="{Binding Author, StringFormat='by {0}'}" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,0,10,0" TextTrimming="CharacterEllipsis"/>
-                                                    <TextBlock Text="{Binding Version, StringFormat='v{0}'}" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"/>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource OnSurfaceBrush}" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="{Binding Version, StringFormat=' v{0}'}" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}" VerticalAlignment="Center" Margin="6,0,0,0"/>
                                                 </StackPanel>
-                                                <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}" TextTrimming="CharacterEllipsis"/>
+                                                <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                                                    <TextBlock Text="{Binding Author, StringFormat='by {0}'}" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,0,10,0" TextTrimming="CharacterEllipsis"/>
+                                                </StackPanel>
+                                                <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}" TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
                                             </StackPanel>
 
                                             <Button Grid.Column="2" Content="Uninstall"
+                                                    Style="{StaticResource UninstallButtonStyle}"
                                                     Command="{Binding DataContext.UninstallCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                    CommandParameter="{Binding}" Foreground="{DynamicResource ErrorBrush}"/>
+                                                    CommandParameter="{Binding}" Margin="12,0,0,0" VerticalAlignment="Center"/>
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
+
+                        <!-- Empty state when no installed extensions -->
+                        <Border Background="{DynamicResource SurfaceContainerHighBrush}" CornerRadius="10" Padding="14" Margin="0,4">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding InstalledExtensions.Count}" Value="0">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel>
+                                <TextBlock Text="No extensions installed yet"
+                                           FontSize="12" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                                           HorizontalAlignment="Center"/>
+                                <TextBlock Text="Install a built-in extension above, or browse the Repositories tab to install community extensions."
+                                           FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                                           HorizontalAlignment="Center" Margin="0,4,0,0" TextWrapping="Wrap" TextAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
                     </StackPanel>
                 </Border>
 

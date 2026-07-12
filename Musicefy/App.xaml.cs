@@ -109,7 +109,7 @@ namespace Musicefy
             services.AddSingleton<IFolderDataProvider>(sp =>
                 new SqliteFolderDataProvider(DatabaseConfig.ConnectionString));
 
-            services.AddSingleton<IExtensionManager, ExtensionManagerImpl>();
+            services.AddSingleton<IExtensionManager>(sp => new ExtensionManagerImpl(sp));
 
             services.AddSingleton<IMusicSourceProvider, SubsonicSourceProvider>();
             // LocalSourceProvider needs ILibraryService and IServiceProvider (for lazy ArtistAlbumService resolution)

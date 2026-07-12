@@ -38,6 +38,7 @@ namespace Musicefy.ViewModels
         public ICommand RemoveRepoCommand { get; }
         public ICommand InstallCommand { get; }
         public ICommand RefreshCommand { get; }
+        public ICommand OpenDeveloperGuideCommand { get; }
 
         public RepositoriesSettingsViewModel(IExtensionManager extensionManager)
         {
@@ -47,6 +48,7 @@ namespace Musicefy.ViewModels
             RemoveRepoCommand = new RelayCommand(async _ => await RemoveRepoAsync(_));
             InstallCommand = new RelayCommand(async _ => await InstallAsync(_));
             RefreshCommand = new RelayCommand(async _ => await LoadAsync());
+            OpenDeveloperGuideCommand = new RelayCommand(_ => OpenDeveloperGuide());
 
             _ = LoadAsync();
         }
@@ -54,6 +56,18 @@ namespace Musicefy.ViewModels
         public RepositoriesSettingsViewModel() : this(
             App.Services.GetService<IExtensionManager>())
         {
+        }
+
+        /// <summary>
+        /// Returns true if the given extension manifest is currently installed
+        /// in the IExtensionManager. Used by the UI to show an "Installed" badge
+        /// instead of the Install button.
+        /// </summary>
+        public bool IsExtensionInstalled(ExtensionManifest extension)
+        {
+            if (extension == null) return false;
+            return _extensionManager.GetInstalledExtensions()
+                .Any(e => string.Equals(e.Id, extension.Id, StringComparison.OrdinalIgnoreCase));
         }
 
         public async Task LoadAsync()
@@ -107,6 +121,14 @@ namespace Musicefy.ViewModels
         {
             if (parameter is ExtensionManifest extension)
             {
+                // If already installed, just inform the user.
+                if (IsExtensionInstalled(extension))
+                {
+                    System.Windows.MessageBox.Show($"Extension '{extension.Name}' is already installed.",
+                        "Musicefy", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                    return;
+                }
+
                 try
                 {
                     await _extensionManager.InstallExtensionAsync(extension);
@@ -119,6 +141,28 @@ namespace Musicefy.ViewModels
                     System.Windows.MessageBox.Show($"Failed to install: {ex.Message}", "Error",
                         System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                 }
+            }
+        }
+
+        private void OpenDeveloperGuide()
+        {
+            // The developer guide lives in the dedicated Musicefy-Extensions repo
+            // on GitHub. Open it in the user's default browser.
+            const string guideUrl = "https://github.com/marbou92/Musicefy-Extensions";
+
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = guideUrl,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show(
+                    $"Could not open the developer guide in your browser.\n\nURL: {guideUrl}\n\nError: {ex.Message}",
+                    "Musicefy", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
             }
         }
     }

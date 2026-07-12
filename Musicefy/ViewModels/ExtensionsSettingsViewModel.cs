@@ -68,9 +68,32 @@ namespace Musicefy.ViewModels
         {
         }
 
+        /// <summary>
+        /// True if the given extension manifest corresponds to a protected
+        /// source type that cannot be uninstalled (e.g. Local).
+        /// Used by the UI to hide the Uninstall button.
+        /// </summary>
+        public bool IsProtected(ExtensionManifest extension)
+        {
+            if (extension == null) return false;
+            return _extensionManager.IsProtectedSourceType(extension.SourceType);
+        }
+
+        /// <summary>
+        /// True if the given built-in provider corresponds to a protected
+        /// source type that cannot be uninstalled (e.g. Local).
+        /// </summary>
+        public bool IsProtected(IMusicSourceProvider provider)
+        {
+            if (provider == null) return false;
+            return _extensionManager.IsProtectedSourceType(provider.SourceType);
+        }
+
         private void LoadBuiltInProviders()
         {
             var providers = _serviceProvider.GetServices<IMusicSourceProvider>();
+            // Only Local is permanently pre-installed. Subsonic/YouTube are
+            // installable extensions that live in AvailableExtensions.
             var local = providers.FirstOrDefault(p => p.SourceType == Local);
             BuiltInProviders = new ObservableCollection<IMusicSourceProvider>();
             if (local != null)
@@ -86,10 +109,13 @@ namespace Musicefy.ViewModels
             var available = new ObservableCollection<ExtensionManifest>();
             foreach (var p in providers)
             {
+                // Local is pre-installed, not in AvailableExtensions.
                 if (p.SourceType == Local)
                     continue;
 
                 var id = $"builtin_{p.SourceType.ToLower()}";
+                // If the user has already installed this built-in extension,
+                // it shows up in InstalledExtensions — don't also show it here.
                 if (installedIds.Contains(id))
                     continue;
 
@@ -112,7 +138,15 @@ namespace Musicefy.ViewModels
             try
             {
                 var installed = _extensionManager.GetInstalledExtensions();
-                InstalledExtensions = new ObservableCollection<ExtensionManifest>(installed);
+                // Never show protected source types (e.g. Local) in the
+                // InstalledExtensions list — they appear in BuiltInProviders
+                // with a "Protected" badge and no Uninstall button. This is
+                // defense-in-depth at the UI layer: even if a stale manifest
+                // exists on disk, it never surfaces an uninstallable entry.
+                var visible = installed
+                    .Where(e => !_extensionManager.IsProtectedSourceType(e.SourceType))
+                    .ToList();
+                InstalledExtensions = new ObservableCollection<ExtensionManifest>(visible);
                 LoadAvailableExtensions();
             }
             finally
@@ -148,6 +182,28 @@ namespace Musicefy.ViewModels
         {
             if (parameter is ExtensionManifest extension)
             {
+                // UI-level guard: never offer to uninstall protected source types.
+                // Service-level guard also enforces this in ExtensionManagerImpl —
+                // this is defense-in-depth.
+                if (_extensionManager.IsProtectedSourceType(extension.SourceType))
+                {
+                    System.Windows.MessageBox.Show(
+                        $"The '{extension.Name}' extension is required by the application and cannot be uninstalled.",
+                        "Musicefy",
+                        System.Windows.MessageBoxButton.OK,
+                        System.Windows.MessageBoxImage.Information);
+                    return;
+                }
+
+                var confirm = System.Windows.MessageBox.Show(
+                    $"Are you sure you want to uninstall '{extension.Name}'?",
+                    "Uninstall Extension",
+                    System.Windows.MessageBoxButton.YesNo,
+                    System.Windows.MessageBoxImage.Question);
+
+                if (confirm != System.Windows.MessageBoxResult.Yes)
+                    return;
+
                 try
                 {
                     if (extension.Id.StartsWith("builtin_"))
