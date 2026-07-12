@@ -90,9 +90,57 @@ namespace Musicefy.ViewModels
             get => string.Equals(Musicefy.Properties.Settings.Default.YouTubeAudioQuality, "aac", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
             set
             {
-                Musicefy.Properties.Settings.Default.YouTubeAudioQuality = value == 1 ? "aac" : "opus";
+                var newQuality = value == 1 ? "aac" : "opus";
+                Musicefy.Properties.Settings.Default.YouTubeAudioQuality = newQuality;
                 OnPropertyChanged();
+
+                // Sprint 5: Also update the YouTube source's audioQuality config
+                // so the change takes effect on the next track (no restart needed).
+                try
+                {
+                    var sourceManager = App.Services?.GetService(typeof(Musicefy.Core.Interfaces.IStreamingSourceManager))
+                                         as Musicefy.Core.Interfaces.IStreamingSourceManager;
+                    if (sourceManager != null)
+                    {
+                        var ytSource = sourceManager.Sources.FirstOrDefault(
+                            s => string.Equals(s.Type, Musicefy.Core.SourceTypes.YouTube, StringComparison.OrdinalIgnoreCase));
+                        if (ytSource != null)
+                        {
+                            ytSource.Configuration["audioQuality"] = newQuality;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[DownloadsSettings] Failed to update YouTube audio quality: {ex.Message}");
+                }
             }
+        }
+
+        // ── Sprint 5: Skip Silence settings ─────────────────────────────────
+        public bool SkipSilenceEnabled
+        {
+            get => Musicefy.Properties.Settings.Default.SkipSilenceEnabled;
+            set { Musicefy.Properties.Settings.Default.SkipSilenceEnabled = value; OnPropertyChanged(); }
+        }
+
+        public int SkipSilenceThresholdDb
+        {
+            get => Musicefy.Properties.Settings.Default.SkipSilenceThresholdDb;
+            set { Musicefy.Properties.Settings.Default.SkipSilenceThresholdDb = value; OnPropertyChanged(); }
+        }
+
+        // ── Sprint 5: Crossfade settings ────────────────────────────────────
+        public bool CrossfadeEnabled
+        {
+            get => Musicefy.Properties.Settings.Default.CrossfadeEnabled;
+            set { Musicefy.Properties.Settings.Default.CrossfadeEnabled = value; OnPropertyChanged(); }
+        }
+
+        public double CrossfadeDurationSeconds
+        {
+            get => Musicefy.Properties.Settings.Default.CrossfadeDurationSeconds;
+            set { Musicefy.Properties.Settings.Default.CrossfadeDurationSeconds = value; OnPropertyChanged(); }
         }
 
         // ── Sprint 4: SponsorBlock settings ──────────────────────────────────
@@ -270,6 +318,10 @@ namespace Musicefy.ViewModels
             OnPropertyChanged(nameof(LyricsEnabled));
             OnPropertyChanged(nameof(ShowLocalOnHome));
             OnPropertyChanged(nameof(ShowYouTubeOnHome));
+            OnPropertyChanged(nameof(SkipSilenceEnabled));
+            OnPropertyChanged(nameof(SkipSilenceThresholdDb));
+            OnPropertyChanged(nameof(CrossfadeEnabled));
+            OnPropertyChanged(nameof(CrossfadeDurationSeconds));
             UpdateCacheStatus();
             ToastService.ShowToast("Changes reverted.", Brushes.Gray);
         }

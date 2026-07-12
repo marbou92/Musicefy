@@ -333,5 +333,52 @@ namespace Musicefy.Properties {
             get => ((string)(this["LyricsProvider"]));
             set => this["LyricsProvider"] = value;
         }
+
+        // ── Sprint 5: Playback — Skip Silence + Crossfade ────────────────────
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool SkipSilenceEnabled
+        {
+            get => ((bool)(this["SkipSilenceEnabled"]));
+            set => this["SkipSilenceEnabled"] = value;
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("-40")]
+        public int SkipSilenceThresholdDb
+        {
+            get => ((int)(this["SkipSilenceThresholdDb"]));
+            set => this["SkipSilenceThresholdDb"] = value;
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool CrossfadeEnabled
+        {
+            get => ((bool)(this["CrossfadeEnabled"]));
+            set => this["CrossfadeEnabled"] = value;
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("5")]
+        public double CrossfadeDurationSeconds
+        {
+            get => ((double)(this["CrossfadeDurationSeconds"]));
+            set => this["CrossfadeDurationSeconds"] = value;
+        }
+
+        // ── Sprint 6: Backup & Restore ───────────────────────────────────────
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string LastBackupPath
+        {
+            get => ((string)(this["LastBackupPath"]));
+            set => this["LastBackupPath"] = value;
+        }
     }
 }

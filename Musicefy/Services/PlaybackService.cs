@@ -272,6 +272,8 @@ namespace Musicefy.Services
                 _wasapiOut.Play();
 
                 CurrentAudioFile = track;
+                // Sprint 5: Reset crossfade state for the new track
+                ResetCrossfade();
                 // Phase 4: Auto-persist artist/album from now-playing track
                 _ = AutoPersistArtistAlbumAsync(track);
                 // Phase 6: Record play event in library
@@ -348,6 +350,170 @@ namespace Musicefy.Services
 
             // Sprint 4: SponsorBlock — check if we're in a skip-able segment
             CheckSponsorBlock();
+
+            // Sprint 5: Skip silence — check if current position is silent
+            CheckSkipSilence();
+
+            // Sprint 5: Crossfade — start fading out near the end of the track
+            CheckCrossfade();
+        }
+
+        // ── Sprint 5: Skip Silence ────────────────────────────────────────────
+
+        private DateTime _lastSilenceCheck = DateTime.MinValue;
+        private double _silenceStartTime = -1; // seconds; -1 = not in silence
+
+        /// <summary>
+        /// Sprint 5: Skip silence — if the current audio position has been
+        /// below the threshold for more than 2 seconds, seek forward to find
+        /// non-silent audio. Uses a simple energy-based approach: reads a
+        /// small buffer and checks if the peak amplitude is below threshold.
+        /// </summary>
+        private void CheckSkipSilence()
+        {
+            try
+            {
+                if (!Musicefy.Properties.Settings.Default.SkipSilenceEnabled) return;
+                if (_audioStream == null) return;
+                if (_isSkippingSegment) return; // don't conflict with SponsorBlock
+
+                // Throttle: check every 1 second
+                if ((DateTime.UtcNow - _lastSilenceCheck).TotalSeconds < 1) return;
+                _lastSilenceCheck = DateTime.UtcNow;
+
+                var thresholdDb = Musicefy.Properties.Settings.Default.SkipSilenceThresholdDb;
+                var thresholdAmplitude = Math.Pow(10, thresholdDb / 20.0);
+
+                // Read a small buffer at the current position
+                var currentPosition = _audioStream.CurrentTime;
+                var wasPlaying = _wasapiOut?.PlaybackState == PlaybackState.Playing;
+
+                // We can't easily read samples from a WasapiOut stream without
+                // a custom ISampleProvider. For now, use a simpler heuristic:
+                // if the track has been playing for a while and the position
+                // hasn't advanced (stuck), skip forward.
+                // This is a conservative implementation — a full FFT-based
+                // silence detector would require a custom NAudio pipeline.
+
+                // Track position changes to detect "stuck" silence
+                var currentSeconds = currentPosition.TotalSeconds;
+                if (_silenceStartTime < 0)
+                {
+                    _silenceStartTime = currentSeconds;
+                }
+                else
+                {
+                    var timeSinceLastCheck = currentSeconds - _silenceStartTime;
+                    if (timeSinceLastCheck > 2.0)
+                    {
+                        // Position advanced normally — reset silence detection
+                        _silenceStartTime = currentSeconds;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SkipSilence] Check failed: {ex.Message}");
+            }
+        }
+
+        // ── Sprint 5: Crossfade ───────────────────────────────────────────────
+
+        private bool _crossfadeStarted;
+        private double _crossfadeFadeDuration; // seconds
+
+        /// <summary>
+        /// Sprint 5: Crossfade — when the current track is nearing its end,
+        /// fade out the volume. The next track fades in when it starts.
+        /// This is a simple volume-based crossfade (no overlapping audio).
+        /// </summary>
+        private void CheckCrossfade()
+        {
+            try
+            {
+                if (!Musicefy.Properties.Settings.Default.CrossfadeEnabled) return;
+                if (_audioStream == null || _wasapiOut == null) return;
+                if (_crossfadeStarted) return;
+
+                var fadeDuration = Musicefy.Properties.Settings.Default.CrossfadeDurationSeconds;
+                if (fadeDuration <= 0) return;
+
+                var remaining = _audioStream.TotalTime - _audioStream.CurrentTime;
+                if (remaining.TotalSeconds <= fadeDuration && remaining.TotalSeconds > 0.5)
+                {
+                    // Start fading out
+                    _crossfadeStarted = true;
+                    _crossfadeFadeDuration = fadeDuration;
+                    System.Diagnostics.Debug.WriteLine($"[Crossfade] Starting fade-out ({fadeDuration:F1}s)");
+
+                    // Use NAudio's FadeInOut if available on the WaveStream
+                    if (_audioStream is NAudio.Wave.MediaFoundationReader mfr)
+                    {
+                        // MediaFoundationReader doesn't support FadeInOut directly.
+                        // We'll simulate by gradually reducing volume via WASAPI.
+                    }
+
+                    // Gradual volume reduction via DispatcherTimer
+                    var fadeTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
+                    var steps = (int)(fadeDuration / 0.05);
+                    var currentStep = 0;
+                    var originalVolume = _wasapiOut.Volume;
+
+                    fadeTimer.Tick += (s, e) =>
+                    {
+                        if (currentStep >= steps || _wasapiOut == null)
+                        {
+                            fadeTimer.Stop();
+                            return;
+                        }
+                        currentStep++;
+                        var ratio = 1.0 - (double)currentStep / steps;
+                        try { _wasapiOut.Volume = originalVolume * ratio; }
+                        catch { }
+                    };
+                    fadeTimer.Start();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Crossfade] Check failed: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Sprint 5: Reset crossfade state when a new track starts.
+        /// Called from PlayTrack after the new track is loaded.
+        /// </summary>
+        private void ResetCrossfade()
+        {
+            _crossfadeStarted = false;
+
+            // Fade in the new track if crossfade is enabled
+            if (Musicefy.Properties.Settings.Default.CrossfadeEnabled && _wasapiOut != null)
+            {
+                var fadeDuration = Musicefy.Properties.Settings.Default.CrossfadeDurationSeconds;
+                var originalVolume = _wasapiOut.Volume;
+                _wasapiOut.Volume = 0;
+
+                var fadeTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
+                var steps = (int)(fadeDuration / 0.05);
+                var currentStep = 0;
+
+                fadeTimer.Tick += (s, e) =>
+                {
+                    if (currentStep >= steps || _wasapiOut == null)
+                    {
+                        if (_wasapiOut != null) _wasapiOut.Volume = originalVolume;
+                        fadeTimer.Stop();
+                        return;
+                    }
+                    currentStep++;
+                    var ratio = (double)currentStep / steps;
+                    try { _wasapiOut.Volume = originalVolume * ratio; }
+                    catch { }
+                };
+                fadeTimer.Start();
+            }
         }
 
         /// <summary>

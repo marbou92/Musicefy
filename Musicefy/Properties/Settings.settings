@@ -120,5 +120,24 @@
     <Setting Name="LyricsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)">LrcLib</Value>
     </Setting>
+
+    <!-- ── Sprint 5: Playback — Skip Silence + Crossfade ─────────────────── -->
+    <Setting Name="SkipSilenceEnabled" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="SkipSilenceThresholdDb" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">-40</Value>
+    </Setting>
+    <Setting Name="CrossfadeEnabled" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="CrossfadeDurationSeconds" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">5</Value>
+    </Setting>
+
+    <!-- ── Sprint 6: Backup & Restore ─────────────────────────────────────── -->
+    <Setting Name="LastBackupPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)"></Value>
+    </Setting>
   </Settings>
 </SettingsFile>

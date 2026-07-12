@@ -131,6 +131,13 @@ namespace Musicefy
             // Sprint 4: SponsorBlock service (free, no API key)
             services.AddSingleton<Musicefy.Core.Services.SponsorBlockService>();
 
+            // Sprint 5: History + Stats service
+            services.AddSingleton<Musicefy.Core.Services.HistoryService>(sp =>
+                new Musicefy.Core.Services.HistoryService(DatabaseConfig.ConnectionString));
+
+            // Sprint 6: Backup & Restore service
+            services.AddSingleton<Musicefy.Core.Services.BackupService>();
+
             services.AddSingleton<PlaybackService>(sp => new PlaybackService(
                 sp.GetService<IQueueManager>(),
                 sp.GetService<IStreamingSourceManager>(),
@@ -163,6 +170,11 @@ namespace Musicefy
             services.AddSingleton<LibraryViewModel>();
             services.AddSingleton<AppearanceSettingsViewModel>();
             services.AddSingleton<DownloadsSettingsViewModel>();
+            // Sprint 5: History + Stats ViewModels
+            services.AddTransient<HistoryViewModel>();
+            services.AddTransient<StatsViewModel>();
+            // Sprint 6: Backup & Restore ViewModel
+            services.AddTransient<BackupRestoreViewModel>();
 
             services.AddSingleton<ArtistAlbumService>();
             services.AddTransient<ArtistViewModel>();

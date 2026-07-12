@@ -127,6 +127,54 @@
                             </StackPanel>
                         </StackPanel>
                     </RadioButton>
+
+                    <!-- Sprint 5: History tab -->
+                    <RadioButton x:Name="HistoryButton" Style="{StaticResource SidebarTabStyle}"
+                                 GroupName="SettingsTabs"
+                                 Checked="HistoryButton_Checked">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"
+                                  Width="18" Height="18" Stretch="Uniform"
+                                  Fill="{Binding RelativeSource={RelativeSource AncestorType=RadioButton}, Path=Foreground}"
+                                  Margin="0,0,12,0" VerticalAlignment="Center"/>
+                            <StackPanel>
+                                <TextBlock Text="History" FontWeight="SemiBold" FontSize="13"/>
+                                <TextBlock Text="Recently played" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </RadioButton>
+
+                    <!-- Sprint 5: Stats tab -->
+                    <RadioButton x:Name="StatsButton" Style="{StaticResource SidebarTabStyle}"
+                                 GroupName="SettingsTabs"
+                                 Checked="StatsButton_Checked">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"
+                                  Width="18" Height="18" Stretch="Uniform"
+                                  Fill="{Binding RelativeSource={RelativeSource AncestorType=RadioButton}, Path=Foreground}"
+                                  Margin="0,0,12,0" VerticalAlignment="Center"/>
+                            <StackPanel>
+                                <TextBlock Text="Stats" FontWeight="SemiBold" FontSize="13"/>
+                                <TextBlock Text="Listening activity" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </RadioButton>
+
+                    <!-- Sprint 6: Backup & Restore tab -->
+                    <RadioButton x:Name="BackupButton" Style="{StaticResource SidebarTabStyle}"
+                                 GroupName="SettingsTabs"
+                                 Checked="BackupButton_Checked">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z"
+                                  Width="18" Height="18" Stretch="Uniform"
+                                  Fill="{Binding RelativeSource={RelativeSource AncestorType=RadioButton}, Path=Foreground}"
+                                  Margin="0,0,12,0" VerticalAlignment="Center"/>
+                            <StackPanel>
+                                <TextBlock Text="Backup" FontWeight="SemiBold" FontSize="13"/>
+                                <TextBlock Text="Export &amp; restore" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </RadioButton>
                 </StackPanel>
             </StackPanel>
         </Border>

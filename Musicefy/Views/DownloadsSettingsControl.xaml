@@ -177,6 +177,56 @@
                 </Border>
 
                 <!-- ════════════════════════════════════════════════════════════ -->
+                <!-- SECTION 4.5: PLAYBACK (Sprint 5 — Skip Silence + Crossfade)  -->
+                <!-- ════════════════════════════════════════════════════════════ -->
+                <TextBlock Text="Playback" FontWeight="Bold" FontSize="15"
+                           Foreground="{DynamicResource OnSurfaceBrush}" Margin="4,0,0,4"/>
+                <TextBlock Text="Skip silence and crossfade between tracks for gapless listening."
+                           FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                           Margin="4,0,0,12" TextWrapping="Wrap"/>
+
+                <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="14"
+                        Padding="16,12" Margin="0,0,0,20">
+                    <StackPanel>
+                        <CheckBox IsChecked="{Binding SkipSilenceEnabled}">
+                            <StackPanel>
+                                <TextBlock Text="Skip silence" FontWeight="Bold" FontSize="14"
+                                           Foreground="{DynamicResource OnSurfaceBrush}"/>
+                                <TextBlock Text="Automatically skip silent sections in tracks."
+                                           FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </CheckBox>
+
+                        <TextBlock Text="Silence threshold (dB)" FontSize="12" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,12,0,4"/>
+                        <Slider Minimum="-80" Maximum="-20" TickFrequency="5"
+                                Value="{Binding SkipSilenceThresholdDb}"
+                                IsEnabled="{Binding SkipSilenceEnabled}"
+                                TickPlacement="BottomRight" SmallChange="1" LargeChange="5"/>
+                        <TextBlock Text="Lower = more aggressive skipping. Default: -40 dB."
+                                   FontSize="10" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,2,0,0"/>
+
+                        <CheckBox IsChecked="{Binding CrossfadeEnabled}" Margin="0,12,0,0">
+                            <StackPanel>
+                                <TextBlock Text="Crossfade" FontWeight="Bold" FontSize="14"
+                                           Foreground="{DynamicResource OnSurfaceBrush}"/>
+                                <TextBlock Text="Fade out the current track while fading in the next."
+                                           FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </CheckBox>
+
+                        <TextBlock Text="Crossfade duration (seconds)" FontSize="12" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,12,0,4"/>
+                        <Slider Minimum="1" Maximum="12" TickFrequency="1"
+                                Value="{Binding CrossfadeDurationSeconds}"
+                                IsEnabled="{Binding CrossfadeEnabled}"
+                                TickPlacement="BottomRight" SmallChange="1" LargeChange="2"/>
+                        <TextBlock Text="Default: 5 seconds."
+                                   FontSize="10" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- ════════════════════════════════════════════════════════════ -->
                 <!-- SECTION 5: HOME SCREEN VISIBILITY (absorbed from Discover)   -->
                 <!-- ════════════════════════════════════════════════════════════ -->
                 <TextBlock Text="Home Screen" FontWeight="Bold" FontSize="15"

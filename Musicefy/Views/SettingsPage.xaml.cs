@@ -130,6 +130,23 @@ namespace Musicefy.Views
             yield return new SettingsSearchItem("LrcLib lyrics provider", "Storage & Sources", () => SwitchToTab("Downloads"));
             yield return new SettingsSearchItem("Show local music on Home", "Storage & Sources", () => SwitchToTab("Downloads"));
             yield return new SettingsSearchItem("Show YouTube on Home", "Storage & Sources", () => SwitchToTab("Downloads"));
+            // Sprint 5
+            yield return new SettingsSearchItem("Skip silence", "Storage & Sources", () => SwitchToTab("Downloads"));
+            yield return new SettingsSearchItem("Silence threshold", "Storage & Sources", () => SwitchToTab("Downloads"));
+            yield return new SettingsSearchItem("Crossfade", "Storage & Sources", () => SwitchToTab("Downloads"));
+            yield return new SettingsSearchItem("Crossfade duration", "Storage & Sources", () => SwitchToTab("Downloads"));
+            yield return new SettingsSearchItem("Playback", "Storage & Sources", () => SwitchToTab("Downloads"));
+            // Sprint 5/6
+            yield return new SettingsSearchItem("Listen history", "History", () => SwitchToTab("History"));
+            yield return new SettingsSearchItem("Recently played", "History", () => SwitchToTab("History"));
+            yield return new SettingsSearchItem("Stats", "Stats", () => SwitchToTab("Stats"));
+            yield return new SettingsSearchItem("Most played", "Stats", () => SwitchToTab("Stats"));
+            yield return new SettingsSearchItem("Top tracks", "Stats", () => SwitchToTab("Stats"));
+            yield return new SettingsSearchItem("Top artists", "Stats", () => SwitchToTab("Stats"));
+            yield return new SettingsSearchItem("Top albums", "Stats", () => SwitchToTab("Stats"));
+            yield return new SettingsSearchItem("Backup", "Backup", () => SwitchToTab("Backup"));
+            yield return new SettingsSearchItem("Restore", "Backup", () => SwitchToTab("Backup"));
+            yield return new SettingsSearchItem("Export", "Backup", () => SwitchToTab("Backup"));
         }
 
         private void SwitchToTab(string tabName)
@@ -142,6 +159,15 @@ namespace Musicefy.Views
                     break;
                 case "Downloads":
                     DownloadsButton.IsChecked = true;
+                    break;
+                case "History":
+                    HistoryButton.IsChecked = true;
+                    break;
+                case "Stats":
+                    StatsButton.IsChecked = true;
+                    break;
+                case "Backup":
+                    BackupButton.IsChecked = true;
                     break;
             }
         }
@@ -173,6 +199,54 @@ namespace Musicefy.Views
                 try { ShowDownloads(); }
                 catch (Exception ex) { ShowFallbackContent($"Error: {ex.Message}"); }
             }
+        }
+
+        // ── Sprint 5: History tab ────────────────────────────────────────────
+        private void HistoryButton_Checked(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (HistoryButton.IsChecked == true)
+            {
+                try { ShowHistory(); }
+                catch (Exception ex) { ShowFallbackContent($"Error: {ex.Message}"); }
+            }
+        }
+
+        // ── Sprint 5: Stats tab ──────────────────────────────────────────────
+        private void StatsButton_Checked(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (StatsButton.IsChecked == true)
+            {
+                try { ShowStats(); }
+                catch (Exception ex) { ShowFallbackContent($"Error: {ex.Message}"); }
+            }
+        }
+
+        // ── Sprint 6: Backup tab ─────────────────────────────────────────────
+        private void BackupButton_Checked(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (BackupButton.IsChecked == true)
+            {
+                try { ShowBackup(); }
+                catch (Exception ex) { ShowFallbackContent($"Error: {ex.Message}"); }
+            }
+        }
+
+        private void ShowHistory()
+        {
+            var control = new HistoryControl();
+            AnimateContentChange(control, "Listen History");
+        }
+
+        private void ShowStats()
+        {
+            var control = new StatsControl();
+            AnimateContentChange(control, "Stats");
+        }
+
+        private void ShowBackup()
+        {
+            var control = new BackupRestoreControl();
+            AnimateContentChange(control, "Backup & Restore");
         }
 
         private void ShowAppearance()
