@@ -468,7 +468,7 @@ namespace Musicefy.Services
                         }
                         currentStep++;
                         var ratio = 1.0 - (double)currentStep / steps;
-                        try { _wasapiOut.Volume = originalVolume * ratio; }
+                        try { _wasapiOut.Volume = (float)(originalVolume * ratio); }
                         catch { }
                     };
                     fadeTimer.Start();
@@ -509,7 +509,7 @@ namespace Musicefy.Services
                     }
                     currentStep++;
                     var ratio = (double)currentStep / steps;
-                    try { _wasapiOut.Volume = originalVolume * ratio; }
+                    try { _wasapiOut.Volume = (float)(originalVolume * ratio); }
                     catch { }
                 };
                 fadeTimer.Start();
