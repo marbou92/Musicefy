@@ -38,6 +38,11 @@
         <Setter Property="UseLayoutRounding" Value="True"/>
         <Setter Property="TextElement.FontFamily" Value="Segoe UI"/>
         <Setter Property="TextElement.FontSize" Value="14"/>
+        <!-- Remove the default Windows border and enable transparency
+             so we can draw our own border + drop shadow. -->
+        <Setter Property="WindowStyle" Value="None"/>
+        <Setter Property="AllowsTransparency" Value="True"/>
+        <Setter Property="ResizeMode" Value="CanResize"/>
         <Setter Property="WindowChrome.WindowChrome">
             <Setter.Value>
                 <WindowChrome CaptionHeight="40" 
@@ -49,11 +54,20 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Window}">
+                    <!-- Outer border: provides the drop shadow effect.
+                         No visible border line — just the shadow. -->
                     <Border Background="{TemplateBinding Background}" 
-                            BorderBrush="{DynamicResource BorderBrush}" 
-                            BorderThickness="1"
+                            BorderBrush="Transparent"
+                            BorderThickness="0"
                             VerticalAlignment="Stretch"
                             HorizontalAlignment="Stretch">
+                        <Border.Effect>
+                            <DropShadowEffect Color="#000000" 
+                                              BlurRadius="12" 
+                                              ShadowDepth="0" 
+                                              Opacity="0.5" 
+                                              Direction="270"/>
+                        </Border.Effect>
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="40"/>

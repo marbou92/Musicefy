@@ -1,43 +1,54 @@
-# Fix: White Outlines + AMOLED Improvement
+# Fix: Remove White Outline + Add Drop Shadow
 
-## Files Changed (2)
+## File Changed (1)
 
 ```
-Musicefy/Themes/Modes/Dark.xaml      — fix BorderBrush color (white outline)
-Musicefy/Themes/Modes/DarkPure.xaml  — true AMOLED (pure black, invisible borders)
+Musicefy/Themes/Base.xaml
 ```
 
-## Fix 1: White outlines on MainWindow
+## Root Cause
 
-**Root cause:** The window template uses `BorderBrush="{DynamicResource BorderBrush}"` with `BorderThickness="1"`. The `BorderBrush` color was `#938F99` (light grey) in Dark mode — that's the white outline you see around the window.
+The window used `WindowChrome` for a custom title bar but did NOT set `WindowStyle="None"` or `AllowsTransparency="True"`. This means WPF still drew the **default Windows window border** under the custom chrome — a thin white/light-grey line around the entire window edge.
 
-**Fix:** Changed `BorderBrush` in Dark.xaml from `#938F99` → `#49454F` (dark grey — barely visible, matches OutlineVariant).
+Additionally, the window template had `BorderBrush="{DynamicResource BorderBrush}"` with `BorderThickness="1"` — drawing a SECOND visible border line on top of the Windows one.
 
-## Fix 2: AMOLED mode improvement
+## Fix (3 changes in Base.xaml)
 
-**Before:** AMOLED surfaces were `#000000`, `#050505`, `#0A0A0A`, `#0F0F0F`, `#141414` — nearly identical to Dark mode's `#141218`, `#1D1B20`, `#211F26`. Borders were `#938F99` (same as Dark — visible white outline).
+### 1. Remove the default Windows border
+Added to `EchoCustomWindowStyle`:
+```xml
+<Setter Property="WindowStyle" Value="None"/>
+<Setter Property="AllowsTransparency" Value="True"/>
+<Setter Property="ResizeMode" Value="CanResize"/>
+```
 
-**After:**
-- ALL surfaces → pure black (`#000000`) or very near-black (`#0A0A0A`, `#111111`, `#1A1A1A`)
-- `BackgroundBrush` → `#000000` (was `#000000` — kept)
-- `SecondaryBackgroundBrush` → `#000000` (was `#050505`)
-- `TextBrush` → `#FFFFFF` (was `#E6E0E9` — brighter for maximum contrast on pure black)
-- `MutedTextBrush` → `#AAAAAA` (was `#CAC4D0`)
-- `BorderBrush` → `#1A1A1A` (was `#938F99` — now invisible)
-- `OutlineBrush` → `#1A1A1A` (was `#938F99` — now invisible)
-- `OutlineVariantBrush` → `#0A0A0A` (was `#49454F`)
-- `HoverBrush` → `#0A0A0A` (was `#1A1A1A`)
-- `SurfaceVariantBrush` → `#1A1A1A` (was `#49454F`)
-- `OnSurfaceVariantBrush` → `#AAAAAA` (was `#CAC4D0`)
+`WindowStyle="None"` removes the default Windows border entirely.
+`AllowsTransparency="True"` enables the window to have transparent areas (needed for drop shadow).
 
-The AMOLED mode is now clearly different from Dark mode:
-- Dark mode: purple-tinted dark grey surfaces + visible borders
-- AMOLED mode: pure black surfaces + invisible borders + brighter text
+### 2. Remove the visible border line
+Changed the window template's outer Border:
+- `BorderBrush="{DynamicResource BorderBrush}"` → `BorderBrush="Transparent"`
+- `BorderThickness="1"` → `BorderThickness="0"`
+
+### 3. Add a drop shadow
+Added a `DropShadowEffect` to the outer Border:
+```xml
+<Border.Effect>
+    <DropShadowEffect Color="#000000" 
+                      BlurRadius="12" 
+                      ShadowDepth="0" 
+                      Opacity="0.5" 
+                      Direction="270"/>
+</Border.Effect>
+```
+
+This creates a soft shadow around all 4 edges of the window (ShadowDepth=0 = centered shadow, BlurRadius=12 = soft spread).
 
 ## Testing
 
-1. Upload both files to the repo (preserve the `Musicefy/Themes/Modes/` directory structure).
+1. Upload `Musicefy/Themes/Base.xaml`.
 2. Build and launch.
-3. Switch to Dark mode → window border should be barely visible (no white outline)
-4. Switch to AMOLED mode → should be clearly pure black (not just "dark grey like Dark mode")
-5. Compare Dark vs AMOLED side by side — the difference should be obvious
+3. The white outline around the window should be GONE.
+4. A soft drop shadow should appear around the window edges instead.
+5. The window should still be resizable (drag any edge).
+6. The custom title bar should still work (drag to move, min/max/close buttons).
