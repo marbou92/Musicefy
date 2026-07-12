@@ -84,7 +84,7 @@ namespace Musicefy.Views
             if (string.IsNullOrEmpty(q))
             {
                 SearchResults.Clear();
-                SearchResults.Visibility = Visibility.Collapsed;
+                SearchResultsPanel.Visibility = Visibility.Collapsed;
                 TabsPanel.Visibility = Visibility.Visible;
                 return;
             }
@@ -97,7 +97,7 @@ namespace Musicefy.Views
                 SearchResults.Add(item);
             }
 
-            SearchResults.Visibility = SearchResults.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+            SearchResultsPanel.Visibility = SearchResults.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
             TabsPanel.Visibility = Visibility.Collapsed;
         }
 

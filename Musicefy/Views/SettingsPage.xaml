@@ -75,7 +75,9 @@
                 </Border>
 
                 <!-- Search Results Panel (visible when searching) -->
-                <ItemsControl x:Name="SearchResults" Visibility="Collapsed" Margin="4,0,4,8">
+                <ItemsControl x:Name="SearchResultsPanel"
+                              ItemsSource="{Binding SearchResults}"
+                              Visibility="Collapsed" Margin="4,0,4,8">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Border Background="{DynamicResource SurfaceContainerHighBrush}"
