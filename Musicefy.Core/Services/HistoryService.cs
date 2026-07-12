@@ -33,34 +33,40 @@ namespace Musicefy.Core.Services
             await connection.OpenAsync(cancellationToken);
 
             var sql = @"
-                SELECT pe.Id, pe.TrackFilePath, pe.Timestamp, pe.PlayTimeMs,
-                       t.Title, t.Artist, t.Album, t.Duration, t.CoverPath,
-                       t.SourceType, t.YouTubeVideoId
+                SELECT pe.Id AS Id,
+                       pe.TrackFilePath AS TrackFilePath,
+                       pe.Timestamp AS Timestamp,
+                       pe.PlayTimeMs AS PlayTimeMs,
+                       t.Title AS Title,
+                       t.Artist AS Artist,
+                       t.Album AS Album,
+                       t.Duration AS Duration,
+                       t.CoverPath AS CoverPath,
+                       t.SourceType AS SourceType,
+                       t.YouTubeVideoId AS YouTubeVideoId
                 FROM PlayEvents pe
                 LEFT JOIN Tracks t ON pe.TrackFilePath = t.FilePath
                 ORDER BY pe.Timestamp DESC
                 LIMIT @Limit";
 
-            var rows = await connection.QueryAsync<dynamic>(sql, new { Limit = limit });
+            var rows = await connection.QueryAsync<HistoryEntryRow>(sql, new { Limit = limit });
             var results = new List<HistoryEntry>();
 
             foreach (var row in rows)
             {
                 results.Add(new HistoryEntry
                 {
-                    Id = (long)row.Id,
-                    TrackFilePath = (string)row.TrackFilePath,
-                    Timestamp = DateTime.TryParse((string)row.Timestamp, out var ts) ? ts : DateTime.MinValue,
-                    PlayTimeMs = (long)(row.PlayTimeMs ?? 0),
-                    Title = (string)row.Title ?? "Unknown",
-                    Artist = (string)row.Artist ?? "Unknown Artist",
-                    Album = (string)row.Album ?? "",
-                    Duration = row.Duration != null
-                        ? TimeSpan.TryParse((string)row.Duration, out var d) ? d : TimeSpan.Zero
-                        : TimeSpan.Zero,
-                    CoverPath = (string)row.CoverPath,
-                    SourceType = (string)row.SourceType ?? "Local",
-                    YouTubeVideoId = (string)row.YouTubeVideoId
+                    Id = row.Id,
+                    TrackFilePath = row.TrackFilePath,
+                    Timestamp = DateTime.TryParse(row.Timestamp, out var ts) ? ts : DateTime.MinValue,
+                    PlayTimeMs = row.PlayTimeMs,
+                    Title = row.Title ?? "Unknown",
+                    Artist = row.Artist ?? "Unknown Artist",
+                    Album = row.Album ?? "",
+                    Duration = TimeSpan.TryParse(row.Duration, out var d) ? d : TimeSpan.Zero,
+                    CoverPath = row.CoverPath,
+                    SourceType = row.SourceType ?? "Local",
+                    YouTubeVideoId = row.YouTubeVideoId
                 });
             }
 
@@ -76,19 +82,19 @@ namespace Musicefy.Core.Services
             await connection.OpenAsync(cancellationToken);
 
             var sql = @"
-                SELECT DATE(Timestamp) as Date, COUNT(*) as Count
+                SELECT DATE(Timestamp) AS Date, COUNT(*) AS Count
                 FROM PlayEvents
                 WHERE Timestamp >= @Cutoff
                 GROUP BY DATE(Timestamp)
                 ORDER BY Date DESC";
 
             var cutoff = DateTime.UtcNow.AddDays(-days).ToString("o");
-            var rows = await connection.QueryAsync<dynamic>(sql, new { Cutoff = cutoff });
+            var rows = await connection.QueryAsync<DailyPlayCountRow>(sql, new { Cutoff = cutoff });
 
             return rows.Select(r => new DailyPlayCount
             {
-                Date = DateTime.TryParse((string)r.Date, out var d) ? d : DateTime.MinValue,
-                Count = (int)r.Count
+                Date = DateTime.TryParse(r.Date, out var d) ? d : DateTime.MinValue,
+                Count = r.Count
             }).ToList();
         }
 
@@ -101,8 +107,9 @@ namespace Musicefy.Core.Services
             await connection.OpenAsync(cancellationToken);
 
             var sql = @"
-                SELECT t.Title, t.Artist, t.Album, t.CoverPath, t.SourceType,
-                       COUNT(pe.Id) as PlayCount
+                SELECT t.Title AS Title, t.Artist AS Artist, t.Album AS Album,
+                       t.CoverPath AS CoverPath, t.SourceType AS SourceType,
+                       COUNT(pe.Id) AS PlayCount
                 FROM PlayEvents pe
                 LEFT JOIN Tracks t ON pe.TrackFilePath = t.FilePath
                 WHERE pe.Timestamp >= @Cutoff AND t.Title IS NOT NULL
@@ -111,17 +118,9 @@ namespace Musicefy.Core.Services
                 LIMIT @Limit";
 
             var cutoff = DateTime.UtcNow.AddDays(-days).ToString("o");
-            var rows = await connection.QueryAsync<dynamic>(sql, new { Cutoff = cutoff, Limit = limit });
+            var rows = await connection.QueryAsync<StatsEntry>(sql, new { Cutoff = cutoff, Limit = limit });
 
-            return rows.Select(r => new StatsEntry
-            {
-                Title = (string)r.Title ?? "Unknown",
-                Artist = (string)r.Artist ?? "Unknown Artist",
-                Album = (string)r.Album ?? "",
-                CoverPath = (string)r.CoverPath,
-                SourceType = (string)r.SourceType ?? "Local",
-                PlayCount = (int)r.PlayCount
-            }).ToList();
+            return rows.ToList();
         }
 
         /// <summary>
@@ -133,7 +132,7 @@ namespace Musicefy.Core.Services
             await connection.OpenAsync(cancellationToken);
 
             var sql = @"
-                SELECT t.Artist, COUNT(pe.Id) as PlayCount
+                SELECT t.Artist AS Artist, COUNT(pe.Id) AS PlayCount
                 FROM PlayEvents pe
                 LEFT JOIN Tracks t ON pe.TrackFilePath = t.FilePath
                 WHERE pe.Timestamp >= @Cutoff AND t.Artist IS NOT NULL AND t.Artist != ''
@@ -142,13 +141,9 @@ namespace Musicefy.Core.Services
                 LIMIT @Limit";
 
             var cutoff = DateTime.UtcNow.AddDays(-days).ToString("o");
-            var rows = await connection.QueryAsync<dynamic>(sql, new { Cutoff = cutoff, Limit = limit });
+            var rows = await connection.QueryAsync<StatsEntry>(sql, new { Cutoff = cutoff, Limit = limit });
 
-            return rows.Select(r => new StatsEntry
-            {
-                Artist = (string)r.Artist ?? "Unknown Artist",
-                PlayCount = (int)r.PlayCount
-            }).ToList();
+            return rows.ToList();
         }
 
         /// <summary>
@@ -160,7 +155,8 @@ namespace Musicefy.Core.Services
             await connection.OpenAsync(cancellationToken);
 
             var sql = @"
-                SELECT t.Album, t.Artist, t.CoverPath, COUNT(pe.Id) as PlayCount
+                SELECT t.Album AS Album, t.Artist AS Artist, t.CoverPath AS CoverPath,
+                       COUNT(pe.Id) AS PlayCount
                 FROM PlayEvents pe
                 LEFT JOIN Tracks t ON pe.TrackFilePath = t.FilePath
                 WHERE pe.Timestamp >= @Cutoff AND t.Album IS NOT NULL AND t.Album != ''
@@ -169,15 +165,9 @@ namespace Musicefy.Core.Services
                 LIMIT @Limit";
 
             var cutoff = DateTime.UtcNow.AddDays(-days).ToString("o");
-            var rows = await connection.QueryAsync<dynamic>(sql, new { Cutoff = cutoff, Limit = limit });
+            var rows = await connection.QueryAsync<StatsEntry>(sql, new { Cutoff = cutoff, Limit = limit });
 
-            return rows.Select(r => new StatsEntry
-            {
-                Album = (string)r.Album ?? "Unknown Album",
-                Artist = (string)r.Artist ?? "Unknown Artist",
-                CoverPath = (string)r.CoverPath,
-                PlayCount = (int)r.PlayCount
-            }).ToList();
+            return rows.ToList();
         }
 
         /// <summary>
@@ -200,25 +190,44 @@ namespace Musicefy.Core.Services
 
             var cutoff = DateTime.UtcNow.AddDays(-days).ToString("o");
             var sql = @"
-                SELECT COUNT(*) as TotalPlays,
-                       COUNT(DISTINCT pe.TrackFilePath) as UniqueTracks,
-                       COUNT(DISTINCT t.Artist) as UniqueArtists,
-                       COUNT(DISTINCT t.Album) as UniqueAlbums
+                SELECT COUNT(*) AS TotalPlays,
+                       COUNT(DISTINCT pe.TrackFilePath) AS UniqueTracks,
+                       COUNT(DISTINCT t.Artist) AS UniqueArtists,
+                       COUNT(DISTINCT t.Album) AS UniqueAlbums
                 FROM PlayEvents pe
                 LEFT JOIN Tracks t ON pe.TrackFilePath = t.FilePath
                 WHERE pe.Timestamp >= @Cutoff";
 
-            var row = await connection.QueryFirstOrDefaultAsync<dynamic>(sql, new { Cutoff = cutoff });
+            var summary = await connection.QueryFirstOrDefaultAsync<StatsSummary>(sql, new { Cutoff = cutoff });
+            if (summary == null)
+                summary = new StatsSummary();
+            summary.PeriodDays = days;
 
-            return new StatsSummary
-            {
-                TotalPlays = (int)(row?.TotalPlays ?? 0),
-                UniqueTracks = (int)(row?.UniqueTracks ?? 0),
-                UniqueArtists = (int)(row?.UniqueArtists ?? 0),
-                UniqueAlbums = (int)(row?.UniqueAlbums ?? 0),
-                PeriodDays = days
-            };
+            return summary;
         }
+    }
+
+    // ── Internal row types for Dapper (strongly-typed, no dynamic) ─────────
+
+    internal class HistoryEntryRow
+    {
+        public long Id { get; set; }
+        public string TrackFilePath { get; set; }
+        public string Timestamp { get; set; }
+        public long PlayTimeMs { get; set; }
+        public string Title { get; set; }
+        public string Artist { get; set; }
+        public string Album { get; set; }
+        public string Duration { get; set; }
+        public string CoverPath { get; set; }
+        public string SourceType { get; set; }
+        public string YouTubeVideoId { get; set; }
+    }
+
+    internal class DailyPlayCountRow
+    {
+        public string Date { get; set; }
+        public int Count { get; set; }
     }
 
     // ── Data models ────────────────────────────────────────────────────────
