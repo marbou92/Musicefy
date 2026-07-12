@@ -74,6 +74,16 @@ namespace Musicefy
             this.CommandBindings.Add(new CommandBinding(SystemCommands.MaximizeWindowCommand, (s, e) => SystemCommands.MaximizeWindow(this)));
             this.CommandBindings.Add(new CommandBinding(SystemCommands.RestoreWindowCommand, (s, e) => SystemCommands.RestoreWindow(this)));
             this.CommandBindings.Add(new CommandBinding(SystemCommands.CloseWindowCommand, (s, e) => this.Close()));
+            this.Closing += MainWindow_Closing;
+        }
+
+        private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            // Force-kill the process immediately. NAudio and other
+            // background threads keep the process alive after the
+            // window closes. Environment.Exit(0) guarantees the
+            // process disappears from Task Manager.
+            Environment.Exit(0);
         }
 
         public override void OnApplyTemplate()
