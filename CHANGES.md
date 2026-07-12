@@ -1,62 +1,36 @@
-# Performance Fix — Cache Pages (No Lag on Navigation)
+# Animation Lag Fix — Cancel Overlapping Animations
 
-## Files Changed (2)
+## File Changed (1)
 
 ```
-Musicefy/App.xaml.cs                — change page DI from Transient to Singleton
-Musicefy/Views/MainWindow.xaml.cs   — cache page instances with ??= operator
+Musicefy/Views/MainWindow.xaml.cs
 ```
 
 ## Root Cause
 
-Every time you switched pages (Home → Search → Library → Settings), the app created a **brand new page instance** from scratch. This means:
-1. XAML was re-parsed (expensive)
-2. All data was re-loaded from database/API
-3. All cover images were re-decoded from disk
-4. The old page wasn't garbage collected yet (memory pressure)
+When switching pages fast, the previous animation was still running when the next one started. Multiple DoubleAnimation objects stacked on top of each other, fighting for control of the same property = FPS drop.
 
-Pages were registered as `AddTransient` in DI = new instance every time.
+Additionally:
+- `this.UpdateLayout()` forced a synchronous layout pass mid-animation (expensive)
+- Slide animation (`TranslateTransform`) added extra GPU work
+- Duration was 330ms total (110 out + 220 in) — too long for rapid switching
 
 ## Fix
 
-### 1. Changed DI registration from Transient to Singleton
-```csharp
-// Before (creates new instance every time):
-services.AddTransient<HomeControl>();
-services.AddTransient<SearchControl>();
-services.AddTransient<LibraryControl>();
+1. **Cancel in-flight animations** — Call `BeginAnimation(property, null)` at the start of `AnimateToPage` to kill any running animation before starting a new one.
 
-// After (creates once, reuses):
-services.AddSingleton<HomeControl>();
-services.AddSingleton<SearchControl>();
-services.AddSingleton<LibraryControl>();
-```
+2. **Removed slide animation** — Only fade now (no `TranslateTransform`). Less GPU work.
 
-### 2. Cache pages in MainWindow with ??= operator
-```csharp
-// Before (creates new if DI returns null):
-0 => new HomeControl(),
-1 => new SearchControl(),
+3. **Removed `UpdateLayout()`** — The synchronous layout pass was unnecessary and caused stutter.
 
-// After (creates once, reuses cached instance):
-0 => _homePage ??= new HomeControl(),
-1 => _searchPage ??= new SearchControl(),
-```
+4. **Shorter durations** — 80ms out + 120ms in = 200ms total (was 330ms). Snappier.
 
-## Result
-
-- First visit to each page: normal speed (creates the page)
-- Subsequent visits: **instant** (reuses cached page)
-- No re-parsing XAML
-- No re-loading data
-- No re-decoding images
-- No memory pressure from old page instances
+5. **Skip animation if same page** — If you click the same nav item, don't animate.
 
 ## Testing
 
-1. Upload both files.
+1. Upload `Musicefy/Views/MainWindow.xaml.cs`.
 2. Build and launch.
-3. Click Home → Search → Library → Settings → Home → Search
-4. First visit to each page may take a moment (creating + loading)
-5. Second visit should be INSTANT (cached)
-6. No FPS drops, no lag
+3. Click Home → Search → Library → Settings rapidly — no FPS drop
+4. Each switch is a quick fade (200ms total)
+5. No stuttering, no lag

@@ -142,6 +142,16 @@ namespace Musicefy
         {
             if (MainContent == null) return;
 
+            // ── Cancel any in-flight animation immediately ──
+            // When switching fast, the previous fade animation may still
+            // be running. Calling BeginAnimation with null cancels it.
+            // Without this, multiple animations stack and fight each
+            // other = FPS drop.
+            MainContent.BeginAnimation(OpacityProperty, null);
+            PageSlideTransform.BeginAnimation(TranslateTransform.YProperty, null);
+            MainContent.Opacity = 1;
+            PageSlideTransform.Y = 0;
+
             // Resolve the page NOW (before animation starts) so we know if it's null
             _viewModel.NavigateToPage(index);
             var targetPage = _viewModel.CurrentPage;
@@ -182,28 +192,26 @@ namespace Musicefy
                 return;
             }
 
-            var durationOut = TimeSpan.FromMilliseconds(110);
-            var durationIn  = TimeSpan.FromMilliseconds(220);
+            // If switching to the SAME page that's already showing, skip animation
+            if (MainContent.Content == targetPage)
+                return;
+
+            var durationOut = TimeSpan.FromMilliseconds(80);
+            var durationIn  = TimeSpan.FromMilliseconds(120);
             var easeOut = new CubicEase { EasingMode = EasingMode.EaseOut };
             var easeIn  = new CubicEase { EasingMode = EasingMode.EaseIn };
 
             var fadeOut = new DoubleAnimation(1, 0, durationOut) { EasingFunction = easeIn };
-            var slideOut = new DoubleAnimation(0, -16, durationOut) { EasingFunction = easeIn };
 
             fadeOut.Completed += (s, ev) =>
             {
                 MainContent.Content = targetPage;
-                PageSlideTransform.Y = 16;
-                this.UpdateLayout();
 
                 var fadeIn  = new DoubleAnimation(0, 1, durationIn) { EasingFunction = easeOut };
-                var slideIn = new DoubleAnimation(16, 0, durationIn) { EasingFunction = easeOut };
                 MainContent.BeginAnimation(OpacityProperty, fadeIn);
-                PageSlideTransform.BeginAnimation(TranslateTransform.YProperty, slideIn);
             };
 
             MainContent.BeginAnimation(OpacityProperty, fadeOut);
-            PageSlideTransform.BeginAnimation(TranslateTransform.YProperty, slideOut);
         }
 
         public void NavigateToSettings()
