@@ -138,6 +138,20 @@ namespace Musicefy
             // Sprint 6: Backup & Restore service
             services.AddSingleton<Musicefy.Core.Services.BackupService>();
 
+            // Sprint 7: AI Lyrics Translation
+            services.AddSingleton<Musicefy.Core.Services.AiTranslationService>();
+
+            // Sprint 7: Last.fm scrobbling
+            services.AddSingleton<Musicefy.Core.Services.LastFmService>();
+
+            // Sprint 7: Discord Rich Presence
+            services.AddSingleton<Musicefy.Core.Services.DiscordRpcService>();
+
+            // Sprint 7: YouTube Mood/Genres/Charts browsing
+            services.AddSingleton<Musicefy.Core.Services.YouTubeBrowseService>(sp =>
+                new Musicefy.Core.Services.YouTubeBrowseService(
+                    sp.GetService<IStreamingSourceManager>()));
+
             services.AddSingleton<PlaybackService>(sp => new PlaybackService(
                 sp.GetService<IQueueManager>(),
                 sp.GetService<IStreamingSourceManager>(),
@@ -175,6 +189,10 @@ namespace Musicefy
             services.AddTransient<StatsViewModel>();
             // Sprint 6: Backup & Restore ViewModel
             services.AddTransient<BackupRestoreViewModel>();
+            // Sprint 7: Integrations ViewModel (AI translation, Last.fm, Discord)
+            services.AddTransient<IntegrationsViewModel>();
+            // Sprint 7: Browse ViewModel (Mood/Genres/Charts)
+            services.AddTransient<BrowseViewModel>();
 
             services.AddSingleton<ArtistAlbumService>();
             services.AddTransient<ArtistViewModel>();

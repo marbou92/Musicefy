@@ -278,6 +278,13 @@ namespace Musicefy.Services
                 _ = AutoPersistArtistAlbumAsync(track);
                 // Phase 6: Record play event in library
                 _ = _libraryService.RecordPlayAsync(track.FilePath);
+
+                // Sprint 7: Last.fm — update now-playing + scrobble
+                _ = ScrobbleToLastFmAsync(track);
+
+                // Sprint 7: Discord RPC — update presence
+                UpdateDiscordPresence(track, true);
+
                 _timer.Start();
                 TrackChanged?.Invoke(track);
                 // Phase 6: Save queue state on track change
@@ -601,12 +608,86 @@ namespace Musicefy.Services
             }
         }
 
+        // ── Sprint 7: Last.fm scrobbling ─────────────────────────────────────
+
+        /// <summary>
+        /// Sprint 7: Scrobble to Last.fm — sends updateNowPlaying immediately,
+        /// then schedules a scrobble after 50% of the track has played.
+        /// </summary>
+        private async Task ScrobbleToLastFmAsync(MusicFile track)
+        {
+            try
+            {
+                var lastFm = _serviceProvider?.GetService(typeof(Musicefy.Core.Services.LastFmService))
+                             as Musicefy.Core.Services.LastFmService;
+                if (lastFm == null || !lastFm.IsEnabled()) return;
+
+                // Send now-playing immediately
+                await lastFm.UpdateNowPlayingAsync(track);
+
+                // Schedule scrobble after 4 minutes or 50% of track (whichever is first)
+                var delay = TimeSpan.FromMinutes(4);
+                if (track.Duration.TotalSeconds > 0)
+                {
+                    var halfTrack = TimeSpan.FromTicks(track.Duration.Ticks / 2);
+                    if (halfTrack < delay) delay = halfTrack;
+                }
+
+                _ = Task.Delay(delay).ContinueWith(async _ =>
+                {
+                    // Only scrobble if still playing the same track
+                    if (CurrentTrack == track && IsPlaying)
+                    {
+                        await lastFm.ScrobbleAsync(track);
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[LastFm] ScrobbleToLastFmAsync failed: {ex.Message}");
+            }
+        }
+
+        // ── Sprint 7: Discord Rich Presence ──────────────────────────────────
+
+        /// <summary>
+        /// Sprint 7: Update Discord presence with current track.
+        /// </summary>
+        private void UpdateDiscordPresence(MusicFile track, bool isPlaying)
+        {
+            try
+            {
+                var discord = _serviceProvider?.GetService(typeof(Musicefy.Core.Services.DiscordRpcService))
+                              as Musicefy.Core.Services.DiscordRpcService;
+                if (discord == null) return;
+
+                // Initialize if needed
+                if (Musicefy.Properties.Settings.Default.DiscordRpcEnabled
+                    && !string.IsNullOrEmpty(Musicefy.Properties.Settings.Default.DiscordClientId))
+                {
+                    discord.Initialize(Musicefy.Properties.Settings.Default.DiscordClientId);
+                    discord.UpdatePresence(track, isPlaying);
+                }
+                else
+                {
+                    discord.ClearPresence();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[DiscordRPC] UpdateDiscordPresence failed: {ex.Message}");
+            }
+        }
+
         public void Pause()
         {
             if (_wasapiOut != null && _wasapiOut.PlaybackState == PlaybackState.Playing)
             {
                 _wasapiOut.Pause();
                 PlaybackStateChanged?.Invoke(false);
+
+                // Sprint 7: Update Discord presence to "Paused"
+                UpdateDiscordPresence(CurrentTrack, false);
             }
         }
 

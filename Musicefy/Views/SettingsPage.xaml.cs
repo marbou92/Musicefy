@@ -147,6 +147,15 @@ namespace Musicefy.Views
             yield return new SettingsSearchItem("Backup", "Backup", () => SwitchToTab("Backup"));
             yield return new SettingsSearchItem("Restore", "Backup", () => SwitchToTab("Backup"));
             yield return new SettingsSearchItem("Export", "Backup", () => SwitchToTab("Backup"));
+            // Sprint 7
+            yield return new SettingsSearchItem("AI translation", "Integrations", () => SwitchToTab("Integrations"));
+            yield return new SettingsSearchItem("Translate lyrics", "Integrations", () => SwitchToTab("Integrations"));
+            yield return new SettingsSearchItem("Last.fm", "Integrations", () => SwitchToTab("Integrations"));
+            yield return new SettingsSearchItem("Scrobble", "Integrations", () => SwitchToTab("Integrations"));
+            yield return new SettingsSearchItem("Discord", "Integrations", () => SwitchToTab("Integrations"));
+            yield return new SettingsSearchItem("Discord RPC", "Integrations", () => SwitchToTab("Integrations"));
+            yield return new SettingsSearchItem("OpenRouter", "Integrations", () => SwitchToTab("Integrations"));
+            yield return new SettingsSearchItem("OpenAI", "Integrations", () => SwitchToTab("Integrations"));
         }
 
         private void SwitchToTab(string tabName)
@@ -168,6 +177,9 @@ namespace Musicefy.Views
                     break;
                 case "Backup":
                     BackupButton.IsChecked = true;
+                    break;
+                case "Integrations":
+                    IntegrationsButton.IsChecked = true;
                     break;
             }
         }
@@ -247,6 +259,22 @@ namespace Musicefy.Views
         {
             var control = new BackupRestoreControl();
             AnimateContentChange(control, "Backup & Restore");
+        }
+
+        // ── Sprint 7: Integrations tab ──────────────────────────────────────
+        private void IntegrationsButton_Checked(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (IntegrationsButton.IsChecked == true)
+            {
+                try { ShowIntegrations(); }
+                catch (Exception ex) { ShowFallbackContent($"Error: {ex.Message}"); }
+            }
+        }
+
+        private void ShowIntegrations()
+        {
+            var control = new IntegrationsSettingsControl();
+            AnimateContentChange(control, "Integrations");
         }
 
         private void ShowAppearance()

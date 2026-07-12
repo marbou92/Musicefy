@@ -314,11 +314,58 @@ namespace Musicefy.ViewModels
                         // Force the Lyrics binding to refresh
                         OnPropertyChanged(nameof(NowPlaying));
                     });
+
+                    // Sprint 7: If AI translation is enabled, translate the lyrics
+                    _ = TranslateLyricsAsync(track, lyrics);
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[NowPlaying] FetchLyricsAsync failed: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Sprint 7: Translates lyrics using the AI Translation service.
+        /// Only runs if AiTranslationEnabled is true and an API key is configured.
+        /// The translated lyrics replace the original lyrics on the track.
+        /// </summary>
+        private async System.Threading.Tasks.Task TranslateLyricsAsync(MusicFile track, string originalLyrics)
+        {
+            try
+            {
+                if (track == null || string.IsNullOrEmpty(originalLyrics)) return;
+                if (!Musicefy.Properties.Settings.Default.AiTranslationEnabled) return;
+                if (string.IsNullOrEmpty(Musicefy.Properties.Settings.Default.AiTranslationApiKey)) return;
+
+                var aiService = App.Services?.GetService(typeof(Musicefy.Core.Services.AiTranslationService))
+                               as Musicefy.Core.Services.AiTranslationService;
+                if (aiService == null) return;
+
+                var provider = Musicefy.Properties.Settings.Default.AiTranslationProvider ?? "OpenRouter";
+                var apiKey = Musicefy.Properties.Settings.Default.AiTranslationApiKey;
+                var model = Musicefy.Properties.Settings.Default.AiTranslationModel ?? "google/gemini-2.5-flash-lite";
+                var targetLang = Musicefy.Properties.Settings.Default.AiTranslationTargetLang ?? "en";
+
+                var translated = await aiService.TranslateLyricsAsync(
+                    originalLyrics, targetLang, provider, apiKey, model);
+
+                // Only update if still the current track
+                if (!string.IsNullOrEmpty(translated) && NowPlaying == track)
+                {
+                    Application.Current?.Dispatcher.Invoke(() =>
+                    {
+                        // Append translation after original lyrics
+                        track.Lyrics = originalLyrics + "\n\n— Translation —\n" + translated;
+                        OnPropertyChanged(nameof(NowPlaying));
+                    });
+
+                    System.Diagnostics.Debug.WriteLine($"[NowPlaying] Lyrics translated to {targetLang}");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[NowPlaying] TranslateLyricsAsync failed: {ex.Message}");
             }
         }
 

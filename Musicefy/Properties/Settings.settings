@@ -139,5 +139,41 @@
     <Setting Name="LastBackupPath" Type="System.String" Scope="User">
       <Value Profile="(Default)"></Value>
     </Setting>
+
+    <!-- ── Sprint 7: AI Lyrics Translation ────────────────────────────────── -->
+    <Setting Name="AiTranslationEnabled" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="AiTranslationProvider" Type="System.String" Scope="User">
+      <Value Profile="(Default)">OpenRouter</Value>
+    </Setting>
+    <Setting Name="AiTranslationApiKey" Type="System.String" Scope="User">
+      <Value Profile="(Default)"></Value>
+    </Setting>
+    <Setting Name="AiTranslationModel" Type="System.String" Scope="User">
+      <Value Profile="(Default)">google/gemini-2.5-flash-lite</Value>
+    </Setting>
+    <Setting Name="AiTranslationTargetLang" Type="System.String" Scope="User">
+      <Value Profile="(Default)">en</Value>
+    </Setting>
+
+    <!-- ── Sprint 7: Last.fm Scrobbling ───────────────────────────────────── -->
+    <Setting Name="LastFmEnabled" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="LastFmSessionKey" Type="System.String" Scope="User">
+      <Value Profile="(Default)"></Value>
+    </Setting>
+    <Setting Name="LastFmUsername" Type="System.String" Scope="User">
+      <Value Profile="(Default)"></Value>
+    </Setting>
+
+    <!-- ── Sprint 7: Discord Rich Presence ────────────────────────────────── -->
+    <Setting Name="DiscordRpcEnabled" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="DiscordClientId" Type="System.String" Scope="User">
+      <Value Profile="(Default)">123456789012345678</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
