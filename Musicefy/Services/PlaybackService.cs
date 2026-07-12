@@ -6,9 +6,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
+using Microsoft.Extensions.DependencyInjection;
 using Musicefy.Core.Interfaces;
 using Musicefy.Core.Library;
 using Musicefy.Core.Models;
+using Musicefy.Core.Services;
 using NAudio.CoreAudioApi;
 using NAudio.Wave;
 using IOFile = System.IO.File;
@@ -25,10 +27,17 @@ namespace Musicefy.Services
         private readonly IQueueManager _queueManager;
         private readonly IStreamingSourceManager _sourceManager;
         private readonly ILibraryService _libraryService;
+        private readonly IServiceProvider _serviceProvider;
         private bool _atQueueEnd;
         private MusicFile _lastPlayedAtEndTrack;
         private Dictionary<string, MusicFile> _libraryLookup;
         private DateTime _libraryLookupTime;
+
+        // ── Sprint 4: SponsorBlock state ───────────────────────────────────
+        private List<Musicefy.Core.Services.SponsorSegment> _currentSegments;
+        private string _currentSegmentsVideoId;
+        private DateTime _lastSegmentCheck;
+        private bool _isSkippingSegment; // prevents re-entrant skip detection
 
         // ── Phase 6: Queue persistence path ────────────────────────────────
         private static readonly string QueueStatePath = Path.Combine(
@@ -57,11 +66,12 @@ namespace Musicefy.Services
 
         public IReadOnlyCollection<MusicFile> Queue => _queueManager.Tracks;
 
-        public PlaybackService(IQueueManager queueManager, IStreamingSourceManager sourceManager, ILibraryService libraryService)
+        public PlaybackService(IQueueManager queueManager, IStreamingSourceManager sourceManager, ILibraryService libraryService, IServiceProvider serviceProvider = null)
         {
             _queueManager = queueManager ?? throw new ArgumentNullException(nameof(queueManager));
             _sourceManager = sourceManager ?? throw new ArgumentNullException(nameof(sourceManager));
             _libraryService = libraryService ?? throw new ArgumentNullException(nameof(libraryService));
+            _serviceProvider = serviceProvider;
             _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
             _timer.Tick += Timer_Tick;
         }
@@ -336,6 +346,94 @@ namespace Musicefy.Services
         {
             if (_audioStream == null) return;
             ProgressChanged?.Invoke(_audioStream.CurrentTime, _audioStream.TotalTime);
+
+            // Sprint 4: SponsorBlock — check if we're in a skip-able segment
+            CheckSponsorBlock();
+        }
+
+        /// <summary>
+        /// Sprint 4: SponsorBlock integration.
+        /// Fetches segments for the current YouTube video (cached), then checks
+        /// if the current position falls within a skip-able segment. If so,
+        /// seeks to the end of the segment.
+        /// </summary>
+        private void CheckSponsorBlock()
+        {
+            if (_isSkippingSegment) return;
+            if (CurrentTrack == null) return;
+            if (string.IsNullOrEmpty(CurrentTrack.YouTubeVideoId)) return;
+
+            try
+            {
+                var sb = _serviceProvider?.GetService(typeof(Musicefy.Core.Services.SponsorBlockService))
+                         as Musicefy.Core.Services.SponsorBlockService;
+                if (sb == null) return;
+
+                // Check settings
+                if (!Musicefy.Properties.Settings.Default.SponsorBlockEnabled) return;
+
+                var videoId = CurrentTrack.YouTubeVideoId;
+
+                // Fetch segments if we haven't for this video (or if it's been a while)
+                if (_currentSegments == null || _currentSegmentsVideoId != videoId)
+                {
+                    _currentSegmentsVideoId = videoId;
+                    _currentSegments = null; // will be populated asynchronously
+                    _ = FetchSegmentsAsync(sb, videoId);
+                    return;
+                }
+
+                if (_currentSegments == null || _currentSegments.Count == 0) return;
+
+                var currentSeconds = _audioStream.CurrentTime.TotalSeconds;
+                if (sb.ShouldSkip(currentSeconds, _currentSegments, out var segment))
+                {
+                    _isSkippingSegment = true;
+                    try
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[SponsorBlock] Skipping {segment.Category} segment: {segment.StartTime:F1}s → {segment.EndTime:F1}s");
+                        Seek(TimeSpan.FromSeconds(segment.EndTime));
+                    }
+                    finally
+                    {
+                        // Re-enable after a short delay to let the seek complete
+                        System.Windows.Threading.Dispatcher.CurrentDispatcher.BeginInvoke(
+                            new Action(() => _isSkippingSegment = false),
+                            System.Windows.Threading.DispatcherPriority.Background);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SponsorBlock] CheckSponsorBlock failed: {ex.Message}");
+            }
+        }
+
+        private async Task FetchSegmentsAsync(Musicefy.Core.Services.SponsorBlockService sb, string videoId)
+        {
+            try
+            {
+                var categories = new List<string>();
+                if (Musicefy.Properties.Settings.Default.SponsorBlockSkipSponsor) categories.Add("sponsor");
+                if (Musicefy.Properties.Settings.Default.SponsorBlockSkipIntro) categories.Add("intro");
+                if (Musicefy.Properties.Settings.Default.SponsorBlockSkipOutro) categories.Add("outro");
+                if (Musicefy.Properties.Settings.Default.SponsorBlockSkipSelfPromo) categories.Add("selfpromo");
+                if (Musicefy.Properties.Settings.Default.SponsorBlockSkipInteraction) categories.Add("interaction");
+
+                var segments = await sb.GetSegmentsAsync(videoId, categories);
+
+                // Only store if still the same video
+                if (_currentSegmentsVideoId == videoId)
+                {
+                    _currentSegments = segments;
+                    if (segments.Count > 0)
+                        System.Diagnostics.Debug.WriteLine($"[SponsorBlock] Loaded {segments.Count} segments for {videoId}");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SponsorBlock] FetchSegmentsAsync failed: {ex.Message}");
+            }
         }
 
         public void Pause()

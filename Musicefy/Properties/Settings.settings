@@ -72,5 +72,53 @@
     <Setting Name="DiscoverExtraSources" Type="System.String" Scope="User">
       <Value Profile="(Default)">[]</Value>
     </Setting>
+
+    <!-- ── Sprint 4: Local music folders (semicolon-delimited) ─────────────── -->
+    <!-- Replaces the old "Add Local Source" dialog. Multiple folders supported. -->
+    <Setting Name="LocalMusicFolders" Type="System.String" Scope="User">
+      <Value Profile="(Default)"></Value>
+    </Setting>
+
+    <!-- ── Sprint 4: YouTube settings (always-on, no source card needed) ──── -->
+    <Setting Name="YouTubeApiKey" Type="System.String" Scope="User">
+      <Value Profile="(Default)"></Value>
+    </Setting>
+    <Setting Name="YouTubeCookie" Type="System.String" Scope="User">
+      <Value Profile="(Default)"></Value>
+    </Setting>
+    <Setting Name="YouTubeAudioQuality" Type="System.String" Scope="User">
+      <Value Profile="(Default)">opus</Value>
+    </Setting>
+    <Setting Name="YouTubeEnabled" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+
+    <!-- ── Sprint 4: SponsorBlock ─────────────────────────────────────────── -->
+    <Setting Name="SponsorBlockEnabled" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="SponsorBlockSkipSponsor" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="SponsorBlockSkipIntro" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="SponsorBlockSkipOutro" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="SponsorBlockSkipSelfPromo" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="SponsorBlockSkipInteraction" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+
+    <!-- ── Sprint 4: Lyrics (LrcLib) ──────────────────────────────────────── -->
+    <Setting Name="LyricsEnabled" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="LyricsProvider" Type="System.String" Scope="User">
+      <Value Profile="(Default)">LrcLib</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

@@ -1,12 +1,16 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
+using Musicefy.Core;
 using Musicefy.Core.Configuration;
 using Musicefy.Core.Interfaces;
 using Musicefy.Core.Library;
+using Musicefy.Core.Models;
 using Musicefy.Core.Services;
 using Musicefy.Core.Theme;
 using Musicefy.Services;
@@ -121,7 +125,17 @@ namespace Musicefy
             services.AddSingleton<IStreamingSourceManager>(sp =>
                 new StreamingSourceManagerImpl(sp, sp.GetServices<IMusicSourceProvider>()));
 
-            services.AddSingleton<PlaybackService>();
+            // Sprint 4: LrcLib lyrics service (free, no API key)
+            services.AddSingleton<Musicefy.Core.Services.LrcLibService>();
+
+            // Sprint 4: SponsorBlock service (free, no API key)
+            services.AddSingleton<Musicefy.Core.Services.SponsorBlockService>();
+
+            services.AddSingleton<PlaybackService>(sp => new PlaybackService(
+                sp.GetService<IQueueManager>(),
+                sp.GetService<IStreamingSourceManager>(),
+                sp.GetService<ILibraryService>(),
+                sp));
             services.AddSingleton<IAudioPlayer>(sp => sp.GetService<PlaybackService>());
 
             services.AddSingleton<NavigationService>();
@@ -149,7 +163,6 @@ namespace Musicefy
             services.AddSingleton<LibraryViewModel>();
             services.AddSingleton<AppearanceSettingsViewModel>();
             services.AddSingleton<DownloadsSettingsViewModel>();
-            services.AddTransient<SourcesSettingsViewModel>();
 
             services.AddSingleton<ArtistAlbumService>();
             services.AddTransient<ArtistViewModel>();
@@ -169,6 +182,10 @@ namespace Musicefy
                 if (libraryService != null)
                     await libraryService.EnsureSchemaAsync();
 
+                // Sprint 4: Auto-provision Local + YouTube sources on first launch.
+                // No more "Add Source" dialog — these are always available.
+                EnsureDefaultSources();
+
                 // Phase 6: Restore queue state from previous session
                 var playback = _serviceProvider.GetService<PlaybackService>();
                 if (playback != null)
@@ -177,6 +194,85 @@ namespace Musicefy
             catch (Exception ex)
             {
                 LogException(ex);
+            }
+        }
+
+        /// <summary>
+        /// Sprint 4: Ensures the Local and YouTube sources always exist in
+        /// sources.json. No user action required — these are the app's two
+        /// built-in providers and are auto-provisioned on first launch.
+        ///
+        /// Local source uses the first folder from Settings.LocalMusicFolders,
+        /// or the user's Music folder as a default.
+        /// YouTube source uses Settings.YouTubeApiKey + YouTubeCookie if set.
+        /// </summary>
+        private void EnsureDefaultSources()
+        {
+            try
+            {
+                var sourceManager = _serviceProvider.GetService<IStreamingSourceManager>();
+                if (sourceManager == null) return;
+
+                var existing = sourceManager.Sources;
+
+                // ── Ensure Local source exists ───────────────────────────────
+                if (!existing.Any(s => string.Equals(s.Type, SourceTypes.Local, StringComparison.OrdinalIgnoreCase)))
+                {
+                    var folders = Properties.Settings.Default.LocalMusicFolders?
+                        .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                        .Select(f => f.Trim())
+                        .Where(f => !string.IsNullOrEmpty(f) && System.IO.Directory.Exists(f))
+                        .ToList() ?? new List<string>();
+
+                    // Default to the user's Music folder if no folders configured
+                    if (folders.Count == 0)
+                    {
+                        var musicFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
+                        if (!string.IsNullOrEmpty(musicFolder) && System.IO.Directory.Exists(musicFolder))
+                            folders.Add(musicFolder);
+                    }
+
+                    if (folders.Count > 0)
+                    {
+                        var localSource = new StreamingSource
+                        {
+                            Name = "Local Music",
+                            Type = SourceTypes.Local,
+                            IsConnected = true,
+                            Configuration = new Dictionary<string, string>
+                            {
+                                ["folderPath"] = folders[0]
+                            },
+                            Url = folders[0]
+                        };
+                        try { sourceManager.AddSourceAsync(localSource).GetAwaiter().GetResult(); }
+                        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[App] Failed to auto-create Local source: {ex.Message}"); }
+                    }
+                }
+
+                // ── Ensure YouTube source exists (if enabled) ────────────────
+                if (Properties.Settings.Default.YouTubeEnabled &&
+                    !existing.Any(s => string.Equals(s.Type, SourceTypes.YouTube, StringComparison.OrdinalIgnoreCase)))
+                {
+                    var ytSource = new StreamingSource
+                    {
+                        Name = "YouTube Music",
+                        Type = SourceTypes.YouTube,
+                        IsConnected = true,
+                        Configuration = new Dictionary<string, string>
+                        {
+                            ["apiKey"] = Properties.Settings.Default.YouTubeApiKey ?? "",
+                            ["cookie"] = Properties.Settings.Default.YouTubeCookie ?? "",
+                            ["audioQuality"] = Properties.Settings.Default.YouTubeAudioQuality ?? "opus"
+                        }
+                    };
+                    try { sourceManager.AddSourceAsync(ytSource).GetAwaiter().GetResult(); }
+                    catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[App] Failed to auto-create YouTube source: {ex.Message}"); }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[App] EnsureDefaultSources failed: {ex.Message}");
             }
         }
 

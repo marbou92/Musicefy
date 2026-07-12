@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -64,6 +66,98 @@ namespace Musicefy.ViewModels
             set => SetProperty(ref _isPaused, value);
         }
 
+        // ── Sprint 4: YouTube settings ───────────────────────────────────────
+        public bool YouTubeEnabled
+        {
+            get => Musicefy.Properties.Settings.Default.YouTubeEnabled;
+            set { Musicefy.Properties.Settings.Default.YouTubeEnabled = value; OnPropertyChanged(); }
+        }
+
+        public string YouTubeApiKey
+        {
+            get => Musicefy.Properties.Settings.Default.YouTubeApiKey ?? "";
+            set { Musicefy.Properties.Settings.Default.YouTubeApiKey = value; OnPropertyChanged(); }
+        }
+
+        public string YouTubeCookie
+        {
+            get => Musicefy.Properties.Settings.Default.YouTubeCookie ?? "";
+            set { Musicefy.Properties.Settings.Default.YouTubeCookie = value; OnPropertyChanged(); }
+        }
+
+        public int YouTubeAudioQualityIndex
+        {
+            get => string.Equals(Musicefy.Properties.Settings.Default.YouTubeAudioQuality, "aac", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
+            set
+            {
+                Musicefy.Properties.Settings.Default.YouTubeAudioQuality = value == 1 ? "aac" : "opus";
+                OnPropertyChanged();
+            }
+        }
+
+        // ── Sprint 4: SponsorBlock settings ──────────────────────────────────
+        public bool SponsorBlockEnabled
+        {
+            get => Musicefy.Properties.Settings.Default.SponsorBlockEnabled;
+            set { Musicefy.Properties.Settings.Default.SponsorBlockEnabled = value; OnPropertyChanged(); }
+        }
+
+        public bool SponsorBlockSkipSponsor
+        {
+            get => Musicefy.Properties.Settings.Default.SponsorBlockSkipSponsor;
+            set { Musicefy.Properties.Settings.Default.SponsorBlockSkipSponsor = value; OnPropertyChanged(); }
+        }
+
+        public bool SponsorBlockSkipIntro
+        {
+            get => Musicefy.Properties.Settings.Default.SponsorBlockSkipIntro;
+            set { Musicefy.Properties.Settings.Default.SponsorBlockSkipIntro = value; OnPropertyChanged(); }
+        }
+
+        public bool SponsorBlockSkipOutro
+        {
+            get => Musicefy.Properties.Settings.Default.SponsorBlockSkipOutro;
+            set { Musicefy.Properties.Settings.Default.SponsorBlockSkipOutro = value; OnPropertyChanged(); }
+        }
+
+        public bool SponsorBlockSkipSelfPromo
+        {
+            get => Musicefy.Properties.Settings.Default.SponsorBlockSkipSelfPromo;
+            set { Musicefy.Properties.Settings.Default.SponsorBlockSkipSelfPromo = value; OnPropertyChanged(); }
+        }
+
+        public bool SponsorBlockSkipInteraction
+        {
+            get => Musicefy.Properties.Settings.Default.SponsorBlockSkipInteraction;
+            set { Musicefy.Properties.Settings.Default.SponsorBlockSkipInteraction = value; OnPropertyChanged(); }
+        }
+
+        // ── Sprint 4: Lyrics settings ────────────────────────────────────────
+        public bool LyricsEnabled
+        {
+            get => Musicefy.Properties.Settings.Default.LyricsEnabled;
+            set { Musicefy.Properties.Settings.Default.LyricsEnabled = value; OnPropertyChanged(); }
+        }
+
+        public string LyricsProvider
+        {
+            get => Musicefy.Properties.Settings.Default.LyricsProvider ?? "LrcLib";
+            set { Musicefy.Properties.Settings.Default.LyricsProvider = value; OnPropertyChanged(); }
+        }
+
+        // ── Sprint 4: Home screen visibility (absorbed from Discover) ────────
+        public bool ShowLocalOnHome
+        {
+            get => Musicefy.Properties.Settings.Default.DiscoverLibrary;
+            set { Musicefy.Properties.Settings.Default.DiscoverLibrary = value; OnPropertyChanged(); }
+        }
+
+        public bool ShowYouTubeOnHome
+        {
+            get => Musicefy.Properties.Settings.Default.DiscoverYouTube;
+            set { Musicefy.Properties.Settings.Default.DiscoverYouTube = value; OnPropertyChanged(); }
+        }
+
         private CancellationTokenSource _downloadCts;
         private bool _resumeMode;
         private DispatcherTimer _cacheMonitorTimer;
@@ -106,13 +200,58 @@ namespace Musicefy.ViewModels
             set => Musicefy.Properties.Settings.Default.LimitDownloadSize = value;
         }
 
+        // ── Sprint 4: Local music folders management ─────────────────────────
+
+        /// <summary>
+        /// Returns the list of local music folders from Settings (semicolon-delimited).
+        /// </summary>
+        public List<string> GetLocalFolders()
+        {
+            var raw = Musicefy.Properties.Settings.Default.LocalMusicFolders ?? "";
+            return raw.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                      .Select(f => f.Trim())
+                      .Where(f => !string.IsNullOrEmpty(f))
+                      .ToList();
+        }
+
+        /// <summary>
+        /// Persists the local folders list to Settings and updates the
+        /// auto-provisioned Local source's folderPath.
+        /// </summary>
+        public void SaveLocalFolders(List<string> folders)
+        {
+            Musicefy.Properties.Settings.Default.LocalMusicFolders =
+                string.Join(";", folders ?? new List<string>());
+            Musicefy.Properties.Settings.Default.Save();
+
+            // Update the Local source's folderPath if it exists
+            try
+            {
+                var sourceManager = App.Services?.GetService(typeof(IStreamingSourceManager)) as IStreamingSourceManager;
+                if (sourceManager != null)
+                {
+                    var localSource = sourceManager.Sources.FirstOrDefault(
+                        s => string.Equals(s.Type, Core.SourceTypes.Local, StringComparison.OrdinalIgnoreCase));
+                    if (localSource != null && folders != null && folders.Count > 0)
+                    {
+                        localSource.Configuration["folderPath"] = folders[0];
+                        localSource.Url = folders[0];
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[DownloadsSettings] SaveLocalFolders failed to update source: {ex.Message}");
+            }
+        }
+
         public void Save()
         {
             Musicefy.Properties.Settings.Default.DownloadsPath = _downloadsPath;
             Musicefy.Properties.Settings.Default.AutoClearCache = AutoClearCache;
             Musicefy.Properties.Settings.Default.LimitDownloadSize = LimitDownloadSize;
             Musicefy.Properties.Settings.Default.Save();
-            ToastService.ShowToast("Download settings saved.", Brushes.ForestGreen);
+            ToastService.ShowToast("Settings saved.", Brushes.ForestGreen);
         }
 
         public void Cancel()
@@ -123,6 +262,14 @@ namespace Musicefy.ViewModels
             OnPropertyChanged(nameof(DownloadsPath));
             OnPropertyChanged(nameof(AutoClearCache));
             OnPropertyChanged(nameof(LimitDownloadSize));
+            OnPropertyChanged(nameof(YouTubeEnabled));
+            OnPropertyChanged(nameof(YouTubeApiKey));
+            OnPropertyChanged(nameof(YouTubeCookie));
+            OnPropertyChanged(nameof(YouTubeAudioQualityIndex));
+            OnPropertyChanged(nameof(SponsorBlockEnabled));
+            OnPropertyChanged(nameof(LyricsEnabled));
+            OnPropertyChanged(nameof(ShowLocalOnHome));
+            OnPropertyChanged(nameof(ShowYouTubeOnHome));
             UpdateCacheStatus();
             ToastService.ShowToast("Changes reverted.", Brushes.Gray);
         }

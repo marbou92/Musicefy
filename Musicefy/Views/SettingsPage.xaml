@@ -43,59 +43,89 @@
         </Grid.ColumnDefinitions>
 
         <!-- Sub-sidebar -->
-        <Border Grid.Column="0" 
-                Background="{DynamicResource SurfaceContainerLowBrush}" 
+        <Border Grid.Column="0"
+                Background="{DynamicResource SurfaceContainerLowBrush}"
                 BorderBrush="Transparent"
                 BorderThickness="0">
             <StackPanel Margin="10,20,10,10">
-                <TextBlock Text="Settings" FontSize="22" FontWeight="Bold" 
-                           Margin="20,0,0,25" 
+                <TextBlock Text="Settings" FontSize="22" FontWeight="Bold"
+                           Margin="20,0,0,25"
                            Foreground="{DynamicResource OnSurfaceBrush}"/>
 
-                <RadioButton x:Name="AppearanceButton" Style="{StaticResource SidebarTabStyle}" 
-                             GroupName="SettingsTabs" IsChecked="True"
-                             Checked="AppearanceButton_Checked">
-                    <StackPanel Orientation="Horizontal">
-                        <Path Data="M12 2C6.49 2 2 6.49 2 12s4.49 10 10 10c.55 0 1-.45 1-1 0-.28-.11-.53-.29-.71-.18-.18-.29-.43-.29-.71 0-.55.45-1 1-1H16c3.31 0 6-2.69 6-6 0-4.96-4.49-9-10-9zm-5.5 8.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5S8 8.17 8 9s-.67 1.5-1.5 1.5zm3.5-2.5c-.83 0-1.5-.67-1.5-1.5S9.17 5 10 5s1.5.67 1.5 1.5S10.83 8 10 8zm5 0c-.83 0-1.5-.67-1.5-1.5S14.17 5 15 5s1.5.67 1.5 1.5S15.83 8 15 8zm1.5 4.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"
-                              Width="18" Height="18" Stretch="Uniform"
-                              Fill="{Binding RelativeSource={RelativeSource AncestorType=RadioButton}, Path=Foreground}"
-                              Margin="0,0,12,0" VerticalAlignment="Center"/>
-                        <StackPanel>
-                            <TextBlock Text="Appearance" FontWeight="SemiBold" FontSize="13"/>
-                            <TextBlock Text="Theme &amp; palettes" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"/>
-                        </StackPanel>
-                    </StackPanel>
-                </RadioButton>
+                <!-- Sprint 4: Settings Search Bar -->
+                <Border Background="{DynamicResource SurfaceContainerHighBrush}"
+                        CornerRadius="8" Margin="8,0,8,12" Padding="8,4">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Path Grid.Column="0" Data="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+                              Width="16" Height="16" Stretch="Uniform"
+                              Fill="{DynamicResource OnSurfaceVariantBrush}"
+                              Margin="4,0,8,0" VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="1" x:Name="SearchBox"
+                                 Text="{Binding SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 Background="Transparent" BorderThickness="0"
+                                 Foreground="{DynamicResource OnSurfaceBrush}"
+                                 CaretBrush="{DynamicResource OnSurfaceBrush}"
+                                 FontSize="12" VerticalContentAlignment="Center"
+                                 ToolTip="Search settings…"/>
+                    </Grid>
+                </Border>
 
-                <RadioButton x:Name="DownloadsButton" Style="{StaticResource SidebarTabStyle}" 
-                             GroupName="SettingsTabs"
-                             Checked="DownloadsButton_Checked">
-                    <StackPanel Orientation="Horizontal">
-                        <Path Data="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"
-                              Width="18" Height="18" Stretch="Uniform"
-                              Fill="{Binding RelativeSource={RelativeSource AncestorType=RadioButton}, Path=Foreground}"
-                              Margin="0,0,12,0" VerticalAlignment="Center"/>
-                        <StackPanel>
-                            <TextBlock Text="Downloads" FontWeight="SemiBold" FontSize="13"/>
-                            <TextBlock Text="Cache &amp; limits" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"/>
-                        </StackPanel>
-                    </StackPanel>
-                </RadioButton>
+                <!-- Search Results Panel (visible when searching) -->
+                <ItemsControl x:Name="SearchResults" Visibility="Collapsed" Margin="4,0,4,8">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="{DynamicResource SurfaceContainerHighBrush}"
+                                    CornerRadius="6" Margin="0,2" Padding="10,8"
+                                    Cursor="Hand" MouseLeftButtonUp="SearchResult_Click"
+                                    Tag="{Binding}">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Label}" FontSize="12" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource OnSurfaceBrush}"/>
+                                    <TextBlock Text="{Binding Category}" FontSize="10"
+                                               Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                                               Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
 
-                <RadioButton x:Name="SourcesButton" Style="{StaticResource SidebarTabStyle}" 
-                             GroupName="SettingsTabs"
-                             Checked="SourcesButton_Checked">
-                    <StackPanel Orientation="Horizontal">
-                        <Path Data="M17 7h-4v2h4c1.65 0 3 1.35 3 3s-1.35 3-3 3h-4v2h4c2.76 0 5-2.24 5-5s-2.24-5-5-5zm-6 8H7c-1.65 0-3-1.35-3-3s1.35-3 3-3h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-2zm-3-4h8v2H8v-2z"
-                              Width="18" Height="18" Stretch="Uniform"
-                              Fill="{Binding RelativeSource={RelativeSource AncestorType=RadioButton}, Path=Foreground}"
-                              Margin="0,0,12,0" VerticalAlignment="Center"/>
-                        <StackPanel>
-                            <TextBlock Text="Sources" FontWeight="SemiBold" FontSize="13"/>
-                            <TextBlock Text="Music sources &amp; home screen" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"/>
+                <!-- Tabs (hidden when searching) -->
+                <StackPanel x:Name="TabsPanel">
+                    <RadioButton x:Name="AppearanceButton" Style="{StaticResource SidebarTabStyle}"
+                                 GroupName="SettingsTabs" IsChecked="True"
+                                 Checked="AppearanceButton_Checked">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="M12 2C6.49 2 2 6.49 2 12s4.49 10 10 10c.55 0 1-.45 1-1 0-.28-.11-.53-.29-.71-.18-.18-.29-.43-.29-.71 0-.55.45-1 1-1H16c3.31 0 6-2.69 6-6 0-4.96-4.49-9-10-9zm-5.5 8.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5S8 8.17 8 9s-.67 1.5-1.5 1.5zm3.5-2.5c-.83 0-1.5-.67-1.5-1.5S9.17 5 10 5s1.5.67 1.5 1.5S10.83 8 10 8zm5 0c-.83 0-1.5-.67-1.5-1.5S14.17 5 15 5s1.5.67 1.5 1.5S15.83 8 15 8zm1.5 4.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"
+                                  Width="18" Height="18" Stretch="Uniform"
+                                  Fill="{Binding RelativeSource={RelativeSource AncestorType=RadioButton}, Path=Foreground}"
+                                  Margin="0,0,12,0" VerticalAlignment="Center"/>
+                            <StackPanel>
+                                <TextBlock Text="Appearance" FontWeight="SemiBold" FontSize="13"/>
+                                <TextBlock Text="Theme &amp; palettes" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"/>
+                            </StackPanel>
                         </StackPanel>
-                    </StackPanel>
-                </RadioButton>
+                    </RadioButton>
+
+                    <RadioButton x:Name="DownloadsButton" Style="{StaticResource SidebarTabStyle}"
+                                 GroupName="SettingsTabs"
+                                 Checked="DownloadsButton_Checked">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"
+                                  Width="18" Height="18" Stretch="Uniform"
+                                  Fill="{Binding RelativeSource={RelativeSource AncestorType=RadioButton}, Path=Foreground}"
+                                  Margin="0,0,12,0" VerticalAlignment="Center"/>
+                            <StackPanel>
+                                <TextBlock Text="Storage &amp; Sources" FontWeight="SemiBold" FontSize="13"/>
+                                <TextBlock Text="Local folders, YouTube, downloads" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </RadioButton>
+                </StackPanel>
             </StackPanel>
         </Border>
 
@@ -106,13 +136,13 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0" x:Name="SectionTitle" 
-                       Text="Appearance Settings" 
-                       FontSize="24" FontWeight="Bold" 
-                       Margin="0,0,0,25" 
+            <TextBlock Grid.Row="0" x:Name="SectionTitle"
+                       Text="Appearance Settings"
+                       FontSize="24" FontWeight="Bold"
+                       Margin="0,0,0,25"
                        Foreground="{DynamicResource OnSurfaceBrush}"/>
 
-            <ContentControl x:Name="SettingsContent" 
+            <ContentControl x:Name="SettingsContent"
                             Grid.Row="1"
                             VerticalAlignment="Stretch"
                             HorizontalAlignment="Stretch"/>

@@ -212,5 +212,126 @@ namespace Musicefy.Properties {
             get => ((string)(this["DiscoverExtraSources"]));
             set => this["DiscoverExtraSources"] = value;
         }
+
+        // ── Sprint 4: Local music folders (semicolon-delimited) ──────────────
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string LocalMusicFolders
+        {
+            get => ((string)(this["LocalMusicFolders"]));
+            set => this["LocalMusicFolders"] = value;
+        }
+
+        // ── Sprint 4: YouTube settings (always-on) ───────────────────────────
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string YouTubeApiKey
+        {
+            get => ((string)(this["YouTubeApiKey"]));
+            set => this["YouTubeApiKey"] = value;
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string YouTubeCookie
+        {
+            get => ((string)(this["YouTubeCookie"]));
+            set => this["YouTubeCookie"] = value;
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("opus")]
+        public string YouTubeAudioQuality
+        {
+            get => ((string)(this["YouTubeAudioQuality"]));
+            set => this["YouTubeAudioQuality"] = value;
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool YouTubeEnabled
+        {
+            get => ((bool)(this["YouTubeEnabled"]));
+            set => this["YouTubeEnabled"] = value;
+        }
+
+        // ── Sprint 4: SponsorBlock ───────────────────────────────────────────
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool SponsorBlockEnabled
+        {
+            get => ((bool)(this["SponsorBlockEnabled"]));
+            set => this["SponsorBlockEnabled"] = value;
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool SponsorBlockSkipSponsor
+        {
+            get => ((bool)(this["SponsorBlockSkipSponsor"]));
+            set => this["SponsorBlockSkipSponsor"] = value;
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool SponsorBlockSkipIntro
+        {
+            get => ((bool)(this["SponsorBlockSkipIntro"]));
+            set => this["SponsorBlockSkipIntro"] = value;
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool SponsorBlockSkipOutro
+        {
+            get => ((bool)(this["SponsorBlockSkipOutro"]));
+            set => this["SponsorBlockSkipOutro"] = value;
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool SponsorBlockSkipSelfPromo
+        {
+            get => ((bool)(this["SponsorBlockSkipSelfPromo"]));
+            set => this["SponsorBlockSkipSelfPromo"] = value;
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool SponsorBlockSkipInteraction
+        {
+            get => ((bool)(this["SponsorBlockSkipInteraction"]));
+            set => this["SponsorBlockSkipInteraction"] = value;
+        }
+
+        // ── Sprint 4: Lyrics (LrcLib) ────────────────────────────────────────
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool LyricsEnabled
+        {
+            get => ((bool)(this["LyricsEnabled"]));
+            set => this["LyricsEnabled"] = value;
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("LrcLib")]
+        public string LyricsProvider
+        {
+            get => ((string)(this["LyricsProvider"]));
+            set => this["LyricsProvider"] = value;
+        }
     }
 }

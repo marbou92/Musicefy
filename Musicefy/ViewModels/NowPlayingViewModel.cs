@@ -273,7 +273,53 @@ namespace Musicefy.ViewModels
                 IsFavoriteTrack = track?.IsFavourite ?? false;
                 ExtractColorsFromTrack(track);
                 UpdateAudioFormatText(track);
+
+                // Sprint 4: Fetch lyrics from LrcLib if the track doesn't
+                // already have embedded lyrics and the feature is enabled.
+                _ = FetchLyricsAsync(track);
             });
+        }
+
+        /// <summary>
+        /// Sprint 4: Fetches lyrics from LrcLib for the current track if
+        /// lyrics are not already present and the LyricsEnabled setting is on.
+        /// </summary>
+        private async System.Threading.Tasks.Task FetchLyricsAsync(MusicFile track)
+        {
+            try
+            {
+                if (track == null) return;
+                if (!Musicefy.Properties.Settings.Default.LyricsEnabled) return;
+
+                // If the track already has embedded lyrics (from ID3 tags), use them.
+                if (!string.IsNullOrEmpty(track.Lyrics))
+                    return;
+
+                var lrcLib = App.Services?.GetService(typeof(Musicefy.Core.Services.LrcLibService))
+                             as Musicefy.Core.Services.LrcLibService;
+                if (lrcLib == null) return;
+
+                int? durationSeconds = track.Duration.TotalSeconds > 0
+                    ? (int)track.Duration.TotalSeconds
+                    : (int?)null;
+
+                var lyrics = await lrcLib.GetSyncedLyricsAsync(track.Title, track.Artist, track.Album, durationSeconds);
+
+                // Only update if still the current track (user may have switched)
+                if (lyrics != null && NowPlaying == track)
+                {
+                    Application.Current?.Dispatcher.Invoke(() =>
+                    {
+                        track.Lyrics = lyrics;
+                        // Force the Lyrics binding to refresh
+                        OnPropertyChanged(nameof(NowPlaying));
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[NowPlaying] FetchLyricsAsync failed: {ex.Message}");
+            }
         }
 
         private void UpdateAudioFormatText(MusicFile track)
