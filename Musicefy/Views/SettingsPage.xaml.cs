@@ -256,5 +256,14 @@ namespace Musicefy.Views
         public string Label { get; set; }
         public string Category { get; set; }
         public Action Navigate { get; set; }
+
+        public SettingsSearchItem() { }
+
+        public SettingsSearchItem(string label, string category, Action navigate)
+        {
+            Label = label;
+            Category = category;
+            Navigate = navigate;
+        }
     }
 }

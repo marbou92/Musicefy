@@ -218,7 +218,7 @@ namespace Musicefy
                 // ── Ensure Local source exists ───────────────────────────────
                 if (!existing.Any(s => string.Equals(s.Type, SourceTypes.Local, StringComparison.OrdinalIgnoreCase)))
                 {
-                    var folders = Properties.Settings.Default.LocalMusicFolders?
+                    var folders = Musicefy.Properties.Settings.Default.LocalMusicFolders?
                         .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
                         .Select(f => f.Trim())
                         .Where(f => !string.IsNullOrEmpty(f) && System.IO.Directory.Exists(f))
@@ -251,7 +251,7 @@ namespace Musicefy
                 }
 
                 // ── Ensure YouTube source exists (if enabled) ────────────────
-                if (Properties.Settings.Default.YouTubeEnabled &&
+                if (Musicefy.Properties.Settings.Default.YouTubeEnabled &&
                     !existing.Any(s => string.Equals(s.Type, SourceTypes.YouTube, StringComparison.OrdinalIgnoreCase)))
                 {
                     var ytSource = new StreamingSource
@@ -261,9 +261,9 @@ namespace Musicefy
                         IsConnected = true,
                         Configuration = new Dictionary<string, string>
                         {
-                            ["apiKey"] = Properties.Settings.Default.YouTubeApiKey ?? "",
-                            ["cookie"] = Properties.Settings.Default.YouTubeCookie ?? "",
-                            ["audioQuality"] = Properties.Settings.Default.YouTubeAudioQuality ?? "opus"
+                            ["apiKey"] = Musicefy.Properties.Settings.Default.YouTubeApiKey ?? "",
+                            ["cookie"] = Musicefy.Properties.Settings.Default.YouTubeCookie ?? "",
+                            ["audioQuality"] = Musicefy.Properties.Settings.Default.YouTubeAudioQuality ?? "opus"
                         }
                     };
                     try { sourceManager.AddSourceAsync(ytSource).GetAwaiter().GetResult(); }

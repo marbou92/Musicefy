@@ -36,7 +36,6 @@ namespace Musicefy.Services
         // ── Sprint 4: SponsorBlock state ───────────────────────────────────
         private List<Musicefy.Core.Services.SponsorSegment> _currentSegments;
         private string _currentSegmentsVideoId;
-        private DateTime _lastSegmentCheck;
         private bool _isSkippingSegment; // prevents re-entrant skip detection
 
         // ── Phase 6: Queue persistence path ────────────────────────────────
