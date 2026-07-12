@@ -45,8 +45,8 @@
         <!-- Sub-sidebar -->
         <Border Grid.Column="0" 
                 Background="{DynamicResource SurfaceContainerLowBrush}" 
-                BorderBrush="{DynamicResource OutlineBrush}" 
-                BorderThickness="0,0,1,0">
+                BorderBrush="Transparent"
+                BorderThickness="0">
             <StackPanel Margin="10,20,10,10">
                 <TextBlock Text="Settings" FontSize="22" FontWeight="Bold" 
                            Margin="20,0,0,25" 

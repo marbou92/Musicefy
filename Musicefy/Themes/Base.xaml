@@ -45,10 +45,15 @@
         <Setter Property="ResizeMode" Value="CanResize"/>
         <Setter Property="WindowChrome.WindowChrome">
             <Setter.Value>
+                <!-- GlassFrameThickness="-1" extends the glass frame to
+                     the entire window, giving us the native OS drop shadow
+                     on all sides WITHOUT AllowsTransparency (which kills
+                     window animations). CaptionHeight=40 for custom title. -->
                 <WindowChrome CaptionHeight="40" 
                               CornerRadius="0" 
-                              GlassFrameThickness="0,0,0,1"
-                              ResizeBorderThickness="7"/>
+                              GlassFrameThickness="-1"
+                              ResizeBorderThickness="7"
+                              UseAeroCaptionButtons="False"/>
             </Setter.Value>
         </Setter>
         <Setter Property="Template">
