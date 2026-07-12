@@ -103,7 +103,7 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="{Binding PlayCount, StringFormat='{0}×'}"
+                                    <TextBlock Grid.Column="0" Text="{Binding PlayCount, StringFormat='{}{0}×'}"
                                                FontSize="12" FontWeight="Bold"
                                                Foreground="{DynamicResource PrimaryBrush}"
                                                VerticalAlignment="Center" Margin="0,0,12,0" MinWidth="40"/>
@@ -132,7 +132,7 @@
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="{Binding PlayCount, StringFormat='{0}×'}"
+                                    <TextBlock Grid.Column="0" Text="{Binding PlayCount, StringFormat='{}{0}×'}"
                                                FontSize="12" FontWeight="Bold"
                                                Foreground="{DynamicResource PrimaryBrush}"
                                                VerticalAlignment="Center" Margin="0,0,12,0" MinWidth="40"/>
@@ -158,7 +158,7 @@
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="{Binding PlayCount, StringFormat='{0}×'}"
+                                    <TextBlock Grid.Column="0" Text="{Binding PlayCount, StringFormat='{}{0}×'}"
                                                FontSize="12" FontWeight="Bold"
                                                Foreground="{DynamicResource PrimaryBrush}"
                                                VerticalAlignment="Center" Margin="0,0,12,0" MinWidth="40"/>
