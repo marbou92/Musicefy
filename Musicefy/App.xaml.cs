@@ -245,18 +245,30 @@ namespace Musicefy
 
         protected override void OnExit(ExitEventArgs e)
         {
-            // Phase 6: Save queue state before exit
+            // Phase 6: Save queue state before exit.
+            // Use GetAwaiter().GetResult() instead of .Wait() to avoid
+            // AggregateException wrapping. Wrap in try-catch so a hang
+            // or failure doesn't prevent the app from exiting.
             try
             {
                 var playback = _serviceProvider.GetService<PlaybackService>();
-                playback?.SaveQueueStateAsync().Wait();
+                playback?.SaveQueueStateAsync().GetAwaiter().GetResult();
             }
             catch { }
 
-            if (_serviceProvider is IDisposable disposable)
-                disposable.Dispose();
+            try
+            {
+                if (_serviceProvider is IDisposable disposable)
+                    disposable.Dispose();
+            }
+            catch { }
 
             base.OnExit(e);
+
+            // Force-kill the process if anything is still alive (NAudio
+            // threads, image cache, etc. can keep the process running).
+            // This guarantees the app disappears from Task Manager.
+            Environment.Exit(0);
         }
     }
 }
