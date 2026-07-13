@@ -279,7 +279,8 @@ namespace Musicefy.Views
         public void UpdateSliderStyle()
         {
             var style = Musicefy.Properties.Settings.Default.PlayerSliderStyle ?? "Default";
-            var isPlaying = _viewModel?.IsPlaying ?? false;
+            var playback = App.Services?.GetService(typeof(Musicefy.Core.Interfaces.IAudioPlayer)) as Musicefy.Core.Interfaces.IAudioPlayer;
+            var isPlaying = playback?.IsPlaying ?? false;
 
             switch (style.ToUpperInvariant())
             {

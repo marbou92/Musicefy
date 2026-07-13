@@ -18,7 +18,6 @@ namespace Musicefy.Controls
         private double _amplitude = 1.0;
         private double _targetAmplitude = 1.0;
         private bool _isDragging;
-        private double _dragValue;
 
         static WavySlider()
         {
