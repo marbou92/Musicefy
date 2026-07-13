@@ -66,7 +66,10 @@
                                     <TextBlock Text="GitHub" Style="{StaticResource M3TitleText}"/>
                                     <TextBlock Text="marbou92/Musicefy" Style="{StaticResource M3DescriptionText}"/>
                                 </StackPanel>
-                                <TextBlock DockPanel.Dock="Right" Text="›" FontSize="20" Foreground="{DynamicResource OnSurfaceVariantBrush}" VerticalAlignment="Center"/>
+                                <TextBlock DockPanel.Dock="Right" Text="›" FontSize="20"
+                                           Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                                           VerticalAlignment="Center" Margin="0,0,0,0"
+                                           HorizontalAlignment="Right"/>
                             </DockPanel>
                         </Border>
                         <Border Style="{StaticResource M3SettingsItemLast}" Cursor="Hand" MouseLeftButtonUp="WebsiteLink_Click">
@@ -80,7 +83,10 @@
                                     <TextBlock Text="Website" Style="{StaticResource M3TitleText}"/>
                                     <TextBlock Text="github.com/marbou92" Style="{StaticResource M3DescriptionText}"/>
                                 </StackPanel>
-                                <TextBlock DockPanel.Dock="Right" Text="›" FontSize="20" Foreground="{DynamicResource OnSurfaceVariantBrush}" VerticalAlignment="Center"/>
+                                <TextBlock DockPanel.Dock="Right" Text="›" FontSize="20"
+                                           Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                                           VerticalAlignment="Center" Margin="0,0,0,0"
+                                           HorizontalAlignment="Right"/>
                             </DockPanel>
                         </Border>
                     </StackPanel>
@@ -101,7 +107,10 @@
                                     <TextBlock Text="Buy Me a Coffee" Style="{StaticResource M3TitleText}"/>
                                     <TextBlock Text="Support the project." Style="{StaticResource M3DescriptionText}"/>
                                 </StackPanel>
-                                <TextBlock DockPanel.Dock="Right" Text="›" FontSize="20" Foreground="{DynamicResource OnSurfaceVariantBrush}" VerticalAlignment="Center"/>
+                                <TextBlock DockPanel.Dock="Right" Text="›" FontSize="20"
+                                           Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                                           VerticalAlignment="Center" Margin="0,0,0,0"
+                                           HorizontalAlignment="Right"/>
                             </DockPanel>
                         </Border>
                         <Border Style="{StaticResource M3SettingsItemLast}" Cursor="Hand" MouseLeftButtonUp="LicenseLink_Click">

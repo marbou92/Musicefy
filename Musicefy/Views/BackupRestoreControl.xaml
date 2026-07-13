@@ -7,58 +7,61 @@
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
     </UserControl.Resources>
 
-    <Grid Margin="20,16,20,16">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+    <Grid Margin="10,0,10,10">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Orientation="Vertical">
 
-        <!-- Header -->
-        <StackPanel Grid.Row="0" Margin="0,0,0,20">
-            <TextBlock Text="Backup &amp; Restore" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource OnSurfaceBrush}"/>
-            <TextBlock Text="Export your database, sources, and settings to a .mbackup file."
-                       FontSize="12" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,4,0,0"/>
-        </StackPanel>
+                <TextBlock Text="Backup &amp; Restore" FontSize="22" FontWeight="Bold"
+                           Foreground="{DynamicResource OnSurfaceBrush}" Margin="4,0,0,4"/>
+                <TextBlock Text="Export and restore your data."
+                           FontSize="12" Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                           Margin="4,0,0,20"/>
 
-        <!-- Content -->
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <StackPanel>
-
-                <!-- Create Backup -->
-                <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="14"
-                        Padding="20,16" Margin="0,0,0,16">
-                    <StackPanel>
-                        <TextBlock Text="Create Backup" FontSize="16" FontWeight="Bold"
-                                   Foreground="{DynamicResource OnSurfaceBrush}" Margin="0,0,0,8"/>
-                        <TextBlock Text="Save a complete snapshot of your Musicefy data, including:"
-                                   FontSize="12" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,0,0,8"/>
-                        <TextBlock Text="  • Music library database (tracks, playlists, play history)&#x0a;  • Configured sources (Local folders, YouTube settings)&#x0a;  • Saved playback queue"
-                                   FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,0,0,12"/>
-                        <Button Content="📤 Create Backup" Padding="16,8" HorizontalAlignment="Left"
-                                Command="{Binding CreateBackupCommand}" Cursor="Hand"/>
-                    </StackPanel>
+                <!-- CREATE BACKUP card -->
+                <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="16"
+                        Padding="20,16" Margin="0,0,0,16" Cursor="Hand"
+                        MouseLeftButtonUp="CreateBackup_Click">
+                    <DockPanel>
+                        <Border DockPanel.Dock="Left" Style="{StaticResource M3IconBox}">
+                            <Path Data="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z"
+                                  Width="24" Height="24" Stretch="Uniform"
+                                  Fill="{DynamicResource PrimaryBrush}"
+                                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="Local Backup" FontSize="16" FontWeight="Bold"
+                                       Foreground="{DynamicResource OnSurfaceBrush}"/>
+                            <TextBlock Text="Create a manual backup of your data"
+                                       FontSize="12" Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </DockPanel>
                 </Border>
 
-                <!-- Restore Backup -->
-                <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="14"
-                        Padding="20,16" Margin="0,0,0,16">
-                    <StackPanel>
-                        <TextBlock Text="Restore Backup" FontSize="16" FontWeight="Bold"
-                                   Foreground="{DynamicResource OnSurfaceBrush}" Margin="0,0,0,8"/>
-                        <TextBlock Text="Restore from a previously created .mbackup file."
-                                   FontSize="12" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,0,0,8"/>
-                        <TextBlock Text="⚠ This will overwrite your current data. The app will need to restart after restore."
-                                   FontSize="11" Foreground="{DynamicResource ErrorBrush}" Margin="0,0,0,12"
-                                   TextWrapping="Wrap"/>
-                        <Button Content="📥 Restore Backup" Padding="16,8" HorizontalAlignment="Left"
-                                Command="{Binding RestoreBackupCommand}" Cursor="Hand"
-                                Foreground="{DynamicResource ErrorBrush}"/>
-                    </StackPanel>
+                <!-- IMPORT card -->
+                <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="16"
+                        Padding="20,16" Margin="0,0,0,16" Cursor="Hand"
+                        MouseLeftButtonUp="RestoreBackup_Click">
+                    <DockPanel>
+                        <Border DockPanel.Dock="Left" Style="{StaticResource M3IconBox}">
+                            <Path Data="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"
+                                  Width="24" Height="24" Stretch="Uniform"
+                                  Fill="{DynamicResource PrimaryBrush}"
+                                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="Import" FontSize="16" FontWeight="Bold"
+                                       Foreground="{DynamicResource OnSurfaceBrush}"/>
+                            <TextBlock Text="Restore data from backups or other sources"
+                                       FontSize="12" Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </DockPanel>
                 </Border>
 
-                <!-- Status -->
-                <Border Background="{DynamicResource SurfaceContainerHighBrush}" CornerRadius="10"
-                        Padding="16,10" Margin="0,0,0,16"
+                <!-- Status (loading) -->
+                <Border Background="{DynamicResource SurfaceContainerHighBrush}" CornerRadius="12"
+                        Padding="16,10" Margin="0,0,0,8"
                         Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="⏳" FontSize="14" Margin="0,0,8,0" VerticalAlignment="Center"/>
@@ -68,21 +71,17 @@
                 </Border>
 
                 <!-- Last backup info -->
-                <Border Background="{DynamicResource SurfaceContainerHighBrush}" CornerRadius="10"
-                        Padding="16,10" Margin="0,0,0,16">
+                <Border Background="{DynamicResource SurfaceContainerHighBrush}" CornerRadius="12"
+                        Padding="16,10" Margin="0,0,0,8"
+                        Visibility="{Binding HasLastBackup, Converter={StaticResource BoolToVis}}">
                     <StackPanel>
                         <TextBlock Text="Last Backup" FontSize="12" FontWeight="SemiBold"
                                    Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,0,0,4"/>
-                        <TextBlock Text="{Binding LastBackupPath, TargetNullValue='No backup created yet.'}"
+                        <TextBlock Text="{Binding LastBackupPath}"
                                    FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"
                                    TextWrapping="Wrap"/>
                     </StackPanel>
                 </Border>
-
-                <!-- Status text -->
-                <TextBlock Text="{Binding StatusText}" FontSize="11"
-                           Foreground="{DynamicResource OnSurfaceVariantBrush}"
-                           HorizontalAlignment="Center" Margin="0,4,0,0"/>
 
             </StackPanel>
         </ScrollViewer>

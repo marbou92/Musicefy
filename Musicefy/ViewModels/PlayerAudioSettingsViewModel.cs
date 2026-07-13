@@ -45,9 +45,9 @@ namespace Musicefy.ViewModels
                 Musicefy.Properties.Settings.Default.SponsorBlockEnabled = value;
                 Musicefy.Properties.Settings.Default.Save();
                 OnPropertyChanged();
-                // Auto-expand categories when enabling
-                if (value && !SponsorBlockExpanded)
-                    SponsorBlockExpanded = true;
+
+                // Fix: Expand when enabling, collapse when disabling
+                SponsorBlockExpanded = value;
             }
         }
 

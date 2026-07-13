@@ -1000,7 +1000,8 @@
     </Style>
 
     <!-- ════════════════════════════════════════════════════════════════════ -->
-    <!-- M3 Slider — premium rounded slider with custom thumb                -->
+    <!-- M3 Slider — premium rounded slider with working track fill           -->
+    <!-- Uses the standard Slider PART_ names so the track + thumb work.      -->
     <!-- ════════════════════════════════════════════════════════════════════ -->
     <Style x:Key="M3Slider" TargetType="Slider">
         <Setter Property="MinHeight" Value="32"/>
@@ -1010,42 +1011,75 @@
             <Setter.Value>
                 <ControlTemplate TargetType="Slider">
                     <Grid>
-                        <!-- Track background (inactive) -->
+                        <!-- Full-width inactive track -->
                         <Border Height="6" VerticalAlignment="Center"
                                 Background="{DynamicResource SurfaceContainerHighBrush}"
-                                CornerRadius="3"/>
-                        <!-- Track fill (active, left of thumb) -->
-                        <Border x:Name="TrackFill" Height="6" VerticalAlignment="Center"
-                                HorizontalAlignment="Left"
-                                Background="{DynamicResource PrimaryBrush}"
-                                CornerRadius="3"
-                                Width="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"/>
-                        <!-- Thumb -->
-                        <Border x:Name="Thumb" Width="18" Height="18" CornerRadius="9"
-                                Background="{DynamicResource PrimaryBrush}"
-                                HorizontalAlignment="Left" VerticalAlignment="Center"
-                                Margin="0,0,0,0"
-                                RenderTransformOrigin="0.5,0.5">
-                            <Border.RenderTransform>
-                                <TranslateTransform x:Name="ThumbTranslate"/>
-                            </Border.RenderTransform>
-                            <Border.Effect>
-                                <DropShadowEffect ShadowDepth="2" BlurRadius="6" Opacity="0.3" Color="Black"/>
-                            </Border.Effect>
-                        </Border>
-                        <!-- Tick labels area (optional, via Tag) -->
-                        <ContentPresenter Content="{TemplateBinding Tag}" VerticalAlignment="Bottom"
-                                          HorizontalAlignment="Center" Margin="0,12,0,0"/>
+                                CornerRadius="3" Margin="9,0"/>
+                        <!-- Active track fill — bound to the actual SelectionStart via PART_Track -->
+                        <Track x:Name="PART_Track" VerticalAlignment="Center" Margin="9,0">
+                            <Track.DecreaseRepeatButton>
+                                <RepeatButton Style="{StaticResource M3SliderDecreaseRepeatButton}"/>
+                            </Track.DecreaseRepeatButton>
+                            <Track.IncreaseRepeatButton>
+                                <RepeatButton Style="{StaticResource M3SliderIncreaseRepeatButton}"/>
+                            </Track.IncreaseRepeatButton>
+                            <Track.Thumb>
+                                <Thumb Style="{StaticResource M3SliderThumb}"/>
+                            </Track.Thumb>
+                        </Track>
                     </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Slider decrease button (the filled part left of the thumb) -->
+    <Style x:Key="M3SliderDecreaseRepeatButton" TargetType="RepeatButton">
+        <Setter Property="Height" Value="6"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RepeatButton">
+                    <Border Height="6" Background="{TemplateBinding Background}" CornerRadius="3"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Slider increase button (the unfilled part right of the thumb) -->
+    <Style x:Key="M3SliderIncreaseRepeatButton" TargetType="RepeatButton">
+        <Setter Property="Height" Value="6"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RepeatButton">
+                    <Border Height="6" Background="Transparent"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Slider thumb -->
+    <Style x:Key="M3SliderThumb" TargetType="Thumb">
+        <Setter Property="Width" Value="18"/>
+        <Setter Property="Height" Value="18"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Thumb">
+                    <Border x:Name="ThumbBorder" Width="18" Height="18" CornerRadius="9"
+                            Background="{DynamicResource PrimaryBrush}">
+                        <Border.Effect>
+                            <DropShadowEffect ShadowDepth="2" BlurRadius="6" Opacity="0.3" Color="Black"/>
+                        </Border.Effect>
+                    </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Thumb" Property="Width" Value="20"/>
-                            <Setter TargetName="Thumb" Property="Height" Value="20"/>
-                            <Setter TargetName="Thumb" Property="CornerRadius" Value="10"/>
-                        </Trigger>
-                        <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="TrackFill" Property="Opacity" Value="0.3"/>
-                            <Setter TargetName="Thumb" Property="Opacity" Value="0.3"/>
+                            <Setter TargetName="ThumbBorder" Property="Width" Value="20"/>
+                            <Setter TargetName="ThumbBorder" Property="Height" Value="20"/>
+                            <Setter TargetName="ThumbBorder" Property="CornerRadius" Value="10"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

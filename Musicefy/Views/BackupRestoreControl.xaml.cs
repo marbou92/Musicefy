@@ -1,5 +1,4 @@
 using System.Windows.Controls;
-using Microsoft.Extensions.DependencyInjection;
 using Musicefy.ViewModels;
 
 namespace Musicefy.Views
@@ -14,6 +13,16 @@ namespace Musicefy.Views
                 try { DataContext = App.Services?.GetService<BackupRestoreViewModel>(); }
                 catch { }
             }
+        }
+
+        private void CreateBackup_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            (DataContext as BackupRestoreViewModel)?.CreateBackupCommand.Execute(null);
+        }
+
+        private void RestoreBackup_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            (DataContext as BackupRestoreViewModel)?.RestoreBackupCommand.Execute(null);
         }
     }
 }

@@ -34,8 +34,10 @@ namespace Musicefy.ViewModels
         public string LastBackupPath
         {
             get => _lastBackupPath;
-            set => SetProperty(ref _lastBackupPath, value);
+            set { SetProperty(ref _lastBackupPath, value); OnPropertyChanged(nameof(HasLastBackup)); }
         }
+
+        public bool HasLastBackup => !string.IsNullOrEmpty(LastBackupPath);
 
         public ICommand CreateBackupCommand { get; }
         public ICommand RestoreBackupCommand { get; }
