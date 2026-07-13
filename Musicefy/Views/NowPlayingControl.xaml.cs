@@ -251,5 +251,64 @@ namespace Musicefy.Views
             _viewModel.IsUserScrubbing = false;
             _viewModel.SeekToPercent(ProgressSlider.Value);
         }
+
+        /// <summary>
+        /// Sprint 9: Handle value changes from the custom Wavy/Squiggly sliders.
+        /// Called when the user drags or taps the custom slider.
+        /// </summary>
+        private void CustomSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (sender is Controls.WavySlider wavy)
+            {
+                _viewModel.IsUserScrubbing = true;
+                _viewModel.SeekToPercent(wavy.Value);
+                _viewModel.IsUserScrubbing = false;
+            }
+            else if (sender is Controls.SquigglySlider squiggly)
+            {
+                _viewModel.IsUserScrubbing = true;
+                _viewModel.SeekToPercent(squiggly.Value);
+                _viewModel.IsUserScrubbing = false;
+            }
+        }
+
+        /// <summary>
+        /// Sprint 9: Switch the player slider style based on settings.
+        /// Called on Loaded and when the setting changes.
+        /// </summary>
+        public void UpdateSliderStyle()
+        {
+            var style = Musicefy.Properties.Settings.Default.PlayerSliderStyle ?? "Default";
+            var isPlaying = _viewModel?.IsPlaying ?? false;
+
+            switch (style.ToUpperInvariant())
+            {
+                case "WAVY":
+                    ProgressSlider.Visibility = Visibility.Collapsed;
+                    SquigglyProgressSlider.Visibility = Visibility.Collapsed;
+                    WavyProgressSlider.Visibility = Visibility.Visible;
+                    WavyProgressSlider.IsPlaying = isPlaying;
+                    WavyProgressSlider.StartAnimation();
+                    SquigglyProgressSlider.StopAnimation();
+                    break;
+
+                case "SQUIGGLY":
+                    ProgressSlider.Visibility = Visibility.Collapsed;
+                    WavyProgressSlider.Visibility = Visibility.Collapsed;
+                    SquigglyProgressSlider.Visibility = Visibility.Visible;
+                    SquigglyProgressSlider.IsPlaying = isPlaying;
+                    SquigglyProgressSlider.StartAnimation();
+                    WavyProgressSlider.StopAnimation();
+                    break;
+
+                default:
+                    ProgressSlider.Visibility = Visibility.Visible;
+                    WavyProgressSlider.Visibility = Visibility.Collapsed;
+                    SquigglyProgressSlider.Visibility = Visibility.Collapsed;
+                    WavyProgressSlider.StopAnimation();
+                    SquigglyProgressSlider.StopAnimation();
+                    break;
+            }
+        }
     }
 }

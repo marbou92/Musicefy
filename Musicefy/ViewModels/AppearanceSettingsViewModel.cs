@@ -288,5 +288,168 @@ namespace Musicefy.ViewModels
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string name = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+
+        // ── Sprint 9: New appearance properties (all auto-save) ─────────────
+
+        public bool HidePlayerThumbnail
+        {
+            get => Musicefy.Properties.Settings.Default.HidePlayerThumbnail;
+            set { Musicefy.Properties.Settings.Default.HidePlayerThumbnail = value; Musicefy.Properties.Settings.Default.Save(); OnPropertyChanged(); }
+        }
+
+        public bool CropAlbumArt
+        {
+            get => Musicefy.Properties.Settings.Default.CropAlbumArt;
+            set { Musicefy.Properties.Settings.Default.CropAlbumArt = value; Musicefy.Properties.Settings.Default.Save(); OnPropertyChanged(); }
+        }
+
+        public bool ShowCodecOnPlayer
+        {
+            get => Musicefy.Properties.Settings.Default.ShowCodecOnPlayer;
+            set { Musicefy.Properties.Settings.Default.ShowCodecOnPlayer = value; Musicefy.Properties.Settings.Default.Save(); OnPropertyChanged(); }
+        }
+
+        public int ThumbnailCornerRadius
+        {
+            get => Musicefy.Properties.Settings.Default.ThumbnailCornerRadius;
+            set { Musicefy.Properties.Settings.Default.ThumbnailCornerRadius = value; Musicefy.Properties.Settings.Default.Save(); OnPropertyChanged(); }
+        }
+
+        public int MiniPlayerBackgroundStyleIndex
+        {
+            get => (Musicefy.Properties.Settings.Default.MiniPlayerBackgroundStyle ?? "FollowTheme") switch
+            {
+                "Solid" => 1,
+                "Gradient" => 2,
+                _ => 0
+            };
+            set
+            {
+                Musicefy.Properties.Settings.Default.MiniPlayerBackgroundStyle = value switch
+                {
+                    1 => "Solid",
+                    2 => "Gradient",
+                    _ => "FollowTheme"
+                };
+                Musicefy.Properties.Settings.Default.Save();
+                OnPropertyChanged();
+            }
+        }
+
+        public int PlayerSliderStyleIndex
+        {
+            get => (Musicefy.Properties.Settings.Default.PlayerSliderStyle ?? "Default") switch
+            {
+                "Wavy" => 1,
+                "Squiggly" => 2,
+                _ => 0
+            };
+            set
+            {
+                Musicefy.Properties.Settings.Default.PlayerSliderStyle = value switch
+                {
+                    1 => "Wavy",
+                    2 => "Squiggly",
+                    _ => "Default"
+                };
+                Musicefy.Properties.Settings.Default.Save();
+                OnPropertyChanged();
+            }
+        }
+
+        public int LyricsTextPositionIndex
+        {
+            get => string.Equals(Musicefy.Properties.Settings.Default.LyricsTextPosition, "Center", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
+            set
+            {
+                Musicefy.Properties.Settings.Default.LyricsTextPosition = value == 1 ? "Center" : "Left";
+                Musicefy.Properties.Settings.Default.Save();
+                OnPropertyChanged();
+            }
+        }
+
+        public int LyricsTextSize
+        {
+            get => Musicefy.Properties.Settings.Default.LyricsTextSize;
+            set { Musicefy.Properties.Settings.Default.LyricsTextSize = value; Musicefy.Properties.Settings.Default.Save(); OnPropertyChanged(); }
+        }
+
+        public double LyricsLineSpacing
+        {
+            get => Musicefy.Properties.Settings.Default.LyricsLineSpacing;
+            set { Musicefy.Properties.Settings.Default.LyricsLineSpacing = value; Musicefy.Properties.Settings.Default.Save(); OnPropertyChanged(); }
+        }
+
+        public bool GlowingLyricsEffect
+        {
+            get => Musicefy.Properties.Settings.Default.GlowingLyricsEffect;
+            set { Musicefy.Properties.Settings.Default.GlowingLyricsEffect = value; Musicefy.Properties.Settings.Default.Save(); OnPropertyChanged(); }
+        }
+
+        public bool LyricsBlurInactive
+        {
+            get => Musicefy.Properties.Settings.Default.LyricsBlurInactive;
+            set { Musicefy.Properties.Settings.Default.LyricsBlurInactive = value; Musicefy.Properties.Settings.Default.Save(); OnPropertyChanged(); }
+        }
+
+        public bool AutoScrollLyrics
+        {
+            get => Musicefy.Properties.Settings.Default.AutoScrollLyrics;
+            set { Musicefy.Properties.Settings.Default.AutoScrollLyrics = value; Musicefy.Properties.Settings.Default.Save(); OnPropertyChanged(); }
+        }
+
+        public int DefaultOpenTabIndex
+        {
+            get => (Musicefy.Properties.Settings.Default.DefaultOpenTab ?? "Home") switch
+            {
+                "Search" => 1,
+                "Library" => 2,
+                _ => 0
+            };
+            set
+            {
+                Musicefy.Properties.Settings.Default.DefaultOpenTab = value switch
+                {
+                    1 => "Search",
+                    2 => "Library",
+                    _ => "Home"
+                };
+                Musicefy.Properties.Settings.Default.Save();
+                OnPropertyChanged();
+            }
+        }
+
+        public int GridCellSizeIndex
+        {
+            get => (Musicefy.Properties.Settings.Default.GridCellSize ?? "Medium") switch
+            {
+                "Small" => 0,
+                "Large" => 2,
+                _ => 1
+            };
+            set
+            {
+                Musicefy.Properties.Settings.Default.GridCellSize = value switch
+                {
+                    0 => "Small",
+                    2 => "Large",
+                    _ => "Medium"
+                };
+                Musicefy.Properties.Settings.Default.Save();
+                OnPropertyChanged();
+            }
+        }
+
+        public bool ShowLikedPlaylist
+        {
+            get => Musicefy.Properties.Settings.Default.ShowLikedPlaylist;
+            set { Musicefy.Properties.Settings.Default.ShowLikedPlaylist = value; Musicefy.Properties.Settings.Default.Save(); OnPropertyChanged(); }
+        }
+
+        public bool ShowDownloadedPlaylist
+        {
+            get => Musicefy.Properties.Settings.Default.ShowDownloadedPlaylist;
+            set { Musicefy.Properties.Settings.Default.ShowDownloadedPlaylist = value; Musicefy.Properties.Settings.Default.Save(); OnPropertyChanged(); }
+        }
     }
 }

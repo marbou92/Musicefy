@@ -154,7 +154,7 @@
         </Setter>
     </Style>
 
-    <!-- M3 Segmented Button -->
+    <!-- M3 Segmented Button — improved with SecondaryContainer active state -->
     <Style x:Key="SegmentedTabStyle" TargetType="RadioButton">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Foreground" Value="{DynamicResource OnSurfaceVariantBrush}"/>
@@ -167,17 +167,24 @@
                 <ControlTemplate TargetType="RadioButton">
                     <Grid>
                         <Border x:Name="TabBg" Background="{TemplateBinding Background}" CornerRadius="20" Margin="2">
+                            <Border.RenderTransform>
+                                <ScaleTransform x:Name="TabScale" ScaleX="1" ScaleY="1" CenterX="0.5" CenterY="0.5"/>
+                            </Border.RenderTransform>
                             <ContentPresenter x:Name="ContentArea" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="TabBg" Property="Background" Value="{DynamicResource SurfaceBrush}"/>
-                            <Setter Property="Foreground" Value="{DynamicResource OnSurfaceBrush}"/>
+                            <Setter TargetName="TabBg" Property="Background" Value="{DynamicResource SecondaryContainerBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource OnSecondaryContainerBrush}"/>
                         </Trigger>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="TabBg" Property="Background" Value="{DynamicResource HoverBrush}"/>
-                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsMouseOver" Value="True"/>
+                                <Condition Property="IsChecked" Value="False"/>
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="TabBg" Property="Background" Value="{DynamicResource SurfaceContainerHighBrush}"/>
+                        </MultiTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>

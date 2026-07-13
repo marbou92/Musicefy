@@ -158,5 +158,54 @@
     <Setting Name="DiscordClientId" Type="System.String" Scope="User">
       <Value Profile="(Default)">123456789012345678</Value>
     </Setting>
+    <!-- ── Sprint 9: Big Appearance Update ──────────────────────────────── -->
+    <Setting Name="HidePlayerThumbnail" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="CropAlbumArt" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="ShowCodecOnPlayer" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="ThumbnailCornerRadius" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">3</Value>
+    </Setting>
+    <Setting Name="MiniPlayerBackgroundStyle" Type="System.String" Scope="User">
+      <Value Profile="(Default)">FollowTheme</Value>
+    </Setting>
+    <Setting Name="PlayerSliderStyle" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Default</Value>
+    </Setting>
+    <Setting Name="LyricsTextPosition" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Left</Value>
+    </Setting>
+    <Setting Name="LyricsTextSize" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">24</Value>
+    </Setting>
+    <Setting Name="LyricsLineSpacing" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">1.3</Value>
+    </Setting>
+    <Setting Name="GlowingLyricsEffect" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="LyricsBlurInactive" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="AutoScrollLyrics" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="DefaultOpenTab" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Home</Value>
+    </Setting>
+    <Setting Name="GridCellSize" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Medium</Value>
+    </Setting>
+    <Setting Name="ShowLikedPlaylist" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="ShowDownloadedPlaylist" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

@@ -427,5 +427,150 @@ namespace Musicefy.Properties {
             get => ((string)(this["DiscordClientId"]));
             set => this["DiscordClientId"] = value;
         }
+
+        // ── Sprint 9: Big Appearance Update ────────────────────────────────
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool HidePlayerThumbnail
+        {
+            get => ((bool)(this["HidePlayerThumbnail"]));
+            set => this["HidePlayerThumbnail"] = value;
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool CropAlbumArt
+        {
+            get => ((bool)(this["CropAlbumArt"]));
+            set => this["CropAlbumArt"] = value;
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ShowCodecOnPlayer
+        {
+            get => ((bool)(this["ShowCodecOnPlayer"]));
+            set => this["ShowCodecOnPlayer"] = value;
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("3")]
+        public int ThumbnailCornerRadius
+        {
+            get => ((int)(this["ThumbnailCornerRadius"]));
+            set => this["ThumbnailCornerRadius"] = value;
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("FollowTheme")]
+        public string MiniPlayerBackgroundStyle
+        {
+            get => ((string)(this["MiniPlayerBackgroundStyle"]));
+            set => this["MiniPlayerBackgroundStyle"] = value;
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Default")]
+        public string PlayerSliderStyle
+        {
+            get => ((string)(this["PlayerSliderStyle"]));
+            set => this["PlayerSliderStyle"] = value;
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Left")]
+        public string LyricsTextPosition
+        {
+            get => ((string)(this["LyricsTextPosition"]));
+            set => this["LyricsTextPosition"] = value;
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("24")]
+        public int LyricsTextSize
+        {
+            get => ((int)(this["LyricsTextSize"]));
+            set => this["LyricsTextSize"] = value;
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1.3")]
+        public double LyricsLineSpacing
+        {
+            get => ((double)(this["LyricsLineSpacing"]));
+            set => this["LyricsLineSpacing"] = value;
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool GlowingLyricsEffect
+        {
+            get => ((bool)(this["GlowingLyricsEffect"]));
+            set => this["GlowingLyricsEffect"] = value;
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool LyricsBlurInactive
+        {
+            get => ((bool)(this["LyricsBlurInactive"]));
+            set => this["LyricsBlurInactive"] = value;
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool AutoScrollLyrics
+        {
+            get => ((bool)(this["AutoScrollLyrics"]));
+            set => this["AutoScrollLyrics"] = value;
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Home")]
+        public string DefaultOpenTab
+        {
+            get => ((string)(this["DefaultOpenTab"]));
+            set => this["DefaultOpenTab"] = value;
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Medium")]
+        public string GridCellSize
+        {
+            get => ((string)(this["GridCellSize"]));
+            set => this["GridCellSize"] = value;
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ShowLikedPlaylist
+        {
+            get => ((bool)(this["ShowLikedPlaylist"]));
+            set => this["ShowLikedPlaylist"] = value;
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ShowDownloadedPlaylist
+        {
+            get => ((bool)(this["ShowDownloadedPlaylist"]));
+            set => this["ShowDownloadedPlaylist"] = value;
+        }
     }
 }
