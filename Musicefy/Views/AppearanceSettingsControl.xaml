@@ -52,12 +52,16 @@
                 <TextBlock Text="Appearance" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource OnSurfaceBrush}" Margin="4,0,0,4"/>
                 <TextBlock Text="Theme, player, lyrics, and layout." FontSize="12" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="4,0,0,20"/>
 
-                <!-- ═══ THEME — tappable row that navigates to theme sub-view ═══ -->
+                <!-- ═══ THEME ═══ -->
                 <TextBlock Text="THEME" Style="{StaticResource M3SectionHeader}"/>
                 <Border Style="{StaticResource M3SettingsGroup}">
                     <Border Style="{StaticResource M3SettingsItemLast}" Padding="16,14" Cursor="Hand"
                             MouseLeftButtonUp="ThemeRow_Click">
                         <DockPanel>
+                            <TextBlock DockPanel.Dock="Right" Text="›" FontSize="20"
+                                       Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                                       VerticalAlignment="Center" Margin="0,0,0,0"
+                                       HorizontalAlignment="Right"/>
                             <Border DockPanel.Dock="Left" Style="{StaticResource M3IconBox}">
                                 <Path Data="M12 2C6.49 2 2 6.49 2 12s4.49 10 10 10c.55 0 1-.45 1-1 0-.28-.11-.53-.29-.71-.18-.18-.29-.43-.29-.71 0-.55.45-1 1-1H16c3.31 0 6-2.69 6-6 0-4.96-4.49-9-10-9zm-5.5 8.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5S8 8.17 8 9s-.67 1.5-1.5 1.5zm3.5-2.5c-.83 0-1.5-.67-1.5-1.5S9.17 5 10 5s1.5.67 1.5 1.5S10.83 8 10 8zm5 0c-.83 0-1.5-.67-1.5-1.5S14.17 5 15 5s1.5.67 1.5 1.5S15.83 8 15 8zm1.5 4.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"
                                       Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource PrimaryBrush}"
@@ -67,10 +71,6 @@
                                 <TextBlock Text="Theme" Style="{StaticResource M3TitleText}"/>
                                 <TextBlock Text="Theme mode, color palette, dynamic colors." Style="{StaticResource M3DescriptionText}"/>
                             </StackPanel>
-                            <TextBlock DockPanel.Dock="Right" Text="›" FontSize="20"
-                                       Foreground="{DynamicResource OnSurfaceVariantBrush}"
-                                       VerticalAlignment="Center" Margin="0,0,0,0"
-                                       HorizontalAlignment="Right"/>
                         </DockPanel>
                     </Border>
                 </Border>
@@ -79,7 +79,8 @@
                 <TextBlock Text="PLAYER" Style="{StaticResource M3SectionHeader}"/>
                 <Border Style="{StaticResource M3SettingsGroup}">
                     <StackPanel>
-                        <Border Style="{StaticResource M3SettingsItem}" Padding="16,12">
+                        <!-- Player Background (segmented control — keep as-is, has icon) -->
+                        <Border Style="{StaticResource M3SettingsItemLast}" Padding="16,12">
                             <StackPanel>
                                 <TextBlock Text="Player Background" Style="{StaticResource M3TitleText}" Margin="0,0,0,8"/>
                                 <Border Style="{StaticResource M3SegmentedControl}">
@@ -91,17 +92,23 @@
                                 </Border>
                             </StackPanel>
                         </Border>
-                        <Border Style="{StaticResource M3SettingsItem}" Padding="16,12">
+                        <!-- Player Slider Style — fixed: icon + ComboBox docked right first + no separator -->
+                        <Border Style="{StaticResource M3SettingsItemLast}" Padding="16,14">
                             <DockPanel>
-                                <StackPanel VerticalAlignment="Center">
-                                    <TextBlock Text="Player Slider Style" Style="{StaticResource M3TitleText}"/>
-                                    <TextBlock Text="Choose the progress bar animation style." Style="{StaticResource M3DescriptionText}"/>
-                                </StackPanel>
                                 <ComboBox DockPanel.Dock="Right" SelectedIndex="{Binding PlayerSliderStyleIndex}" Width="120" VerticalAlignment="Center">
                                     <ComboBoxItem Content="Default"/>
                                     <ComboBoxItem Content="Wavy"/>
                                     <ComboBoxItem Content="Squiggly"/>
                                 </ComboBox>
+                                <Border DockPanel.Dock="Left" Style="{StaticResource M3IconBox}">
+                                    <Path Data="M19.5,9.5c-1.03,0 -1.9,0.62 -2.29,1.5h-2.92c-0.39,-0.88 -1.26,-1.5 -2.29,-1.5s-1.9,0.62 -2.29,1.5H6.79c-0.39,-0.88 -1.26,-1.5 -2.29,-1.5C3.12,9.5 2,10.62 2,12s1.12,2.5 2.5,2.5c1.03,0 1.9,-0.62 2.29,-1.5h2.92c0.39,0.88 1.26,1.5 2.29,1.5s1.9,-0.62 2.29,-1.5h2.92c0.39,0.88 1.26,1.5 2.29,1.5c1.38,0 2.5,-1.12 2.5,-2.5S20.88,9.5 19.5,9.5z"
+                                          Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource PrimaryBrush}"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Player Slider Style" Style="{StaticResource M3TitleText}"/>
+                                    <TextBlock Text="Choose the progress bar animation style." Style="{StaticResource M3DescriptionText}"/>
+                                </StackPanel>
                             </DockPanel>
                         </Border>
                         <CheckBox Style="{StaticResource M3SwitchRow}" IsChecked="{Binding HidePlayerThumbnail}">
@@ -116,13 +123,19 @@
                             <CheckBox.Tag><Path Data="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14zM6 15h2v2H6zm3-4h2v6H9zm3-4h2v10h-2zm3 7h2v3h-2z" Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource PrimaryBrush}"/></CheckBox.Tag>
                             <StackPanel><TextBlock Text="Show Codec on Player" Style="{StaticResource M3TitleText}"/><TextBlock Text="Display audio codec below timeline." Style="{StaticResource M3DescriptionText}"/></StackPanel>
                         </CheckBox>
-                        <Border Style="{StaticResource M3SettingsItemLast}" Padding="16,8">
-                            <StackPanel Margin="56,0,0,0">
+                        <!-- Thumbnail Corner Radius — fixed: icon + no separator -->
+                        <Border Style="{StaticResource M3SettingsItemLast}" Padding="16,14">
+                            <StackPanel>
                                 <DockPanel>
+                                    <Border DockPanel.Dock="Left" Style="{StaticResource M3IconBox}">
+                                        <Path Data="M3 5v4h2V5h4V3H5c-1.1 0-2 .9-2 2zm2 10H3v4c0 1.1.9 2 2 2h4v-2H5v-4zm14 4h-4v2h4c1.1 0 2-.9 2-2v-4h-2v4zm0-16h-4v2h4v4h2V5c0-1.1-.9-2-2-2z"
+                                              Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource PrimaryBrush}"
+                                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
                                     <TextBlock Text="Thumbnail Corner Radius" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource OnSurfaceVariantBrush}" VerticalAlignment="Center"/>
                                     <TextBlock DockPanel.Dock="Right" Text="{Binding ThumbnailCornerRadius, StringFormat='{}{0}dp'}" FontSize="12" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
                                 </DockPanel>
-                                <Slider Style="{StaticResource M3Slider}" Minimum="0" Maximum="24" Value="{Binding ThumbnailCornerRadius}" Margin="0,8,0,0"/>
+                                <Slider Style="{StaticResource M3Slider}" Minimum="0" Maximum="24" Value="{Binding ThumbnailCornerRadius}" Margin="56,8,0,0"/>
                             </StackPanel>
                         </Border>
                     </StackPanel>
@@ -131,17 +144,22 @@
                 <!-- ═══ MINI-PLAYER ═══ -->
                 <TextBlock Text="MINI-PLAYER" Style="{StaticResource M3SectionHeader}"/>
                 <Border Style="{StaticResource M3SettingsGroup}">
-                    <Border Style="{StaticResource M3SettingsItemLast}" Padding="16,12">
+                    <Border Style="{StaticResource M3SettingsItemLast}" Padding="16,14">
                         <DockPanel>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="Mini-player Background" Style="{StaticResource M3TitleText}"/>
-                                <TextBlock Text="Background style for the mini-player bar." Style="{StaticResource M3DescriptionText}"/>
-                            </StackPanel>
                             <ComboBox DockPanel.Dock="Right" SelectedIndex="{Binding MiniPlayerBackgroundStyleIndex}" Width="120" VerticalAlignment="Center">
                                 <ComboBoxItem Content="Follow Theme"/>
                                 <ComboBoxItem Content="Solid"/>
                                 <ComboBoxItem Content="Gradient"/>
                             </ComboBox>
+                            <Border DockPanel.Dock="Left" Style="{StaticResource M3IconBox}">
+                                <Path Data="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14zM4 16h4v2H4v-2z"
+                                      Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource PrimaryBrush}"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="Mini-player Background" Style="{StaticResource M3TitleText}"/>
+                                <TextBlock Text="Background style for the mini-player bar." Style="{StaticResource M3DescriptionText}"/>
+                            </StackPanel>
                         </DockPanel>
                     </Border>
                 </Border>
@@ -150,33 +168,51 @@
                 <TextBlock Text="LYRICS" Style="{StaticResource M3SectionHeader}"/>
                 <Border Style="{StaticResource M3SettingsGroup}">
                     <StackPanel>
-                        <Border Style="{StaticResource M3SettingsItem}" Padding="16,12">
+                        <!-- Lyrics Text Position — fixed: icon + ComboBox docked right first + no separator -->
+                        <Border Style="{StaticResource M3SettingsItemLast}" Padding="16,14">
                             <DockPanel>
-                                <StackPanel VerticalAlignment="Center">
-                                    <TextBlock Text="Lyrics Text Position" Style="{StaticResource M3TitleText}"/>
-                                </StackPanel>
                                 <ComboBox DockPanel.Dock="Right" SelectedIndex="{Binding LyricsTextPositionIndex}" Width="100" VerticalAlignment="Center">
                                     <ComboBoxItem Content="Left"/>
                                     <ComboBoxItem Content="Center"/>
                                 </ComboBox>
+                                <Border DockPanel.Dock="Left" Style="{StaticResource M3IconBox}">
+                                    <Path Data="M3 3h18v2H3V3zm0 4h12v2H3V7zm0 4h18v2H3v-2zm0 4h12v2H3v-2zm0 4h18v2H3v-2z"
+                                          Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource PrimaryBrush}"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Lyrics Text Position" Style="{StaticResource M3TitleText}"/>
+                                </StackPanel>
                             </DockPanel>
                         </Border>
-                        <Border Style="{StaticResource M3SettingsItem}" Padding="16,8">
-                            <StackPanel Margin="56,0,0,0">
+                        <!-- Lyrics Text Size — fixed: icon + no separator -->
+                        <Border Style="{StaticResource M3SettingsItemLast}" Padding="16,14">
+                            <StackPanel>
                                 <DockPanel>
+                                    <Border DockPanel.Dock="Left" Style="{StaticResource M3IconBox}">
+                                        <Path Data="M9 4v3h5v12h3V7h5V4H9zm-7 0h3v3H2V4z"
+                                              Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource PrimaryBrush}"
+                                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
                                     <TextBlock Text="Lyrics Text Size" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource OnSurfaceVariantBrush}" VerticalAlignment="Center"/>
                                     <TextBlock DockPanel.Dock="Right" Text="{Binding LyricsTextSize, StringFormat='{}{0}sp'}" FontSize="12" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
                                 </DockPanel>
-                                <Slider Style="{StaticResource M3Slider}" Minimum="12" Maximum="32" Value="{Binding LyricsTextSize}" Margin="0,8,0,0"/>
+                                <Slider Style="{StaticResource M3Slider}" Minimum="12" Maximum="32" Value="{Binding LyricsTextSize}" Margin="56,8,0,0"/>
                             </StackPanel>
                         </Border>
-                        <Border Style="{StaticResource M3SettingsItem}" Padding="16,8">
-                            <StackPanel Margin="56,0,0,0">
+                        <!-- Lyrics Line Spacing — fixed: icon + no separator -->
+                        <Border Style="{StaticResource M3SettingsItemLast}" Padding="16,14">
+                            <StackPanel>
                                 <DockPanel>
+                                    <Border DockPanel.Dock="Left" Style="{StaticResource M3IconBox}">
+                                        <Path Data="M6 7h12v2H6V7zm0 4h12v4H6v-4z"
+                                              Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource PrimaryBrush}"
+                                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
                                     <TextBlock Text="Lyrics Line Spacing" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource OnSurfaceVariantBrush}" VerticalAlignment="Center"/>
                                     <TextBlock DockPanel.Dock="Right" Text="{Binding LyricsLineSpacing, StringFormat='{}{0:F1}x'}" FontSize="12" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
                                 </DockPanel>
-                                <Slider Style="{StaticResource M3Slider}" Minimum="1" Maximum="2" Value="{Binding LyricsLineSpacing}" Margin="0,8,0,0"/>
+                                <Slider Style="{StaticResource M3Slider}" Minimum="1" Maximum="2" Value="{Binding LyricsLineSpacing}" Margin="56,8,0,0"/>
                             </StackPanel>
                         </Border>
                         <CheckBox Style="{StaticResource M3SwitchRow}" IsChecked="{Binding GlowingLyricsEffect}">
@@ -198,28 +234,40 @@
                 <TextBlock Text="MISC" Style="{StaticResource M3SectionHeader}"/>
                 <Border Style="{StaticResource M3SettingsGroup}">
                     <StackPanel>
-                        <Border Style="{StaticResource M3SettingsItem}" Padding="16,12">
+                        <!-- Default Open Tab — fixed: icon + ComboBox docked right first + no separator -->
+                        <Border Style="{StaticResource M3SettingsItemLast}" Padding="16,14">
                             <DockPanel>
-                                <StackPanel VerticalAlignment="Center">
-                                    <TextBlock Text="Default Open Tab" Style="{StaticResource M3TitleText}"/>
-                                </StackPanel>
                                 <ComboBox DockPanel.Dock="Right" SelectedIndex="{Binding DefaultOpenTabIndex}" Width="100" VerticalAlignment="Center">
                                     <ComboBoxItem Content="Home"/>
                                     <ComboBoxItem Content="Search"/>
                                     <ComboBoxItem Content="Library"/>
                                 </ComboBox>
+                                <Border DockPanel.Dock="Left" Style="{StaticResource M3IconBox}">
+                                    <Path Data="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"
+                                          Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource PrimaryBrush}"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Default Open Tab" Style="{StaticResource M3TitleText}"/>
+                                </StackPanel>
                             </DockPanel>
                         </Border>
-                        <Border Style="{StaticResource M3SettingsItem}" Padding="16,12">
+                        <!-- Grid Cell Size — fixed: icon + ComboBox docked right first + no separator -->
+                        <Border Style="{StaticResource M3SettingsItemLast}" Padding="16,14">
                             <DockPanel>
-                                <StackPanel VerticalAlignment="Center">
-                                    <TextBlock Text="Grid Cell Size" Style="{StaticResource M3TitleText}"/>
-                                </StackPanel>
                                 <ComboBox DockPanel.Dock="Right" SelectedIndex="{Binding GridCellSizeIndex}" Width="100" VerticalAlignment="Center">
                                     <ComboBoxItem Content="Small"/>
                                     <ComboBoxItem Content="Medium"/>
                                     <ComboBoxItem Content="Large"/>
                                 </ComboBox>
+                                <Border DockPanel.Dock="Left" Style="{StaticResource M3IconBox}">
+                                    <Path Data="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"
+                                          Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource PrimaryBrush}"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Grid Cell Size" Style="{StaticResource M3TitleText}"/>
+                                </StackPanel>
                             </DockPanel>
                         </Border>
                         <CheckBox Style="{StaticResource M3SwitchRow}" IsChecked="{Binding ShowLikedPlaylist}">
@@ -236,9 +284,14 @@
                 <!-- ═══ FORMAT ═══ -->
                 <TextBlock Text="FORMAT" Style="{StaticResource M3SectionHeader}"/>
                 <Border Style="{StaticResource M3SettingsGroup}">
-                    <Border Style="{StaticResource M3SettingsItemLast}" Padding="16,12">
+                    <Border Style="{StaticResource M3SettingsItemLast}" Padding="16,14">
                         <DockPanel>
                             <ComboBox DockPanel.Dock="Right" ItemsSource="{Binding DateFormats}" SelectedItem="{Binding SelectedDateFormat}" Width="160" VerticalAlignment="Center"/>
+                            <Border DockPanel.Dock="Left" Style="{StaticResource M3IconBox}">
+                                <Path Data="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"
+                                      Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource PrimaryBrush}"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
                             <StackPanel VerticalAlignment="Center">
                                 <TextBlock Text="Application Date Format" Style="{StaticResource M3TitleText}"/>
                                 <TextBlock Text="Updates string display throughout listings." Style="{StaticResource M3DescriptionText}"/>
@@ -255,7 +308,6 @@
                       Visibility="{Binding IsThemeView, Converter={StaticResource BoolToVis}}">
             <StackPanel Orientation="Vertical">
 
-                <!-- Back button + title -->
                 <StackPanel Orientation="Horizontal" Margin="4,0,0,16">
                     <Button Padding="8,4" Cursor="Hand" Background="Transparent" BorderThickness="0"
                             Command="{Binding NavigateBackCommand}" Margin="0,0,12,0">
@@ -267,7 +319,6 @@
                                Foreground="{DynamicResource OnSurfaceBrush}" VerticalAlignment="Center"/>
                 </StackPanel>
 
-                <!-- THEME MODE -->
                 <TextBlock Text="THEME MODE" Style="{StaticResource M3SectionHeader}"/>
                 <Border Style="{StaticResource M3SettingsGroup}">
                     <Border Style="{StaticResource M3SettingsItemLast}" Padding="16,12">
@@ -284,7 +335,6 @@
                     </Border>
                 </Border>
 
-                <!-- COLOR PALETTE -->
                 <TextBlock Text="COLOR PALETTE" Style="{StaticResource M3SectionHeader}"/>
                 <Border Style="{StaticResource M3SettingsGroup}">
                     <StackPanel>
