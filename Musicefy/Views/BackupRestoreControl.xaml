@@ -18,7 +18,7 @@
                            Margin="4,0,0,20"/>
 
                 <!-- CREATE BACKUP card -->
-                <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="16"
+                <Border Background="{DynamicResource SurfaceContainerHighBrush}" CornerRadius="16"
                         Padding="20,16" Margin="0,0,0,16" Cursor="Hand"
                         MouseLeftButtonUp="CreateBackup_Click">
                     <DockPanel>
@@ -39,7 +39,7 @@
                 </Border>
 
                 <!-- IMPORT card -->
-                <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="16"
+                <Border Background="{DynamicResource SurfaceContainerHighBrush}" CornerRadius="16"
                         Padding="20,16" Margin="0,0,0,16" Cursor="Hand"
                         MouseLeftButtonUp="RestoreBackup_Click">
                     <DockPanel>

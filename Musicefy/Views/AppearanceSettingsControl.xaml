@@ -4,7 +4,7 @@
              Background="Transparent">
 
     <UserControl.Resources>
-        <!-- ── Palette card style (Aniyomi flat picker) ── -->
+        <!-- ── Palette card style (kept from original) ── -->
         <Style x:Key="PaletteCardStyle" TargetType="Border">
             <Setter Property="Width" Value="72"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -58,186 +58,190 @@
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
             <StackPanel Orientation="Vertical">
 
-                <!-- ═══════════════════════════════════════ -->
-                <!-- Theme Mode (4 options: System / Light / Dark / AMOLED) -->
-                <!-- ═══════════════════════════════════════ -->
-                <TextBlock Text="Theme" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource OnSurfaceBrush}" Margin="4,0,0,12"/>
-                <Border CornerRadius="22" BorderThickness="1.5" BorderBrush="{DynamicResource OutlineBrush}" ClipToBounds="True" Margin="0,0,0,25" Height="44" Background="Transparent">
-                    <UniformGrid Columns="4">
-                        <RadioButton Content="System" Style="{StaticResource SegmentedTabStyle}" GroupName="ThemeGroup"
-                                     IsChecked="{Binding SelectedThemeMode, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=0}"/>
-                        <RadioButton Content="Light" Style="{StaticResource SegmentedTabStyle}" GroupName="ThemeGroup"
-                                     IsChecked="{Binding SelectedThemeMode, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=1}"/>
-                        <RadioButton Content="Dark" Style="{StaticResource SegmentedTabStyle}" GroupName="ThemeGroup"
-                                     IsChecked="{Binding SelectedThemeMode, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=2}"/>
-                        <RadioButton Content="AMOLED" Style="{StaticResource SegmentedTabStyle}" GroupName="ThemeGroup"
-                                     IsChecked="{Binding SelectedThemeMode, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=3}"/>
-                    </UniformGrid>
-                </Border>
+                <!-- Header -->
+                <TextBlock Text="Appearance" FontSize="22" FontWeight="Bold"
+                           Foreground="{DynamicResource OnSurfaceBrush}" Margin="4,0,0,4"/>
+                <TextBlock Text="Theme, colors, and player background."
+                           FontSize="12" Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                           Margin="4,0,0,20"/>
 
-                <!-- ═══════════════════════════════════════ -->
-                <!-- Color Palette (flat picker, Aniyomi-style) -->
-                <!-- ═══════════════════════════════════════ -->
-                <TextBlock Text="Color Palette" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource OnSurfaceBrush}" Margin="4,0,0,12"/>
-
-                <!-- Theme Preview Card -->
-                <Border CornerRadius="20" Background="{DynamicResource SurfaceContainerBrush}" Padding="16" Margin="0,0,0,12">
-                    <Grid Height="140">
-                        <!-- Mini sidebar -->
-                        <Border Width="40" CornerRadius="10,0,0,10"
-                                Background="{DynamicResource SurfaceContainerLowBrush}"
-                                HorizontalAlignment="Left" Margin="0,0,0,0"/>
-                        <!-- Sidebar accent dot -->
-                        <Ellipse Width="20" Height="20" Fill="{DynamicResource PrimaryBrush}"
-                                 HorizontalAlignment="Left" Margin="10,12,0,0" VerticalAlignment="Top"/>
-                        <!-- Main content area mockup -->
-                        <Border CornerRadius="0,10,10,10" Margin="40,0,0,0"
-                                Background="{DynamicResource SurfaceBrush}"/>
-                        <!-- Primary card preview -->
-                        <Border Width="80" Height="44" CornerRadius="12"
-                                Background="{DynamicResource PrimaryContainerBrush}"
-                                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="52,10,0,0">
-                            <StackPanel VerticalAlignment="Center" Margin="10,0,0,0">
-                                <Rectangle Width="36" Height="4" RadiusX="2" Fill="{DynamicResource PrimaryBrush}"/>
-                                <Rectangle Width="24" Height="3" RadiusX="1.5" Fill="{DynamicResource OnSurfaceVariantBrush}" Opacity="0.5" Margin="0,4,0,0"/>
-                            </StackPanel>
-                        </Border>
-                        <!-- Secondary + Tertiary accent dots -->
-                        <Ellipse Width="28" Height="28" Fill="{DynamicResource SecondaryBrush}" Opacity="0.8"
-                                 HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,14,14,0"/>
-                        <Ellipse Width="20" Height="20" Fill="{DynamicResource TertiaryBrush}" Opacity="0.8"
-                                 HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,14,48,0"/>
-                        <!-- Bottom action bar mockup -->
-                        <Border CornerRadius="16" Height="28" Width="60"
-                                Background="{DynamicResource PrimaryBrush}"
-                                HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="52,0,0,8">
-                            <TextBlock Text="Action" FontSize="9" FontWeight="SemiBold"
-                                       Foreground="{DynamicResource OnPrimaryBrush}"
-                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <!-- Reset button -->
-                        <Button Content="Reset"
-                                HorizontalAlignment="Right" VerticalAlignment="Bottom"
-                                Background="{DynamicResource PrimaryBrush}" Foreground="{DynamicResource OnPrimaryBrush}"
-                                BorderThickness="0" Padding="12,6" FontSize="11" FontWeight="SemiBold"
-                                Cursor="Hand"
-                                Click="BtnResetPalette_Click">
-                            <Button.Template>
-                                <ControlTemplate TargetType="Button">
-                                    <Border Background="{TemplateBinding Background}"
-                                            CornerRadius="12" Padding="{TemplateBinding Padding}">
-                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Border>
-                                </ControlTemplate>
-                            </Button.Template>
-                        </Button>
-                    </Grid>
-                </Border>
-
-                <!-- Flat palette picker: WrapPanel of palette cards (Aniyomi style) -->
-                <ItemsControl ItemsSource="{Binding AppThemePreviews}" Margin="0,0,0,12">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <WrapPanel Orientation="Horizontal"/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Border Style="{StaticResource PaletteCardStyle}"
-                                    BorderBrush="{Binding BorderBrush}"
-                                    MouseLeftButtonUp="PaletteCard_Click"
-                                    RenderTransformOrigin="0.5,0.5"
-                                    Margin="0,0,8,8"
-                                    ToolTip="{Binding Label}">
-                                <Border.RenderTransform>
-                                    <ScaleTransform ScaleX="1" ScaleY="1"/>
-                                </Border.RenderTransform>
-                                <StackPanel Width="72">
-                                    <!-- Color swatch circle -->
-                                    <Grid Width="48" Height="48" Margin="12,8,12,0"
-                                          HorizontalAlignment="Center">
-                                        <Grid.Clip>
-                                            <RectangleGeometry Rect="0,0,48,48" RadiusX="24" RadiusY="24"/>
-                                        </Grid.Clip>
-                                        <!-- Surface background -->
-                                        <Ellipse Fill="{Binding SurfaceBrush}" Width="48" Height="48"/>
-                                        <!-- Primary accent pill -->
-                                        <Border Width="28" Height="14" CornerRadius="7"
-                                                Background="{Binding PrimaryBrush}"
-                                                HorizontalAlignment="Center"
-                                                VerticalAlignment="Top" Margin="0,6,0,0"/>
-                                        <!-- Secondary dot -->
-                                        <Ellipse Fill="{Binding SecondaryBrush}" Width="10" Height="10"
-                                                 HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,6,6"/>
-                                        <!-- Tertiary dot -->
-                                        <Ellipse Fill="{Binding TertiaryBrush}" Width="10" Height="10"
-                                                 HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="6,0,0,6"/>
-                                        <!-- Border ring -->
-                                        <Ellipse Stroke="{Binding BorderBrush}" StrokeThickness="1.5" Fill="Transparent"
-                                                 Width="48" Height="48"/>
-                                        <!-- Selected checkmark overlay -->
-                                        <Border Background="#AA000000"
-                                                Visibility="{Binding IsSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                            <Path Data="M9,16.17L4.83,12L3.41,13.41L9,19L21,7L19.59,5.59L9,16.17Z"
-                                                  Fill="White" Width="18" Height="18" Stretch="Uniform"/>
-                                        </Border>
-                                    </Grid>
-                                    <!-- Palette name label -->
-                                    <TextBlock Text="{Binding Label}"
-                                               FontSize="9" FontWeight="SemiBold"
-                                               Foreground="{DynamicResource OnSurfaceVariantBrush}"
-                                               TextTrimming="CharacterEllipsis"
-                                               TextWrapping="NoWrap"
-                                               HorizontalAlignment="Center"
-                                               Margin="4,4,4,6"/>
-                                </StackPanel>
+                <!-- ═══ THEME section ═══ -->
+                <TextBlock Text="THEME" Style="{StaticResource M3SectionHeader}"/>
+                <Border Style="{StaticResource M3SettingsGroup}">
+                    <Border Style="{StaticResource M3SettingsItemLast}" Padding="16,12">
+                        <StackPanel>
+                            <TextBlock Text="Theme Mode" Style="{StaticResource M3TitleText}" Margin="0,0,0,8"/>
+                            <Border Style="{StaticResource M3SegmentedControl}">
+                                <UniformGrid Columns="4">
+                                    <RadioButton Content="System" Style="{StaticResource SegmentedTabStyle}" GroupName="ThemeGroup"
+                                                 IsChecked="{Binding SelectedThemeMode, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=0}"/>
+                                    <RadioButton Content="Light" Style="{StaticResource SegmentedTabStyle}" GroupName="ThemeGroup"
+                                                 IsChecked="{Binding SelectedThemeMode, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=1}"/>
+                                    <RadioButton Content="Dark" Style="{StaticResource SegmentedTabStyle}" GroupName="ThemeGroup"
+                                                 IsChecked="{Binding SelectedThemeMode, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=2}"/>
+                                    <RadioButton Content="AMOLED" Style="{StaticResource SegmentedTabStyle}" GroupName="ThemeGroup"
+                                                 IsChecked="{Binding SelectedThemeMode, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=3}"/>
+                                </UniformGrid>
                             </Border>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-
-                <!-- ═══════════════════════════════════════ -->
-                <!-- Dynamic Colors (album art) -->
-                <!-- ═══════════════════════════════════════ -->
-                <TextBlock Text="Dynamic Colors" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource OnSurfaceBrush}" Margin="4,12,0,12"/>
-                <CheckBox Style="{StaticResource ModernSettingRowStyle}" IsChecked="{Binding DynamicColorsEnabled}">
-                    <StackPanel>
-                        <TextBlock Text="Dynamic Album Colors" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource OnSurfaceBrush}"/>
-                        <TextBlock Text="Automatically theme the app using colors extracted from the currently playing album art" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,2,0,0"/>
-                    </StackPanel>
-                    <CheckBox.Tag>
-                        <Path Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-3.5l6-4.5-6-4.5v9z"
-                              Fill="{DynamicResource OnSurfaceVariantBrush}" Width="18" Height="18" Stretch="Uniform"/>
-                    </CheckBox.Tag>
-                </CheckBox>
-
-                <!-- ═══════════════════════════════════════ -->
-                <!-- Player Background -->
-                <!-- ═══════════════════════════════════════ -->
-                <TextBlock Text="Player Background" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource OnSurfaceBrush}" Margin="4,25,0,12"/>
-                <Border CornerRadius="22" BorderThickness="1.5" BorderBrush="{DynamicResource OutlineBrush}" ClipToBounds="True" Margin="0,0,0,25" Height="44" Background="Transparent">
-                    <UniformGrid Columns="3">
-                        <RadioButton Content="Gradient" Style="{StaticResource SegmentedTabStyle}" GroupName="BgStyleGroup"
-                                     IsChecked="{Binding SelectedPlayerBackgroundIndex, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=0}"/>
-                        <RadioButton Content="Coloring" Style="{StaticResource SegmentedTabStyle}" GroupName="BgStyleGroup"
-                                     IsChecked="{Binding SelectedPlayerBackgroundIndex, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=1}"/>
-                        <RadioButton Content="Glow" Style="{StaticResource SegmentedTabStyle}" GroupName="BgStyleGroup"
-                                     IsChecked="{Binding SelectedPlayerBackgroundIndex, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=2}"/>
-                    </UniformGrid>
+                        </StackPanel>
+                    </Border>
                 </Border>
 
-                <!-- ═══════════════════════════════════════ -->
-                <!-- Format Configurations -->
-                <!-- ═══════════════════════════════════════ -->
-                <TextBlock Text="Format Configurations" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource OnSurfaceBrush}" Margin="4,15,0,12"/>
-                <Border Background="{DynamicResource SurfaceVariantBrush}" BorderBrush="{DynamicResource OutlineBrush}" BorderThickness="1" CornerRadius="14" Padding="16,12">
-                    <DockPanel>
-                        <ComboBox DockPanel.Dock="Right" ItemsSource="{Binding DateFormats}" SelectedItem="{Binding SelectedDateFormat}" Width="160" VerticalAlignment="Center"/>
-                        <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="Application Date Format" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource OnSurfaceBrush}"/>
-                            <TextBlock Text="Updates string display values throughout global window listings" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,2,0,0"/>
+                <!-- ═══ COLOR PALETTE section ═══ -->
+                <TextBlock Text="COLOR PALETTE" Style="{StaticResource M3SectionHeader}"/>
+                <Border Style="{StaticResource M3SettingsGroup}">
+                    <StackPanel>
+                        <!-- Theme Preview Card (kept from original, background updated) -->
+                        <Border Style="{StaticResource M3SettingsItem}" Padding="16,12">
+                            <Border CornerRadius="20" Background="{DynamicResource SurfaceContainerHighBrush}" Padding="16">
+                                <Grid Height="140">
+                                    <Border Width="40" CornerRadius="10,0,0,10"
+                                            Background="{DynamicResource SurfaceContainerLowBrush}"
+                                            HorizontalAlignment="Left" Margin="0,0,0,0"/>
+                                    <Ellipse Width="20" Height="20" Fill="{DynamicResource PrimaryBrush}"
+                                             HorizontalAlignment="Left" Margin="10,12,0,0" VerticalAlignment="Top"/>
+                                    <Border CornerRadius="0,10,10,10" Margin="40,0,0,0"
+                                            Background="{DynamicResource SurfaceBrush}"/>
+                                    <Border Width="80" Height="44" CornerRadius="12"
+                                            Background="{DynamicResource PrimaryContainerBrush}"
+                                            HorizontalAlignment="Left" VerticalAlignment="Top" Margin="52,10,0,0">
+                                        <StackPanel VerticalAlignment="Center" Margin="10,0,0,0">
+                                            <Rectangle Width="36" Height="4" RadiusX="2" Fill="{DynamicResource PrimaryBrush}"/>
+                                            <Rectangle Width="24" Height="3" RadiusX="1.5" Fill="{DynamicResource OnSurfaceVariantBrush}" Opacity="0.5" Margin="0,4,0,0"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <Ellipse Width="28" Height="28" Fill="{DynamicResource SecondaryBrush}" Opacity="0.8"
+                                             HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,14,14,0"/>
+                                    <Ellipse Width="20" Height="20" Fill="{DynamicResource TertiaryBrush}" Opacity="0.8"
+                                             HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,14,48,0"/>
+                                    <Border CornerRadius="16" Height="28" Width="60"
+                                            Background="{DynamicResource PrimaryBrush}"
+                                            HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="52,0,0,8">
+                                        <TextBlock Text="Action" FontSize="9" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource OnPrimaryBrush}"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <Button Content="Reset"
+                                            HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                                            Background="{DynamicResource PrimaryBrush}" Foreground="{DynamicResource OnPrimaryBrush}"
+                                            BorderThickness="0" Padding="12,6" FontSize="11" FontWeight="SemiBold"
+                                            Cursor="Hand"
+                                            Click="BtnResetPalette_Click">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}"
+                                                        CornerRadius="12" Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+                                </Grid>
+                            </Border>
+                        </Border>
+
+                        <!-- Palette picker (kept from original) -->
+                        <Border Style="{StaticResource M3SettingsItem}" Padding="16,8">
+                            <ItemsControl ItemsSource="{Binding AppThemePreviews}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource PaletteCardStyle}"
+                                                BorderBrush="{Binding BorderBrush}"
+                                                MouseLeftButtonUp="PaletteCard_Click"
+                                                RenderTransformOrigin="0.5,0.5"
+                                                Margin="0,0,8,8"
+                                                ToolTip="{Binding Label}">
+                                            <Border.RenderTransform>
+                                                <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                            </Border.RenderTransform>
+                                            <StackPanel Width="72">
+                                                <Grid Width="48" Height="48" Margin="12,8,12,0"
+                                                      HorizontalAlignment="Center">
+                                                    <Grid.Clip>
+                                                        <RectangleGeometry Rect="0,0,48,48" RadiusX="24" RadiusY="24"/>
+                                                    </Grid.Clip>
+                                                    <Ellipse Fill="{Binding SurfaceBrush}" Width="48" Height="48"/>
+                                                    <Border Width="28" Height="14" CornerRadius="7"
+                                                            Background="{Binding PrimaryBrush}"
+                                                            HorizontalAlignment="Center"
+                                                            VerticalAlignment="Top" Margin="0,6,0,0"/>
+                                                    <Ellipse Fill="{Binding SecondaryBrush}" Width="10" Height="10"
+                                                             HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,6,6"/>
+                                                    <Ellipse Fill="{Binding TertiaryBrush}" Width="10" Height="10"
+                                                             HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="6,0,0,6"/>
+                                                    <Ellipse Stroke="{Binding BorderBrush}" StrokeThickness="1.5" Fill="Transparent"
+                                                             Width="48" Height="48"/>
+                                                    <Border Background="#AA000000"
+                                                            Visibility="{Binding IsSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                        <Path Data="M9,16.17L4.83,12L3.41,13.41L9,19L21,7L19.59,5.59L9,16.17Z"
+                                                              Fill="White" Width="18" Height="18" Stretch="Uniform"/>
+                                                    </Border>
+                                                </Grid>
+                                                <TextBlock Text="{Binding Label}"
+                                                           FontSize="9" FontWeight="SemiBold"
+                                                           Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           TextWrapping="NoWrap"
+                                                           HorizontalAlignment="Center"
+                                                           Margin="4,4,4,6"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Border>
+
+                        <!-- Dynamic Colors toggle -->
+                        <CheckBox Style="{StaticResource M3SwitchRow}" IsChecked="{Binding DynamicColorsEnabled}">
+                            <CheckBox.Tag>
+                                <Path Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-3.5l6-4.5-6-4.5v9z"
+                                      Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource PrimaryBrush}"/>
+                            </CheckBox.Tag>
+                            <StackPanel>
+                                <TextBlock Text="Dynamic Album Colors" Style="{StaticResource M3TitleText}"/>
+                                <TextBlock Text="Theme the app using colors from album art." Style="{StaticResource M3DescriptionText}"/>
+                            </StackPanel>
+                        </CheckBox>
+                    </StackPanel>
+                </Border>
+
+                <!-- ═══ PLAYER section ═══ -->
+                <TextBlock Text="PLAYER" Style="{StaticResource M3SectionHeader}"/>
+                <Border Style="{StaticResource M3SettingsGroup}">
+                    <Border Style="{StaticResource M3SettingsItemLast}" Padding="16,12">
+                        <StackPanel>
+                            <TextBlock Text="Player Background" Style="{StaticResource M3TitleText}" Margin="0,0,0,8"/>
+                            <Border Style="{StaticResource M3SegmentedControl}">
+                                <UniformGrid Columns="3">
+                                    <RadioButton Content="Gradient" Style="{StaticResource SegmentedTabStyle}" GroupName="BgStyleGroup"
+                                                 IsChecked="{Binding SelectedPlayerBackgroundIndex, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=0}"/>
+                                    <RadioButton Content="Coloring" Style="{StaticResource SegmentedTabStyle}" GroupName="BgStyleGroup"
+                                                 IsChecked="{Binding SelectedPlayerBackgroundIndex, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=1}"/>
+                                    <RadioButton Content="Glow" Style="{StaticResource SegmentedTabStyle}" GroupName="BgStyleGroup"
+                                                 IsChecked="{Binding SelectedPlayerBackgroundIndex, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=2}"/>
+                                </UniformGrid>
+                            </Border>
                         </StackPanel>
-                    </DockPanel>
+                    </Border>
+                </Border>
+
+                <!-- ═══ FORMAT section ═══ -->
+                <TextBlock Text="FORMAT" Style="{StaticResource M3SectionHeader}"/>
+                <Border Style="{StaticResource M3SettingsGroup}">
+                    <Border Style="{StaticResource M3SettingsItemLast}" Padding="16,12">
+                        <DockPanel>
+                            <ComboBox DockPanel.Dock="Right" ItemsSource="{Binding DateFormats}" SelectedItem="{Binding SelectedDateFormat}" Width="160" VerticalAlignment="Center"/>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="Application Date Format" Style="{StaticResource M3TitleText}"/>
+                                <TextBlock Text="Updates string display values throughout global window listings" Style="{StaticResource M3DescriptionText}"/>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
                 </Border>
 
             </StackPanel>

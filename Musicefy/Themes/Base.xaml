@@ -1185,4 +1185,16 @@
         </Setter>
     </Style>
 
+    <!-- M3 Segmented Control — universal container for segmented buttons.
+         Usage: <Border Style="{StaticResource M3SegmentedControl}"> with RadioButtons inside. -->
+    <Style x:Key="M3SegmentedControl" TargetType="Border">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource OutlineBrush}"/>
+        <Setter Property="BorderThickness" Value="1.5"/>
+        <Setter Property="CornerRadius" Value="22"/>
+        <Setter Property="ClipToBounds" Value="True"/>
+        <Setter Property="Height" Value="44"/>
+        <Setter Property="Margin" Value="0,0,0,8"/>
+    </Style>
+
 </ResourceDictionary>
