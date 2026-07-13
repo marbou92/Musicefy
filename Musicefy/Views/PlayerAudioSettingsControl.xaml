@@ -11,155 +11,105 @@
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
             <StackPanel Orientation="Vertical">
 
-                <!-- Header -->
                 <TextBlock Text="Player &amp; Audio" FontSize="22" FontWeight="Bold"
                            Foreground="{DynamicResource OnSurfaceBrush}" Margin="4,0,0,4"/>
-                <TextBlock Text="Playback, crossfade, and SponsorBlock settings."
+                <TextBlock Text="Playback, crossfade, and SponsorBlock."
                            FontSize="12" Foreground="{DynamicResource OnSurfaceVariantBrush}"
                            Margin="4,0,0,20"/>
 
-                <!-- ═══ PLAYBACK section ═══ -->
+                <!-- PLAYBACK -->
                 <TextBlock Text="PLAYBACK" Style="{StaticResource M3SectionHeader}"/>
                 <Border Style="{StaticResource M3SettingsGroup}">
                     <StackPanel>
-                        <!-- Skip Silence -->
-                        <CheckBox Style="{StaticResource M3SwitchRow}"
-                                  IsChecked="{Binding SkipSilenceEnabled}">
+                        <CheckBox Style="{StaticResource M3SwitchRow}" IsChecked="{Binding SkipSilenceEnabled}">
                             <CheckBox.Tag>
-                                <Path Data="M7 11v9h2v-9H7zm6-7v16h2V4h-2z"
-                                      Width="20" Height="20" Stretch="Uniform"
-                                      Fill="{DynamicResource PrimaryBrush}"/>
+                                <Path Data="M7 11v9h2v-9H7zm6-7v16h2V4h-2z" Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource PrimaryBrush}"/>
                             </CheckBox.Tag>
                             <StackPanel>
                                 <TextBlock Text="Skip silence" Style="{StaticResource M3TitleText}"/>
-                                <TextBlock Text="Automatically skip silent sections in tracks."
-                                           Style="{StaticResource M3DescriptionText}"/>
+                                <TextBlock Text="Automatically skip silent sections." Style="{StaticResource M3DescriptionText}"/>
                             </StackPanel>
                         </CheckBox>
 
-                        <!-- Silence Threshold slider (only visible when Skip Silence is on) -->
+                        <!-- Threshold slider (visible when Skip Silence is on) -->
                         <Border Style="{StaticResource M3SettingsItem}"
                                 Visibility="{Binding SkipSilenceEnabled, Converter={StaticResource BoolToVis}}">
-                            <StackPanel Margin="56,0,0,0">
+                            <StackPanel Margin="56,8,16,8">
                                 <DockPanel>
                                     <TextBlock Text="Threshold" FontSize="12" FontWeight="SemiBold"
-                                               Foreground="{DynamicResource OnSurfaceVariantBrush}"
-                                               VerticalAlignment="Center"/>
-                                    <TextBlock Text="{Binding SkipSilenceThresholdDb, StringFormat='{}{0} dB'}"
-                                               FontSize="12" Foreground="{DynamicResource PrimaryBrush}"
-                                               HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                               Foreground="{DynamicResource OnSurfaceVariantBrush}" VerticalAlignment="Center"/>
+                                    <TextBlock DockPanel.Dock="Right"
+                                               Text="{Binding SkipSilenceThresholdDb, StringFormat='{}{0} dB'}"
+                                               FontSize="12" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
                                 </DockPanel>
-                                <Slider Minimum="-80" Maximum="-20" TickFrequency="5"
-                                        Value="{Binding SkipSilenceThresholdDb}"
-                                        TickPlacement="BottomRight" SmallChange="1" LargeChange="5"
-                                        Margin="0,8,0,0"/>
-                                <TextBlock Text="Lower = more aggressive skipping."
-                                           FontSize="10" Foreground="{DynamicResource OnSurfaceVariantBrush}"
-                                           Margin="0,4,0,0"/>
+                                <Slider Style="{StaticResource M3Slider}" Minimum="-80" Maximum="-20"
+                                        Value="{Binding SkipSilenceThresholdDb}" Margin="0,8,0,0"/>
                             </StackPanel>
                         </Border>
 
-                        <!-- Crossfade -->
-                        <CheckBox Style="{StaticResource M3SwitchRow}"
-                                  IsChecked="{Binding CrossfadeEnabled}">
+                        <CheckBox Style="{StaticResource M3SwitchRow}" IsChecked="{Binding CrossfadeEnabled}">
                             <CheckBox.Tag>
-                                <Path Data="M15 6H3v2h12V6zm0 4H3v2h12v-2zm-4 4H3v2h8v-2z"
-                                      Width="20" Height="20" Stretch="Uniform"
-                                      Fill="{DynamicResource PrimaryBrush}"/>
+                                <Path Data="M15 6H3v2h12V6zm0 4H3v2h12v-2zm-4 4H3v2h8v-2z" Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource PrimaryBrush}"/>
                             </CheckBox.Tag>
                             <StackPanel>
                                 <TextBlock Text="Crossfade" Style="{StaticResource M3TitleText}"/>
-                                <TextBlock Text="Fade out the current track while fading in the next."
-                                           Style="{StaticResource M3DescriptionText}"/>
+                                <TextBlock Text="Fade between tracks." Style="{StaticResource M3DescriptionText}"/>
                             </StackPanel>
                         </CheckBox>
 
-                        <!-- Crossfade Duration slider (only visible when Crossfade is on) -->
+                        <!-- Crossfade duration slider -->
                         <Border Style="{StaticResource M3SettingsItemLast}"
                                 Visibility="{Binding CrossfadeEnabled, Converter={StaticResource BoolToVis}}">
-                            <StackPanel Margin="56,0,0,0">
+                            <StackPanel Margin="56,8,16,8">
                                 <DockPanel>
                                     <TextBlock Text="Duration" FontSize="12" FontWeight="SemiBold"
-                                               Foreground="{DynamicResource OnSurfaceVariantBrush}"
-                                               VerticalAlignment="Center"/>
-                                    <TextBlock Text="{Binding CrossfadeDurationSeconds, StringFormat='{}{0:F1}s'}"
-                                               FontSize="12" Foreground="{DynamicResource PrimaryBrush}"
-                                               HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                               Foreground="{DynamicResource OnSurfaceVariantBrush}" VerticalAlignment="Center"/>
+                                    <TextBlock DockPanel.Dock="Right"
+                                               Text="{Binding CrossfadeDurationSeconds, StringFormat='{}{0:F1}s'}"
+                                               FontSize="12" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
                                 </DockPanel>
-                                <Slider Minimum="1" Maximum="12" TickFrequency="1"
-                                        Value="{Binding CrossfadeDurationSeconds}"
-                                        TickPlacement="BottomRight" SmallChange="1" LargeChange="2"
-                                        Margin="0,8,0,0"/>
+                                <Slider Style="{StaticResource M3Slider}" Minimum="1" Maximum="12"
+                                        Value="{Binding CrossfadeDurationSeconds}" Margin="0,8,0,0"/>
                             </StackPanel>
                         </Border>
                     </StackPanel>
                 </Border>
 
-                <!-- ═══ SPONSORBLOCK section ═══ -->
+                <!-- SPONSORBLOCK -->
                 <TextBlock Text="SPONSORBLOCK" Style="{StaticResource M3SectionHeader}"/>
                 <Border Style="{StaticResource M3SettingsGroup}">
                     <StackPanel>
-                        <!-- Enable SponsorBlock -->
-                        <CheckBox Style="{StaticResource M3SwitchRow}"
-                                  IsChecked="{Binding SponsorBlockEnabled}"
+                        <CheckBox Style="{StaticResource M3SwitchRow}" IsChecked="{Binding SponsorBlockEnabled}"
                                   Command="{Binding ToggleSponsorBlockExpandedCommand}">
                             <CheckBox.Tag>
-                                <Path Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
-                                      Width="20" Height="20" Stretch="Uniform"
-                                      Fill="{DynamicResource PrimaryBrush}"/>
+                                <Path Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource PrimaryBrush}"/>
                             </CheckBox.Tag>
                             <StackPanel>
                                 <TextBlock Text="Enable SponsorBlock" Style="{StaticResource M3TitleText}"/>
-                                <TextBlock Text="Skip sponsor segments in YouTube videos."
-                                           Style="{StaticResource M3DescriptionText}"/>
+                                <TextBlock Text="Skip sponsor segments in YouTube videos." Style="{StaticResource M3DescriptionText}"/>
                             </StackPanel>
                         </CheckBox>
 
-                        <!-- Expandable categories (visible when expanded) -->
+                        <!-- Expandable categories -->
                         <StackPanel Visibility="{Binding SponsorBlockExpanded, Converter={StaticResource BoolToVis}}">
-                            <CheckBox Style="{StaticResource M3SwitchRow}"
-                                      IsChecked="{Binding SponsorBlockSkipSponsor}"
-                                      Margin="56,0,0,0">
-                                <StackPanel>
-                                    <TextBlock Text="Skip sponsor segments" Style="{StaticResource M3TitleText}"/>
-                                </StackPanel>
+                            <CheckBox Style="{StaticResource M3SwitchRow}" IsChecked="{Binding SponsorBlockSkipSponsor}" Margin="56,0,0,0">
+                                <StackPanel><TextBlock Text="Skip sponsor segments" Style="{StaticResource M3TitleText}"/></StackPanel>
                             </CheckBox>
-                            <CheckBox Style="{StaticResource M3SwitchRow}"
-                                      IsChecked="{Binding SponsorBlockSkipIntro}"
-                                      Margin="56,0,0,0">
-                                <StackPanel>
-                                    <TextBlock Text="Skip intros" Style="{StaticResource M3TitleText}"/>
-                                </StackPanel>
+                            <CheckBox Style="{StaticResource M3SwitchRow}" IsChecked="{Binding SponsorBlockSkipIntro}" Margin="56,0,0,0">
+                                <StackPanel><TextBlock Text="Skip intros" Style="{StaticResource M3TitleText}"/></StackPanel>
                             </CheckBox>
-                            <CheckBox Style="{StaticResource M3SwitchRow}"
-                                      IsChecked="{Binding SponsorBlockSkipOutro}"
-                                      Margin="56,0,0,0">
-                                <StackPanel>
-                                    <TextBlock Text="Skip outros" Style="{StaticResource M3TitleText}"/>
-                                </StackPanel>
+                            <CheckBox Style="{StaticResource M3SwitchRow}" IsChecked="{Binding SponsorBlockSkipOutro}" Margin="56,0,0,0">
+                                <StackPanel><TextBlock Text="Skip outros" Style="{StaticResource M3TitleText}"/></StackPanel>
                             </CheckBox>
-                            <CheckBox Style="{StaticResource M3SwitchRow}"
-                                      IsChecked="{Binding SponsorBlockSkipSelfPromo}"
-                                      Margin="56,0,0,0">
-                                <StackPanel>
-                                    <TextBlock Text="Skip self-promotion" Style="{StaticResource M3TitleText}"/>
-                                </StackPanel>
+                            <CheckBox Style="{StaticResource M3SwitchRow}" IsChecked="{Binding SponsorBlockSkipSelfPromo}" Margin="56,0,0,0">
+                                <StackPanel><TextBlock Text="Skip self-promotion" Style="{StaticResource M3TitleText}"/></StackPanel>
                             </CheckBox>
-                            <CheckBox Style="{StaticResource M3SwitchRow}"
-                                      IsChecked="{Binding SponsorBlockSkipInteraction}"
-                                      Margin="56,0,0,0">
-                                <StackPanel>
-                                    <TextBlock Text="Skip interaction reminders" Style="{StaticResource M3TitleText}"/>
-                                </StackPanel>
+                            <CheckBox Style="{StaticResource M3SwitchRow}" IsChecked="{Binding SponsorBlockSkipInteraction}" Margin="56,0,0,0">
+                                <StackPanel><TextBlock Text="Skip interaction reminders" Style="{StaticResource M3TitleText}"/></StackPanel>
                             </CheckBox>
                         </StackPanel>
                     </StackPanel>
                 </Border>
-
-                <!-- Save button -->
-                <Button Content="Save Player &amp; Audio Settings" Padding="16,8" HorizontalAlignment="Left"
-                        Command="{Binding SaveCommand}" Cursor="Hand" FontWeight="SemiBold"
-                        Margin="0,16,0,0"/>
 
             </StackPanel>
         </ScrollViewer>

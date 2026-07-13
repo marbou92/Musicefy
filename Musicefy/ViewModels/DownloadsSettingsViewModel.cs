@@ -239,13 +239,13 @@ namespace Musicefy.ViewModels
         public bool AutoClearCache
         {
             get => Musicefy.Properties.Settings.Default.AutoClearCache;
-            set => Musicefy.Properties.Settings.Default.AutoClearCache = value;
+            set { Musicefy.Properties.Settings.Default.AutoClearCache = value; Musicefy.Properties.Settings.Default.Save(); }
         }
 
         public bool LimitDownloadSize
         {
             get => Musicefy.Properties.Settings.Default.LimitDownloadSize;
-            set => Musicefy.Properties.Settings.Default.LimitDownloadSize = value;
+            set { Musicefy.Properties.Settings.Default.LimitDownloadSize = value; Musicefy.Properties.Settings.Default.Save(); }
         }
 
         // ── Sprint 4: Local music folders management ─────────────────────────

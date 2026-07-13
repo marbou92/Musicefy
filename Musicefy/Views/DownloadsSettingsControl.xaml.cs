@@ -100,10 +100,5 @@ namespace Musicefy.Views
         {
             ViewModel?.ClearCache();
         }
-
-        private void Save_Click(object sender, RoutedEventArgs e)
-        {
-            Save();
-        }
     }
 }

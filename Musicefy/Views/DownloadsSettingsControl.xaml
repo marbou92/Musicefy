@@ -150,11 +150,6 @@
                     </StackPanel>
                 </Border>
 
-                <!-- Save button -->
-                <Button Content="Save Storage Settings" Padding="16,8" HorizontalAlignment="Left"
-                        Click="Save_Click" Cursor="Hand" FontWeight="SemiBold"
-                        Margin="0,16,0,0"/>
-
             </StackPanel>
         </ScrollViewer>
     </Grid>

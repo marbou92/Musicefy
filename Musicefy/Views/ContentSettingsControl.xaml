@@ -64,11 +64,6 @@
                     </StackPanel>
                 </Border>
 
-                <!-- Save button -->
-                <Button Content="Save Content Settings" Padding="16,8" HorizontalAlignment="Left"
-                        Command="{Binding SaveCommand}" Cursor="Hand" FontWeight="SemiBold"
-                        Margin="0,16,0,0"/>
-
             </StackPanel>
         </ScrollViewer>
     </Grid>

@@ -190,8 +190,6 @@ namespace Musicefy
             services.AddTransient<StatsViewModel>();
             // Sprint 6: Backup & Restore ViewModel
             services.AddTransient<BackupRestoreViewModel>();
-            // Sprint 7: Integrations ViewModel (Last.fm, Discord)
-            services.AddTransient<IntegrationsViewModel>();
             // Sprint 7: Browse ViewModel (Mood/Genres/Charts)
             services.AddTransient<BrowseViewModel>();
 

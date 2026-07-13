@@ -999,4 +999,58 @@
         </Setter>
     </Style>
 
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- M3 Slider — premium rounded slider with custom thumb                -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <Style x:Key="M3Slider" TargetType="Slider">
+        <Setter Property="MinHeight" Value="32"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Slider">
+                    <Grid>
+                        <!-- Track background (inactive) -->
+                        <Border Height="6" VerticalAlignment="Center"
+                                Background="{DynamicResource SurfaceContainerHighBrush}"
+                                CornerRadius="3"/>
+                        <!-- Track fill (active, left of thumb) -->
+                        <Border x:Name="TrackFill" Height="6" VerticalAlignment="Center"
+                                HorizontalAlignment="Left"
+                                Background="{DynamicResource PrimaryBrush}"
+                                CornerRadius="3"
+                                Width="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"/>
+                        <!-- Thumb -->
+                        <Border x:Name="Thumb" Width="18" Height="18" CornerRadius="9"
+                                Background="{DynamicResource PrimaryBrush}"
+                                HorizontalAlignment="Left" VerticalAlignment="Center"
+                                Margin="0,0,0,0"
+                                RenderTransformOrigin="0.5,0.5">
+                            <Border.RenderTransform>
+                                <TranslateTransform x:Name="ThumbTranslate"/>
+                            </Border.RenderTransform>
+                            <Border.Effect>
+                                <DropShadowEffect ShadowDepth="2" BlurRadius="6" Opacity="0.3" Color="Black"/>
+                            </Border.Effect>
+                        </Border>
+                        <!-- Tick labels area (optional, via Tag) -->
+                        <ContentPresenter Content="{TemplateBinding Tag}" VerticalAlignment="Bottom"
+                                          HorizontalAlignment="Center" Margin="0,12,0,0"/>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Thumb" Property="Width" Value="20"/>
+                            <Setter TargetName="Thumb" Property="Height" Value="20"/>
+                            <Setter TargetName="Thumb" Property="CornerRadius" Value="10"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="TrackFill" Property="Opacity" Value="0.3"/>
+                            <Setter TargetName="Thumb" Property="Opacity" Value="0.3"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
 </ResourceDictionary>

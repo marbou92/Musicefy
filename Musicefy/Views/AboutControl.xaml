@@ -7,104 +7,127 @@
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
             <StackPanel Orientation="Vertical">
 
-                <!-- Header -->
                 <TextBlock Text="About" FontSize="22" FontWeight="Bold"
                            Foreground="{DynamicResource OnSurfaceBrush}" Margin="4,0,0,4"/>
-                <TextBlock Text="App information and credits."
+                <TextBlock Text="App information and links."
                            FontSize="12" Foreground="{DynamicResource OnSurfaceVariantBrush}"
                            Margin="4,0,0,20"/>
 
-                <!-- ═══ APP INFO section ═══ -->
+                <!-- APP INFO -->
                 <TextBlock Text="APP INFO" Style="{StaticResource M3SectionHeader}"/>
                 <Border Style="{StaticResource M3SettingsGroup}">
                     <StackPanel>
                         <Border Style="{StaticResource M3SettingsItem}">
                             <DockPanel>
-                                <Border DockPanel.Dock="Left" Style="{StaticResource M3IconBox}">
+                                <Border DockPanel.Dock="Left" Style="{StaticResource M3IconBox}" Width="48" Height="48" CornerRadius="14">
                                     <Path Data="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"
-                                          Width="20" Height="20" Stretch="Uniform"
-                                          Fill="{DynamicResource PrimaryBrush}"
+                                          Width="24" Height="24" Stretch="Uniform" Fill="{DynamicResource PrimaryBrush}"
                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
                                 <StackPanel VerticalAlignment="Center">
-                                    <TextBlock Text="Musicefy" Style="{StaticResource M3TitleText}"/>
-                                    <TextBlock Text="A WPF music player for Windows."
-                                               Style="{StaticResource M3DescriptionText}"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Musicefy" Style="{StaticResource M3TitleText}" FontSize="16"/>
+                                        <Border Background="{DynamicResource PrimaryContainerBrush}" CornerRadius="4" Padding="6,2" Margin="8,0,0,0" VerticalAlignment="Center">
+                                            <TextBlock Text="BETA" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource OnPrimaryContainerBrush}"/>
+                                        </Border>
+                                    </StackPanel>
+                                    <TextBlock Text="A WPF music player for Windows." Style="{StaticResource M3DescriptionText}"/>
                                 </StackPanel>
-                                <TextBlock DockPanel.Dock="Right" Text="Beta"
-                                           Style="{StaticResource M3TrailingValue}"/>
                             </DockPanel>
                         </Border>
                         <Border Style="{StaticResource M3SettingsItemLast}">
                             <DockPanel>
                                 <Border DockPanel.Dock="Left" Style="{StaticResource M3IconBox}">
                                     <Path Data="M11 17h2v-6h-2v6zm1-15C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"
-                                          Width="20" Height="20" Stretch="Uniform"
-                                          Fill="{DynamicResource PrimaryBrush}"
+                                          Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource PrimaryBrush}"
                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
                                 <StackPanel VerticalAlignment="Center">
                                     <TextBlock Text="Version" Style="{StaticResource M3TitleText}"/>
-                                    <TextBlock Text="Current build version."
-                                               Style="{StaticResource M3DescriptionText}"/>
                                 </StackPanel>
-                                <TextBlock DockPanel.Dock="Right" Text="1.0.0"
-                                           Style="{StaticResource M3TrailingValue}"/>
+                                <TextBlock DockPanel.Dock="Right" Text="1.0.0" Style="{StaticResource M3TrailingValue}"/>
                             </DockPanel>
                         </Border>
                     </StackPanel>
                 </Border>
 
-                <!-- ═══ LINKS section ═══ -->
-                <TextBlock Text="LINKS" Style="{StaticResource M3SectionHeader}"/>
+                <!-- DEVELOPER -->
+                <TextBlock Text="DEVELOPER" Style="{StaticResource M3SectionHeader}"/>
                 <Border Style="{StaticResource M3SettingsGroup}">
                     <StackPanel>
-                        <Border Style="{StaticResource M3SettingsItem}" Cursor="Hand"
-                                MouseLeftButtonUp="GitHubLink_Click">
+                        <Border Style="{StaticResource M3SettingsItem}" Cursor="Hand" MouseLeftButtonUp="GitHubLink_Click">
                             <DockPanel>
                                 <Border DockPanel.Dock="Left" Style="{StaticResource M3IconBox}">
                                     <Path Data="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.484.334c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.31.678.921.678 1.856 0 1.341-.012 2.423-.012 2.751 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.523 2 12 2z"
-                                          Width="20" Height="20" Stretch="Uniform"
-                                          Fill="{DynamicResource PrimaryBrush}"
+                                          Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource PrimaryBrush}"
                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
                                 <StackPanel VerticalAlignment="Center">
                                     <TextBlock Text="GitHub" Style="{StaticResource M3TitleText}"/>
-                                    <TextBlock Text="View source code and report issues."
-                                               Style="{StaticResource M3DescriptionText}"/>
+                                    <TextBlock Text="marbou92/Musicefy" Style="{StaticResource M3DescriptionText}"/>
                                 </StackPanel>
-                                <TextBlock DockPanel.Dock="Right" Text="↗"
-                                           Style="{StaticResource M3TrailingValue}"/>
+                                <TextBlock DockPanel.Dock="Right" Text="›" FontSize="20" Foreground="{DynamicResource OnSurfaceVariantBrush}" VerticalAlignment="Center"/>
                             </DockPanel>
                         </Border>
-                        <Border Style="{StaticResource M3SettingsItemLast}" Cursor="Hand"
-                                MouseLeftButtonUp="LicenseLink_Click">
+                        <Border Style="{StaticResource M3SettingsItemLast}" Cursor="Hand" MouseLeftButtonUp="WebsiteLink_Click">
                             <DockPanel>
                                 <Border DockPanel.Dock="Left" Style="{StaticResource M3IconBox}">
-                                    <Path Data="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"
-                                          Width="20" Height="20" Stretch="Uniform"
-                                          Fill="{DynamicResource PrimaryBrush}"
+                                    <Path Data="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"
+                                          Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource PrimaryBrush}"
                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
                                 <StackPanel VerticalAlignment="Center">
-                                    <TextBlock Text="License" Style="{StaticResource M3TitleText}"/>
-                                    <TextBlock Text="MIT License."
-                                               Style="{StaticResource M3DescriptionText}"/>
+                                    <TextBlock Text="Website" Style="{StaticResource M3TitleText}"/>
+                                    <TextBlock Text="github.com/marbou92" Style="{StaticResource M3DescriptionText}"/>
                                 </StackPanel>
-                                <TextBlock DockPanel.Dock="Right" Text="MIT"
-                                           Style="{StaticResource M3TrailingValue}"/>
+                                <TextBlock DockPanel.Dock="Right" Text="›" FontSize="20" Foreground="{DynamicResource OnSurfaceVariantBrush}" VerticalAlignment="Center"/>
                             </DockPanel>
                         </Border>
                     </StackPanel>
                 </Border>
 
-                <!-- ═══ CREDITS section ═══ -->
+                <!-- SUPPORT -->
+                <TextBlock Text="SUPPORT" Style="{StaticResource M3SectionHeader}"/>
+                <Border Style="{StaticResource M3SettingsGroup}">
+                    <StackPanel>
+                        <Border Style="{StaticResource M3SettingsItem}" Cursor="Hand" MouseLeftButtonUp="DonateLink_Click">
+                            <DockPanel>
+                                <Border DockPanel.Dock="Left" Style="{StaticResource M3IconBox}">
+                                    <Path Data="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                                          Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource PrimaryBrush}"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Buy Me a Coffee" Style="{StaticResource M3TitleText}"/>
+                                    <TextBlock Text="Support the project." Style="{StaticResource M3DescriptionText}"/>
+                                </StackPanel>
+                                <TextBlock DockPanel.Dock="Right" Text="›" FontSize="20" Foreground="{DynamicResource OnSurfaceVariantBrush}" VerticalAlignment="Center"/>
+                            </DockPanel>
+                        </Border>
+                        <Border Style="{StaticResource M3SettingsItemLast}" Cursor="Hand" MouseLeftButtonUp="LicenseLink_Click">
+                            <DockPanel>
+                                <Border DockPanel.Dock="Left" Style="{StaticResource M3IconBox}">
+                                    <Path Data="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"
+                                          Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource PrimaryBrush}"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="License" Style="{StaticResource M3TitleText}"/>
+                                    <TextBlock Text="MIT License." Style="{StaticResource M3DescriptionText}"/>
+                                </StackPanel>
+                                <TextBlock DockPanel.Dock="Right" Text="MIT" Style="{StaticResource M3TrailingValue}"/>
+                            </DockPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- CREDITS -->
                 <TextBlock Text="CREDITS" Style="{StaticResource M3SectionHeader}"/>
                 <Border Style="{StaticResource M3SettingsGroup}">
                     <StackPanel>
                         <Border Style="{StaticResource M3SettingsItemLast}">
                             <StackPanel Margin="56,0,0,0">
-                                <TextBlock Text="Built with NAudio, TagLibSharp, Microsoft.Data.Sqlite, Dapper, Newtonsoft.Json"
+                                <TextBlock Text="Built with NAudio, TagLibSharp, Dapper, Newtonsoft.Json"
                                            Style="{StaticResource M3DescriptionText}"/>
                                 <TextBlock Text="Inspired by Echo Music's architecture."
                                            Style="{StaticResource M3DescriptionText}" Margin="0,4,0,0"/>

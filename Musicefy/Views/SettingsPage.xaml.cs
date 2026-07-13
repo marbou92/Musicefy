@@ -122,9 +122,9 @@ namespace Musicefy.Views
             // Backup
             yield return new SettingsSearchItem("Backup", "Backup", () => SwitchToTab("Backup"));
             yield return new SettingsSearchItem("Restore", "Backup", () => SwitchToTab("Backup"));
-            // Integrations
-            yield return new SettingsSearchItem("Last.fm", "Integrations", () => SwitchToTab("Integrations"));
-            yield return new SettingsSearchItem("Discord", "Integrations", () => SwitchToTab("Integrations"));
+            // Integrations (now in Account)
+            yield return new SettingsSearchItem("Last.fm", "Account", () => SwitchToTab("Account"));
+            yield return new SettingsSearchItem("Discord", "Account", () => SwitchToTab("Account"));
             // About
             yield return new SettingsSearchItem("About", "About", () => SwitchToTab("About"));
             yield return new SettingsSearchItem("GitHub", "About", () => SwitchToTab("About"));
@@ -154,9 +154,7 @@ namespace Musicefy.Views
                 case "Backup":
                     BackupButton.IsChecked = true;
                     break;
-                case "Integrations":
-                    IntegrationsButton.IsChecked = true;
-                    break;
+
                 case "About":
                     AboutButton.IsChecked = true;
                     break;
@@ -229,15 +227,6 @@ namespace Musicefy.Views
             }
         }
 
-        private void IntegrationsButton_Checked(object sender, System.Windows.RoutedEventArgs e)
-        {
-            if (IntegrationsButton.IsChecked == true)
-            {
-                try { ShowIntegrations(); }
-                catch (Exception ex) { ShowFallbackContent($"Error: {ex.Message}"); }
-            }
-        }
-
         private void AboutButton_Checked(object sender, System.Windows.RoutedEventArgs e)
         {
             if (AboutButton.IsChecked == true)
@@ -289,12 +278,6 @@ namespace Musicefy.Views
         {
             var control = new BackupRestoreControl();
             AnimateContentChange(control, "Backup & Restore");
-        }
-
-        private void ShowIntegrations()
-        {
-            var control = new IntegrationsSettingsControl();
-            AnimateContentChange(control, "Integrations");
         }
 
         private void ShowAbout()
