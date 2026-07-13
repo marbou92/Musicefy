@@ -80,7 +80,8 @@
                                 </StackPanel>
                                 <TextBlock DockPanel.Dock="Right" Text="›" FontSize="20"
                                            Foreground="{DynamicResource OnSurfaceVariantBrush}"
-                                           VerticalAlignment="Center"/>
+                                           VerticalAlignment="Center" Margin="0,0,0,0"
+                                           HorizontalAlignment="Right"/>
                             </DockPanel>
                         </Border>
                         <!-- Last.fm — tapable row -->
@@ -98,7 +99,8 @@
                                 </StackPanel>
                                 <TextBlock DockPanel.Dock="Right" Text="›" FontSize="20"
                                            Foreground="{DynamicResource OnSurfaceVariantBrush}"
-                                           VerticalAlignment="Center"/>
+                                           VerticalAlignment="Center" Margin="0,0,0,0"
+                                           HorizontalAlignment="Right"/>
                             </DockPanel>
                         </Border>
                     </StackPanel>
@@ -111,9 +113,12 @@
         <ScrollViewer VerticalScrollBarVisibility="Auto" Visibility="{Binding IsDiscordView, Converter={StaticResource BoolToVis}}">
             <StackPanel Orientation="Vertical">
                 <StackPanel Orientation="Horizontal" Margin="4,0,0,16">
-                    <Button Content="←" Padding="8,4" Cursor="Hand" Background="Transparent" BorderThickness="0"
-                            Command="{Binding NavigateBackCommand}" Margin="0,0,12,0" FontSize="18"
-                            Foreground="{DynamicResource OnSurfaceBrush}"/>
+                    <Button Padding="8,4" Cursor="Hand" Background="Transparent" BorderThickness="0"
+                            Command="{Binding NavigateBackCommand}" Margin="0,0,12,0">
+                        <Path Data="M20,11L7.8,11l5.6,-5.6L12,4l-8,8l8,8l1.4,-1.4L7.8,13L20,13L20,11z"
+                              Width="20" Height="20" Stretch="Uniform"
+                              Fill="{DynamicResource OnSurfaceBrush}"/>
+                    </Button>
                     <TextBlock Text="Discord" FontSize="22" FontWeight="Bold"
                                Foreground="{DynamicResource OnSurfaceBrush}" VerticalAlignment="Center"/>
                 </StackPanel>
@@ -154,9 +159,12 @@
         <ScrollViewer VerticalScrollBarVisibility="Auto" Visibility="{Binding IsLastFmView, Converter={StaticResource BoolToVis}}">
             <StackPanel Orientation="Vertical">
                 <StackPanel Orientation="Horizontal" Margin="4,0,0,16">
-                    <Button Content="←" Padding="8,4" Cursor="Hand" Background="Transparent" BorderThickness="0"
-                            Command="{Binding NavigateBackCommand}" Margin="0,0,12,0" FontSize="18"
-                            Foreground="{DynamicResource OnSurfaceBrush}"/>
+                    <Button Padding="8,4" Cursor="Hand" Background="Transparent" BorderThickness="0"
+                            Command="{Binding NavigateBackCommand}" Margin="0,0,12,0">
+                        <Path Data="M20,11L7.8,11l5.6,-5.6L12,4l-8,8l8,8l1.4,-1.4L7.8,13L20,13L20,11z"
+                              Width="20" Height="20" Stretch="Uniform"
+                              Fill="{DynamicResource OnSurfaceBrush}"/>
+                    </Button>
                     <TextBlock Text="Last.fm" FontSize="22" FontWeight="Bold"
                                Foreground="{DynamicResource OnSurfaceBrush}" VerticalAlignment="Center"/>
                 </StackPanel>
