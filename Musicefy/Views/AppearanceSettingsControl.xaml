@@ -129,6 +129,10 @@
                             <CheckBox.Tag><Path Data="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14zM6 15h2v2H6zm3-4h2v6H9zm3-4h2v10h-2zm3 7h2v3h-2z" Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource PrimaryBrush}"/></CheckBox.Tag>
                             <StackPanel><TextBlock Text="Show Codec on Player" Style="{StaticResource M3TitleText}"/><TextBlock Text="Display audio codec below timeline." Style="{StaticResource M3DescriptionText}"/></StackPanel>
                         </CheckBox>
+                        <CheckBox Style="{StaticResource M3SwitchRow}" IsChecked="{Binding DynamicColorsEnabled}">
+                            <CheckBox.Tag><Path Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-3.5l6-4.5-6-4.5v9z" Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource PrimaryBrush}"/></CheckBox.Tag>
+                            <StackPanel><TextBlock Text="Dynamic Album Colors" Style="{StaticResource M3TitleText}"/><TextBlock Text="Theme the player using colors from album art." Style="{StaticResource M3DescriptionText}"/></StackPanel>
+                        </CheckBox>
                         <!-- Thumbnail Corner Radius — fixed: icon + no separator -->
                         <Border Style="{StaticResource M3SettingsItemLast}" Padding="16,14">
                             <StackPanel>
@@ -287,25 +291,6 @@
                     </StackPanel>
                 </Border>
 
-                <!-- ═══ FORMAT ═══ -->
-                <TextBlock Text="FORMAT" Style="{StaticResource M3SectionHeader}"/>
-                <Border Style="{StaticResource M3SettingsGroup}">
-                    <Border Style="{StaticResource M3SettingsItemLast}" Padding="16,14">
-                        <DockPanel>
-                            <ComboBox DockPanel.Dock="Right" ItemsSource="{Binding DateFormats}" SelectedItem="{Binding SelectedDateFormat}" Width="160" VerticalAlignment="Center"/>
-                            <Border DockPanel.Dock="Left" Style="{StaticResource M3IconBox}">
-                                <Path Data="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"
-                                      Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource PrimaryBrush}"
-                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="Application Date Format" Style="{StaticResource M3TitleText}"/>
-                                <TextBlock Text="Updates string display throughout listings." Style="{StaticResource M3DescriptionText}"/>
-                            </StackPanel>
-                        </DockPanel>
-                    </Border>
-                </Border>
-
             </StackPanel>
         </ScrollViewer>
 
@@ -421,13 +406,6 @@
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                         </Border>
-                        <CheckBox Style="{StaticResource M3SwitchRow}" IsChecked="{Binding DynamicColorsEnabled}">
-                            <CheckBox.Tag><Path Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-3.5l6-4.5-6-4.5v9z" Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource PrimaryBrush}"/></CheckBox.Tag>
-                            <StackPanel>
-                                <TextBlock Text="Dynamic Album Colors" Style="{StaticResource M3TitleText}"/>
-                                <TextBlock Text="Theme the app using colors from album art." Style="{StaticResource M3DescriptionText}"/>
-                            </StackPanel>
-                        </CheckBox>
                     </StackPanel>
                 </Border>
 

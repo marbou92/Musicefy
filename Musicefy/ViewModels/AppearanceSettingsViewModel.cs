@@ -22,7 +22,7 @@ namespace Musicefy.ViewModels
         private ThemeMode _selectedThemeMode;
         private AppTheme  _selectedAppTheme;
         private bool      _isSuppressingThemeApplication;
-        private string    _selectedDateFormat;
+
 
         // ── Sprint 9.1: Theme sub-view navigation ───────────────────────────
         private bool _isThemeView;
@@ -57,8 +57,7 @@ namespace Musicefy.ViewModels
             AppThemePreviews = new ObservableCollection<AppThemePreview>();
             RefreshPreviews();
 
-            DateFormats = new ObservableCollection<string> { "MM/dd/yyyy", "dd/MM/yyyy", "yyyy-MM-dd" };
-            _selectedDateFormat = Musicefy.Properties.Settings.Default.DateFormat ?? DateFormats[0];
+
 
             _isSuppressingThemeApplication = false;
         }
@@ -164,12 +163,7 @@ namespace Musicefy.ViewModels
 
         // ── Date Format ───────────────────────────────────────────────────────
 
-        public ObservableCollection<string> DateFormats { get; }
-        public string SelectedDateFormat
-        {
-            get => _selectedDateFormat;
-            set { _selectedDateFormat = value; OnPropertyChanged(); }
-        }
+
 
         // ── Theme application ─────────────────────────────────────────────────
 
@@ -249,7 +243,7 @@ namespace Musicefy.ViewModels
         {
             ThemeManager.SavePreferences(_selectedAppTheme, _selectedThemeMode);
             Musicefy.Properties.Settings.Default.DynamicColorsEnabled = DynamicColorsEnabled;
-            Musicefy.Properties.Settings.Default.DateFormat = _selectedDateFormat;
+
             Musicefy.Properties.Settings.Default.PlayerBackgroundStyle = PlayerBackgroundStyle;
             Musicefy.Properties.Settings.Default.Save();
         }
