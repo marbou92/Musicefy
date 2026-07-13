@@ -154,36 +154,37 @@
         </Setter>
     </Style>
 
-    <!-- M3 Segmented Button — improved with SecondaryContainer active state -->
-    <Style x:Key="SegmentedTabStyle" TargetType="RadioButton">
-        <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="{DynamicResource OnSurfaceVariantBrush}"/>
-        <Setter Property="FontSize" Value="13"/>
-        <Setter Property="FontWeight" Value="Medium"/>
+    <!-- M3 Theme Mode Card — 2×2 grid selector for theme mode -->
+    <Style x:Key="M3ThemeModeCard" TargetType="RadioButton">
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="RadioButton">
-                    <Grid>
-                        <Border x:Name="TabBg" Background="{TemplateBinding Background}" CornerRadius="20" Margin="2">
-                            <Border.RenderTransform>
-                                <ScaleTransform x:Name="TabScale" ScaleX="1" ScaleY="1" CenterX="0.5" CenterY="0.5"/>
-                            </Border.RenderTransform>
-                            <ContentPresenter x:Name="ContentArea" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </Grid>
+                    <Border x:Name="CardBorder" Background="Transparent"
+                            BorderBrush="{DynamicResource OutlineBrush}"
+                            BorderThickness="2" CornerRadius="16"
+                            Padding="12,10" Margin="4">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <ContentPresenter x:Name="IconArea" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                            <TextBlock x:Name="CardLabel" Text="{TemplateBinding Content}"
+                                       FontSize="11" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="TabBg" Property="Background" Value="{DynamicResource SecondaryContainerBrush}"/>
-                            <Setter Property="Foreground" Value="{DynamicResource OnSecondaryContainerBrush}"/>
+                            <Setter TargetName="CardBorder" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                            <Setter TargetName="CardBorder" Property="Background" Value="{DynamicResource PrimaryContainerBrush}"/>
+                            <Setter TargetName="CardLabel" Property="Foreground" Value="{DynamicResource OnPrimaryContainerBrush}"/>
                         </Trigger>
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
                                 <Condition Property="IsMouseOver" Value="True"/>
                                 <Condition Property="IsChecked" Value="False"/>
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="TabBg" Property="Background" Value="{DynamicResource SurfaceContainerHighBrush}"/>
+                            <Setter TargetName="CardBorder" Property="Background" Value="{DynamicResource SurfaceContainerHighBrush}"/>
                         </MultiTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -1200,18 +1201,6 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-    </Style>
-
-    <!-- M3 Segmented Control — universal container for segmented buttons.
-         Usage: <Border Style="{StaticResource M3SegmentedControl}"> with RadioButtons inside. -->
-    <Style x:Key="M3SegmentedControl" TargetType="Border">
-        <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource OutlineBrush}"/>
-        <Setter Property="BorderThickness" Value="1.5"/>
-        <Setter Property="CornerRadius" Value="22"/>
-        <Setter Property="ClipToBounds" Value="True"/>
-        <Setter Property="Height" Value="44"/>
-        <Setter Property="Margin" Value="0,0,0,8"/>
     </Style>
 
 </ResourceDictionary>

@@ -79,18 +79,24 @@
                 <TextBlock Text="PLAYER" Style="{StaticResource M3SectionHeader}"/>
                 <Border Style="{StaticResource M3SettingsGroup}">
                     <StackPanel>
-                        <!-- Player Background (segmented control — keep as-is, has icon) -->
-                        <Border Style="{StaticResource M3SettingsItemLast}" Padding="16,12">
-                            <StackPanel>
-                                <TextBlock Text="Player Background" Style="{StaticResource M3TitleText}" Margin="0,0,0,8"/>
-                                <Border Style="{StaticResource M3SegmentedControl}">
-                                    <UniformGrid Columns="3">
-                                        <RadioButton Content="Gradient" Style="{StaticResource SegmentedTabStyle}" GroupName="BgStyleGroup" IsChecked="{Binding SelectedPlayerBackgroundIndex, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=0}"/>
-                                        <RadioButton Content="Coloring" Style="{StaticResource SegmentedTabStyle}" GroupName="BgStyleGroup" IsChecked="{Binding SelectedPlayerBackgroundIndex, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=1}"/>
-                                        <RadioButton Content="Glow" Style="{StaticResource SegmentedTabStyle}" GroupName="BgStyleGroup" IsChecked="{Binding SelectedPlayerBackgroundIndex, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=2}"/>
-                                    </UniformGrid>
+                        <!-- Player Background — now a ComboBox row (was segmented control) -->
+                        <Border Style="{StaticResource M3SettingsItemLast}" Padding="16,14">
+                            <DockPanel>
+                                <ComboBox DockPanel.Dock="Right" SelectedIndex="{Binding SelectedPlayerBackgroundIndex}" Width="120" VerticalAlignment="Center">
+                                    <ComboBoxItem Content="Gradient"/>
+                                    <ComboBoxItem Content="Coloring"/>
+                                    <ComboBoxItem Content="Glow"/>
+                                </ComboBox>
+                                <Border DockPanel.Dock="Left" Style="{StaticResource M3IconBox}">
+                                    <Path Data="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"
+                                          Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource PrimaryBrush}"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
-                            </StackPanel>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Player Background" Style="{StaticResource M3TitleText}"/>
+                                    <TextBlock Text="Background style behind the player." Style="{StaticResource M3DescriptionText}"/>
+                                </StackPanel>
+                            </DockPanel>
                         </Border>
                         <!-- Player Slider Style — fixed: icon + ComboBox docked right first + no separator -->
                         <Border Style="{StaticResource M3SettingsItemLast}" Padding="16,14">
@@ -322,16 +328,36 @@
                 <TextBlock Text="THEME MODE" Style="{StaticResource M3SectionHeader}"/>
                 <Border Style="{StaticResource M3SettingsGroup}">
                     <Border Style="{StaticResource M3SettingsItemLast}" Padding="16,12">
-                        <StackPanel>
-                            <Border Style="{StaticResource M3SegmentedControl}">
-                                <UniformGrid Columns="4">
-                                    <RadioButton Content="System" Style="{StaticResource SegmentedTabStyle}" GroupName="ThemeGroup" IsChecked="{Binding SelectedThemeMode, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=0}"/>
-                                    <RadioButton Content="Light" Style="{StaticResource SegmentedTabStyle}" GroupName="ThemeGroup" IsChecked="{Binding SelectedThemeMode, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=1}"/>
-                                    <RadioButton Content="Dark" Style="{StaticResource SegmentedTabStyle}" GroupName="ThemeGroup" IsChecked="{Binding SelectedThemeMode, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=2}"/>
-                                    <RadioButton Content="AMOLED" Style="{StaticResource SegmentedTabStyle}" GroupName="ThemeGroup" IsChecked="{Binding SelectedThemeMode, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=3}"/>
-                                </UniformGrid>
-                            </Border>
-                        </StackPanel>
+                        <UniformGrid Columns="2" Rows="2">
+                            <!-- System -->
+                            <RadioButton Style="{StaticResource M3ThemeModeCard}" GroupName="ThemeGroup"
+                                         Content="Follow System"
+                                         IsChecked="{Binding SelectedThemeMode, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=0}">
+                                <Path Data="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"
+                                      Width="24" Height="24" Stretch="Uniform" Fill="{DynamicResource PrimaryBrush}"/>
+                            </RadioButton>
+                            <!-- Light -->
+                            <RadioButton Style="{StaticResource M3ThemeModeCard}" GroupName="ThemeGroup"
+                                         Content="Light"
+                                         IsChecked="{Binding SelectedThemeMode, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=1}">
+                                <Path Data="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM12 0l-1 2h2L12 0zm0 22l-1-2h2l-1 2zM0 12l2-1v2L0 12zm22 0l-2-1v2l2-1zM3.51 3.51l1.42 1.42-1.42 1.42-1.41-1.42 1.41-1.42zm0 16.97l1.42-1.42 1.42 1.42-1.42 1.41-1.42-1.41zm16.97-16.97l-1.42 1.42-1.41-1.42 1.41-1.41 1.42 1.41zm0 16.97l-1.42-1.42-1.41 1.42 1.41 1.41 1.42-1.41z"
+                                      Width="24" Height="24" Stretch="Uniform" Fill="{DynamicResource PrimaryBrush}"/>
+                            </RadioButton>
+                            <!-- Dark -->
+                            <RadioButton Style="{StaticResource M3ThemeModeCard}" GroupName="ThemeGroup"
+                                         Content="Dark"
+                                         IsChecked="{Binding SelectedThemeMode, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=2}">
+                                <Path Data="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"
+                                      Width="24" Height="24" Stretch="Uniform" Fill="{DynamicResource PrimaryBrush}"/>
+                            </RadioButton>
+                            <!-- AMOLED -->
+                            <RadioButton Style="{StaticResource M3ThemeModeCard}" GroupName="ThemeGroup"
+                                         Content="AMOLED"
+                                         IsChecked="{Binding SelectedThemeMode, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=3}">
+                                <Path Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18V4c4.41 0 8 3.59 8 8s-3.59 8-8 8z"
+                                      Width="24" Height="24" Stretch="Uniform" Fill="{DynamicResource PrimaryBrush}"/>
+                            </RadioButton>
+                        </UniformGrid>
                     </Border>
                 </Border>
 
