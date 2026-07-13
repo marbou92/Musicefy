@@ -357,7 +357,7 @@
                 <TextBlock Text="COLOR PALETTE" Style="{StaticResource M3SectionHeader}"/>
                 <Border Style="{StaticResource M3SettingsGroup}">
                     <StackPanel>
-                        <Border Style="{StaticResource M3SettingsItem}" Padding="16,12">
+                        <Border Style="{StaticResource M3SettingsItemLast}" Padding="16,12">
                             <Border CornerRadius="20" Background="{DynamicResource SurfaceContainerHighBrush}" Padding="16">
                                 <Grid Height="140">
                                     <Border Width="40" CornerRadius="10,0,0,10" Background="{DynamicResource SurfaceContainerLowBrush}" HorizontalAlignment="Left"/>
@@ -380,7 +380,7 @@
                                 </Grid>
                             </Border>
                         </Border>
-                        <Border Style="{StaticResource M3SettingsItem}" Padding="16,8">
+                        <Border Style="{StaticResource M3SettingsItemLast}" Padding="16,8">
                             <ItemsControl ItemsSource="{Binding AppThemePreviews}">
                                 <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
