@@ -4,6 +4,7 @@
              Background="Transparent">
 
     <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <Style x:Key="PaletteCardStyle" TargetType="Border">
             <Setter Property="Width" Value="72"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -42,91 +43,36 @@
     </UserControl.Resources>
 
     <Grid Margin="10,0,10,10">
-        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+
+        <!-- ═══ MAIN VIEW ═══ -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                      Visibility="{Binding IsMainView, Converter={StaticResource BoolToVis}}">
             <StackPanel Orientation="Vertical">
 
                 <TextBlock Text="Appearance" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource OnSurfaceBrush}" Margin="4,0,0,4"/>
                 <TextBlock Text="Theme, player, lyrics, and layout." FontSize="12" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="4,0,0,20"/>
 
-                <!-- ═══ THEME ═══ -->
+                <!-- ═══ THEME — tappable row that navigates to theme sub-view ═══ -->
                 <TextBlock Text="THEME" Style="{StaticResource M3SectionHeader}"/>
                 <Border Style="{StaticResource M3SettingsGroup}">
-                    <Border Style="{StaticResource M3SettingsItemLast}" Padding="16,12">
-                        <StackPanel>
-                            <TextBlock Text="Theme Mode" Style="{StaticResource M3TitleText}" Margin="0,0,0,8"/>
-                            <Border Style="{StaticResource M3SegmentedControl}">
-                                <UniformGrid Columns="4">
-                                    <RadioButton Content="System" Style="{StaticResource SegmentedTabStyle}" GroupName="ThemeGroup" IsChecked="{Binding SelectedThemeMode, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=0}"/>
-                                    <RadioButton Content="Light" Style="{StaticResource SegmentedTabStyle}" GroupName="ThemeGroup" IsChecked="{Binding SelectedThemeMode, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=1}"/>
-                                    <RadioButton Content="Dark" Style="{StaticResource SegmentedTabStyle}" GroupName="ThemeGroup" IsChecked="{Binding SelectedThemeMode, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=2}"/>
-                                    <RadioButton Content="AMOLED" Style="{StaticResource SegmentedTabStyle}" GroupName="ThemeGroup" IsChecked="{Binding SelectedThemeMode, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=3}"/>
-                                </UniformGrid>
+                    <Border Style="{StaticResource M3SettingsItemLast}" Padding="16,14" Cursor="Hand"
+                            MouseLeftButtonUp="ThemeRow_Click">
+                        <DockPanel>
+                            <Border DockPanel.Dock="Left" Style="{StaticResource M3IconBox}">
+                                <Path Data="M12 2C6.49 2 2 6.49 2 12s4.49 10 10 10c.55 0 1-.45 1-1 0-.28-.11-.53-.29-.71-.18-.18-.29-.43-.29-.71 0-.55.45-1 1-1H16c3.31 0 6-2.69 6-6 0-4.96-4.49-9-10-9zm-5.5 8.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5S8 8.17 8 9s-.67 1.5-1.5 1.5zm3.5-2.5c-.83 0-1.5-.67-1.5-1.5S9.17 5 10 5s1.5.67 1.5 1.5S10.83 8 10 8zm5 0c-.83 0-1.5-.67-1.5-1.5S14.17 5 15 5s1.5.67 1.5 1.5S15.83 8 15 8zm1.5 4.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"
+                                      Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource PrimaryBrush}"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
-                        </StackPanel>
-                    </Border>
-                </Border>
-
-                <!-- ═══ COLOR PALETTE ═══ -->
-                <TextBlock Text="COLOR PALETTE" Style="{StaticResource M3SectionHeader}"/>
-                <Border Style="{StaticResource M3SettingsGroup}">
-                    <StackPanel>
-                        <Border Style="{StaticResource M3SettingsItem}" Padding="16,12">
-                            <Border CornerRadius="20" Background="{DynamicResource SurfaceContainerHighBrush}" Padding="16">
-                                <Grid Height="140">
-                                    <Border Width="40" CornerRadius="10,0,0,10" Background="{DynamicResource SurfaceContainerLowBrush}" HorizontalAlignment="Left"/>
-                                    <Ellipse Width="20" Height="20" Fill="{DynamicResource PrimaryBrush}" HorizontalAlignment="Left" Margin="10,12,0,0" VerticalAlignment="Top"/>
-                                    <Border CornerRadius="0,10,10,10" Margin="40,0,0,0" Background="{DynamicResource SurfaceBrush}"/>
-                                    <Border Width="80" Height="44" CornerRadius="12" Background="{DynamicResource PrimaryContainerBrush}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="52,10,0,0">
-                                        <StackPanel VerticalAlignment="Center" Margin="10,0,0,0">
-                                            <Rectangle Width="36" Height="4" RadiusX="2" Fill="{DynamicResource PrimaryBrush}"/>
-                                            <Rectangle Width="24" Height="3" RadiusX="1.5" Fill="{DynamicResource OnSurfaceVariantBrush}" Opacity="0.5" Margin="0,4,0,0"/>
-                                        </StackPanel>
-                                    </Border>
-                                    <Ellipse Width="28" Height="28" Fill="{DynamicResource SecondaryBrush}" Opacity="0.8" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,14,14,0"/>
-                                    <Ellipse Width="20" Height="20" Fill="{DynamicResource TertiaryBrush}" Opacity="0.8" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,14,48,0"/>
-                                    <Border CornerRadius="16" Height="28" Width="60" Background="{DynamicResource PrimaryBrush}" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="52,0,0,8">
-                                        <TextBlock Text="Action" FontSize="9" FontWeight="SemiBold" Foreground="{DynamicResource OnPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Border>
-                                    <Button Content="Reset" HorizontalAlignment="Right" VerticalAlignment="Bottom" Background="{DynamicResource PrimaryBrush}" Foreground="{DynamicResource OnPrimaryBrush}" BorderThickness="0" Padding="12,6" FontSize="11" FontWeight="SemiBold" Cursor="Hand" Click="BtnResetPalette_Click">
-                                        <Button.Template><ControlTemplate TargetType="Button"><Border Background="{TemplateBinding Background}" CornerRadius="12" Padding="{TemplateBinding Padding}"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border></ControlTemplate></Button.Template>
-                                    </Button>
-                                </Grid>
-                            </Border>
-                        </Border>
-                        <Border Style="{StaticResource M3SettingsItem}" Padding="16,8">
-                            <ItemsControl ItemsSource="{Binding AppThemePreviews}">
-                                <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Border Style="{StaticResource PaletteCardStyle}" BorderBrush="{Binding BorderBrush}" MouseLeftButtonUp="PaletteCard_Click" RenderTransformOrigin="0.5,0.5" Margin="0,0,8,8" ToolTip="{Binding Label}">
-                                            <Border.RenderTransform><ScaleTransform ScaleX="1" ScaleY="1"/></Border.RenderTransform>
-                                            <StackPanel Width="72">
-                                                <Grid Width="48" Height="48" Margin="12,8,12,0" HorizontalAlignment="Center">
-                                                    <Grid.Clip><RectangleGeometry Rect="0,0,48,48" RadiusX="24" RadiusY="24"/></Grid.Clip>
-                                                    <Ellipse Fill="{Binding SurfaceBrush}" Width="48" Height="48"/>
-                                                    <Border Width="28" Height="14" CornerRadius="7" Background="{Binding PrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,6,0,0"/>
-                                                    <Ellipse Fill="{Binding SecondaryBrush}" Width="10" Height="10" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,6,6"/>
-                                                    <Ellipse Fill="{Binding TertiaryBrush}" Width="10" Height="10" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="6,0,0,6"/>
-                                                    <Ellipse Stroke="{Binding BorderBrush}" StrokeThickness="1.5" Fill="Transparent" Width="48" Height="48"/>
-                                                    <Border Background="#AA000000" Visibility="{Binding IsSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                                        <Path Data="M9,16.17L4.83,12L3.41,13.41L9,19L21,7L19.59,5.59L9,16.17Z" Fill="White" Width="18" Height="18" Stretch="Uniform"/>
-                                                    </Border>
-                                                </Grid>
-                                                <TextBlock Text="{Binding Label}" FontSize="9" FontWeight="SemiBold" Foreground="{DynamicResource OnSurfaceVariantBrush}" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" HorizontalAlignment="Center" Margin="4,4,4,6"/>
-                                            </StackPanel>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </Border>
-                        <CheckBox Style="{StaticResource M3SwitchRow}" IsChecked="{Binding DynamicColorsEnabled}">
-                            <CheckBox.Tag><Path Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-3.5l6-4.5-6-4.5v9z" Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource PrimaryBrush}"/></CheckBox.Tag>
-                            <StackPanel>
-                                <TextBlock Text="Dynamic Album Colors" Style="{StaticResource M3TitleText}"/>
-                                <TextBlock Text="Theme the app using colors from album art." Style="{StaticResource M3DescriptionText}"/>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="Theme" Style="{StaticResource M3TitleText}"/>
+                                <TextBlock Text="Theme mode, color palette, dynamic colors." Style="{StaticResource M3DescriptionText}"/>
                             </StackPanel>
-                        </CheckBox>
-                    </StackPanel>
+                            <TextBlock DockPanel.Dock="Right" Text="›" FontSize="20"
+                                       Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                                       VerticalAlignment="Center" Margin="0,0,0,0"
+                                       HorizontalAlignment="Right"/>
+                        </DockPanel>
+                    </Border>
                 </Border>
 
                 <!-- ═══ PLAYER ═══ -->
@@ -303,5 +249,106 @@
 
             </StackPanel>
         </ScrollViewer>
+
+        <!-- ═══ THEME SUB-VIEW ═══ -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                      Visibility="{Binding IsThemeView, Converter={StaticResource BoolToVis}}">
+            <StackPanel Orientation="Vertical">
+
+                <!-- Back button + title -->
+                <StackPanel Orientation="Horizontal" Margin="4,0,0,16">
+                    <Button Padding="8,4" Cursor="Hand" Background="Transparent" BorderThickness="0"
+                            Command="{Binding NavigateBackCommand}" Margin="0,0,12,0">
+                        <Path Data="M20,11L7.8,11l5.6,-5.6L12,4l-8,8l8,8l1.4,-1.4L7.8,13L20,13L20,11z"
+                              Width="20" Height="20" Stretch="Uniform"
+                              Fill="{DynamicResource OnSurfaceBrush}"/>
+                    </Button>
+                    <TextBlock Text="Theme" FontSize="22" FontWeight="Bold"
+                               Foreground="{DynamicResource OnSurfaceBrush}" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- THEME MODE -->
+                <TextBlock Text="THEME MODE" Style="{StaticResource M3SectionHeader}"/>
+                <Border Style="{StaticResource M3SettingsGroup}">
+                    <Border Style="{StaticResource M3SettingsItemLast}" Padding="16,12">
+                        <StackPanel>
+                            <Border Style="{StaticResource M3SegmentedControl}">
+                                <UniformGrid Columns="4">
+                                    <RadioButton Content="System" Style="{StaticResource SegmentedTabStyle}" GroupName="ThemeGroup" IsChecked="{Binding SelectedThemeMode, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=0}"/>
+                                    <RadioButton Content="Light" Style="{StaticResource SegmentedTabStyle}" GroupName="ThemeGroup" IsChecked="{Binding SelectedThemeMode, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=1}"/>
+                                    <RadioButton Content="Dark" Style="{StaticResource SegmentedTabStyle}" GroupName="ThemeGroup" IsChecked="{Binding SelectedThemeMode, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=2}"/>
+                                    <RadioButton Content="AMOLED" Style="{StaticResource SegmentedTabStyle}" GroupName="ThemeGroup" IsChecked="{Binding SelectedThemeMode, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=3}"/>
+                                </UniformGrid>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+                </Border>
+
+                <!-- COLOR PALETTE -->
+                <TextBlock Text="COLOR PALETTE" Style="{StaticResource M3SectionHeader}"/>
+                <Border Style="{StaticResource M3SettingsGroup}">
+                    <StackPanel>
+                        <Border Style="{StaticResource M3SettingsItem}" Padding="16,12">
+                            <Border CornerRadius="20" Background="{DynamicResource SurfaceContainerHighBrush}" Padding="16">
+                                <Grid Height="140">
+                                    <Border Width="40" CornerRadius="10,0,0,10" Background="{DynamicResource SurfaceContainerLowBrush}" HorizontalAlignment="Left"/>
+                                    <Ellipse Width="20" Height="20" Fill="{DynamicResource PrimaryBrush}" HorizontalAlignment="Left" Margin="10,12,0,0" VerticalAlignment="Top"/>
+                                    <Border CornerRadius="0,10,10,10" Margin="40,0,0,0" Background="{DynamicResource SurfaceBrush}"/>
+                                    <Border Width="80" Height="44" CornerRadius="12" Background="{DynamicResource PrimaryContainerBrush}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="52,10,0,0">
+                                        <StackPanel VerticalAlignment="Center" Margin="10,0,0,0">
+                                            <Rectangle Width="36" Height="4" RadiusX="2" Fill="{DynamicResource PrimaryBrush}"/>
+                                            <Rectangle Width="24" Height="3" RadiusX="1.5" Fill="{DynamicResource OnSurfaceVariantBrush}" Opacity="0.5" Margin="0,4,0,0"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <Ellipse Width="28" Height="28" Fill="{DynamicResource SecondaryBrush}" Opacity="0.8" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,14,14,0"/>
+                                    <Ellipse Width="20" Height="20" Fill="{DynamicResource TertiaryBrush}" Opacity="0.8" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,14,48,0"/>
+                                    <Border CornerRadius="16" Height="28" Width="60" Background="{DynamicResource PrimaryBrush}" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="52,0,0,8">
+                                        <TextBlock Text="Action" FontSize="9" FontWeight="SemiBold" Foreground="{DynamicResource OnPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <Button Content="Reset" HorizontalAlignment="Right" VerticalAlignment="Bottom" Background="{DynamicResource PrimaryBrush}" Foreground="{DynamicResource OnPrimaryBrush}" BorderThickness="0" Padding="12,6" FontSize="11" FontWeight="SemiBold" Cursor="Hand" Click="BtnResetPalette_Click">
+                                        <Button.Template><ControlTemplate TargetType="Button"><Border Background="{TemplateBinding Background}" CornerRadius="12" Padding="{TemplateBinding Padding}"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border></ControlTemplate></Button.Template>
+                                    </Button>
+                                </Grid>
+                            </Border>
+                        </Border>
+                        <Border Style="{StaticResource M3SettingsItem}" Padding="16,8">
+                            <ItemsControl ItemsSource="{Binding AppThemePreviews}">
+                                <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource PaletteCardStyle}" BorderBrush="{Binding BorderBrush}" MouseLeftButtonUp="PaletteCard_Click" RenderTransformOrigin="0.5,0.5" Margin="0,0,8,8" ToolTip="{Binding Label}">
+                                            <Border.RenderTransform><ScaleTransform ScaleX="1" ScaleY="1"/></Border.RenderTransform>
+                                            <StackPanel Width="72">
+                                                <Grid Width="48" Height="48" Margin="12,8,12,0" HorizontalAlignment="Center">
+                                                    <Grid.Clip><RectangleGeometry Rect="0,0,48,48" RadiusX="24" RadiusY="24"/></Grid.Clip>
+                                                    <Ellipse Fill="{Binding SurfaceBrush}" Width="48" Height="48"/>
+                                                    <Border Width="28" Height="14" CornerRadius="7" Background="{Binding PrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,6,0,0"/>
+                                                    <Ellipse Fill="{Binding SecondaryBrush}" Width="10" Height="10" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,6,6"/>
+                                                    <Ellipse Fill="{Binding TertiaryBrush}" Width="10" Height="10" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="6,0,0,6"/>
+                                                    <Ellipse Stroke="{Binding BorderBrush}" StrokeThickness="1.5" Fill="Transparent" Width="48" Height="48"/>
+                                                    <Border Background="#AA000000" Visibility="{Binding IsSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                        <Path Data="M9,16.17L4.83,12L3.41,13.41L9,19L21,7L19.59,5.59L9,16.17Z" Fill="White" Width="18" Height="18" Stretch="Uniform"/>
+                                                    </Border>
+                                                </Grid>
+                                                <TextBlock Text="{Binding Label}" FontSize="9" FontWeight="SemiBold" Foreground="{DynamicResource OnSurfaceVariantBrush}" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" HorizontalAlignment="Center" Margin="4,4,4,6"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Border>
+                        <CheckBox Style="{StaticResource M3SwitchRow}" IsChecked="{Binding DynamicColorsEnabled}">
+                            <CheckBox.Tag><Path Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-3.5l6-4.5-6-4.5v9z" Width="20" Height="20" Stretch="Uniform" Fill="{DynamicResource PrimaryBrush}"/></CheckBox.Tag>
+                            <StackPanel>
+                                <TextBlock Text="Dynamic Album Colors" Style="{StaticResource M3TitleText}"/>
+                                <TextBlock Text="Theme the app using colors from album art." Style="{StaticResource M3DescriptionText}"/>
+                            </StackPanel>
+                        </CheckBox>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+
     </Grid>
 </UserControl>

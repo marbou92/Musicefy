@@ -38,6 +38,17 @@ namespace Musicefy.Views
             }
         }
 
+        /// <summary>
+        /// Sprint 9.1: Navigate to the Theme sub-view when the Theme row is clicked.
+        /// </summary>
+        private void ThemeRow_Click(object sender, MouseButtonEventArgs e)
+        {
+            if (DataContext is AppearanceSettingsViewModel vm)
+            {
+                vm.NavigateToThemeCommand.Execute(null);
+            }
+        }
+
         private void BtnResetPalette_Click(object sender, RoutedEventArgs e)
         {
             if (DataContext is AppearanceSettingsViewModel viewModel)

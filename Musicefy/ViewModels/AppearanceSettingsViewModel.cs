@@ -24,9 +24,29 @@ namespace Musicefy.ViewModels
         private bool      _isSuppressingThemeApplication;
         private string    _selectedDateFormat;
 
+        // ── Sprint 9.1: Theme sub-view navigation ───────────────────────────
+        private bool _isThemeView;
+        public bool IsMainView => !_isThemeView;
+        public bool IsThemeView
+        {
+            get => _isThemeView;
+            set
+            {
+                _isThemeView = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsMainView));
+            }
+        }
+
+        public ICommand NavigateToThemeCommand { get; }
+        public ICommand NavigateBackCommand { get; }
+
         public AppearanceSettingsViewModel()
         {
             _isSuppressingThemeApplication = true;
+
+            NavigateToThemeCommand = new RelayCommand(_ => IsThemeView = true);
+            NavigateBackCommand = new RelayCommand(_ => IsThemeView = false);
 
             // Load saved preferences
             var (appTheme, themeMode) = ThemeManager.LoadPreferences();
