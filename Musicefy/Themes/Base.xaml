@@ -221,7 +221,12 @@
                                 </Grid>
                             </Grid>
 
-                            <ContentControl x:Name="IconPresenter" DockPanel.Dock="Left" Content="{TemplateBinding Tag}" VerticalAlignment="Center" Margin="0,0,16,0"/>
+                            <Border DockPanel.Dock="Left" Width="40" Height="40" CornerRadius="12"
+                                    Background="{DynamicResource PrimaryContainerBrush}"
+                                    Margin="0,0,16,0" VerticalAlignment="Center">
+                                <ContentControl x:Name="IconPresenter" Content="{TemplateBinding Tag}"
+                                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
 
                             <StackPanel VerticalAlignment="Center">
                                 <TextBlock x:Name="TitleText" FontWeight="SemiBold" FontSize="14" Foreground="{TemplateBinding Foreground}">
@@ -957,8 +962,13 @@
                                 </Grid>
                             </Grid>
 
-                            <!-- Icon on the left (via Tag property) -->
-                            <ContentControl x:Name="IconPresenter" DockPanel.Dock="Left" Content="{TemplateBinding Tag}" VerticalAlignment="Center" Margin="0,0,16,0"/>
+                            <!-- Icon on the left (via Tag property) — wrapped in M3IconBox container for consistency -->
+                            <Border DockPanel.Dock="Left" Width="40" Height="40" CornerRadius="12"
+                                    Background="{DynamicResource PrimaryContainerBrush}"
+                                    Margin="0,0,16,0" VerticalAlignment="Center">
+                                <ContentControl x:Name="IconPresenter" Content="{TemplateBinding Tag}"
+                                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
 
                             <!-- Title + Description -->
                             <StackPanel VerticalAlignment="Center">
