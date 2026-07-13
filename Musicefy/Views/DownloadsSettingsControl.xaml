@@ -36,9 +36,9 @@
                                         <TextBlock Text="Folders on your disk that Musicefy scans."
                                                    Style="{StaticResource M3DescriptionText}"/>
                                     </StackPanel>
-                                    <Button DockPanel.Dock="Right" Content="+ Add" Padding="8,4"
-                                            Style="{StaticResource M3TextButton}"
-                                            Click="AddFolder_Click" Cursor="Hand" VerticalAlignment="Center"/>
+                                    <Button DockPanel.Dock="Right" Content="+ Add"
+                                            Style="{StaticResource M3SmallTonalButton}"
+                                            Click="AddFolder_Click" Cursor="Hand"/>
                                 </DockPanel>
 
                                 <ItemsControl x:Name="FoldersList" Margin="56,8,0,0">
@@ -90,9 +90,9 @@
                                              Background="Transparent" Foreground="{DynamicResource OnSurfaceVariantBrush}"
                                              FontSize="11" Margin="0,2,0,0" TextWrapping="NoWrap"/>
                                 </StackPanel>
-                                <Button DockPanel.Dock="Right" Content="Browse" Padding="8,4"
-                                        Style="{StaticResource M3TextButton}"
-                                        Click="Browse_Click" Cursor="Hand" VerticalAlignment="Center"/>
+                                <Button DockPanel.Dock="Right" Content="Browse"
+                                        Style="{StaticResource M3SmallTonalButton}"
+                                        Click="Browse_Click" Cursor="Hand"/>
                             </DockPanel>
                         </Border>
                     </StackPanel>
@@ -145,9 +145,11 @@
                                 <ProgressBar x:Name="CacheProgressBar" Height="6" Maximum="100" Value="0"
                                              BorderThickness="0" Background="{DynamicResource OutlineBrush}"
                                              Margin="56,8,0,0"/>
-                                <Button Content="Clear Cache" Padding="8,4" HorizontalAlignment="Left"
-                                        Style="{StaticResource M3TextButton}"
-                                        Click="ClearNow_Click" Cursor="Hand" Margin="56,8,0,0"/>
+                                <Button Content="Clear Cache"
+                                        Style="{StaticResource M3SmallTonalButton}"
+                                        HorizontalAlignment="Left"
+                                        Margin="56,8,0,0"
+                                        Click="ClearNow_Click" Cursor="Hand"/>
                             </StackPanel>
                         </Border>
                     </StackPanel>
