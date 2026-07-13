@@ -1,0 +1,121 @@
+<UserControl x:Class="Musicefy.Views.AccountSettingsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="Transparent">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </UserControl.Resources>
+
+    <Grid Margin="10,0,10,10">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Orientation="Vertical">
+
+                <!-- Header -->
+                <TextBlock Text="Account" FontSize="22" FontWeight="Bold"
+                           Foreground="{DynamicResource OnSurfaceBrush}" Margin="4,0,0,4"/>
+                <TextBlock Text="YouTube Music login and API settings."
+                           FontSize="12" Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                           Margin="4,0,0,20"/>
+
+                <!-- ═══ YOUTUBE MUSIC section ═══ -->
+                <TextBlock Text="YOUTUBE MUSIC" Style="{StaticResource M3SectionHeader}"/>
+                <Border Style="{StaticResource M3SettingsGroup}">
+                    <StackPanel>
+                        <!-- Enable YouTube -->
+                        <CheckBox Style="{StaticResource M3SwitchRow}"
+                                  IsChecked="{Binding YouTubeEnabled}">
+                            <CheckBox.Tag>
+                                <Path Data="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"
+                                      Width="20" Height="20" Stretch="Uniform"
+                                      Fill="{DynamicResource PrimaryBrush}"/>
+                            </CheckBox.Tag>
+                            <StackPanel>
+                                <TextBlock Text="Enable YouTube Music" Style="{StaticResource M3TitleText}"/>
+                                <TextBlock Text="Stream music from YouTube Music."
+                                           Style="{StaticResource M3DescriptionText}"/>
+                            </StackPanel>
+                        </CheckBox>
+
+                        <!-- API Key -->
+                        <Border Style="{StaticResource M3SettingsItem}">
+                            <DockPanel>
+                                <Border DockPanel.Dock="Left" Style="{StaticResource M3IconBox}">
+                                    <Path Data="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"
+                                          Width="20" Height="20" Stretch="Uniform"
+                                          Fill="{DynamicResource PrimaryBrush}"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="API Key (optional)" Style="{StaticResource M3TitleText}"/>
+                                    <TextBlock Text="For higher search quotas. Leave empty for anonymous mode."
+                                               Style="{StaticResource M3DescriptionText}"/>
+                                </StackPanel>
+                            </DockPanel>
+                        </Border>
+                        <Border Background="{DynamicResource SurfaceContainerLowBrush}"
+                                CornerRadius="0" Padding="56,4,16,8" Margin="0,-4,0,0">
+                            <TextBox Background="Transparent" BorderThickness="0"
+                                     Foreground="{DynamicResource OnSurfaceBrush}" FontSize="12"
+                                     Text="{Binding YouTubeApiKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     ToolTip="Google API key (AIzaSy...)"/>
+                        </Border>
+
+                        <!-- Cookie -->
+                        <Border Style="{StaticResource M3SettingsItemLast}">
+                            <DockPanel>
+                                <Border DockPanel.Dock="Left" Style="{StaticResource M3IconBox}">
+                                    <Path Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
+                                          Width="20" Height="20" Stretch="Uniform"
+                                          Fill="{DynamicResource PrimaryBrush}"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Cookie (optional — for login)" Style="{StaticResource M3TitleText}"/>
+                                    <TextBlock Text="Enables liked songs, uploads, and higher quality."
+                                               Style="{StaticResource M3DescriptionText}"/>
+                                </StackPanel>
+                            </DockPanel>
+                        </Border>
+                        <Border Background="{DynamicResource SurfaceContainerLowBrush}"
+                                CornerRadius="0" Padding="56,4,16,8" Margin="0,-4,0,0">
+                            <TextBox Background="Transparent" BorderThickness="0"
+                                     Foreground="{DynamicResource OnSurfaceBrush}" FontSize="12"
+                                     Text="{Binding YouTubeCookie, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     ToolTip="SID=...; HSID=...; SAPISID=..."/>
+                        </Border>
+
+                        <!-- Audio Quality -->
+                        <Border Style="{StaticResource M3SettingsItemLast}">
+                            <DockPanel>
+                                <Border DockPanel.Dock="Left" Style="{StaticResource M3IconBox}">
+                                    <Path Data="M12 3v9.28c-.47-.17-.97-.28-1.5-.28C8.01 12 6 14.01 6 16.5S8.01 21 10.5 21c2.31 0 4.2-1.75 4.45-4H15V6h4V3h-7z"
+                                          Width="20" Height="20" Stretch="Uniform"
+                                          Fill="{DynamicResource PrimaryBrush}"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Audio Quality" Style="{StaticResource M3TitleText}"/>
+                                    <TextBlock Text="Preferred audio format for streaming."
+                                               Style="{StaticResource M3DescriptionText}"/>
+                                </StackPanel>
+                                <ComboBox DockPanel.Dock="Right" Padding="8,4" FontSize="12"
+                                          SelectedIndex="{Binding YouTubeAudioQualityIndex, Mode=TwoWay}"
+                                          VerticalAlignment="Center">
+                                    <ComboBoxItem Content="Opus"/>
+                                    <ComboBoxItem Content="AAC"/>
+                                </ComboBox>
+                            </DockPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- Save button -->
+                <Button Content="Save Account Settings" Padding="16,8" HorizontalAlignment="Left"
+                        Command="{Binding SaveCommand}" Cursor="Hand" FontWeight="SemiBold"
+                        Margin="0,16,0,0"/>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

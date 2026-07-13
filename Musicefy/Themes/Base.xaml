@@ -845,4 +845,158 @@
         </Setter>
     </Style>
 
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- SPRINT 8: Echo-style Material 3 Settings Components               -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Section header — small accent-colored text above each card group -->
+    <Style x:Key="M3SectionHeader" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+        <Setter Property="Margin" Value="4,16,0,8"/>
+        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+    </Style>
+
+    <!-- M3 Settings Group — a rounded card containing multiple settings items.
+         The first item gets top-rounded corners, the last gets bottom-rounded,
+         middle items are square. 4dp gap between items. -->
+    <Style x:Key="M3SettingsGroup" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource SurfaceContainerHighBrush}"/>
+        <Setter Property="CornerRadius" Value="16"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Margin" Value="0,0,0,8"/>
+    </Style>
+
+    <!-- M3 Settings Item — a row with icon + title + description + trailing control.
+         This is the base style; the trailing control (switch, slider, text) is
+         provided as Content. -->
+    <Style x:Key="M3SettingsItem" TargetType="Border">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Padding" Value="16,14"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource OutlineVariantBrush}"/>
+    </Style>
+
+    <!-- M3 Settings Item — last in group (no bottom border) -->
+    <Style x:Key="M3SettingsItemLast" TargetType="Border" BasedOn="{StaticResource M3SettingsItem}">
+        <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+
+    <!-- M3 Icon Box — the 40×40 tinted icon container on the left of each row -->
+    <Style x:Key="M3IconBox" TargetType="Border">
+        <Setter Property="Width" Value="40"/>
+        <Setter Property="Height" Value="40"/>
+        <Setter Property="CornerRadius" Value="12"/>
+        <Setter Property="Background" Value="{DynamicResource PrimaryContainerBrush}"/>
+        <Setter Property="Margin" Value="0,0,16,0"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+    <!-- M3 Title text — the setting name -->
+    <Style x:Key="M3TitleText" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{DynamicResource OnSurfaceBrush}"/>
+        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+    </Style>
+
+    <!-- M3 Description text — the subtitle below the title -->
+    <Style x:Key="M3DescriptionText" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="Foreground" Value="{DynamicResource OnSurfaceVariantBrush}"/>
+        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+        <Setter Property="Margin" Value="0,2,0,0"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+    </Style>
+
+    <!-- M3 Trailing Value text — the value shown on the right (e.g., "Opus") -->
+    <Style x:Key="M3TrailingValue" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Foreground" Value="{DynamicResource OnSurfaceVariantBrush}"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Margin" Value="0,0,8,0"/>
+    </Style>
+
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- M3 Settings Switch Row — a full ModernSettingRowStyle row with icon  -->
+    <!-- This EXTENDS the existing ModernSettingRowStyle with a mandatory     -->
+    <!-- icon on the left.                                                    -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <Style x:Key="M3SwitchRow" TargetType="CheckBox">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{DynamicResource OnSurfaceBrush}"/>
+        <Setter Property="Padding" Value="16,14"/>
+        <Setter Property="Margin" Value="0"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <Border x:Name="RowBorder" Background="{TemplateBinding Background}"
+                            Padding="{TemplateBinding Padding}">
+                        <DockPanel>
+                            <!-- Switch on the right -->
+                            <Grid DockPanel.Dock="Right" Width="52" Height="32" VerticalAlignment="Center" Margin="10,0,0,0">
+                                <Border x:Name="SwitchTrack" Background="Transparent" CornerRadius="16" BorderThickness="2" BorderBrush="{DynamicResource OutlineBrush}"/>
+                                <Border x:Name="SwitchTrackFill" CornerRadius="16" Opacity="0" Background="{DynamicResource PrimaryBrush}"/>
+                                <Grid x:Name="KnobContainer" Width="24" Height="24" HorizontalAlignment="Left" Margin="4,0,0,0" RenderTransformOrigin="0.5,0.5">
+                                    <Grid.RenderTransform>
+                                        <TranslateTransform x:Name="KnobSlide"/>
+                                    </Grid.RenderTransform>
+                                    <Ellipse x:Name="SwitchKnob" Fill="{DynamicResource OutlineBrush}"/>
+                                    <Ellipse x:Name="SwitchKnobChecked" Fill="{DynamicResource OnPrimaryBrush}" Opacity="0"/>
+                                </Grid>
+                            </Grid>
+
+                            <!-- Icon on the left (via Tag property) -->
+                            <ContentControl x:Name="IconPresenter" DockPanel.Dock="Left" Content="{TemplateBinding Tag}" VerticalAlignment="Center" Margin="0,0,16,0"/>
+
+                            <!-- Title + Description -->
+                            <StackPanel VerticalAlignment="Center">
+                                <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="KnobSlide" Storyboard.TargetProperty="X" To="20" Duration="0:0:0.25">
+                                            <DoubleAnimation.EasingFunction><CircleEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <DoubleAnimation Storyboard.TargetName="SwitchTrackFill" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.2">
+                                            <DoubleAnimation.EasingFunction><QuadraticEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <DoubleAnimation Storyboard.TargetName="SwitchKnob" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.15"/>
+                                        <DoubleAnimation Storyboard.TargetName="SwitchKnobChecked" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.15"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="KnobSlide" Storyboard.TargetProperty="X" To="0" Duration="0:0:0.25">
+                                            <DoubleAnimation.EasingFunction><CircleEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <DoubleAnimation Storyboard.TargetName="SwitchTrackFill" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.2">
+                                            <DoubleAnimation.EasingFunction><QuadraticEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <DoubleAnimation Storyboard.TargetName="SwitchKnob" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.15"/>
+                                        <DoubleAnimation Storyboard.TargetName="SwitchKnobChecked" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.15"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource HoverBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
 </ResourceDictionary>

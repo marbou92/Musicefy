@@ -98,8 +98,25 @@
 
                 <!-- Tabs (hidden when searching) -->
                 <StackPanel x:Name="TabsPanel">
-                    <RadioButton x:Name="AppearanceButton" Style="{StaticResource SidebarTabStyle}"
+                    <!-- Account -->
+                    <RadioButton x:Name="AccountButton" Style="{StaticResource SidebarTabStyle}"
                                  GroupName="SettingsTabs" IsChecked="True"
+                                 Checked="AccountButton_Checked">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                                  Width="18" Height="18" Stretch="Uniform"
+                                  Fill="{Binding RelativeSource={RelativeSource AncestorType=RadioButton}, Path=Foreground}"
+                                  Margin="0,0,12,0" VerticalAlignment="Center"/>
+                            <StackPanel>
+                                <TextBlock Text="Account" FontWeight="SemiBold" FontSize="13"/>
+                                <TextBlock Text="YouTube login" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </RadioButton>
+
+                    <!-- Appearance -->
+                    <RadioButton x:Name="AppearanceButton" Style="{StaticResource SidebarTabStyle}"
+                                 GroupName="SettingsTabs"
                                  Checked="AppearanceButton_Checked">
                         <StackPanel Orientation="Horizontal">
                             <Path Data="M12 2C6.49 2 2 6.49 2 12s4.49 10 10 10c.55 0 1-.45 1-1 0-.28-.11-.53-.29-.71-.18-.18-.29-.43-.29-.71 0-.55.45-1 1-1H16c3.31 0 6-2.69 6-6 0-4.96-4.49-9-10-9zm-5.5 8.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5S8 8.17 8 9s-.67 1.5-1.5 1.5zm3.5-2.5c-.83 0-1.5-.67-1.5-1.5S9.17 5 10 5s1.5.67 1.5 1.5S10.83 8 10 8zm5 0c-.83 0-1.5-.67-1.5-1.5S14.17 5 15 5s1.5.67 1.5 1.5S15.83 8 15 8zm1.5 4.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"
@@ -113,6 +130,39 @@
                         </StackPanel>
                     </RadioButton>
 
+                    <!-- Player & Audio -->
+                    <RadioButton x:Name="PlayerAudioButton" Style="{StaticResource SidebarTabStyle}"
+                                 GroupName="SettingsTabs"
+                                 Checked="PlayerAudioButton_Checked">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="M12 3v9.28c-.47-.17-.97-.28-1.5-.28C8.01 12 6 14.01 6 16.5S8.01 21 10.5 21c2.31 0 4.2-1.75 4.45-4H15V6h4V3h-7z"
+                                  Width="18" Height="18" Stretch="Uniform"
+                                  Fill="{Binding RelativeSource={RelativeSource AncestorType=RadioButton}, Path=Foreground}"
+                                  Margin="0,0,12,0" VerticalAlignment="Center"/>
+                            <StackPanel>
+                                <TextBlock Text="Player &amp; Audio" FontWeight="SemiBold" FontSize="13"/>
+                                <TextBlock Text="Playback &amp; SponsorBlock" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </RadioButton>
+
+                    <!-- Content -->
+                    <RadioButton x:Name="ContentButton" Style="{StaticResource SidebarTabStyle}"
+                                 GroupName="SettingsTabs"
+                                 Checked="ContentButton_Checked">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"
+                                  Width="18" Height="18" Stretch="Uniform"
+                                  Fill="{Binding RelativeSource={RelativeSource AncestorType=RadioButton}, Path=Foreground}"
+                                  Margin="0,0,12,0" VerticalAlignment="Center"/>
+                            <StackPanel>
+                                <TextBlock Text="Content" FontWeight="SemiBold" FontSize="13"/>
+                                <TextBlock Text="Lyrics &amp; home screen" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </RadioButton>
+
+                    <!-- Storage -->
                     <RadioButton x:Name="DownloadsButton" Style="{StaticResource SidebarTabStyle}"
                                  GroupName="SettingsTabs"
                                  Checked="DownloadsButton_Checked">
@@ -122,45 +172,13 @@
                                   Fill="{Binding RelativeSource={RelativeSource AncestorType=RadioButton}, Path=Foreground}"
                                   Margin="0,0,12,0" VerticalAlignment="Center"/>
                             <StackPanel>
-                                <TextBlock Text="Storage &amp; Sources" FontWeight="SemiBold" FontSize="13"/>
-                                <TextBlock Text="Local folders, YouTube, downloads" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"/>
+                                <TextBlock Text="Storage" FontWeight="SemiBold" FontSize="13"/>
+                                <TextBlock Text="Downloads &amp; folders" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"/>
                             </StackPanel>
                         </StackPanel>
                     </RadioButton>
 
-                    <!-- Sprint 5: History tab -->
-                    <RadioButton x:Name="HistoryButton" Style="{StaticResource SidebarTabStyle}"
-                                 GroupName="SettingsTabs"
-                                 Checked="HistoryButton_Checked">
-                        <StackPanel Orientation="Horizontal">
-                            <Path Data="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"
-                                  Width="18" Height="18" Stretch="Uniform"
-                                  Fill="{Binding RelativeSource={RelativeSource AncestorType=RadioButton}, Path=Foreground}"
-                                  Margin="0,0,12,0" VerticalAlignment="Center"/>
-                            <StackPanel>
-                                <TextBlock Text="History" FontWeight="SemiBold" FontSize="13"/>
-                                <TextBlock Text="Recently played" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"/>
-                            </StackPanel>
-                        </StackPanel>
-                    </RadioButton>
-
-                    <!-- Sprint 5: Stats tab -->
-                    <RadioButton x:Name="StatsButton" Style="{StaticResource SidebarTabStyle}"
-                                 GroupName="SettingsTabs"
-                                 Checked="StatsButton_Checked">
-                        <StackPanel Orientation="Horizontal">
-                            <Path Data="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"
-                                  Width="18" Height="18" Stretch="Uniform"
-                                  Fill="{Binding RelativeSource={RelativeSource AncestorType=RadioButton}, Path=Foreground}"
-                                  Margin="0,0,12,0" VerticalAlignment="Center"/>
-                            <StackPanel>
-                                <TextBlock Text="Stats" FontWeight="SemiBold" FontSize="13"/>
-                                <TextBlock Text="Listening activity" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"/>
-                            </StackPanel>
-                        </StackPanel>
-                    </RadioButton>
-
-                    <!-- Sprint 6: Backup & Restore tab -->
+                    <!-- Backup -->
                     <RadioButton x:Name="BackupButton" Style="{StaticResource SidebarTabStyle}"
                                  GroupName="SettingsTabs"
                                  Checked="BackupButton_Checked">
@@ -176,7 +194,7 @@
                         </StackPanel>
                     </RadioButton>
 
-                    <!-- Sprint 7: Integrations tab -->
+                    <!-- Integrations -->
                     <RadioButton x:Name="IntegrationsButton" Style="{StaticResource SidebarTabStyle}"
                                  GroupName="SettingsTabs"
                                  Checked="IntegrationsButton_Checked">
@@ -187,7 +205,23 @@
                                   Margin="0,0,12,0" VerticalAlignment="Center"/>
                             <StackPanel>
                                 <TextBlock Text="Integrations" FontWeight="SemiBold" FontSize="13"/>
-                                <TextBlock Text="AI, Last.fm, Discord" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"/>
+                                <TextBlock Text="Last.fm &amp; Discord" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </RadioButton>
+
+                    <!-- About -->
+                    <RadioButton x:Name="AboutButton" Style="{StaticResource SidebarTabStyle}"
+                                 GroupName="SettingsTabs"
+                                 Checked="AboutButton_Checked">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="M11 17h2v-6h-2v6zm1-15C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"
+                                  Width="18" Height="18" Stretch="Uniform"
+                                  Fill="{Binding RelativeSource={RelativeSource AncestorType=RadioButton}, Path=Foreground}"
+                                  Margin="0,0,12,0" VerticalAlignment="Center"/>
+                            <StackPanel>
+                                <TextBlock Text="About" FontWeight="SemiBold" FontSize="13"/>
+                                <TextBlock Text="App info" FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"/>
                             </StackPanel>
                         </StackPanel>
                     </RadioButton>

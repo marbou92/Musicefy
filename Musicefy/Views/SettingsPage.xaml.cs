@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -21,12 +20,6 @@ namespace Musicefy.Views
         private string _searchQuery = "";
         private ObservableCollection<SettingsSearchItem> _searchResults = new ObservableCollection<SettingsSearchItem>();
 
-        /// <summary>
-        /// Sprint 4: Search query for the settings search bar.
-        /// When non-empty, the sidebar tabs are hidden and a list of matching
-        /// settings is shown instead. Clicking a result navigates to the
-        /// relevant tab.
-        /// </summary>
         public string SearchQuery
         {
             get => _searchQuery;
@@ -51,13 +44,13 @@ namespace Musicefy.Views
 
             try
             {
-                ShowAppearance();
+                ShowAccount();
                 _initialLoadPending = false;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[SettingsPage] Constructor init failed: {ex.Message}");
-                ShowFallbackContent($"Error loading Appearance: {ex.Message}");
+                ShowFallbackContent($"Error loading Account: {ex.Message}");
             }
         }
 
@@ -66,11 +59,11 @@ namespace Musicefy.Views
             if (_initialLoadPending)
             {
                 _initialLoadPending = false;
-                try { ShowAppearance(); }
+                try { ShowAccount(); }
                 catch (Exception ex)
                 {
                     System.Diagnostics.Debug.WriteLine($"[SettingsPage] Loaded init failed: {ex.Message}");
-                    ShowFallbackContent($"Error loading Appearance: {ex.Message}");
+                    ShowFallbackContent($"Error loading Account: {ex.Message}");
                 }
             }
         }
@@ -101,57 +94,40 @@ namespace Musicefy.Views
             TabsPanel.Visibility = Visibility.Collapsed;
         }
 
-        /// <summary>
-        /// Build the flat search index of all settings labels.
-        /// Mirrors Echo Music's SearchableSettings.kt approach.
-        /// </summary>
         private IEnumerable<SettingsSearchItem> BuildSearchIndex()
         {
+            // Account
+            yield return new SettingsSearchItem("YouTube login", "Account", () => SwitchToTab("Account"));
+            yield return new SettingsSearchItem("YouTube cookie", "Account", () => SwitchToTab("Account"));
+            yield return new SettingsSearchItem("YouTube API key", "Account", () => SwitchToTab("Account"));
+            yield return new SettingsSearchItem("Audio quality", "Account", () => SwitchToTab("Account"));
             // Appearance
-            yield return new SettingsSearchItem("Theme mode (Light/Dark/AMOLED)", "Appearance", () => SwitchToTab("Appearance"));
+            yield return new SettingsSearchItem("Theme mode", "Appearance", () => SwitchToTab("Appearance"));
             yield return new SettingsSearchItem("Color palette", "Appearance", () => SwitchToTab("Appearance"));
-            yield return new SettingsSearchItem("Dynamic colors (album-art based)", "Appearance", () => SwitchToTab("Appearance"));
-            yield return new SettingsSearchItem("Player background style", "Appearance", () => SwitchToTab("Appearance"));
-
-            // Storage & Sources
-            yield return new SettingsSearchItem("Local music folders", "Storage & Sources", () => SwitchToTab("Downloads"));
-            yield return new SettingsSearchItem("Add local folder", "Storage & Sources", () => SwitchToTab("Downloads"));
-            yield return new SettingsSearchItem("YouTube Music", "Storage & Sources", () => SwitchToTab("Downloads"));
-            yield return new SettingsSearchItem("YouTube API key", "Storage & Sources", () => SwitchToTab("Downloads"));
-            yield return new SettingsSearchItem("YouTube cookie (login)", "Storage & Sources", () => SwitchToTab("Downloads"));
-            yield return new SettingsSearchItem("YouTube audio quality", "Storage & Sources", () => SwitchToTab("Downloads"));
-            yield return new SettingsSearchItem("Download path", "Storage & Sources", () => SwitchToTab("Downloads"));
-            yield return new SettingsSearchItem("Auto-clear cache on exit", "Storage & Sources", () => SwitchToTab("Downloads"));
-            yield return new SettingsSearchItem("Limit download size", "Storage & Sources", () => SwitchToTab("Downloads"));
-            yield return new SettingsSearchItem("Clear cache", "Storage & Sources", () => SwitchToTab("Downloads"));
-            yield return new SettingsSearchItem("SponsorBlock", "Storage & Sources", () => SwitchToTab("Downloads"));
-            yield return new SettingsSearchItem("Skip sponsor segments", "Storage & Sources", () => SwitchToTab("Downloads"));
-            yield return new SettingsSearchItem("Lyrics", "Storage & Sources", () => SwitchToTab("Downloads"));
-            yield return new SettingsSearchItem("LrcLib lyrics provider", "Storage & Sources", () => SwitchToTab("Downloads"));
-            yield return new SettingsSearchItem("Show local music on Home", "Storage & Sources", () => SwitchToTab("Downloads"));
-            yield return new SettingsSearchItem("Show YouTube on Home", "Storage & Sources", () => SwitchToTab("Downloads"));
-            // Sprint 5
-            yield return new SettingsSearchItem("Skip silence", "Storage & Sources", () => SwitchToTab("Downloads"));
-            yield return new SettingsSearchItem("Silence threshold", "Storage & Sources", () => SwitchToTab("Downloads"));
-            yield return new SettingsSearchItem("Crossfade", "Storage & Sources", () => SwitchToTab("Downloads"));
-            yield return new SettingsSearchItem("Crossfade duration", "Storage & Sources", () => SwitchToTab("Downloads"));
-            yield return new SettingsSearchItem("Playback", "Storage & Sources", () => SwitchToTab("Downloads"));
-            // Sprint 5/6
-            yield return new SettingsSearchItem("Listen history", "History", () => SwitchToTab("History"));
-            yield return new SettingsSearchItem("Recently played", "History", () => SwitchToTab("History"));
-            yield return new SettingsSearchItem("Stats", "Stats", () => SwitchToTab("Stats"));
-            yield return new SettingsSearchItem("Most played", "Stats", () => SwitchToTab("Stats"));
-            yield return new SettingsSearchItem("Top tracks", "Stats", () => SwitchToTab("Stats"));
-            yield return new SettingsSearchItem("Top artists", "Stats", () => SwitchToTab("Stats"));
-            yield return new SettingsSearchItem("Top albums", "Stats", () => SwitchToTab("Stats"));
+            yield return new SettingsSearchItem("Dynamic colors", "Appearance", () => SwitchToTab("Appearance"));
+            yield return new SettingsSearchItem("Player background", "Appearance", () => SwitchToTab("Appearance"));
+            // Player & Audio
+            yield return new SettingsSearchItem("Skip silence", "Player & Audio", () => SwitchToTab("PlayerAudio"));
+            yield return new SettingsSearchItem("Crossfade", "Player & Audio", () => SwitchToTab("PlayerAudio"));
+            yield return new SettingsSearchItem("SponsorBlock", "Player & Audio", () => SwitchToTab("PlayerAudio"));
+            yield return new SettingsSearchItem("Skip sponsor", "Player & Audio", () => SwitchToTab("PlayerAudio"));
+            // Content
+            yield return new SettingsSearchItem("Lyrics", "Content", () => SwitchToTab("Content"));
+            yield return new SettingsSearchItem("Show on home", "Content", () => SwitchToTab("Content"));
+            // Storage
+            yield return new SettingsSearchItem("Local folders", "Storage", () => SwitchToTab("Downloads"));
+            yield return new SettingsSearchItem("Download path", "Storage", () => SwitchToTab("Downloads"));
+            yield return new SettingsSearchItem("Clear cache", "Storage", () => SwitchToTab("Downloads"));
+            // Backup
             yield return new SettingsSearchItem("Backup", "Backup", () => SwitchToTab("Backup"));
             yield return new SettingsSearchItem("Restore", "Backup", () => SwitchToTab("Backup"));
-            yield return new SettingsSearchItem("Export", "Backup", () => SwitchToTab("Backup"));
-            // Sprint 7
+            // Integrations
             yield return new SettingsSearchItem("Last.fm", "Integrations", () => SwitchToTab("Integrations"));
-            yield return new SettingsSearchItem("Scrobble", "Integrations", () => SwitchToTab("Integrations"));
             yield return new SettingsSearchItem("Discord", "Integrations", () => SwitchToTab("Integrations"));
-            yield return new SettingsSearchItem("Discord RPC", "Integrations", () => SwitchToTab("Integrations"));
+            // About
+            yield return new SettingsSearchItem("About", "About", () => SwitchToTab("About"));
+            yield return new SettingsSearchItem("GitHub", "About", () => SwitchToTab("About"));
+            yield return new SettingsSearchItem("Version", "About", () => SwitchToTab("About"));
         }
 
         private void SwitchToTab(string tabName)
@@ -159,23 +135,29 @@ namespace Musicefy.Views
             SearchQuery = "";
             switch (tabName)
             {
+                case "Account":
+                    AccountButton.IsChecked = true;
+                    break;
                 case "Appearance":
                     AppearanceButton.IsChecked = true;
                     break;
+                case "PlayerAudio":
+                    PlayerAudioButton.IsChecked = true;
+                    break;
+                case "Content":
+                    ContentButton.IsChecked = true;
+                    break;
                 case "Downloads":
                     DownloadsButton.IsChecked = true;
-                    break;
-                case "History":
-                    HistoryButton.IsChecked = true;
-                    break;
-                case "Stats":
-                    StatsButton.IsChecked = true;
                     break;
                 case "Backup":
                     BackupButton.IsChecked = true;
                     break;
                 case "Integrations":
                     IntegrationsButton.IsChecked = true;
+                    break;
+                case "About":
+                    AboutButton.IsChecked = true;
                     break;
             }
         }
@@ -190,12 +172,40 @@ namespace Musicefy.Views
 
         // ── Tab handlers ──────────────────────────────────────────────────────
 
+        private void AccountButton_Checked(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (_initialLoadPending) return;
+            if (AccountButton.IsChecked == true)
+            {
+                try { ShowAccount(); }
+                catch (Exception ex) { ShowFallbackContent($"Error: {ex.Message}"); }
+            }
+        }
+
         private void AppearanceButton_Checked(object sender, System.Windows.RoutedEventArgs e)
         {
             if (_initialLoadPending) return;
             if (AppearanceButton.IsChecked == true)
             {
                 try { ShowAppearance(); }
+                catch (Exception ex) { ShowFallbackContent($"Error: {ex.Message}"); }
+            }
+        }
+
+        private void PlayerAudioButton_Checked(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (PlayerAudioButton.IsChecked == true)
+            {
+                try { ShowPlayerAudio(); }
+                catch (Exception ex) { ShowFallbackContent($"Error: {ex.Message}"); }
+            }
+        }
+
+        private void ContentButton_Checked(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (ContentButton.IsChecked == true)
+            {
+                try { ShowContent(); }
                 catch (Exception ex) { ShowFallbackContent($"Error: {ex.Message}"); }
             }
         }
@@ -209,27 +219,6 @@ namespace Musicefy.Views
             }
         }
 
-        // ── Sprint 5: History tab ────────────────────────────────────────────
-        private void HistoryButton_Checked(object sender, System.Windows.RoutedEventArgs e)
-        {
-            if (HistoryButton.IsChecked == true)
-            {
-                try { ShowHistory(); }
-                catch (Exception ex) { ShowFallbackContent($"Error: {ex.Message}"); }
-            }
-        }
-
-        // ── Sprint 5: Stats tab ──────────────────────────────────────────────
-        private void StatsButton_Checked(object sender, System.Windows.RoutedEventArgs e)
-        {
-            if (StatsButton.IsChecked == true)
-            {
-                try { ShowStats(); }
-                catch (Exception ex) { ShowFallbackContent($"Error: {ex.Message}"); }
-            }
-        }
-
-        // ── Sprint 6: Backup tab ─────────────────────────────────────────────
         private void BackupButton_Checked(object sender, System.Windows.RoutedEventArgs e)
         {
             if (BackupButton.IsChecked == true)
@@ -239,25 +228,6 @@ namespace Musicefy.Views
             }
         }
 
-        private void ShowHistory()
-        {
-            var control = new HistoryControl();
-            AnimateContentChange(control, "Listen History");
-        }
-
-        private void ShowStats()
-        {
-            var control = new StatsControl();
-            AnimateContentChange(control, "Stats");
-        }
-
-        private void ShowBackup()
-        {
-            var control = new BackupRestoreControl();
-            AnimateContentChange(control, "Backup & Restore");
-        }
-
-        // ── Sprint 7: Integrations tab ──────────────────────────────────────
         private void IntegrationsButton_Checked(object sender, System.Windows.RoutedEventArgs e)
         {
             if (IntegrationsButton.IsChecked == true)
@@ -267,10 +237,21 @@ namespace Musicefy.Views
             }
         }
 
-        private void ShowIntegrations()
+        private void AboutButton_Checked(object sender, System.Windows.RoutedEventArgs e)
         {
-            var control = new IntegrationsSettingsControl();
-            AnimateContentChange(control, "Integrations");
+            if (AboutButton.IsChecked == true)
+            {
+                try { ShowAbout(); }
+                catch (Exception ex) { ShowFallbackContent($"Error: {ex.Message}"); }
+            }
+        }
+
+        // ── Show methods ──────────────────────────────────────────────────────
+
+        private void ShowAccount()
+        {
+            var control = new AccountSettingsControl();
+            AnimateContentChange(control, "Account");
         }
 
         private void ShowAppearance()
@@ -279,7 +260,19 @@ namespace Musicefy.Views
             var control = new AppearanceSettingsControl();
             if (_appearanceVM != null)
                 control.DataContext = _appearanceVM;
-            AnimateContentChange(control, "Appearance Settings");
+            AnimateContentChange(control, "Appearance");
+        }
+
+        private void ShowPlayerAudio()
+        {
+            var control = new PlayerAudioSettingsControl();
+            AnimateContentChange(control, "Player & Audio");
+        }
+
+        private void ShowContent()
+        {
+            var control = new ContentSettingsControl();
+            AnimateContentChange(control, "Content");
         }
 
         private void ShowDownloads()
@@ -288,7 +281,25 @@ namespace Musicefy.Views
             var control = new DownloadsSettingsControl();
             if (vm != null)
                 control.DataContext = vm;
-            AnimateContentChange(control, "Storage & Sources");
+            AnimateContentChange(control, "Storage");
+        }
+
+        private void ShowBackup()
+        {
+            var control = new BackupRestoreControl();
+            AnimateContentChange(control, "Backup & Restore");
+        }
+
+        private void ShowIntegrations()
+        {
+            var control = new IntegrationsSettingsControl();
+            AnimateContentChange(control, "Integrations");
+        }
+
+        private void ShowAbout()
+        {
+            var control = new AboutControl();
+            AnimateContentChange(control, "About");
         }
 
         private void ShowFallbackContent(string message)
@@ -345,10 +356,6 @@ namespace Musicefy.Views
         #endregion
     }
 
-    /// <summary>
-    /// A single searchable settings item. Label is what the user sees,
-    /// Category is the parent tab, Navigate is the action to run on click.
-    /// </summary>
     public class SettingsSearchItem
     {
         public string Label { get; set; }

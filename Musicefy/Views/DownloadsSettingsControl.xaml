@@ -3,339 +3,157 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Background="Transparent">
 
-    <Grid Margin="10,0,10,10">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </UserControl.Resources>
 
-        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <Grid Margin="10,0,10,10">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
             <StackPanel Orientation="Vertical">
 
-                <!-- ════════════════════════════════════════════════════════════ -->
-                <!-- SECTION 1: LOCAL MUSIC FOLDERS (Sprint 4)                    -->
-                <!-- ════════════════════════════════════════════════════════════ -->
-                <TextBlock Text="Local Music Folders" FontWeight="Bold" FontSize="15"
+                <!-- Header -->
+                <TextBlock Text="Storage" FontSize="22" FontWeight="Bold"
                            Foreground="{DynamicResource OnSurfaceBrush}" Margin="4,0,0,4"/>
-                <TextBlock Text="Folders on your disk that Musicefy scans for music files."
-                           FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"
-                           Margin="4,0,0,12" TextWrapping="Wrap"/>
+                <TextBlock Text="Download path, cache, and local music folders."
+                           FontSize="12" Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                           Margin="4,0,0,20"/>
 
-                <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="14"
-                        Padding="16,12" Margin="0,0,0,20">
+                <!-- ═══ LOCAL MUSIC FOLDERS section ═══ -->
+                <TextBlock Text="LOCAL MUSIC FOLDERS" Style="{StaticResource M3SectionHeader}"/>
+                <Border Style="{StaticResource M3SettingsGroup}">
                     <StackPanel>
-                        <ItemsControl x:Name="FoldersList" Margin="0,0,0,8">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Background="{DynamicResource SurfaceContainerHighBrush}"
-                                            CornerRadius="8" Padding="10,8" Margin="0,3">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-                                            <Path Grid.Column="0" Data="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"
-                                                  Width="18" Height="18" Stretch="Uniform"
-                                                  Fill="{DynamicResource OnSurfaceVariantBrush}"
-                                                  Margin="0,0,10,0" VerticalAlignment="Center"/>
-                                            <TextBlock Grid.Column="1" Text="{Binding}"
-                                                       FontSize="12" Foreground="{DynamicResource OnSurfaceBrush}"
-                                                       VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                                            <Button Grid.Column="2" Content="✕" Padding="6,2" Margin="8,0,0,0"
-                                                    FontSize="11" Cursor="Hand"
-                                                    Foreground="{DynamicResource ErrorBrush}"
-                                                    Click="RemoveFolder_Click" Tag="{Binding}"/>
-                                        </Grid>
+                        <Border Style="{StaticResource M3SettingsItemLast}">
+                            <StackPanel>
+                                <DockPanel>
+                                    <Border DockPanel.Dock="Left" Style="{StaticResource M3IconBox}">
+                                        <Path Data="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"
+                                              Width="20" Height="20" Stretch="Uniform"
+                                              Fill="{DynamicResource PrimaryBrush}"
+                                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="Music Folders" Style="{StaticResource M3TitleText}"/>
+                                        <TextBlock Text="Folders on your disk that Musicefy scans."
+                                                   Style="{StaticResource M3DescriptionText}"/>
+                                    </StackPanel>
+                                    <Button DockPanel.Dock="Right" Content="+ Add" Padding="10,4"
+                                            Click="AddFolder_Click" Cursor="Hand" VerticalAlignment="Center"/>
+                                </DockPanel>
 
-                        <TextBlock x:Name="NoFoldersText" Text="No folders added yet. Click below to add your music folder."
-                                   FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"
-                                   Margin="0,4,0,8" Visibility="Collapsed"/>
+                                <ItemsControl x:Name="FoldersList" Margin="56,8,0,0">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{DynamicResource SurfaceContainerLowBrush}"
+                                                    CornerRadius="8" Padding="10,6" Margin="0,2">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0" Text="{Binding}"
+                                                               FontSize="11" Foreground="{DynamicResource OnSurfaceBrush}"
+                                                               VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                                    <Button Grid.Column="1" Content="✕" Padding="6,2" Margin="8,0,0,0"
+                                                            FontSize="11" Cursor="Hand"
+                                                            Foreground="{DynamicResource ErrorBrush}"
+                                                            Click="RemoveFolder_Click" Tag="{Binding}"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
 
-                        <Button Content="+ Add Folder" Padding="14,6" Width="120" HorizontalAlignment="Left"
-                                Click="AddFolder_Click"/>
-                    </StackPanel>
-                </Border>
-
-                <!-- ════════════════════════════════════════════════════════════ -->
-                <!-- SECTION 2: YOUTUBE MUSIC (Sprint 4 — always-on)              -->
-                <!-- ════════════════════════════════════════════════════════════ -->
-                <TextBlock Text="YouTube Music" FontWeight="Bold" FontSize="15"
-                           Foreground="{DynamicResource OnSurfaceBrush}" Margin="4,0,0,4"/>
-                <TextBlock Text="YouTube is always available. Optional: add an API key or cookie for enhanced access."
-                           FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"
-                           Margin="4,0,0,12" TextWrapping="Wrap"/>
-
-                <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="14"
-                        Padding="16,12" Margin="0,0,0,20">
-                    <StackPanel>
-                        <CheckBox x:Name="YouTubeEnabledBox" Style="{StaticResource ModernSettingRowStyle}"
-                                  IsChecked="{Binding YouTubeEnabled}">
-                            <StackPanel>
-                                <TextBlock Text="Enable YouTube Music" FontWeight="Bold" FontSize="14"
-                                           Foreground="{DynamicResource OnSurfaceBrush}"/>
-                                <TextBlock Text="When disabled, YouTube search and streaming are turned off."
-                                           FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,2,0,0"/>
+                                <TextBlock x:Name="NoFoldersText" Text="No folders added yet."
+                                           FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                                           Margin="56,4,0,0" Visibility="Collapsed"/>
                             </StackPanel>
-                        </CheckBox>
-
-                        <TextBlock Text="API Key (optional)" FontSize="12" FontWeight="SemiBold"
-                                   Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,8,0,4"/>
-                        <Border Background="{DynamicResource SurfaceContainerHighBrush}" CornerRadius="8"
-                                BorderBrush="{DynamicResource OutlineBrush}" BorderThickness="1" Padding="8,4">
-                            <TextBox x:Name="YouTubeApiKeyBox" Background="Transparent" BorderThickness="0"
-                                     Foreground="{DynamicResource OnSurfaceBrush}" FontSize="12"
-                                     Text="{Binding YouTubeApiKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                     ToolTip="Google API key for higher search quotas. Leave empty for anonymous mode."/>
                         </Border>
+                    </StackPanel>
+                </Border>
 
-                        <TextBlock Text="Cookie (optional — for login)" FontSize="12" FontWeight="SemiBold"
-                                   Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,8,0,4"/>
-                        <Border Background="{DynamicResource SurfaceContainerHighBrush}" CornerRadius="8"
-                                BorderBrush="{DynamicResource OutlineBrush}" BorderThickness="1" Padding="8,4">
-                            <TextBox x:Name="YouTubeCookieBox" Background="Transparent" BorderThickness="0"
-                                     Foreground="{DynamicResource OnSurfaceBrush}" FontSize="12"
-                                     Text="{Binding YouTubeCookie, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                     ToolTip="Login cookie for authenticated access (SID=...; HSID=...; SAPISID=...)"/>
+                <!-- ═══ DOWNLOAD PATH section ═══ -->
+                <TextBlock Text="DOWNLOAD PATH" Style="{StaticResource M3SectionHeader}"/>
+                <Border Style="{StaticResource M3SettingsGroup}">
+                    <StackPanel>
+                        <Border Style="{StaticResource M3SettingsItemLast}">
+                            <DockPanel>
+                                <Border DockPanel.Dock="Left" Style="{StaticResource M3IconBox}">
+                                    <Path Data="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"
+                                          Width="20" Height="20" Stretch="Uniform"
+                                          Fill="{DynamicResource PrimaryBrush}"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center" Margin="0,0,16,0">
+                                    <TextBlock Text="Target Download Path" Style="{StaticResource M3TitleText}"/>
+                                    <TextBox x:Name="DownloadPathBox" IsReadOnly="True" BorderThickness="0"
+                                             Background="Transparent" Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                                             FontSize="11" Margin="0,2,0,0" TextWrapping="NoWrap"/>
+                                </StackPanel>
+                                <Button DockPanel.Dock="Right" Content="Browse" Padding="10,4"
+                                        Click="Browse_Click" Cursor="Hand" VerticalAlignment="Center"/>
+                            </DockPanel>
                         </Border>
-
-                        <TextBlock Text="Audio Quality" FontSize="12" FontWeight="SemiBold"
-                                   Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,8,0,4"/>
-                        <ComboBox x:Name="AudioQualityCombo" Padding="8,4" FontSize="12"
-                                  SelectedIndex="{Binding YouTubeAudioQualityIndex, Mode=TwoWay}">
-                            <ComboBoxItem Content="Opus (default, better quality at lower bitrates)"/>
-                            <ComboBoxItem Content="AAC (wider compatibility)"/>
-                        </ComboBox>
                     </StackPanel>
                 </Border>
 
-                <!-- ════════════════════════════════════════════════════════════ -->
-                <!-- SECTION 3: SPONSORBLOCK (Sprint 4)                           -->
-                <!-- ════════════════════════════════════════════════════════════ -->
-                <TextBlock Text="SponsorBlock" FontWeight="Bold" FontSize="15"
-                           Foreground="{DynamicResource OnSurfaceBrush}" Margin="4,0,0,4"/>
-                <TextBlock Text="Skip sponsored segments, intros, and outros in YouTube videos."
-                           FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"
-                           Margin="4,0,0,12" TextWrapping="Wrap"/>
-
-                <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="14"
-                        Padding="16,12" Margin="0,0,0,20">
+                <!-- ═══ CACHE section ═══ -->
+                <TextBlock Text="CACHE" Style="{StaticResource M3SectionHeader}"/>
+                <Border Style="{StaticResource M3SettingsGroup}">
                     <StackPanel>
-                        <CheckBox x:Name="SponsorBlockEnabledBox" Style="{StaticResource ModernSettingRowStyle}"
-                                  IsChecked="{Binding SponsorBlockEnabled}">
+                        <CheckBox Style="{StaticResource M3SwitchRow}" x:Name="AutoClearCacheBox">
+                            <CheckBox.Tag>
+                                <Path Data="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+                                      Width="20" Height="20" Stretch="Uniform"
+                                      Fill="{DynamicResource PrimaryBrush}"/>
+                            </CheckBox.Tag>
                             <StackPanel>
-                                <TextBlock Text="Enable SponsorBlock" FontWeight="Bold" FontSize="14"
-                                           Foreground="{DynamicResource OnSurfaceBrush}"/>
-                                <TextBlock Text="Uses the free sponsor.ajay.app API. No key required."
-                                           FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,2,0,0"/>
+                                <TextBlock Text="Auto-clear cache on exit" Style="{StaticResource M3TitleText}"/>
+                                <TextBlock Text="Flushes temporary stream directories on shutdown."
+                                           Style="{StaticResource M3DescriptionText}"/>
                             </StackPanel>
                         </CheckBox>
 
-                        <CheckBox IsChecked="{Binding SponsorBlockSkipSponsor}" Margin="16,4,0,0">
-                            <TextBlock Text="Skip sponsor segments" FontSize="12" Foreground="{DynamicResource OnSurfaceBrush}"/>
-                        </CheckBox>
-                        <CheckBox IsChecked="{Binding SponsorBlockSkipIntro}" Margin="16,4,0,0">
-                            <TextBlock Text="Skip intros" FontSize="12" Foreground="{DynamicResource OnSurfaceBrush}"/>
-                        </CheckBox>
-                        <CheckBox IsChecked="{Binding SponsorBlockSkipOutro}" Margin="16,4,0,0">
-                            <TextBlock Text="Skip outros" FontSize="12" Foreground="{DynamicResource OnSurfaceBrush}"/>
-                        </CheckBox>
-                        <CheckBox IsChecked="{Binding SponsorBlockSkipSelfPromo}" Margin="16,4,0,0">
-                            <TextBlock Text="Skip self-promotion" FontSize="12" Foreground="{DynamicResource OnSurfaceBrush}"/>
-                        </CheckBox>
-                        <CheckBox IsChecked="{Binding SponsorBlockSkipInteraction}" Margin="16,4,0,0">
-                            <TextBlock Text="Skip interaction reminders (subscribe/like)" FontSize="12" Foreground="{DynamicResource OnSurfaceBrush}"/>
-                        </CheckBox>
-                    </StackPanel>
-                </Border>
-
-                <!-- ════════════════════════════════════════════════════════════ -->
-                <!-- SECTION 4: LYRICS (Sprint 4 — LrcLib)                        -->
-                <!-- ════════════════════════════════════════════════════════════ -->
-                <TextBlock Text="Lyrics" FontWeight="Bold" FontSize="15"
-                           Foreground="{DynamicResource OnSurfaceBrush}" Margin="4,0,0,4"/>
-                <TextBlock Text="Fetch synced lyrics from LrcLib — free, no API key required."
-                           FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"
-                           Margin="4,0,0,12" TextWrapping="Wrap"/>
-
-                <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="14"
-                        Padding="16,12" Margin="0,0,0,20">
-                    <StackPanel>
-                        <CheckBox x:Name="LyricsEnabledBox" Style="{StaticResource ModernSettingRowStyle}"
-                                  IsChecked="{Binding LyricsEnabled}">
+                        <CheckBox Style="{StaticResource M3SwitchRow}" x:Name="LimitDownloadSizeBox">
+                            <CheckBox.Tag>
+                                <Path Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"
+                                      Width="20" Height="20" Stretch="Uniform"
+                                      Fill="{DynamicResource PrimaryBrush}"/>
+                            </CheckBox.Tag>
                             <StackPanel>
-                                <TextBlock Text="Enable lyrics" FontWeight="Bold" FontSize="14"
-                                           Foreground="{DynamicResource OnSurfaceBrush}"/>
-                                <TextBlock Text="Fetch synced lyrics from LrcLib (lrclib.net)."
-                                           FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,2,0,0"/>
-                            </StackPanel>
-                        </CheckBox>
-                    </StackPanel>
-                </Border>
-
-                <!-- ════════════════════════════════════════════════════════════ -->
-                <!-- SECTION 4.5: PLAYBACK (Sprint 5 — Skip Silence + Crossfade)  -->
-                <!-- ════════════════════════════════════════════════════════════ -->
-                <TextBlock Text="Playback" FontWeight="Bold" FontSize="15"
-                           Foreground="{DynamicResource OnSurfaceBrush}" Margin="4,0,0,4"/>
-                <TextBlock Text="Skip silence and crossfade between tracks for gapless listening."
-                           FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"
-                           Margin="4,0,0,12" TextWrapping="Wrap"/>
-
-                <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="14"
-                        Padding="16,12" Margin="0,0,0,20">
-                    <StackPanel>
-                        <CheckBox IsChecked="{Binding SkipSilenceEnabled}">
-                            <StackPanel>
-                                <TextBlock Text="Skip silence" FontWeight="Bold" FontSize="14"
-                                           Foreground="{DynamicResource OnSurfaceBrush}"/>
-                                <TextBlock Text="Automatically skip silent sections in tracks."
-                                           FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,2,0,0"/>
+                                <TextBlock Text="Limit download size to 500 MB" Style="{StaticResource M3TitleText}"/>
+                                <TextBlock Text="Restricts maximum track file sizes."
+                                           Style="{StaticResource M3DescriptionText}"/>
                             </StackPanel>
                         </CheckBox>
 
-                        <TextBlock Text="Silence threshold (dB)" FontSize="12" FontWeight="SemiBold"
-                                   Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,12,0,4"/>
-                        <Slider Minimum="-80" Maximum="-20" TickFrequency="5"
-                                Value="{Binding SkipSilenceThresholdDb}"
-                                IsEnabled="{Binding SkipSilenceEnabled}"
-                                TickPlacement="BottomRight" SmallChange="1" LargeChange="5"/>
-                        <TextBlock Text="Lower = more aggressive skipping. Default: -40 dB."
-                                   FontSize="10" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,2,0,0"/>
-
-                        <CheckBox IsChecked="{Binding CrossfadeEnabled}" Margin="0,12,0,0">
+                        <Border Style="{StaticResource M3SettingsItemLast}">
                             <StackPanel>
-                                <TextBlock Text="Crossfade" FontWeight="Bold" FontSize="14"
-                                           Foreground="{DynamicResource OnSurfaceBrush}"/>
-                                <TextBlock Text="Fade out the current track while fading in the next."
-                                           FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,2,0,0"/>
+                                <DockPanel>
+                                    <Border DockPanel.Dock="Left" Style="{StaticResource M3IconBox}">
+                                        <Path Data="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"
+                                              Width="20" Height="20" Stretch="Uniform"
+                                              Fill="{DynamicResource PrimaryBrush}"
+                                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <TextBlock Text="Cache size" Style="{StaticResource M3TitleText}"
+                                               VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="CacheStatusLabel" Text="0 MB"
+                                               DockPanel.Dock="Right" Style="{StaticResource M3TrailingValue}"/>
+                                </DockPanel>
+                                <ProgressBar x:Name="CacheProgressBar" Height="6" Maximum="100" Value="0"
+                                             BorderThickness="0" Background="{DynamicResource OutlineBrush}"
+                                             Margin="56,8,0,0"/>
+                                <Button Content="Clear Cache" Padding="10,4" HorizontalAlignment="Left"
+                                        Click="ClearNow_Click" Cursor="Hand" Margin="56,8,0,0"/>
                             </StackPanel>
-                        </CheckBox>
-
-                        <TextBlock Text="Crossfade duration (seconds)" FontSize="12" FontWeight="SemiBold"
-                                   Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,12,0,4"/>
-                        <Slider Minimum="1" Maximum="12" TickFrequency="1"
-                                Value="{Binding CrossfadeDurationSeconds}"
-                                IsEnabled="{Binding CrossfadeEnabled}"
-                                TickPlacement="BottomRight" SmallChange="1" LargeChange="2"/>
-                        <TextBlock Text="Default: 5 seconds."
-                                   FontSize="10" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,2,0,0"/>
+                        </Border>
                     </StackPanel>
                 </Border>
 
-                <!-- ════════════════════════════════════════════════════════════ -->
-                <!-- SECTION 5: HOME SCREEN VISIBILITY (absorbed from Discover)   -->
-                <!-- ════════════════════════════════════════════════════════════ -->
-                <TextBlock Text="Home Screen" FontWeight="Bold" FontSize="15"
-                           Foreground="{DynamicResource OnSurfaceBrush}" Margin="4,0,0,4"/>
-                <TextBlock Text="Choose which sources appear on the Home screen."
-                           FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}"
-                           Margin="4,0,0,12" TextWrapping="Wrap"/>
-
-                <Border Background="{DynamicResource SurfaceVariantBrush}" CornerRadius="14"
-                        Padding="16,12" Margin="0,0,0,20">
-                    <StackPanel>
-                        <CheckBox IsChecked="{Binding ShowLocalOnHome}">
-                            <StackPanel>
-                                <TextBlock Text="Show local music on Home" FontWeight="Bold" FontSize="13"
-                                           Foreground="{DynamicResource OnSurfaceBrush}"/>
-                                <TextBlock Text="Display local albums and recently played on the Home screen."
-                                           FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,2,0,0"/>
-                            </StackPanel>
-                        </CheckBox>
-                        <CheckBox IsChecked="{Binding ShowYouTubeOnHome}" Margin="0,8,0,0">
-                            <StackPanel>
-                                <TextBlock Text="Show YouTube on Home" FontWeight="Bold" FontSize="13"
-                                           Foreground="{DynamicResource OnSurfaceBrush}"/>
-                                <TextBlock Text="Display YouTube recommendations and trending on the Home screen."
-                                           FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,2,0,0"/>
-                            </StackPanel>
-                        </CheckBox>
-                    </StackPanel>
-                </Border>
-
-                <!-- ════════════════════════════════════════════════════════════ -->
-                <!-- SECTION 6: STORAGE DIRECTORY (existing)                      -->
-                <!-- ════════════════════════════════════════════════════════════ -->
-                <TextBlock Text="Storage Directory" FontWeight="Bold" FontSize="15"
-                           Foreground="{DynamicResource OnSurfaceBrush}" Margin="4,0,0,12"/>
-                <Border Background="{DynamicResource SurfaceVariantBrush}" BorderBrush="{DynamicResource OutlineBrush}"
-                        BorderThickness="1" CornerRadius="14" Padding="16,14" Margin="0,0,0,20">
-                    <DockPanel>
-                        <Button Content="Browse..." DockPanel.Dock="Right" Padding="16,6" Width="100"
-                                Click="Browse_Click" VerticalAlignment="Center"/>
-                        <StackPanel Margin="0,0,16,0">
-                            <TextBlock Text="Target Download Path" FontWeight="Bold" FontSize="14"
-                                       Foreground="{DynamicResource OnSurfaceBrush}"/>
-                            <TextBox x:Name="DownloadPathBox" IsReadOnly="True" BorderThickness="0"
-                                     Background="Transparent" Foreground="{DynamicResource OnSurfaceVariantBrush}"
-                                     FontSize="12" Margin="0,4,0,0" TextWrapping="NoWrap" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </DockPanel>
-                </Border>
-
-                <!-- ════════════════════════════════════════════════════════════ -->
-                <!-- SECTION 7: CACHING & BANDWIDTH (existing)                    -->
-                <!-- ════════════════════════════════════════════════════════════ -->
-                <TextBlock Text="Caching &amp; Bandwidth Policies" FontWeight="Bold" FontSize="15"
-                           Foreground="{DynamicResource OnSurfaceBrush}" Margin="4,0,0,12"/>
-
-                <CheckBox x:Name="AutoClearCacheBox" Style="{StaticResource ModernSettingRowStyle}">
-                    <StackPanel>
-                        <TextBlock Text="Auto-Clear Cache on Exit" FontWeight="Bold" FontSize="14"
-                                   Foreground="{DynamicResource OnSurfaceBrush}"/>
-                        <TextBlock Text="Flushes temporary stream directories immediately upon application shutdown"
-                                   FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,2,0,0"/>
-                    </StackPanel>
-                    <CheckBox.Tag>
-                        <Path Data="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
-                              Fill="{DynamicResource OnSurfaceVariantBrush}" Width="18" Height="18" Stretch="Uniform"/>
-                    </CheckBox.Tag>
-                </CheckBox>
-
-                <CheckBox x:Name="LimitDownloadSizeBox" Style="{StaticResource ModernSettingRowStyle}">
-                    <StackPanel>
-                        <TextBlock Text="Limit Download Size to 500 MB" FontWeight="Bold" FontSize="14"
-                                   Foreground="{DynamicResource OnSurfaceBrush}"/>
-                        <TextBlock Text="Restricts maximum track file sizes to conserve your local storage footprint"
-                                   FontSize="11" Foreground="{DynamicResource OnSurfaceVariantBrush}" Margin="0,2,0,0"/>
-                    </StackPanel>
-                    <CheckBox.Tag>
-                        <Path Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"
-                              Fill="{DynamicResource OnSurfaceVariantBrush}" Width="18" Height="18" Stretch="Uniform"/>
-                    </CheckBox.Tag>
-                </CheckBox>
-
-                <!-- ════════════════════════════════════════════════════════════ -->
-                <!-- SECTION 8: LIVE STORAGE MONITOR (existing)                   -->
-                <!-- ════════════════════════════════════════════════════════════ -->
-                <TextBlock Text="Live Storage Monitor" FontWeight="Bold" FontSize="15"
-                           Foreground="{DynamicResource OnSurfaceBrush}" Margin="4,8,0,12"/>
-                <Border CornerRadius="14" BorderThickness="1" BorderBrush="{DynamicResource OutlineBrush}"
-                        Padding="16" Background="{DynamicResource SurfaceVariantBrush}">
-                    <StackPanel>
-                        <DockPanel Margin="0,0,0,10">
-                            <TextBlock x:Name="DownloadStatusLabel" Text="Idle" DockPanel.Dock="Right"
-                                       FontWeight="Bold" Foreground="{DynamicResource OnSurfaceVariantBrush}"/>
-                            <TextBlock x:Name="CacheStatusLabel" Text="Cache size: 0.00 MB"
-                                       FontWeight="Bold" Foreground="{DynamicResource OnSurfaceBrush}"/>
-                        </DockPanel>
-
-                        <ProgressBar x:Name="CacheProgressBar" Height="8" Maximum="100" Value="0"
-                                     BorderThickness="0" Background="{DynamicResource OutlineBrush}" Margin="0,0,0,16"/>
-
-                        <WrapPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                            <Button x:Name="ClearNowButton" Content="Clear Cache" Padding="14,6" Margin="0,0,8,0" Click="ClearNow_Click"/>
-                            <Button x:Name="TestDownloadButton" Content="Test Download" Padding="14,6" Margin="0,0,8,0" Click="TestDownload_Click"/>
-                            <Button x:Name="PauseDownloadButton" Content="Pause" Padding="14,6" Margin="0,0,8,0" Click="PauseDownload_Click" IsEnabled="False"/>
-                            <Button x:Name="ResumeDownloadButton" Content="Resume" Padding="14,6" Margin="0,0,8,0" Click="ResumeDownload_Click" IsEnabled="False"/>
-                            <Button x:Name="CancelDownloadButton" Content="Cancel" Padding="14,6" Click="CancelDownload_Click" IsEnabled="False"/>
-                        </WrapPanel>
-                    </StackPanel>
-                </Border>
+                <!-- Save button -->
+                <Button Content="Save Storage Settings" Padding="16,8" HorizontalAlignment="Left"
+                        Click="Save_Click" Cursor="Hand" FontWeight="SemiBold"
+                        Margin="0,16,0,0"/>
 
             </StackPanel>
         </ScrollViewer>

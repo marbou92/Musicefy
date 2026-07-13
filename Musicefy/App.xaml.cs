@@ -181,12 +181,16 @@ namespace Musicefy
             services.AddSingleton<LibraryViewModel>();
             services.AddSingleton<AppearanceSettingsViewModel>();
             services.AddSingleton<DownloadsSettingsViewModel>();
-            // Sprint 5: History + Stats ViewModels
+            // Sprint 8: New settings ViewModels
+            services.AddTransient<AccountSettingsViewModel>();
+            services.AddTransient<PlayerAudioSettingsViewModel>();
+            services.AddTransient<ContentSettingsViewModel>();
+            // Sprint 5: History + Stats ViewModels (now in Library, kept for DI)
             services.AddTransient<HistoryViewModel>();
             services.AddTransient<StatsViewModel>();
             // Sprint 6: Backup & Restore ViewModel
             services.AddTransient<BackupRestoreViewModel>();
-            // Sprint 7: Integrations ViewModel (AI translation, Last.fm, Discord)
+            // Sprint 7: Integrations ViewModel (Last.fm, Discord)
             services.AddTransient<IntegrationsViewModel>();
             // Sprint 7: Browse ViewModel (Mood/Genres/Charts)
             services.AddTransient<BrowseViewModel>();

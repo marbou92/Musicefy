@@ -1,0 +1,75 @@
+<UserControl x:Class="Musicefy.Views.ContentSettingsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="Transparent">
+
+    <Grid Margin="10,0,10,10">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Orientation="Vertical">
+
+                <!-- Header -->
+                <TextBlock Text="Content" FontSize="22" FontWeight="Bold"
+                           Foreground="{DynamicResource OnSurfaceBrush}" Margin="4,0,0,4"/>
+                <TextBlock Text="Lyrics and home screen settings."
+                           FontSize="12" Foreground="{DynamicResource OnSurfaceVariantBrush}"
+                           Margin="4,0,0,20"/>
+
+                <!-- ═══ LYRICS section ═══ -->
+                <TextBlock Text="LYRICS" Style="{StaticResource M3SectionHeader}"/>
+                <Border Style="{StaticResource M3SettingsGroup}">
+                    <StackPanel>
+                        <CheckBox Style="{StaticResource M3SwitchRow}" IsChecked="{Binding LyricsEnabled}">
+                            <CheckBox.Tag>
+                                <Path Data="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 12h-2v-2h2v2zm0-4h-2V6h2v4z"
+                                      Width="20" Height="20" Stretch="Uniform"
+                                      Fill="{DynamicResource PrimaryBrush}"/>
+                            </CheckBox.Tag>
+                            <StackPanel>
+                                <TextBlock Text="Enable lyrics" Style="{StaticResource M3TitleText}"/>
+                                <TextBlock Text="Fetch synced lyrics from LrcLib."
+                                           Style="{StaticResource M3DescriptionText}"/>
+                            </StackPanel>
+                        </CheckBox>
+                    </StackPanel>
+                </Border>
+
+                <!-- ═══ HOME SCREEN section ═══ -->
+                <TextBlock Text="HOME SCREEN" Style="{StaticResource M3SectionHeader}"/>
+                <Border Style="{StaticResource M3SettingsGroup}">
+                    <StackPanel>
+                        <CheckBox Style="{StaticResource M3SwitchRow}" IsChecked="{Binding ShowLocalOnHome}">
+                            <CheckBox.Tag>
+                                <Path Data="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"
+                                      Width="20" Height="20" Stretch="Uniform"
+                                      Fill="{DynamicResource PrimaryBrush}"/>
+                            </CheckBox.Tag>
+                            <StackPanel>
+                                <TextBlock Text="Show local music on Home" Style="{StaticResource M3TitleText}"/>
+                                <TextBlock Text="Display local albums and recently played."
+                                           Style="{StaticResource M3DescriptionText}"/>
+                            </StackPanel>
+                        </CheckBox>
+                        <CheckBox Style="{StaticResource M3SwitchRow}" IsChecked="{Binding ShowYouTubeOnHome}">
+                            <CheckBox.Tag>
+                                <Path Data="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"
+                                      Width="20" Height="20" Stretch="Uniform"
+                                      Fill="{DynamicResource PrimaryBrush}"/>
+                            </CheckBox.Tag>
+                            <StackPanel>
+                                <TextBlock Text="Show YouTube on Home" Style="{StaticResource M3TitleText}"/>
+                                <TextBlock Text="Display YouTube recommendations and trending."
+                                           Style="{StaticResource M3DescriptionText}"/>
+                            </StackPanel>
+                        </CheckBox>
+                    </StackPanel>
+                </Border>
+
+                <!-- Save button -->
+                <Button Content="Save Content Settings" Padding="16,8" HorizontalAlignment="Left"
+                        Command="{Binding SaveCommand}" Cursor="Hand" FontWeight="SemiBold"
+                        Margin="0,16,0,0"/>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>
